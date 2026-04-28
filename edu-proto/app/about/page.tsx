@@ -8,19 +8,19 @@ const team = [
     name: "陈伟博士",
     role: "创始人 & CEO",
     desc: "前知名高校 AI 实验室首席科学家，专注于边缘计算与 STEM 教育科技的深度融合。",
-    avatar: "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?auto=format&fit=crop&q=80&w=200&h=200"
+    avatar: "https://images.unsplash.com/photo-1506275136662-7254675578c3?auto=format&fit=crop&q=80&w=200&h=200"
   },
   {
     name: "林晓梅",
     role: "CTO",
     desc: "资深全栈架构师，拥有 10+ 年微服务与区块链系统开发经验，主导过多个大型教育平台搭建。",
-    avatar: "https://images.unsplash.com/photo-1544005313-94ddf0286df2?auto=format&fit=crop&q=80&w=200&h=200"
+    avatar: "https://images.unsplash.com/photo-1521119989659-a83eee488058?auto=format&fit=crop&q=80&w=200&h=200"
   },
   {
     name: "张伟",
     role: "硬件研发总监",
     desc: "嵌入式系统专家，曾主导百万级 IoT 设备的量产项目，致力于让硬件编程更简单。",
-    avatar: "https://images.unsplash.com/photo-1506794778202-cad84cf45f1d?auto=format&fit=crop&q=80&w=200&h=200"
+    avatar: "https://images.unsplash.com/photo-1542596594-649edbc13630?auto=format&fit=crop&q=80&w=200&h=200"
   }
 ];
 
