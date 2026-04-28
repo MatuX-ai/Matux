@@ -21,7 +21,7 @@ export default function Navbar() {
           <Link href="/tech" className="transition-colors hover:text-accent">技术亮点</Link>
           <Link href="/journey" className="transition-colors hover:text-accent">用户流程</Link>
           <Link href="/about" className="transition-colors hover:text-accent">关于我们</Link>
-          <Link href="/student-dashboard" className="transition-colors hover:text-accent font-semibold text-accent">学生端</Link>
+          <Link href="/student-dashboard" className="transition-colors hover:text-accent">学生端</Link>
           <Link href="/demo" className="transition-colors hover:text-accent">在线演示</Link>
         </div>
 
