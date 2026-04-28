@@ -1,7 +1,7 @@
 'use client';
 
 import { motion, AnimatePresence } from 'framer-motion';
-import { Cpu, MessageSquare, Box, User, Zap, Battery, Wifi, Play, Code, Camera, Globe, Award, Tablet, Sparkles, X, Send, Bot } from 'lucide-react';
+import { Cpu, MessageSquare, Box, User, Zap, Battery, Wifi, Play, Code, Camera, Globe, Award, X, Send, Bot } from 'lucide-react';
 import { useState } from 'react';
 
 export default function StudentMobileDemo() {

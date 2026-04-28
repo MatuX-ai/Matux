@@ -1,7 +1,7 @@
 'use client';
 
 import { motion } from 'framer-motion';
-import { User, BookOpen, Box, Cpu, Award, ArrowRight } from 'lucide-react';
+import { User, BookOpen, Box, Cpu, Award, ArrowRight, CheckCircle } from 'lucide-react';
 
 const steps = [
   {
@@ -86,10 +86,25 @@ export default function JourneyPage() {
       </div>
 
       <div className="mt-24 text-center">
-        <h2 className="text-2xl font-bold text-primary mb-6">准备好开启您的 STEM 之旅了吗？</h2>
-        <button className="inline-flex items-center justify-center rounded-md text-sm font-medium ring-offset-background transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 bg-accent text-white hover:bg-accent/90 h-12 px-8 text-base">
-          立即注册体验 <ArrowRight className="ml-2 h-5 w-5" />
-        </button>
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          whileInView={{ opacity: 1, y: 0 }}
+          viewport={{ once: true }}
+          className="bg-gradient-to-br from-primary/5 to-accent/5 rounded-2xl p-12 border"
+        >
+          <h2 className="text-3xl font-bold text-primary mb-4">准备好开启您的 STEM 之旅了吗？</h2>
+          <p className="text-gray-600 mb-8 max-w-2xl mx-auto">
+            加入 MatuX，体验 AI 驱动的个性化 STEM 教育，让学习更高效、更有趣。
+          </p>
+          <div className="flex flex-col sm:flex-row gap-4 justify-center items-center">
+            <button className="inline-flex items-center justify-center rounded-full text-sm font-medium transition-all bg-accent text-white hover:bg-accent/90 hover:shadow-lg h-12 px-8 text-base">
+              立即注册体验 <ArrowRight className="ml-2 h-5 w-5" />
+            </button>
+            <button className="inline-flex items-center justify-center rounded-full text-sm font-medium transition-all border-2 border-primary text-primary hover:bg-primary hover:text-white h-12 px-8 text-base">
+              了解更多 <CheckCircle className="ml-2 h-5 w-5" />
+            </button>
+          </div>
+        </motion.div>
       </div>
     </div>
   );
