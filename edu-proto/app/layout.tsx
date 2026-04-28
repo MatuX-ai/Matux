@@ -19,6 +19,9 @@ import PageTransition from "@/components/page-transition";
 export const metadata: Metadata = {
   title: "MatuX - AI驱动的STEM教育平台",
   description: "融合前沿AI技术、元宇宙与硬件认证的下一代STEM教育生态",
+  icons: {
+    icon: '/favicon.svg',
+  },
 };
 
 export default function RootLayout({
