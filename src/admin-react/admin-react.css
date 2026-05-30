@@ -1,0 +1,219 @@
+/**
+ * React Admin管理后台基础样式
+ * @description 继承项目Design Token系统，确保视觉一致性
+ * @author iMatuProject Team
+ * @version 1.0.0
+ */
+
+/* 基础重置和全局样式 */
+* {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+body {
+  font-family: "Roboto", "Helvetica", "Arial", sans-serif;
+  font-size: 16px;
+  line-height: 1.5;
+  color: #333;
+  background-color: #f5f5f5;
+}
+
+/* 管理后台布局样式 */
+.admin-layout {
+  min-height: 100vh;
+  background-color: #f5f5f5;
+}
+
+/* 自定义组件容器样式 */
+.custom-action-container {
+  padding: 20px;
+  background: white;
+  border-radius: 8px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+  margin: 20px;
+}
+
+/* 批量操作表单样式 */
+.bulk-operation-form {
+  max-width: 800px;
+  margin: 0 auto;
+}
+
+.form-section {
+  margin-bottom: 30px;
+  padding: 20px;
+  border: 1px solid #e0e0e0;
+  border-radius: 8px;
+  background-color: #fafafa;
+}
+
+.form-section h3 {
+  margin-bottom: 15px;
+  color: #2196F3;
+  font-size: 1.2rem;
+  font-weight: 500;
+}
+
+/* 状态指示器样式 */
+.status-indicator {
+  display: inline-block;
+  padding: 4px 12px;
+  border-radius: 16px;
+  font-size: 0.875rem;
+  font-weight: 500;
+  text-transform: uppercase;
+}
+
+.status-active {
+  background-color: #e8f5e8;
+  color: #2e7d32;
+}
+
+.status-inactive {
+  background-color: #ffebee;
+  color: #c62828;
+}
+
+.status-expired {
+  background-color: #fff8e1;
+  color: #ff8f00;
+}
+
+.status-pending {
+  background-color: #e3f2fd;
+  color: #1976d2;
+}
+
+/* 操作按钮组样式 */
+.action-buttons {
+  display: flex;
+  gap: 12px;
+  margin-top: 20px;
+  flex-wrap: wrap;
+}
+
+.action-button {
+  min-width: 120px;
+}
+
+/* 响应式设计 */
+@media (max-width: 768px) {
+  .custom-action-container {
+    margin: 10px;
+    padding: 15px;
+  }
+  
+  .action-buttons {
+    flex-direction: column;
+  }
+  
+  .action-button {
+    width: 100%;
+  }
+}
+
+/* 加载状态样式 */
+.loading-container {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  min-height: 200px;
+  flex-direction: column;
+}
+
+.loading-text {
+  margin-top: 16px;
+  color: #666;
+  font-size: 1rem;
+}
+
+/* 错误状态样式 */
+.error-container {
+  padding: 20px;
+  background-color: #ffebee;
+  border: 1px solid #ffcdd2;
+  border-radius: 8px;
+  color: #c62828;
+  margin: 20px;
+}
+
+.error-title {
+  font-weight: 500;
+  margin-bottom: 8px;
+}
+
+.error-message {
+  font-size: 0.875rem;
+}
+
+/* 成功状态样式 */
+.success-container {
+  padding: 20px;
+  background-color: #e8f5e8;
+  border: 1px solid #c8e6c9;
+  border-radius: 8px;
+  color: #2e7d32;
+  margin: 20px;
+}
+
+/* 表格增强样式 */
+.ra-datagrid {
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+  border-radius: 8px;
+  overflow: hidden;
+}
+
+.ra-datagrid thead {
+  background-color: #2196F3;
+  color: white;
+}
+
+.ra-datagrid th {
+  font-weight: 500;
+  padding: 16px;
+}
+
+.ra-datagrid td {
+  padding: 16px;
+}
+
+/* 卡片样式增强 */
+.ra-card {
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+  border-radius: 8px;
+}
+
+/* 按钮样式增强 */
+.MuiButton-containedPrimary {
+  background-color: #2196F3;
+  &:hover {
+    background-color: #1976D2;
+  }
+}
+
+.MuiButton-containedSecondary {
+  background-color: #4CAF50;
+  &:hover {
+    background-color: #388E3C;
+  }
+}
+
+/* 输入框样式 */
+.MuiOutlinedInput-root {
+  border-radius: 4px;
+}
+
+.MuiOutlinedInput-notchedOutline {
+  border-color: #e0e0e0;
+}
+
+.MuiOutlinedInput-root:hover .MuiOutlinedInput-notchedOutline {
+  border-color: #2196F3;
+}
+
+.MuiOutlinedInput-root.Mui-focused .MuiOutlinedInput-notchedOutline {
+  border-color: #2196F3;
+  border-width: 2px;
+}

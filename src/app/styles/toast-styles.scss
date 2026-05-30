@@ -1,0 +1,84 @@
+/**
+ * Enhanced Toast Styles
+ *
+ * 增强的 Toast 通知样式
+ */
+
+.success-toast {
+  background-color: #4caf50 !important;
+  color: white !important;
+
+  .mat-mdc-snack-bar-action {
+    color: rgba(255, 255, 255, 0.87) !important;
+
+    &:hover {
+      background-color: rgba(255, 255, 255, 0.1) !important;
+    }
+  }
+}
+
+.error-toast {
+  background-color: #f44336 !important;
+  color: white !important;
+
+  .mat-mdc-snack-bar-action {
+    color: rgba(255, 255, 255, 0.87) !important;
+
+    &:hover {
+      background-color: rgba(255, 255, 255, 0.1) !important;
+    }
+  }
+}
+
+.warning-toast {
+  background-color: #ff9800 !important;
+  color: white !important;
+
+  .mat-mdc-snack-bar-action {
+    color: rgba(255, 255, 255, 0.87) !important;
+
+    &:hover {
+      background-color: rgba(255, 255, 255, 0.1) !important;
+    }
+  }
+}
+
+.info-toast {
+  background-color: #2196f3 !important;
+  color: white !important;
+
+  .mat-mdc-snack-bar-action {
+    color: rgba(255, 255, 255, 0.87) !important;
+
+    &:hover {
+      background-color: rgba(255, 255, 255, 0.1) !important;
+    }
+  }
+}
+
+.notification-toast {
+  background-color: #673ab7 !important;
+  color: white !important;
+  font-weight: 500;
+
+  .mat-mdc-snack-bar-action {
+    color: rgba(255, 255, 255, 0.87) !important;
+
+    &:hover {
+      background-color: rgba(255, 255, 255, 0.1) !important;
+    }
+  }
+}
+
+// 响应式设计
+@media (max-width: 599px) {
+  .success-toast,
+  .error-toast,
+  .warning-toast,
+  .info-toast,
+  .notification-toast {
+    left: 16px !important;
+    right: 16px !important;
+    width: auto !important;
+  }
+}

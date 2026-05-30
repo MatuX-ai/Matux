@@ -1,0 +1,102 @@
+# iMato Cloud Hosted Version - Production Dockerfile
+# 多阶段构建 | Alpine 基础镜像 | 健康检查 | 优化体积
+
+# ============================================
+# 阶段 1: 前端构建阶段
+# ============================================
+FROM node:20-alpine AS frontend-builder
+
+WORKDIR /app/frontend
+
+# 复制 package.json 和 package-lock.json
+COPY package*.json ./
+
+# 安装依赖（使用缓存加速）
+RUN npm ci --only=production && \
+    npm cache clean --force
+
+# 复制源代码
+COPY src/ ./src/
+COPY angular.json tsconfig.json ./
+
+# 构建生产版本
+RUN npm run build:prod
+
+# ============================================
+# 阶段 2: Python 依赖安装阶段
+# ============================================
+FROM python:3.11-slim AS backend-installer
+
+WORKDIR /app/backend
+
+# 安装系统依赖（用于编译某些 Python 包）
+RUN apt-get update && apt-get install -y --no-install-recommends \
+    gcc \
+    g++ \
+    libpq-dev \
+    curl \
+    && rm -rf /var/lib/apt/lists/*
+
+# 复制依赖文件
+COPY backend/requirements.txt .
+
+# 升级 pip 并安装依赖到指定目录
+RUN pip install --no-cache-dir --upgrade pip && \
+    pip install --no-cache-dir --user -r requirements.txt
+
+# ============================================
+# 阶段 3: 生产运行阶段
+# ============================================
+FROM python:3.11-alpine AS production
+
+# 设置环境变量
+ENV PYTHONDONTWRITEBYTECODE=1 \
+    PYTHONUNBUFFERED=1 \
+    PYTHONPATH=/app/backend \
+    PATH="/home/appuser/.local/bin:$PATH" \
+    APP_ENV=production \
+    LOG_LEVEL=info
+
+# 安装运行时依赖
+RUN apk add --no-cache \
+    curl \
+    nginx \
+    supervisor \
+    bash
+
+# 创建非 root 用户
+RUN addgroup -g 1001 appuser && \
+    adduser -D -u 1001 -G appuser appuser
+
+# 设置工作目录
+WORKDIR /app
+
+# 从 backend-installer 阶段复制 Python 依赖
+COPY --from=backend-installer /root/.local /home/appuser/.local
+
+# 复制后端代码
+COPY backend/ ./backend/
+
+# 从前段构建器复制静态文件
+COPY --from=frontend-builder /app/frontend/dist/browser /var/www/html
+
+# 设置权限
+RUN chown -R appuser:appuser /app && \
+    chown -R appuser:appuser /var/www/html && \
+    chmod -R 755 /app
+
+# 复制 Nginx 配置
+COPY docker/nginx.conf /etc/nginx/nginx.conf
+
+# 复制 Supervisor 配置
+COPY docker/supervisord.conf /etc/supervisor/conf.d/supervisord.conf
+
+# 暴露端口
+EXPOSE 80 443 8000
+
+# 健康检查端点
+HEALTHCHECK --interval=30s --timeout=30s --start-period=40s --retries=3 \
+    CMD curl -f http://localhost:8000/health || exit 1
+
+# 启动命令（使用 Supervisor 管理多个进程）
+CMD ["/usr/bin/supervisord", "-c", "/etc/supervisor/conf.d/supervisord.conf"]

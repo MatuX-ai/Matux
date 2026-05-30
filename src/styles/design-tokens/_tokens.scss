@@ -1,0 +1,161 @@
+// Design Tokens - 统一变量系统
+// 基于 JSON tokens 自动生成的 SCSS 变量，供 Angular Material 和其他组件使用
+
+// 颜色变量 (基于 colors.json) - Mac 风格
+$color-primary: #667eea;       // Mac 渐变紫起始色
+$color-primary-light: #764ba2; // Mac 渐变紫结束色
+$color-primary-dark: #5a67d8;  // 深紫色
+$color-secondary: #9c27b0;
+$color-secondary-light: #ba68c8;
+$color-secondary-dark: #7b1fa2;
+$color-success: #10b981;       // 翡翠绿 - Emerald
+$color-warning: #f59e0b;        // 琥珀色 - Amber
+$color-error: #ef4444;          // 红色 - Red
+$color-info: #667eea;           // Mac 渐变紫
+$color-black: #000;
+$color-white: #fff;
+$color-gray-50: #f8fafc;       // 极浅灰蓝
+$color-gray-100: #f1f5f9;       // 浅灰蓝
+$color-gray-200: #e2e8f0;       // 灰蓝
+$color-gray-300: #cbd5e1;       // 中灰蓝
+$color-gray-400: #94a3b8;       // 深灰蓝
+$color-gray-500: #64748b;       // 石板灰
+$color-gray-600: #475569;       // 深石板灰
+$color-gray-700: #334155;       // 深蓝灰
+$color-gray-800: #1e293b;       // 藏青灰
+$color-gray-900: #0f172a;       // 深夜空蓝
+$color-text-primary: #0f172a;  // 深夜空蓝 - 主文本
+$color-text-secondary: #475569; // 深石板灰 - 次要文本
+$color-text-disabled: #94a3b8;  // 深灰蓝 - 禁用文本
+$color-text-white: #fff;
+$color-background: #f8fafc;    // 极浅灰蓝背景
+$color-surface: #ffffff;        // 白色表面
+$color-divider: #e2e8f0;        // 灰蓝分隔线
+$color-hover: #f1f5f9;          // 浅灰蓝悬停
+$color-selected: #dbeafe;       // 浅蓝选中
+$color-brand: #667eea;          // Mac 渐变紫品牌色
+$color-link: #667eea;           // Mac 渐变紫链接
+$color-link-hover: #764ba2;     // Mac 渐变紫悬停
+$color-border: #e2e8f0;         // 灰蓝边框
+$color-focus: #a78bfa;          // 紫色焦点
+$color-placeholder: #94a3b8;    // 深灰蓝占位符
+
+// 字体变量 (鍩轰簬 fonts.json)
+$font-family-sans: 'Helvetica Neue', helvetica, arial, sans-serif;
+$font-family-serif: georgia, 'Times New Roman', times, serif;
+$font-family-mono: 'Courier New', courier, monospace;
+$font-family-system: -apple-system, blinkmacsystemfont, 'Segoe UI', roboto, oxygen, ubuntu, cantarell, sans-serif;
+$font-size-h1: 2.5rem; // 40px
+$font-size-h2: 2rem;   // 32px
+$font-size-h3: 1.75rem; // 28px
+$font-size-h4: 1.5rem;  // 24px
+$font-size-h5: 1.25rem; // 20px
+$font-size-h6: 1.125rem; // 18px
+$font-size-body-large: 1rem;   // 16px
+$font-size-body-medium: 0.875rem; // 14px
+$font-size-body-small: 0.75rem;   // 12px
+$font-size-caption: 0.625rem;    // 10px
+
+$line-height-tight: 1.2;
+$line-height-snug: 1.375;
+$line-height-normal: 1.5;
+$line-height-relaxed: 1.625;
+$line-height-loose: 2;
+$font-weight-thin: 100;
+$font-weight-extra-light: 200;
+$font-weight-light: 300;
+$font-weight-regular: 400;
+$font-weight-medium: 500;
+$font-weight-semi-bold: 600;
+$font-weight-bold: 700;
+$font-weight-extra-bold: 800;
+$font-weight-black: 900;
+
+// 间距变量 (鍩轰簬 spacing.json)
+$spacing-xxs: 0.125rem; // 2px
+$spacing-xs: 0.25rem;   // 4px
+$spacing-sm: 0.5rem;    // 8px
+$spacing-md: 0.75rem;   // 12px
+$spacing-lg: 1rem;      // 16px
+$spacing-xl: 1.5rem;    // 24px
+$spacing-xxl: 2rem;     // 32px
+$spacing-xxxl: 2.5rem;  // 40px
+$spacing-xxxxl: 3rem;   // 48px
+$spacing-xxxxxl: 3.5rem; // 56px
+$spacing-xxxxxxl: 4rem;  // 64px
+$spacing-huge: 5rem;    // 80px
+$spacing-giant: 6rem;   // 96px
+$spacing-massive: 8rem; // 128px
+
+// 圆角变量 (鍩轰簬 border-radius.json)
+$border-radius-none: 0;
+$border-radius-xs: 0.125rem; // 2px
+$border-radius-sm: 0.25rem;  // 4px
+$border-radius-md: 0.5rem;   // 8px
+$border-radius-lg: 0.75rem;  // 12px
+$border-radius-xl: 1rem;     // 16px
+$border-radius-full: 9999px;
+$border-radius-button: 0.25rem;
+$border-radius-input: 0.25rem;
+$border-radius-card: 0.5rem;
+$border-radius-modal: 0.75rem;
+$border-radius-badge: 9999px;
+$border-radius-avatar: 9999px;
+$border-radius-dropdown: 0.5rem;
+$border-radius-tooltip: 0.25rem;
+
+// 阴影变量 (鍩轰簬 shadows.json)
+$shadow-none: none;
+$shadow-xs: 0 1px 2px 0 rgb(0 0 0 / 5%);
+$shadow-sm: 0 1px 3px 0 rgb(0 0 0 / 10%), 0 1px 2px 0 rgb(0 0 0 / 6%);
+$shadow-md: 0 4px 6px -1px rgb(0 0 0 / 10%), 0 2px 4px -1px rgb(0 0 0 / 6%);
+$shadow-lg: 0 10px 15px -3px rgb(0 0 0 / 10%), 0 4px 6px -2px rgb(0 0 0 / 5%);
+$shadow-xl: 0 20px 25px -5px rgb(0 0 0 / 10%), 0 10px 10px -5px rgb(0 0 0 / 4%);
+$shadow-button: 0 1px 3px 0 rgb(0 0 0 / 10%), 0 1px 2px 0 rgb(0 0 0 / 6%);
+$shadow-button-hover: 0 4px 6px -1px rgb(0 0 0 / 10%), 0 2px 4px -1px rgb(0 0 0 / 6%);
+$shadow-card: 0 1px 3px 0 rgb(0 0 0 / 10%), 0 1px 2px 0 rgb(0 0 0 / 6%);
+$shadow-card-hover: 0 4px 6px -1px rgb(0 0 0 / 10%), 0 2px 4px -1px rgb(0 0 0 / 6%);
+$shadow-modal: 0 20px 25px -5px rgb(0 0 0 / 10%), 0 10px 10px -5px rgb(0 0 0 / 4%);
+$shadow-dropdown: 0 10px 15px -3px rgb(0 0 0 / 10%), 0 4px 6px -2px rgb(0 0 0 / 5%);
+$shadow-tooltip: 0 1px 3px 0 rgb(0 0 0 / 10%), 0 1px 2px 0 rgb(0 0 0 / 6%);
+$shadow-navbar: 0 1px 3px 0 rgb(0 0 0 / 10%), 0 1px 2px 0 rgb(0 0 0 / 6%);
+$shadow-focus: 0 0 0 3px rgb(33 150 243 / 30%);
+$shadow-error: 0 0 0 3px rgb(244 67 54 / 30%);
+$shadow-success: 0 0 0 3px rgb(76 175 80 / 30%);
+$shadow-warning: 0 0 0 3px rgb(255 152 0 / 30%);
+
+// 主题閰嶇疆变量
+$theme-primary: $color-primary;
+$theme-secondary: $color-secondary;
+$theme-success: $color-success;
+$theme-warning: $color-warning;
+$theme-error: $color-error;
+$theme-info: $color-info;
+
+// 响应式忔柇鐐?
+$breakpoint-mobile: 480px;
+$breakpoint-tablet: 768px;
+$breakpoint-desktop: 1024px;
+$breakpoint-wide: 1200px;
+
+// 鍔ㄧ敾鍜岃繃娓?
+$transition-fast: 0.1s ease;
+$transition-normal: 0.2s ease;
+$transition-slow: 0.3s ease;
+
+// Z-index 灞傜骇
+$z-index-dropdown: 1000;
+$z-index-sticky: 1020;
+$z-index-fixed: 1030;
+$z-index-modal-backdrop: 1040;
+$z-index-modal: 1050;
+$z-index-popover: 1060;
+$z-index-tooltip: 1070;
+
+// 渐变变量
+$gradient-primary: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+$gradient-secondary: linear-gradient(135deg, #7c3aed 0%, #a855f7 100%);
+$gradient-success: linear-gradient(135deg, #059669 0%, #10b981 100%);
+$gradient-error: linear-gradient(135deg, #dc2626 0%, #ef4444 100%);
+$gradient-warning: linear-gradient(135deg, #d97706 0%, #f59e0b 100%);
+$gradient-info: linear-gradient(135deg, #667eea 0%, #764ba2 100%);

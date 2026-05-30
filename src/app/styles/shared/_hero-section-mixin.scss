@@ -1,0 +1,48 @@
+// 营销子页面首焦图统一样式 Mixin
+// 适用于所有营销模块的子页面（教育、路线图、技术栈、定价、关于我们等）
+// 规范：浅灰白背景 + 浅色网格 + 黑色字体 + 统一高度和间距
+
+@mixin marketing-hero-section {
+  min-height: 300px; // 统一首焦图高度
+  background-color: #f8fafc; // 浅灰白背景
+  background-image:
+    linear-gradient(rgba(200, 220, 255, 0.08) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(200, 220, 255, 0.08) 1px, transparent 1px);
+  background-size: 40px 40px; // 网格大小
+  color: #1d2129; // 黑色字体
+  padding: 60px 0; // 调整上下内边距
+  text-align: center;
+
+  h1 {
+    font-size: 3rem;
+    margin-bottom: 16px;
+    font-weight: 700;
+    color: #1d2129;
+  }
+
+  p {
+    font-size: 1.25rem;
+    color: #4e5969;
+    max-width: 800px;
+    margin: 0 auto;
+  }
+
+  // 移动端响应式
+  @media (max-width: 768px) {
+    min-height: 200px;
+    padding: 40px 0;
+
+    h1 {
+      font-size: 2rem;
+    }
+
+    p {
+      font-size: 1rem;
+    }
+  }
+}
+
+// 快捷类：用于 HTML 模板中
+.hero-section-unified {
+  @include marketing-hero-section;
+}

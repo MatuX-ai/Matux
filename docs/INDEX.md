@@ -1,30 +1,64 @@
-# iMatu 项目文档中心
+# MatuX 项目文档中心
 
 欢迎来到 iMatu 教育平台的完整文档中心！本文档为您提供了项目的全面技术资料和使用指南。
+
+## 📢 重要通知 - 文档结构优化（2026-03-04）
+
+为了提供更好的开发体验，我们已对文档结构进行了优化重组：
+
+### 🎯 双轨制文档体系
+
+**对外文档** (`docs/`) - 本目录  
+面向用户、管理者、新手，提供：
+- 项目概览和快速入门
+- 用户使用指南
+- 演示资源和示例
+- API 接口文档
+
+**技术文档** (`documentation/`) - 新增  
+面向开发者、维护者，提供：
+- 模块实现细节（与代码结构对齐）
+- 详细 API 规范
+- 开发指南和最佳实践
+- 架构设计文档
+
+👉 **开发者请查看**: [documentation/README.md](../documentation/README.md)  
+👉 **文档迁移详情**: [documentation/MIGRATION_GUIDE.md](../documentation/MIGRATION_GUIDE.md)
+
+---
 
 ## 📚 文档分类导航
 
 ### 🏗️ 项目概览与架构
-- [**项目概览**](PROJECT_OVERVIEW.md) - 项目整体介绍、价值主张和功能模块
-- [**系统架构**](SYSTEM_ARCHITECTURE.md) - 详细的技术架构设计和组件关系
-- [**网站地图**](SITE_MAP.md) - 完整的前端页面和API端点映射
+- [**项目概览**](../documentation/shared/architecture/project-overview.md) - 项目整体介绍、价值主张和功能模块（已迁移）
+- [**系统架构**](../documentation/shared/architecture/system-architecture.md) - 详细的技术架构设计和组件关系（已迁移）
+- [**网站地图**](SITE_MAP.md) - 完整的前端页面和 API 端点映射
 
 ### 🎯 开发指南
-- [**快速开始**](QUICK_START.md) - 项目搭建和环境配置指南
-- [**前端路由详解**](FRONTEND_ROUTING.md) - Angular路由结构和组件映射
-- [**后端API映射**](BACKEND_API_MAPPING.md) - FastAPI端点和服务模块对照
+- [**快速开始**](../documentation/shared/guides/quick-start.md) - 项目搭建和环境配置指南（已迁移）
+- [**前端路由详解**](FRONTEND_ROUTING.md) - Angular 路由结构和组件映射
+- [**后端 API 映射**](../documentation/backend/routes/api-mapping.md) - FastAPI 端点和服务模块对照（已迁移）
 
 ### 🔧 技术专项文档
-- [**AI推荐系统**](AI_RECOMMENDATION_SYSTEM.md) - 智能推荐算法实现
+- [**AI 推荐系统**](../documentation/backend/services/recommendation-service.md) - 智能推荐算法实现（已迁移）
 - [**电商支付系统**](E_COMMERCE_PAYMENT_SYSTEM.md) - 支付流程和集成方案
-- [**硬件认证系统**](HARDWARE_CERTIFICATION_SYSTEM.md) - IoT设备接入管理
-- [**多租户部署**](MULTITENANT_DEPLOYMENT_GUIDE.md) - SaaS架构部署指南
+- [**硬件认证系统**](../documentation/backend/hardware/certification-system.md) - IoT 设备接入管理（已迁移）
+- [**多租户部署**](MULTITENANT_DEPLOYMENT_GUIDE.md) - SaaS 架构部署指南
 - [**许可证管理**](API_LICENSE_MANAGEMENT.md) - 软件授权方案设计
+- [**区块链网关**](../documentation/backend/blockchain/gateway-technical-documentation.md) - Fabric 网络接入方案（已迁移）
+- [**多模态激励系统**](../documentation/shared/architecture/multimodal-incentive.md) - 语音/AR/手势激励平台（已迁移）
+- [**全局技术架构**](../documentation/shared/architecture/global-technical-architecture.md) - 系统整体架构演进（已迁移）
+- [**Vircadia 元宇宙集成**](../documentation/shared/architecture/vircadia/integration-plan.md) - 虚拟世界平台集成方案（已迁移）
+- [**OpenHydra + XEdu AI 教育平台**](../FINAL_COMPLETION_REPORT.md) - OpenHydra 与 XEdu 深度融合（新增）
+  - [微课程转化系统](../reports/O2_3_O2_4_TASK_COMPLETE_REPORT.md) - 游戏化课程设计
+  - [AI 学习助手](../reports/O2_3_O2_4_TASK_COMPLETE_REPORT.md) - 对话式 AI 辅导
+  - [联动任务开发](../O3.1_COMPLETE_SUMMARY.md) - 软硬结合综合实践
+  - [智能温室监控系统](../docs/O3.1_LINKED_TASK_DESIGN.md) - 示范任务案例
 
 ### 🔐 安全与认证
-- [**认证系统实现**](AUTH_SYSTEM_IMPLEMENTATION_REPORT.md) - JWT和OAuth2集成
-- [**权限控制**](AUTH_SYSTEM_DOCUMENTATION.md) - RBAC权限管理体系
-- [**AI认证集成**](AI_AUTH_INTEGRATION.md) - AI服务的安全接入
+- [**认证系统实现**](../documentation/frontend/components/auth/system-implementation-report.md) - JWT 和 OAuth2 集成（已迁移）
+- [**权限控制**](../documentation/frontend/components/auth/system-documentation.md) - RBAC 权限管理体系（已迁移）
+- [**AI 认证集成**](AI_AUTH_INTEGRATION.md) - AI 服务的安全接入
 
 ### 📊 API文档
 - [**API总览**](API_DOCUMENTATION.md) - RESTful API设计规范
@@ -32,14 +66,17 @@
 - [**组织仪表板**](ORGANIZATION_DASHBOARD_GUIDE.md) - 管理界面API
 
 ### 🎨 设计系统
-- [**组件样式指南**](component-style-guide.md) - Design System使用手册
-- [**样式CI/CD**](STYLE_CI_CD_INTEGRATION.md) - 前端样式自动化流程
+- [**组件样式指南**](../documentation/frontend/design-system/component-guide.md) - Design System 使用手册（已迁移）
+- [**样式 CI/CD**](../documentation/frontend/design-system/style-ci-cd.md) - 前端样式自动化流程（已迁移）
 - [**暗色模式实现**](DARK_MODE_IMPLEMENTATION_REPORT.md) - 主题切换方案
 
 ### 🚀 部署与运维
-- [**部署指南**](DEPLOYMENT_GUIDE.md) - 生产环境部署流程
-- [**许可证系统部署**](DEPLOYMENT_LICENSE_SYSTEM.md) - 授权系统的上线方案
-- [**微信QQ集成**](WECHAT_QQ_INTEGRATION_GUIDE.md) - 第三方登录集成
+- [**部署指南**](../documentation/deployment/guide.md) - 生产环境部署流程（已迁移）
+- [**Jenkins CI/CD 配置**](../documentation/deployment/jenkins-ci-cd.md) - Jenkins 流水线完整配置指南（已迁移）
+- [**许可证系统部署**](../documentation/deployment/license-system.md) - 授权系统的上线方案（已迁移）
+- [**微信 QQ 集成**](WECHAT_QQ_INTEGRATION_GUIDE.md) - 第三方登录集成
+- [**区块链部署**](../documentation/deployment/blockchain.md) - Fabric 网络生产部署（已迁移）
+- [**联邦学习部署**](FEDERATED_LEARNING_DEPLOYMENT_GUIDE.md) - 分布式机器学习方案
 
 ### 🧪 测试与质量
 - [**认证模块测试**](AUTH_MODULE_TEST_SUMMARY.md) - 安全模块测试报告
@@ -52,17 +89,32 @@
 - **新开发者** → 从 [快速开始](QUICK_START.md) 和 [项目概览](PROJECT_OVERVIEW.md) 开始
 - **前端工程师** → 查看 [前端路由](FRONTEND_ROUTING.md) 和 [设计系统](component-style-guide.md)
 - **后端工程师** → 阅读 [后端API映射](BACKEND_API_MAPPING.md) 和 [系统架构](SYSTEM_ARCHITECTURE.md)
+- **区块链开发者** → 参考 [Fabric 开发者文档](../blockchain/FABRIC_DEVELOPER_DOCUMENTATION.md) 和 [API参考手册](../blockchain/API_REFERENCE_MANUAL.md)
+- **AI 工程师** → 查看 [多模态激励系统](MULTIMODAL_INCENTIVE_SYSTEM_TECHNICAL_DOC.md)、[OpenHydra+XEdu 集成](../FINAL_COMPLETION_REPORT.md) 和相关 AI 文档
+- **教育科技开发者** → 查看 [OpenHydra 集成计划](../OPENHYDRA_XEDU_INTEGRATION_PLAN.md)、[微课程转化系统](../reports/O2_3_O2_4_TASK_COMPLETE_REPORT.md)、[AI 学习助手](../reports/O2_3_O2_4_TASK_COMPLETE_REPORT.md)（新增）
+- **元宇宙/VR 开发者** → 查看 [Vircadia 集成方案](VIRCADIA_INTEGRATION_PLAN.md)
 - **产品经理** → 参考 [项目概览](PROJECT_OVERVIEW.md) 和 [网站地图](SITE_MAP.md)
+- **架构师** → 阅读 [全局技术架构](GLOBAL_TECHNICAL_ARCHITECTURE.md) 和 [系统架构](SYSTEM_ARCHITECTURE.md)
 - **运维工程师** → 查看 [部署指南](DEPLOYMENT_GUIDE.md) 和相关运维文档
 - **测试工程师** → 关注各模块的测试报告和指南
 
 ### 我想了解...
 - **技术架构** → [系统架构文档](SYSTEM_ARCHITECTURE.md)
-- **API接口** → [后端API映射](BACKEND_API_MAPPING.md)
+- **API 接口** → [后端API映射](BACKEND_API_MAPPING.md)
 - **页面结构** → [网站地图](SITE_MAP.md)
 - **开发环境** → [快速开始](QUICK_START.md)
 - **安全机制** → [认证系统文档](AUTH_SYSTEM_DOCUMENTATION.md)
 - **部署流程** → [部署指南](DEPLOYMENT_GUIDE.md)
+- **CI/CD 配置** → [Jenkins 配置指南](JENKINS_CI_CD_CONFIGURATION.md)
+- **区块链技术** → [Fabric 开发者文档](../blockchain/FABRIC_DEVELOPER_DOCUMENTATION.md)
+- **链码开发** → [API参考手册](../blockchain/API_REFERENCE_MANUAL.md)
+- **激励系统** → [多模态激励文档](MULTIMODAL_INCENTIVE_SYSTEM_TECHNICAL_DOC.md)
+- **整体架构** → [全局技术架构](GLOBAL_TECHNICAL_ARCHITECTURE.md)
+- **元宇宙集成** → [Vircadia 集成方案](VIRCADIA_INTEGRATION_PLAN.md)
+- **AI 教育平台** → [OpenHydra+XEdu 完成报告](../FINAL_COMPLETION_REPORT.md)（新增）
+- **微课程设计** → [游戏化转化系统](../reports/O2_3_O2_4_TASK_COMPLETE_REPORT.md)（新增）
+- **AI 学习助手** → [对话式 AI 辅导](../reports/O2_3_O2_4_TASK_COMPLETE_REPORT.md)（新增）
+- **联动任务** → [软硬结合实践](../O3.1_COMPLETE_SUMMARY.md)（新增）
 
 ## 📁 演示资源
 
@@ -119,13 +171,20 @@ npm run e2e                       # 端到端测试
 - ✅ 前后端路由/API映射
 - ✅ 专项技术文档
 - ✅ 部署运维指南
+- ✅ Jenkins CI/CD配置
 - ✅ 测试质量报告
+- ✅ 区块链技术文档
+- ✅ API参考手册
+- ✅ 架构图谱文档
+- ✅ 多模态激励系统文档
+- ✅ 全局技术架构文档
 
 ## 🔄 文档更新记录
 
 | 版本 | 日期 | 更新内容 |
 |------|------|----------|
 | v1.0 | 2026-02-26 | 初始文档集合创建，包含完整的技术文档体系 |
+| v1.1 | 2026-03-01 | 新增多模态激励系统和全局技术架构文档 |
 
 ## 📞 技术支持
 

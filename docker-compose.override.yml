@@ -1,0 +1,263 @@
+# iMato测试环境配置文件
+# 用于代码兼容性升级和熔断机制测试
+
+version: '3.8'
+
+services:
+  # 主应用服务（用于测试）
+  ai-backend-test:
+    build: .
+    ports:
+      - "8001:8000"  # 使用不同端口避免冲突
+    environment:
+      - APP_NAME=iMato AI Service Test
+      - DEBUG=True
+      - HOST=0.0.0.0
+      - PORT=8000
+      - DATABASE_URL=postgresql://postgres:password@postgres-test:5432/ai_service_test
+      - SECRET_KEY=test-secret-key-for-testing-purposes-only-do-not-use-in-production
+      - CIRCUIT_BREAKER_ENABLED=true
+      - CIRCUIT_BREAKER_FAILURE_THRESHOLD=5
+      - CIRCUIT_BREAKER_TIMEOUT=30
+      - MONITORING_ENABLED=true
+      - PROMETHEUS_METRICS_ENDPOINT=/metrics
+    depends_on:
+      postgres-test:
+        condition: service_healthy
+      redis-test:
+        condition: service_healthy
+    restart: unless-stopped
+    networks:
+      - test-network
+    volumes:
+      - ./logs:/app/logs
+      - ./test-results:/app/test-results
+    command: >
+      sh -c "
+        # 等待依赖服务就绪
+        sleep 10 &&
+        # 启动应用
+        python main.py
+      "
+
+  # 测试数据库
+  postgres-test:
+    image: postgres:15-alpine
+    environment:
+      - POSTGRES_DB=ai_service_test
+      - POSTGRES_USER=postgres
+      - POSTGRES_PASSWORD=password
+    ports:
+      - "5433:5432"  # 避免与主数据库端口冲突
+    volumes:
+      - postgres_test_data:/var/lib/postgresql/data
+      - ./scripts/init-test-db.sql:/docker-entrypoint-initdb.d/init.sql
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    restart: unless-stopped
+    networks:
+      - test-network
+
+  # 测试Redis
+  redis-test:
+    image: redis:7-alpine
+    ports:
+      - "6380:6379"  # 避免与主Redis端口冲突
+    volumes:
+      - redis_test_data:/data
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 10s
+      timeout: 3s
+      retries: 3
+    restart: unless-stopped
+    networks:
+      - test-network
+
+  # Prometheus监控
+  prometheus:
+    image: prom/prometheus:v2.47.0
+    ports:
+      - "9090:9090"
+    volumes:
+      - ./config/monitoring/prometheus-test.yml:/etc/prometheus/prometheus.yml
+      - prometheus_data:/prometheus
+    command:
+      - '--config.file=/etc/prometheus/prometheus.yml'
+      - '--storage.tsdb.path=/prometheus'
+      - '--web.console.libraries=/etc/prometheus/console_libraries'
+      - '--web.console.templates=/etc/prometheus/consoles'
+      - '--storage.tsdb.retention.time=200h'
+      - '--web.enable-lifecycle'
+    restart: unless-stopped
+    networks:
+      - test-network
+
+  # Grafana可视化
+  grafana:
+    image: grafana/grafana:10.2.0
+    ports:
+      - "3001:3000"
+    environment:
+      - GF_SECURITY_ADMIN_PASSWORD=admin123
+      - GF_USERS_ALLOW_SIGN_UP=false
+      - GF_SERVER_ROOT_URL=%(protocol)s://%(domain)s:%(http_port)s/grafana/
+    volumes:
+      - grafana_data:/var/lib/grafana
+      - ./config/monitoring/grafana-datasources.yml:/etc/grafana/provisioning/datasources/datasources.yml
+      - ./config/monitoring/grafana-dashboards.yml:/etc/grafana/provisioning/dashboards/dashboards.yml
+      - ./config/monitoring/dashboards:/var/lib/grafana/dashboards
+    restart: unless-stopped
+    networks:
+      - test-network
+    depends_on:
+      - prometheus
+
+  # 压力测试工具 - hey
+  load-tester:
+    image: rancher/hey:latest
+    networks:
+      - test-network
+    depends_on:
+      - ai-backend-test
+    command: >
+      sh -c "
+        echo '等待应用启动...' &&
+        sleep 30 &&
+        echo '开始高并发测试...' &&
+        hey -z 60s -c 50 http://ai-backend-test:8000/health &&
+        hey -z 30s -c 100 http://ai-backend-test:8000/api/v1/test-endpoint
+      "
+
+  # 故障注入测试服务
+  chaos-monkey:
+    image: python:3.11-alpine
+    volumes:
+      - .:/app
+    working_dir: /app
+    networks:
+      - test-network
+    depends_on:
+      - ai-backend-test
+    command: >
+      sh -c "
+        pip install requests &&
+        python scripts/chaos_injector.py
+      "
+
+  # API测试工具
+  api-tester:
+    image: python:3.11-alpine
+    volumes:
+      - .:/app
+    working_dir: /app
+    networks:
+      - test-network
+    depends_on:
+      - ai-backend-test
+      - prometheus
+    command: >
+      sh -c "
+        pip install requests pytest pytest-asyncio &&
+        python -m pytest backend/tests/test_api_compatibility.py -v &&
+        python scripts/api_version_test.py
+      "
+
+  # 熔断测试专用服务
+  circuit-breaker-tester:
+    image: python:3.11-alpine
+    volumes:
+      - .:/app
+    working_dir: /app/backend
+    networks:
+      - test-network
+    depends_on:
+      - ai-backend-test
+    environment:
+      - TEST_TARGET_URL=http://ai-backend-test:8000
+      - FAILURE_RATE=0.3  # 30%失败率用于测试
+    command: >
+      sh -c "
+        pip install requests aiohttp asyncio &&
+        python ../scripts/circuit_breaker_test.py
+      "
+
+  # 网络延迟模拟器
+  network-delay:
+    image: gaiadocker/iproute2:latest
+    privileged: true
+    network_mode: "host"
+    command: >
+      sh -c "
+        tc qdisc add dev eth0 root netem delay 100ms 10ms distribution normal &&
+        echo '网络延迟已设置: 100ms ± 10ms' &&
+        sleep infinity
+      "
+
+  # 日志聚合 - ELK栈简化版
+  elasticsearch:
+    image: docker.elastic.co/elasticsearch/elasticsearch:8.11.0
+    environment:
+      - discovery.type=single-node
+      - ES_JAVA_OPTS=-Xms1g -Xmx1g
+      - xpack.security.enabled=false
+    ports:
+      - "9200:9200"
+    volumes:
+      - es_data:/usr/share/elasticsearch/data
+    networks:
+      - test-network
+
+  kibana:
+    image: docker.elastic.co/kibana/kibana:8.11.0
+    ports:
+      - "5601:5601"
+    environment:
+      - ELASTICSEARCH_HOSTS=http://elasticsearch:9200
+    networks:
+      - test-network
+    depends_on:
+      - elasticsearch
+
+volumes:
+  postgres_test_data:
+  redis_test_data:
+  prometheus_data:
+  grafana_data:
+  es_data:
+
+networks:
+  test-network:
+    driver: bridge
+
+# 健康检查配置
+x-healthchecks:
+  app-health:
+    test: ["CMD", "curl", "-f", "http://localhost:8000/health"]
+    interval: 30s
+    timeout: 10s
+    retries: 3
+    start_period: 60s
+
+  db-health:
+    test: ["CMD-SHELL", "pg_isready -U postgres"]
+    interval: 10s
+    timeout: 5s
+    retries: 3
+
+# 资源限制
+x-resources:
+  app-limits:
+    cpus: '1.0'
+    memory: 1G
+
+  db-limits:
+    cpus: '0.5'
+    memory: 512M
+
+  monitoring-limits:
+    cpus: '0.3'
+    memory: 256M

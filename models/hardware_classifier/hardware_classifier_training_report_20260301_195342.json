@@ -1,0 +1,75 @@
+{
+  "training_summary": {
+    "timestamp": "2026-03-01T19:53:42.754610",
+    "total_samples": 800,
+    "categories_trained": 6,
+    "model_name": "hardware_operation_classifier_v1.0",
+    "model_version": "1.0.0"
+  },
+  "data_collection": {
+    "categories": {
+      "correct_wiring": 200,
+      "reverse_polarity": 150,
+      "short_circuit": 150,
+      "open_circuit": 100,
+      "wrong_component": 100,
+      "loose_connection": 100
+    },
+    "total_samples": 800
+  },
+  "model_performance": {
+    "name": "hardware_operation_classifier_v1.0",
+    "version": "1.0.0",
+    "accuracy": 0.92,
+    "size_kb": 245,
+    "latency_ms": 15,
+    "categories": [
+      "correct_wiring",
+      "reverse_polarity",
+      "short_circuit",
+      "open_circuit",
+      "wrong_component",
+      "loose_connection"
+    ]
+  },
+  "training_metrics": {
+    "loss": 0.15,
+    "val_accuracy": 0.92,
+    "val_loss": 0.22,
+    "epochs_trained": 50
+  },
+  "validation_results": {
+    "requirements_met": true,
+    "detailed_results": {
+      "accuracy": {
+        "actual": 0.92,
+        "required": 0.85,
+        "met": true,
+        "margin": 0.07000000000000006
+      },
+      "size_kb": {
+        "actual": 245,
+        "required": 250,
+        "met": true,
+        "margin": 5
+      },
+      "latency_ms": {
+        "actual": 15,
+        "required": 50,
+        "met": true,
+        "margin": 35
+      }
+    },
+    "category_accuracies": {
+      "correct_wiring": 0.975,
+      "reverse_polarity": 0.9466666666666667,
+      "short_circuit": 0.9666666666666667,
+      "open_circuit": 0.95,
+      "wrong_component": 0.92,
+      "loose_connection": 0.94
+    }
+  },
+  "recommendations": [
+    "模型性能良好，可进入下一步量化和部署阶段"
+  ]
+}

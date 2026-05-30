@@ -1,0 +1,166 @@
+<!-- Vircadia 场景查看器组件模板 -->
+<div class="vircadia-scene-viewer" [class.loading]="isLoading">
+
+  <!-- 加载遮罩层 -->
+  <div *ngIf="isLoading" class="loading-overlay">
+    <div class="loading-content">
+      <div class="loading-spinner"></div>
+      <p class="loading-text">{{ connectionStatusText }}</p>
+      <div class="progress-bar" *ngIf="connectionProgress > 0">
+        <div class="progress-fill" [style.width.%]="connectionProgress"></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- 未连接提示 -->
+  <div *ngIf="!isLoading && !isConnected" class="not-connected-overlay">
+    <div class="message">
+      <h3>未连接到 Vircadia 服务器</h3>
+      <p>请检查网络连接或联系管理员</p>
+      <button class="btn-connect" (click)="connect()" [disabled]="isLoading">
+        重新连接
+      </button>
+    </div>
+  </div>
+
+  <!-- 3D 场景容器 -->
+  <div
+    #sceneContainer
+    class="scene-container"
+    (click)="onCanvasClick($event)"
+    (mousemove)="onMouseMove($event)"
+    (wheel)="onMouseWheel($event)"
+  >
+    <!-- 3D 渲染画布将在这里创建 -->
+    <canvas class="scene-canvas"></canvas>
+
+    <!-- 场景对象列表 (调试用) -->
+    <div *ngIf="debugMode && sceneObjects.length > 0" class="object-list-panel">
+      <h4>场景对象 ({{ sceneObjects.length }})</h4>
+      <ul>
+        <li
+          *ngFor="let obj of sceneObjects"
+          [class.selected]="selectedObject?.id === obj.id"
+          (click)="selectObject(obj)"
+        >
+          {{ obj.name }} ({{ obj.type }})
+        </li>
+      </ul>
+    </div>
+  </div>
+
+  <!-- 调试面板 -->
+  <div *ngIf="showDebugPanel" class="debug-panel">
+    <div class="debug-header">
+      <h4>性能监控</h4>
+      <button class="btn-close" (click)="toggleDebugPanel()">×</button>
+    </div>
+
+    <div class="debug-content">
+      <!-- 性能统计 -->
+      <div class="stat-section">
+        <h5>性能统计</h5>
+        <div class="stat-item" *ngIf="performanceStats?.fps !== undefined">
+          <span class="stat-label">FPS:</span>
+          <span class="stat-value" [class.good]="performanceStats!.fps >= 50"
+                            [class.warning]="performanceStats!.fps >= 30 && performanceStats!.fps < 50"
+                            [class.danger]="performanceStats!.fps < 30">
+            {{ performanceStats?.fps }}
+          </span>
+        </div>
+        <div class="stat-item" *ngIf="performanceStats?.renderTime !== undefined">
+          <span class="stat-label">渲染耗时:</span>
+          <span class="stat-value">{{ performanceStats?.renderTime }} ms</span>
+        </div>
+        <div class="stat-item" *ngIf="performanceStats?.memoryUsage !== undefined">
+          <span class="stat-label">内存使用:</span>
+          <span class="stat-value">{{ performanceStats?.memoryUsage }} MB</span>
+        </div>
+        <div class="stat-item" *ngIf="performanceStats?.drawCalls !== undefined">
+          <span class="stat-label">绘制调用:</span>
+          <span class="stat-value">{{ performanceStats?.drawCalls }}</span>
+        </div>
+      </div>
+
+      <!-- 网络统计 -->
+      <div class="stat-section">
+        <h5>网络状态</h5>
+        <div class="stat-item" *ngIf="networkStats?.downloadSpeed !== undefined">
+          <span class="stat-label">下载速度:</span>
+          <span class="stat-value">{{ networkStats?.downloadSpeed }} KB/s</span>
+        </div>
+        <div class="stat-item" *ngIf="networkStats?.uploadSpeed !== undefined">
+          <span class="stat-label">上传速度:</span>
+          <span class="stat-value">{{ networkStats?.uploadSpeed }} KB/s</span>
+        </div>
+        <div class="stat-item" *ngIf="networkStats?.jitter !== undefined">
+          <span class="stat-label">延迟:</span>
+          <span class="stat-value">{{ networkStats?.jitter }} ms</span>
+        </div>
+        <div class="stat-item" *ngIf="networkStats?.packetLoss !== undefined">
+          <span class="stat-label">丢包率:</span>
+          <span class="stat-value">{{ networkStats?.packetLoss }}%</span>
+        </div>
+      </div>
+
+      <!-- 当前场景信息 -->
+      <div class="stat-section" *ngIf="currentScene">
+        <h5>当前场景</h5>
+        <div class="stat-item">
+          <span class="stat-label">名称:</span>
+          <span class="stat-value">{{ currentScene!.name }}</span>
+        </div>
+        <div class="stat-item">
+          <span class="stat-label">用户数:</span>
+          <span class="stat-value">{{ currentScene!.currentUserCount }} / {{ currentScene!.maxUsers }}</span>
+        </div>
+      </div>
+
+      <!-- 选中对象信息 -->
+      <div class="stat-section" *ngIf="selectedObject">
+        <h5>选中对象</h5>
+        <div class="stat-item">
+          <span class="stat-label">名称:</span>
+          <span class="stat-value">{{ selectedObject.name }}</span>
+        </div>
+        <div class="stat-item">
+          <span class="stat-label">类型:</span>
+          <span class="stat-value">{{ selectedObject.type }}</span>
+        </div>
+        <div class="stat-item">
+          <span class="stat-label">位置:</span>
+          <span class="stat-value">
+            ({{ selectedObject.position.x.toFixed(2) }},
+             {{ selectedObject.position.y.toFixed(2) }},
+             {{ selectedObject.position.z.toFixed(2) }})
+          </span>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- 控制按钮 -->
+  <div class="control-buttons">
+    <button
+      class="btn-control"
+      (click)="toggleDebugPanel()"
+      [class.active]="showDebugPanel"
+      title="性能监控"
+    >
+      📊
+    </button>
+    <button
+      class="btn-control"
+      (click)="disconnect()"
+      *ngIf="isConnected"
+      title="断开连接"
+    >
+      🔌
+    </button>
+  </div>
+
+  <!-- 错误提示 -->
+  <div *ngIf="false" class="error-toast">
+    <p>这是一个错误提示示例</p>
+  </div>
+</div>

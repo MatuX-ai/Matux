@@ -1,11 +1,14 @@
+@import '../../../styles/shared/variables';
+@import '../../../styles/shared/_editor-components';
+
 .smart-editor-container {
   display: flex;
   overflow: hidden;
   flex-direction: column;
   height: 100%;
-  border: 1px solid #ddd;
+  border: 1px solid var(--border-color, #ddd);
   border-radius: 4px;
-  font-family: Consolas, Monaco, 'Courier New', monospace;
+  font-family: var(--font-mono, Consolas, Monaco, 'Courier New', monospace);
   
   &.disabled {
     opacity: 0.6;
@@ -13,57 +16,9 @@
   }
 }
 
+// 使用共享编辑器头部样式
 .editor-header {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  padding: 8px 12px;
-  border-bottom: 1px solid #e9ecef;
-  background-color: #f8f9fa;
-  font-size: 12px;
-  
-  .editor-info {
-    display: flex;
-    gap: 12px;
-    color: #6c757d;
-    
-    .language-indicator {
-      padding: 2px 8px;
-      border-radius: 12px;
-      background-color: #007bff;
-      font-weight: 500;
-      color: #fff;
-    }
-    
-    .line-count, .column-indicator {
-      font-weight: 500;
-    }
-  }
-  
-  .editor-actions {
-    display: flex;
-    gap: 8px;
-    
-    .btn {
-      padding: 4px 12px;
-      border: 1px solid #ddd;
-      border-radius: 4px;
-      background: #fff;
-      cursor: pointer;
-      transition: all 0.2s ease;
-      font-size: 12px;
-      
-      &:hover:not(:disabled) {
-        border-color: #adb5bd;
-        background-color: #e9ecef;
-      }
-      
-      &:disabled {
-        opacity: 0.5;
-        cursor: not-allowed;
-      }
-    }
-  }
+  @extend .editor-header-base;
 }
 
 .editor-wrapper {
@@ -72,220 +27,61 @@
   flex: 1;
 }
 
+// 使用共享文本区域样式
 .editor-textarea {
-  width: 100%;
-  height: 100%;
-  padding: 12px;
-  border: none;
-  outline: none;
-  background-color: #fff;
-  resize: none;
-  font-size: 14px;
-  line-height: 1.5;
-  color: #333;
-  
-  &:focus {
-    background-color: #fff;
-  }
-  
-  &::placeholder {
-    color: #999;
-  }
+  @extend .editor-textarea-base;
+  @extend .editor-textarea-with-scrollbar;
 }
 
+// 使用共享完成面板样式
 .completion-panel {
-  position: absolute;
-  z-index: 1000;
-  overflow: hidden;
-  width: 400px;
-  max-height: 300px;
-  border: 1px solid #ddd;
-  border-radius: 6px;
-  background: #fff;
-  box-shadow: 0 4px 12px rgb(0 0 0 / 15%);
-  font-size: 13px;
-  
-  .completion-header {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    padding: 8px 12px;
-    border-bottom: 1px solid #e9ecef;
-    background-color: #f8f9fa;
-    font-weight: 500;
-    color: #495057;
-    
-    .close-btn {
-      display: flex;
-      justify-content: center;
-      align-items: center;
-      width: 24px;
-      height: 24px;
-      padding: 0;
-      border: none;
-      background: none;
-      cursor: pointer;
-      font-size: 18px;
-      color: #6c757d;
-      
-      &:hover {
-        border-radius: 50%;
-        background-color: #e9ecef;
-        color: #333;
-      }
-    }
-  }
-  
-  .suggestions-list {
-    overflow-y: auto;
-    max-height: 200px;
-    
-    .suggestion-item {
-      padding: 8px 12px;
-      border-bottom: 1px solid #f0f0f0;
-      cursor: pointer;
-      transition: background-color 0.1s ease;
-      
-      &:last-child {
-        border-bottom: none;
-      }
-      
-      &:hover,
-      &.active {
-        background-color: #e3f2fd;
-      }
-      
-      .suggestion-text {
-        margin-bottom: 4px;
-        white-space: pre-wrap;
-        word-break: break-all;
-        font-weight: 500;
-        font-family: Consolas, Monaco, monospace;
-        color: #333;
-      }
-      
-      .suggestion-meta {
-        display: flex;
-        justify-content: space-between;
-        align-items: center;
-        font-size: 11px;
-        
-        .confidence {
-          font-weight: 500;
-          color: #28a745;
-        }
-        
-        .features {
-          padding: 2px 6px;
-          border-radius: 4px;
-          background-color: #f8f9fa;
-          color: #6c757d;
-        }
-      }
-    }
-  }
+  @extend .completion-panel-base;
   
   .completion-footer {
     padding: 6px 12px;
-    border-top: 1px solid #e9ecef;
-    background-color: #f8f9fa;
-    text-align: center;
+    border-top: 1px solid var(--border-color, #e9ecef);
+    background-color: var(--bg-secondary, #f8f9fa);
+    color: var(--text-secondary, #6c757d);
     font-size: 11px;
-    color: #6c757d;
+    text-align: center;
   }
 }
 
+// 使用共享加载覆盖层样式
 .loading-overlay {
-  position: absolute;
-  z-index: 999;
-  display: flex;
-  flex-direction: column;
-  justify-content: center;
-  align-items: center;
-  background-color: rgb(255 255 255 / 80%);
-  inset: 0;
-  backdrop-filter: blur(2px);
-  
-  .spinner {
-    width: 24px;
-    height: 24px;
-    margin-bottom: 8px;
-    border: 3px solid #f3f3f3;
-    border-top: 3px solid #007bff;
-    border-radius: 50%;
-    animation: spin 1s linear infinite;
-  }
-  
-  span {
-    font-size: 13px;
-    color: #6c757d;
-  }
+  @extend .loading-overlay-base;
 }
 
-@keyframes spin {
-  0% { transform: rotate(0deg); }
-  100% { transform: rotate(360deg); }
-}
+// 动画已在 _editor-components.scss 中定义
 
+// 使用共享编辑器状态栏样式
 .editor-status {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  padding: 6px 12px;
-  border-top: 1px solid #e9ecef;
-  background-color: #f8f9fa;
-  font-size: 12px;
-  color: #6c757d;
+  @extend .editor-status-base;
   
   .status-left {
-    display: flex;
-    gap: 12px;
-    
     .timing-info {
+      color: var(--success-color, #28a745);
       font-weight: 500;
-      color: #28a745;
     }
     
     .model-info {
       padding: 2px 8px;
       border-radius: 12px;
-      background-color: #e9ecef;
+      background-color: var(--bg-secondary, #e9ecef);
     }
   }
   
   .status-right {
     .connection-status {
       &.connected {
-        color: #28a745;
+        color: var(--success-color, #28a745);
       }
       
       &:not(.connected) {
-        color: #dc3545;
+        color: var(--error-color, #dc3545);
       }
     }
   }
-}
-
-/* 滚动条样式 */
-.editor-textarea::-webkit-scrollbar,
-.suggestions-list::-webkit-scrollbar {
-  width: 8px;
-}
-
-.editor-textarea::-webkit-scrollbar-track,
-.suggestions-list::-webkit-scrollbar-track {
-  background: #f1f1f1;
-}
-
-.editor-textarea::-webkit-scrollbar-thumb,
-.suggestions-list::-webkit-scrollbar-thumb {
-  border-radius: 4px;
-  background: #c1c1c1;
-}
-
-.editor-textarea::-webkit-scrollbar-thumb:hover,
-.suggestions-list::-webkit-scrollbar-thumb:hover {
-  background: #a8a8a8;
 }
 
 /* 响应式设计 */
@@ -306,76 +102,8 @@
   }
 }
 
-/* 主题适配 */
+/* 主题适配 - 精简版，主要逻辑已在共享样式中 */
 [data-theme="dark"] .smart-editor-container {
-  border-color: #444;
-  
-  .editor-header {
-    border-color: #444;
-    background-color: #2d2d2d;
-    color: #ccc;
-    
-    .editor-info {
-      color: #aaa;
-    }
-  }
-  
-  .editor-textarea {
-    background-color: #1e1e1e;
-    color: #d4d4d4;
-    
-    &::placeholder {
-      color: #666;
-    }
-  }
-  
-  .completion-panel {
-    border-color: #444;
-    background-color: #2d2d2d;
-    color: #ccc;
-    
-    .completion-header {
-      border-color: #444;
-      background-color: #333;
-      color: #eee;
-    }
-    
-    .suggestions-list .suggestion-item {
-      border-color: #444;
-      
-      &:hover,
-      &.active {
-        background-color: #3a3a3a;
-      }
-      
-      .suggestion-text {
-        color: #fff;
-      }
-      
-      .suggestion-meta .features {
-        background-color: #444;
-        color: #ccc;
-      }
-    }
-    
-    .completion-footer {
-      border-color: #444;
-      background-color: #333;
-      color: #aaa;
-    }
-  }
-  
-  .loading-overlay {
-    background-color: rgb(30 30 30 / 80%);
-    
-    span {
-      color: #aaa;
-    }
-  }
-  
-  .editor-status {
-    border-color: #444;
-    background-color: #2d2d2d;
-    color: #aaa;
-  }
+  // 只保留容器特定的深色样式
+  border-color: var(--border-dark, #444);
 }

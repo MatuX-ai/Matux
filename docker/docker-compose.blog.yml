@@ -1,0 +1,47 @@
+version: '3.8'
+
+services:
+  # Ghost CMS 服务
+  ghost:
+    image: ghost:5-alpine
+    container_name: imatu-blog
+    restart: always
+    ports:
+      - "2368:2368"
+    environment:
+      # 博客 URL 配置
+      url: http://localhost:2368
+      # 数据库配置
+      database__client: mysql
+      database__connection__host: db
+      database__connection__user: root
+      database__connection__password: ${GHOST_DB_PASSWORD:-ghost_password_2026}
+      database__connection__database: ghost_production
+      # 邮件配置 (可选)
+      # mail__transport: SMTP
+      # mail__options__auth__user: ${SMTP_USER}
+      # mail__options__auth__pass: ${SMTP_PASS}
+    volumes:
+      - ./data/ghost/content:/var/lib/ghost/content
+    networks:
+      - blog-network
+    depends_on:
+      db:
+        condition: service_started
+
+  # MySQL数据库服务
+  db:
+    image: mysql:8.0
+    container_name: imatu-blog-db
+    restart: always
+    environment:
+      MYSQL_ROOT_PASSWORD: ${GHOST_DB_PASSWORD:-ghost_password_2026}
+      MYSQL_DATABASE: ghost_production
+    volumes:
+      - ./data/ghost/mysql:/var/lib/mysql
+    networks:
+      - blog-network
+
+networks:
+  blog-network:
+    driver: bridge

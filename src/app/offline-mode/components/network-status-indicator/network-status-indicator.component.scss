@@ -1,0 +1,166 @@
+.network-status-indicator {
+  display: inline-block;
+  min-width: 180px;
+  padding: 8px 16px;
+  border: 1px solid rgb(0 0 0 / 10%);
+  border-radius: 24px;
+  background: rgb(255 255 255 / 90%);
+  box-shadow: 0 2px 8px rgb(0 0 0 / 10%);
+  backdrop-filter: blur(10px);
+  transition: all 0.3s ease;
+
+  &.low-quality {
+    border-color: #ff9800;
+    box-shadow: 0 2px 8px rgb(255 152 0 / 30%);
+    animation: pulse-warning 2s infinite;
+  }
+
+  .status-content {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+
+    .status-icon {
+      font-size: 1.2rem;
+      transition: all 0.3s ease;
+
+      &.offline {
+        color: #f44336;
+      }
+
+      &.very-slow {
+        color: #f44336;
+      }
+
+      &.slow {
+        color: #ff9800;
+      }
+
+      &.good {
+        color: #4caf50;
+      }
+
+      &.excellent {
+        color: #2196f3;
+      }
+
+      &.unknown {
+        color: #9e9e9e;
+      }
+    }
+
+    .status-text {
+      overflow: hidden;
+      flex: 1;
+      color: #333;
+      font-size: 0.9rem;
+      font-weight: 500;
+      white-space: nowrap;
+      text-overflow: ellipsis;
+    }
+
+    .refresh-button {
+      opacity: 0.7;
+      transition: opacity 0.2s ease;
+
+      &:hover {
+        opacity: 1;
+      }
+
+      mat-icon {
+        font-size: 1rem;
+      }
+    }
+  }
+
+  .quality-bar {
+    display: flex;
+    gap: 2px;
+    height: 4px;
+    margin-top: 6px;
+
+    .quality-segment {
+      flex: 1;
+      border-radius: 2px;
+      background: #e0e0e0;
+      transition: all 0.3s ease;
+
+      &.active {
+        &.very-slow {
+          background: #f44336;
+        }
+
+        &.slow {
+          background: #ff9800;
+        }
+
+        &.good {
+          background: #4caf50;
+        }
+
+        &.excellent {
+          background: #2196f3;
+        }
+      }
+    }
+  }
+
+  &:hover {
+    box-shadow: 0 4px 12px rgb(0 0 0 / 15%);
+    transform: translateY(-2px);
+  }
+}
+
+// 警告动画
+@keyframes pulse-warning {
+  0% {
+    box-shadow: 0 2px 8px rgb(255 152 0 / 30%);
+  }
+
+  50% {
+    box-shadow: 0 2px 12px rgb(255 152 0 / 60%);
+  }
+
+  100% {
+    box-shadow: 0 2px 8px rgb(255 152 0 / 30%);
+  }
+}
+
+// 响应式设计
+@media (width <= 768px) {
+  .network-status-indicator {
+    min-width: 150px;
+    padding: 6px 12px;
+
+    .status-content {
+      .status-icon {
+        font-size: 1rem;
+      }
+
+      .status-text {
+        font-size: 0.8rem;
+      }
+    }
+
+    .quality-bar {
+      height: 3px;
+      margin-top: 4px;
+    }
+  }
+}
+
+@media (width <= 480px) {
+  .network-status-indicator {
+    min-width: 120px;
+    
+    .status-content {
+      gap: 6px;
+      
+      .refresh-button {
+        mat-icon {
+          font-size: 0.9rem;
+        }
+      }
+    }
+  }
+}

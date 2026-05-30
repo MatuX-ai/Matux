@@ -1,0 +1,440 @@
+/* Icon Component*/
+/**/
+/* 鍥炬爣系统闆嗘垚锛屼娇鐢?Icon Font 鏂规*/
+/* 鏀寔澶氱灏哄銆侀鑹插拰鍔ㄧ敾效果*/
+
+/* 瀵煎叆 Design Tokens*/
+@import '../design-tokens/index';
+
+/* =============================================================================*/
+/* Icon Font 瀹氫箟*/
+/* =============================================================================*/
+
+@font-face {
+  font-family: iMatuIcons;
+  font-weight: normal;
+  font-style: normal;
+  font-display: swap;
+  src: url('../../assets/fonts/iMatuIcons.woff2') format('woff2'),
+       url('../../assets/fonts/iMatuIcons.woff') format('woff');
+}
+
+/* =============================================================================*/
+/* 鍥炬爣基础样式*/
+/* =============================================================================*/
+
+.c-icon {
+  --icon-color: currentcolor;
+  --icon-size: 1em;
+  --icon-vertical-align: -0.125em;
+  display: inline-block;
+  width: var(--icon-size);
+  height: var(--icon-size);
+  color: var(--icon-color);
+  font-family: iMatuIcons;
+  font-size: var(--icon-size);
+  font-weight: normal;
+  font-style: normal;
+  font-variant: normal;
+  line-height: 1;
+  vertical-align: var(--icon-vertical-align);
+  text-transform: none;
+  transition: all 0.2s ease;
+  -moz-osx-font-smoothing: grayscale;
+  -webkit-font-smoothing: antialiased;
+  speak: none;
+  text-rendering: auto;
+  /* CSS 自定义夊睘鎬у畾涔夊熀纭€閰嶇疆*/
+  
+  /* 基础样式*/
+  
+  /* 浜や簰效果*/
+  
+  /* 布局灞炴€?/
+  
+  /* 字体灞炴€?/
+  
+  /* 娓叉煋浼樺寲*/
+  
+  /* 绌哄唴瀹瑰崰浣嶇*/
+  &::before {
+    content: '\f111'; /* 鍦嗗舰鍗犱綅绗?/
+  }
+}
+
+/* =============================================================================*/
+/* 鍥炬爣灏哄变体*/
+/* =============================================================================*/
+
+.c-icon--xs {
+  --icon-size: 0.75em;
+}
+
+.c-icon--sm {
+  --icon-size: 0.875em;
+}
+
+.c-icon--md {
+  --icon-size: 1em; /* 默认澶у皬*/
+}
+
+.c-icon--lg {
+  --icon-size: 1.33em;
+}
+
+.c-icon--xl {
+  --icon-size: 1.5em;
+}
+
+.c-icon--2x {
+  --icon-size: 2em;
+}
+
+.c-icon--3x {
+  --icon-size: 3em;
+}
+
+.c-icon--4x {
+  --icon-size: 4em;
+}
+
+.c-icon--5x {
+  --icon-size: 5em;
+}
+
+/* =============================================================================*/
+/* 鍥炬爣颜色变体*/
+/* =============================================================================*/
+
+.c-icon--primary {
+  --icon-color: #{$primary-color};
+}
+
+.c-icon--secondary {
+  --icon-color: #{$secondary-color};
+}
+
+.c-icon--success {
+  --icon-color: #{$success-color};
+}
+
+.c-icon--warning {
+  --icon-color: #{$warning-color};
+}
+
+.c-icon--error {
+  --icon-color: #{$error-color};
+}
+
+.c-icon--info {
+  --icon-color: #{$info-color};
+}
+
+.c-icon--white {
+  --icon-color: #{$text-white-color};
+}
+
+.c-icon--black {
+  --icon-color: #{$black-color};
+}
+
+/* 鐏板害颜色*/
+.c-icon--gray-50 { --icon-color: #{$gray-50}; }
+.c-icon--gray-100 { --icon-color: #{$gray-100}; }
+.c-icon--gray-200 { --icon-color: #{$gray-200}; }
+.c-icon--gray-300 { --icon-color: #{$gray-300}; }
+.c-icon--gray-400 { --icon-color: #{$gray-400}; }
+.c-icon--gray-500 { --icon-color: #{$gray-500}; }
+.c-icon--gray-600 { --icon-color: #{$gray-600}; }
+.c-icon--gray-700 { --icon-color: #{$gray-700}; }
+.c-icon--gray-800 { --icon-color: #{$gray-800}; }
+.c-icon--gray-900 { --icon-color: #{$gray-900}; }
+
+/* =============================================================================*/
+/* 鍥炬爣鍔ㄧ敾效果*/
+/* =============================================================================*/
+
+/* 鏃嬭浆鍔ㄧ敾*/
+.c-icon--spin {
+  animation: c-icon-spin 2s linear infinite;
+}
+
+.c-icon--pulse {
+  animation: c-icon-spin 1s steps(8) infinite;
+}
+
+/* 鎽嗗姩鍔ㄧ敾*/
+.c-icon--shake {
+  animation: c-icon-shake 0.82s cubic-bezier(.36,.07,.19,.97) both;
+}
+
+/* 寮硅烦鍔ㄧ敾*/
+.c-icon--bounce {
+  animation: c-icon-bounce 1s ease infinite;
+}
+
+/* 娣″叆鍔ㄧ敾*/
+.c-icon--fade {
+  animation: c-icon-fade 0.3s ease-in;
+}
+
+/* 鍏抽敭甯у姩鐢诲畾涔?/
+@keyframes c-icon-spin {
+  0% { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
+}
+
+@keyframes c-icon-shake {
+  10%, 90% { transform: translate3d(-1px, 0, 0); }
+  20%, 80% { transform: translate3d(2px, 0, 0); }
+  30%, 50%, 70% { transform: translate3d(-4px, 0, 0); }
+  40%, 60% { transform: translate3d(4px, 0, 0); }
+}
+
+@keyframes c-icon-bounce {
+  0%, 20%, 50%, 80%, 100% { transform: translateY(0); }
+  40% { transform: translateY(-10px); }
+  60% { transform: translateY(-5px); }
+}
+
+@keyframes c-icon-fade {
+  0% { opacity: 0; }
+  100% { opacity: 1; }
+}
+
+/* =============================================================================*/
+/* 鍥炬爣方向变体*/
+/* =============================================================================*/
+
+.c-icon--rotate-90 {
+  transform: rotate(90deg);
+}
+
+.c-icon--rotate-180 {
+  transform: rotate(180deg);
+}
+
+.c-icon--rotate-270 {
+  transform: rotate(270deg);
+}
+
+.c-icon--flip-horizontal {
+  transform: scale(-1, 1);
+}
+
+.c-icon--flip-vertical {
+  transform: scale(1, -1);
+}
+
+/* =============================================================================*/
+/* 具体鍥炬爣绫诲畾涔?/
+/* =============================================================================*/
+
+/* 浣跨敤閫氶厤绗﹂€夋嫨鍣ㄥ尮閰嶆墍鏈夊浘鏍囩被*/
+[class^="icon-"],
+[class*=" icon-"] {
+  @extend .c-icon;
+}
+
+/* 甯哥敤鍥炬爣瀹氫箟锛圲nicode 鍗犱綅绗︼級*/
+.icon-heart::before { content: "\f004"; }
+.icon-star::before { content: "\f005"; }
+.icon-user::before { content: "\f007"; }
+.icon-home::before { content: "\f015"; }
+.icon-search::before { content: "\f002"; }
+.icon-settings::before { content: "\f013"; }
+.icon-download::before { content: "\f019"; }
+.icon-upload::before { content: "\f093"; }
+.icon-trash::before { content: "\f1f8"; }
+.icon-edit::before { content: "\f044"; }
+.icon-check::before { content: "\f00c"; }
+.icon-times::before { content: "\f00d"; }
+.icon-plus::before { content: "\f067"; }
+.icon-minus::before { content: "\f068"; }
+.icon-arrow-left::before { content: "\f060"; }
+.icon-arrow-right::before { content: "\f061"; }
+.icon-arrow-up::before { content: "\f062"; }
+.icon-arrow-down::before { content: "\f063"; }
+.icon-chevron-left::before { content: "\f053"; }
+.icon-chevron-right::before { content: "\f054"; }
+.icon-chevron-up::before { content: "\f077"; }
+.icon-chevron-down::before { content: "\f078"; }
+.icon-bars::before { content: "\f0c9"; }
+.icon-ellipsis-h::before { content: "\f141"; }
+.icon-ellipsis-v::before { content: "\f142"; }
+.icon-bell::before { content: "\f0f3"; }
+.icon-envelope::before { content: "\f0e0"; }
+.icon-lock::before { content: "\f023"; }
+.icon-unlock::before { content: "\f09c"; }
+.icon-key::before { content: "\f084"; }
+.icon-tag::before { content: "\f02b"; }
+.icon-tags::before { content: "\f02c"; }
+.icon-bookmark::before { content: "\f02e"; }
+.icon-print::before { content: "\f02f"; }
+.icon-camera::before { content: "\f030"; }
+.icon-video::before { content: "\f03d"; }
+.icon-image::before { content: "\f03e"; }
+.icon-map-marker::before { content: "\f041"; }
+.icon-phone::before { content: "\f095"; }
+.icon-calendar::before { content: "\f073"; }
+.icon-clock::before { content: "\f017"; }
+.icon-chart-bar::before { content: "\f080"; }
+.icon-chart-line::before { content: "\f201"; }
+.icon-chart-pie::before { content: "\f200"; }
+.icon-table::before { content: "\f0ce"; }
+.icon-list::before { content: "\f03a"; }
+.icon-list-ul::before { content: "\f0ca"; }
+.icon-list-ol::before { content: "\f0cb"; }
+.icon-th::before { content: "\f00a"; }
+.icon-th-large::before { content: "\f009"; }
+.icon-th-list::before { content: "\f00b"; }
+.icon-filter::before { content: "\f0b0"; }
+.icon-sort::before { content: "\f0dc"; }
+.icon-sort-up::before { content: "\f0de"; }
+.icon-sort-down::before { content: "\f0dd"; }
+.icon-sync::before { content: "\f021"; }
+.icon-refresh::before { content: "\f021"; }
+.icon-redo::before { content: "\f01e"; }
+.icon-undo::before { content: "\f0e2"; }
+.icon-save::before { content: "\f0c7"; }
+.icon-folder::before { content: "\f07b"; }
+.icon-folder-open::before { content: "\f07c"; }
+.icon-file::before { content: "\f15b"; }
+.icon-file-alt::before { content: "\f15c"; }
+.icon-copy::before { content: "\f0c5"; }
+.icon-paste::before { content: "\f0ea"; }
+.icon-cut::before { content: "\f0c4"; }
+.icon-eye::before { content: "\f06e"; }
+.icon-eye-slash::before { content: "\f070"; }
+.icon-link::before { content: "\f0c1"; }
+.icon-unlink::before { content: "\f127"; }
+.icon-question::before { content: "\f128"; }
+.icon-info::before { content: "\f129"; }
+.icon-exclamation::before { content: "\f12a"; }
+.icon-exclamation-triangle::before { content: "\f071"; }
+.icon-check-circle::before { content: "\f058"; }
+.icon-times-circle::before { content: "\f057"; }
+.icon-minus-circle::before { content: "\f056"; }
+.icon-plus-circle::before { content: "\f055"; }
+.icon-ban::before { content: "\f05e"; }
+.icon-flag::before { content: "\f024"; }
+.icon-book::before { content: "\f02d"; }
+.icon-book-open::before { content: "\f518"; }
+.icon-graduation-cap::before { content: "\f19d"; }
+.icon-school::before { content: "\f549"; }
+.icon-chalkboard::before { content: "\f51b"; }
+.icon-chalkboard-teacher::before { content: "\f51c"; }
+.icon-laptop::before { content: "\f109"; }
+.icon-mobile::before { content: "\f10b"; }
+.icon-tablet::before { content: "\f10a"; }
+.icon-code::before { content: "\f121"; }
+.icon-terminal::before { content: "\f120"; }
+.icon-bug::before { content: "\f188"; }
+.icon-rocket::before { content: "\f135"; }
+.icon-lightbulb::before { content: "\f0eb"; }
+.icon-project-diagram::before { content: "\f542"; }
+.icon-network-wired::before { content: "\f6ff"; }
+.icon-microchip::before { content: "\f2db"; }
+.icon-robot::before { content: "\f544"; }
+.icon-brain::before { content: "\f5dc"; }
+
+/* =============================================================================*/
+/* 鍥炬爣容器鍜岀粍鍚?/
+/* =============================================================================*/
+
+/* 鍥炬爣鎸夐挳*/
+.c-icon-btn {
+  display: inline-flex;
+  justify-content: center;
+  align-items: center;
+  width: 32px;
+  height: 32px;
+  border: none;
+  border-radius: $border-radius-sm;
+  background: none;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  
+  .c-icon {
+    --icon-size: 1.1em;
+  }
+  
+  &:hover {
+    background-color: $gray-100;
+  }
+  
+  &:focus {
+    outline: none;
+    box-shadow: 0 0 0 2px rgba($focus-color, 0.3);
+  }
+  
+  &:disabled {
+    cursor: not-allowed;
+    opacity: 0.6;
+    
+    &:hover {
+      background-color: transparent;
+    }
+  }
+  
+  /* 灏哄变体*/
+  &--sm {
+    width: 24px;
+    height: 24px;
+    
+    .c-icon {
+      --icon-size: 0.9em;
+    }
+  }
+  
+  &--lg {
+    width: 40px;
+    height: 40px;
+    
+    .c-icon {
+      --icon-size: 1.3em;
+    }
+  }
+}
+
+/* 鍥炬爣鏍囩缁勫悎*/
+.c-icon-label {
+  display: inline-flex;
+  align-items: center;
+  gap: $spacing-xs;
+  
+  .c-icon {
+    flex-shrink: 0;
+  }
+}
+
+/* 鍥炬爣鍒楄〃*/
+.c-icon-list {
+  li {
+    display: flex;
+    align-items: center;
+    gap: $spacing-sm;
+    padding: $spacing-xs 0;
+    
+    .c-icon {
+      --icon-color: #{$text-secondary-color};
+      flex-shrink: 0;
+    }
+  }
+}
+
+/* =============================================================================*/
+/* 响应式忓浘鏍?/
+/* =============================================================================*/
+
+@media (max-width: $breakpoint-mobile-max) {
+  .c-icon--responsive {
+    --icon-size: 0.875em;
+  }
+}
+
+@media (min-width: $breakpoint-desktop-min) {
+  .c-icon--responsive {
+    --icon-size: 1.25em;
+  }
+}

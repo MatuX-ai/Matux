@@ -1,0 +1,190 @@
+# GitHub Actions 工作流 - PR 质量评论机器人
+name: PR Quality Comment Bot
+
+on:
+  pull_request:
+    types: [opened, synchronize, reopened]
+    branches: [main, develop]
+
+jobs:
+  quality-comment:
+    name: Post Quality Report Comment
+    runs-on: ubuntu-latest
+    permissions:
+      pull-requests: write
+      contents: read
+
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+
+    - name: Setup Node.js
+      uses: actions/setup-node@v4
+      with:
+        node-version: '18'
+
+    - name: Run quality checks
+      id: quality
+      run: |
+        # 前端检查
+        npm ci
+        echo "Running ESLint..."
+        ESLINT_RESULT=$(npm run lint:ts-report 2>&1) || true
+        echo "$ESLINT_RESULT" > eslint-report.txt
+
+        echo "Running Stylelint..."
+        STYLELINT_RESULT=$(npm run lint:scss-report 2>&1) || true
+        echo "$STYLELINT_RESULT" > stylelint-report.txt
+
+        echo "Running Prettier check..."
+        PRETTIER_RESULT=$(npm run format:check 2>&1) || true
+        echo "$PRETTIER_RESULT" > prettier-report.txt
+
+        # 统计问题数量
+        ESLINT_ERRORS=$(echo "$ESLINT_RESULT" | grep -c "error" || echo "0")
+        ESLINT_WARNINGS=$(echo "$ESLINT_RESULT" | grep -c "warning" || echo "0")
+        STYLELINT_ERRORS=$(echo "$STYLELINT_RESULT" | grep -c "error" || echo "0")
+        STYLELINT_WARNINGS=$(echo "$STYLELINT_RESULT" | grep -c "warning" || echo "0")
+        PRETTIER_ISSUES=$(echo "$PRETTIER_RESULT" | grep -c "Code style issues" || echo "0")
+
+        echo "eslint_errors=$ESLINT_ERRORS" >> $GITHUB_OUTPUT
+        echo "eslint_warnings=$ESLINT_WARNINGS" >> $GITHUB_OUTPUT
+        echo "stylelint_errors=$STYLELINT_ERRORS" >> $GITHUB_OUTPUT
+        echo "stylelint_warnings=$STYLELINT_WARNINGS" >> $GITHUB_OUTPUT
+        echo "prettier_issues=$PRETTIER_ISSUES" >> $GITHUB_OUTPUT
+
+        # 判断是否通过
+        if [ "$ESLINT_ERRORS" -eq 0 ] && [ "$STYLELINT_ERRORS" -eq 0 ] && [ "$PRETTIER_ISSUES" -eq 0 ]; then
+          echo "status=success" >> $GITHUB_OUTPUT
+        else
+          echo "status=failure" >> $GITHUB_OUTPUT
+        fi
+
+    - name: Generate comment body
+      id: comment
+      run: |
+        STATUS="${{ steps.quality.outputs.status }}"
+        if [ "$STATUS" == "success" ]; then
+          EMOJI="✅"
+          TITLE="代码质量检查通过"
+          COLOR="green"
+        else
+          EMOJI="❌"
+          TITLE="代码质量检查未通过"
+          COLOR="red"
+        fi
+
+        # 生成评论主体
+        echo "# ${EMOJI} ${TITLE}" > comment.md
+        echo "" >> comment.md
+        echo "## 📊 检查摘要" >> comment.md
+        echo "" >> comment.md
+        echo "| 检查项 | 错误数 | 警告数 | 状态 |" >> comment.md
+        echo "|--------|--------|--------|------|" >> comment.md
+
+        ESLINT_STATUS="✅"
+        [ "${{ steps.quality.outputs.eslint_errors }}" -ne 0 ] && ESLINT_STATUS="❌"
+        echo "| ESLint | ${{ steps.quality.outputs.eslint_errors }} | ${{ steps.quality.outputs.eslint_warnings }} | ${ESLINT_STATUS} |" >> comment.md
+
+        STYLELINT_STATUS="✅"
+        [ "${{ steps.quality.outputs.stylelint_errors }}" -ne 0 ] && STYLELINT_STATUS="❌"
+        echo "| Stylelint | ${{ steps.quality.outputs.stylelint_errors }} | ${{ steps.quality.outputs.stylelint_warnings }} | ${STYLELINT_STATUS} |" >> comment.md
+
+        PRETTIER_STATUS="✅"
+        [ "${{ steps.quality.outputs.prettier_issues }}" -ne 0 ] && PRETTIER_STATUS="❌"
+        echo "| Prettier | ${{ steps.quality.outputs.prettier_issues }} | - | ${PRETTIER_STATUS} |" >> comment.md
+
+        echo "" >> comment.md
+        echo "## 🔍 详细报告" >> comment.md
+        echo "" >> comment.md
+
+        # 添加详细报告
+        echo "<details>" >> comment.md
+        echo "<summary>ESLint 报告 (前 100 行)</summary>" >> comment.md
+        echo "" >> comment.md
+        echo "\`\`\`" >> comment.md
+        head -100 eslint-report.txt >> comment.md || true
+        echo "\`\`\`" >> comment.md
+        echo "</details>" >> comment.md
+        echo "" >> comment.md
+
+        echo "<details>" >> comment.md
+        echo "<summary>Stylelint 报告 (前 100 行)</summary>" >> comment.md
+        echo "" >> comment.md
+        echo "\`\`\`" >> comment.md
+        head -100 stylelint-report.txt >> comment.md || true
+        echo "\`\`\`" >> comment.md
+        echo "</details>" >> comment.md
+        echo "" >> comment.md
+
+        echo "<details>" >> comment.md
+        echo "<summary>Prettier 报告 (前 100 行)</summary>" >> comment.md
+        echo "" >> comment.md
+        echo "\`\`\`" >> comment.md
+        head -100 prettier-report.txt >> comment.md || true
+        echo "\`\`\`" >> comment.md
+        echo "</details>" >> comment.md
+        echo "" >> comment.md
+
+        echo "## 💡 建议" >> comment.md
+        echo "" >> comment.md
+
+        if [ "$STATUS" == "failure" ]; then
+          echo "### 修复步骤" >> comment.md
+          echo "1. **本地运行格式化**: \`npm run format\`" >> comment.md
+          echo "2. **查看 ESLint 详情**: \`npm run lint:ts-report\`" >> comment.md
+          echo "3. **查看 Stylelint 详情**: \`npm run lint:scss-report\`" >> comment.md
+          echo "4. **修复后重新提交**: Git hooks 会自动检查" >> comment.md
+          echo "" >> comment.md
+          echo "### 快速修复命令" >> comment.md
+          echo "\`\`\`bash" >> comment.md
+          echo "# 自动格式化代码" >> comment.md
+          echo "npm run format" >> comment.md
+          echo "" >> comment.md
+          echo "# 自动修复 ESLint 问题" >> comment.md
+          echo "npm run lint:ts -- --fix" >> comment.md
+          echo "" >> comment.md
+          echo "# 自动修复 Stylelint 问题" >> comment.md
+          echo "npm run lint:scss -- --fix" >> comment.md
+          echo "\`\`\`" >> comment.md
+        else
+          echo "🎉 代码质量符合标准！请继续完成后续 CI 流程。" >> comment.md
+        fi
+
+    - name: Post comment
+      uses: actions/github-script@v7
+      with:
+        github-token: ${{ secrets.GITHUB_TOKEN }}
+        script: |
+          const fs = require('fs');
+          const commentBody = fs.readFileSync('comment.md', 'utf8');
+
+          // 查找之前的评论
+          const { data: comments } = await github.rest.issues.listComments({
+            owner: context.repo.owner,
+            repo: context.repo.repo,
+            issue_number: context.issue.number,
+          });
+
+          const botComment = comments.find(c =>
+            c.user.login === 'github-actions[bot]' &&
+            c.body.includes('代码质量检查')
+          );
+
+          if (botComment) {
+            // 更新现有评论
+            await github.rest.issues.updateComment({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              comment_id: botComment.id,
+              body: commentBody,
+            });
+          } else {
+            // 创建新评论
+            await github.rest.issues.createComment({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              issue_number: context.issue.number,
+              body: commentBody,
+            });
+          }

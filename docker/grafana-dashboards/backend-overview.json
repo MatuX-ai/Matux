@@ -1,0 +1,228 @@
+{
+  "dashboard": {
+    "id": null,
+    "uid": "imato-backend-overview",
+    "title": "iMato Backend Overview",
+    "tags": ["imato", "backend"],
+    "timezone": "browser",
+    "schemaVersion": 38,
+    "version": 1,
+    "refresh": "10s",
+    "time": {
+      "from": "now-1h",
+      "to": "now"
+    },
+    "templating": {
+      "list": [
+        {
+          "name": "namespace",
+          "type": "query",
+          "datasource": "Prometheus",
+          "query": "label_values(kube_namespace_labels, namespace)",
+          "current": {
+            "text": "imato-cloud",
+            "value": "imato-cloud"
+          }
+        },
+        {
+          "name": "pod",
+          "type": "query",
+          "datasource": "Prometheus",
+          "query": "label_values(kube_pod_labels{namespace=\"$namespace\", label_app=\"imato-backend\"}, pod)",
+          "current": {
+            "text": "All",
+            "value": "$__all"
+          }
+        }
+      ]
+    },
+    "panels": [
+      {
+        "id": 1,
+        "gridPos": {"x": 0, "y": 0, "w": 6, "h": 4},
+        "type": "stat",
+        "title": "Pod 状态",
+        "targets": [
+          {
+            "expr": "sum(kube_pod_status_phase{namespace=\"$namespace\", phase=\"Running\"})",
+            "legendFormat": "Running"
+          },
+          {
+            "expr": "sum(kube_pod_status_phase{namespace=\"$namespace\", phase=\"Pending\"})",
+            "legendFormat": "Pending"
+          },
+          {
+            "expr": "sum(kube_pod_status_phase{namespace=\"$namespace\", phase=\"Failed\"})",
+            "legendFormat": "Failed"
+          }
+        ],
+        "fieldConfig": {
+          "defaults": {
+            "color": {"mode": "palette-classic"},
+            "thresholds": {
+              "mode": "absolute",
+              "steps": [
+                {"color": "green", "value": null},
+                {"color": "red", "value": 80}
+              ]
+            }
+          }
+        }
+      },
+      {
+        "id": 2,
+        "gridPos": {"x": 6, "y": 0, "w": 6, "h": 4},
+        "type": "stat",
+        "title": "API 请求成功率",
+        "targets": [
+          {
+            "expr": "sum(rate(http_requests_total{status=~\"2..\"}[5m])) / sum(rate(http_requests_total[5m])) * 100",
+            "legendFormat": "Success Rate"
+          }
+        ],
+        "fieldConfig": {
+          "defaults": {
+            "unit": "percent",
+            "thresholds": {
+              "mode": "absolute",
+              "steps": [
+                {"color": "green", "value": null},
+                {"color": "yellow", "value": 95},
+                {"color": "red", "value": 90}
+              ]
+            }
+          }
+        },
+        "options": {
+          "colorMode": "value"
+        }
+      },
+      {
+        "id": 3,
+        "gridPos": {"x": 12, "y": 0, "w": 6, "h": 4},
+        "type": "stat",
+        "title": "P95 响应时间",
+        "targets": [
+          {
+            "expr": "histogram_quantile(0.95, sum(rate(http_request_duration_seconds_bucket[5m])) by (le))",
+            "legendFormat": "P95"
+          }
+        ],
+        "fieldConfig": {
+          "defaults": {
+            "unit": "s",
+            "thresholds": {
+              "mode": "absolute",
+              "steps": [
+                {"color": "green", "value": null},
+                {"color": "yellow", "value": 0.5},
+                {"color": "red", "value": 1}
+              ]
+            }
+          }
+        }
+      },
+      {
+        "id": 4,
+        "gridPos": {"x": 18, "y": 0, "w": 6, "h": 4},
+        "type": "stat",
+        "title": "QPS",
+        "targets": [
+          {
+            "expr": "sum(rate(http_requests_total[5m]))",
+            "legendFormat": "Requests/s"
+          }
+        ],
+        "fieldConfig": {
+          "defaults": {
+            "unit": "reqps"
+          }
+        }
+      },
+      {
+        "id": 5,
+        "gridPos": {"x": 0, "y": 4, "w": 12, "h": 8},
+        "type": "graph",
+        "title": "CPU 和内存使用率",
+        "targets": [
+          {
+            "expr": "sum(rate(container_cpu_usage_seconds_total{namespace=\"$namespace\", container=\"backend\"}[5m])) by (pod)",
+            "legendFormat": "CPU - {{pod}}",
+            "yAxis": 1
+          },
+          {
+            "expr": "sum(container_memory_working_set_bytes{namespace=\"$namespace\", container=\"backend\"}) by (pod) / sum(container_spec_memory_limit_bytes{namespace=\"$namespace\", container=\"backend\"}) by (pod) * 100",
+            "legendFormat": "Memory - {{pod}}",
+            "yAxis": 2
+          }
+        ],
+        "yAxes": [
+          {"format": "percent", "label": "CPU Usage", "min": 0, "max": 100},
+          {"format": "percent", "label": "Memory Usage", "min": 0, "max": 100}
+        ]
+      },
+      {
+        "id": 6,
+        "gridPos": {"x": 12, "y": 4, "w": 12, "h": 8},
+        "type": "graph",
+        "title": "API 请求量",
+        "targets": [
+          {
+            "expr": "sum(rate(http_requests_total[5m])) by (status)",
+            "legendFormat": "HTTP {{status}}"
+          }
+        ],
+        "yAxes": [
+          {"format": "reqps", "label": "Requests/s"}
+        ]
+      },
+      {
+        "id": 7,
+        "gridPos": {"x": 0, "y": 12, "w": 12, "h": 8},
+        "type": "graph",
+        "title": "响应时间分布",
+        "targets": [
+          {
+            "expr": "histogram_quantile(0.50, sum(rate(http_request_duration_seconds_bucket[5m])) by (le))",
+            "legendFormat": "P50"
+          },
+          {
+            "expr": "histogram_quantile(0.95, sum(rate(http_request_duration_seconds_bucket[5m])) by (le))",
+            "legendFormat": "P95"
+          },
+          {
+            "expr": "histogram_quantile(0.99, sum(rate(http_request_duration_seconds_bucket[5m])) by (le))",
+            "legendFormat": "P99"
+          }
+        ],
+        "yAxes": [
+          {"format": "s", "label": "Duration", "min": 0}
+        ]
+      },
+      {
+        "id": 8,
+        "gridPos": {"x": 12, "y": 12, "w": 12, "h": 8},
+        "type": "table",
+        "title": "Pod 资源使用 Top5",
+        "targets": [
+          {
+            "expr": "topk(5, sum(rate(container_cpu_usage_seconds_total{namespace=\"$namespace\", container=\"backend\"}[5m])) by (pod))",
+            "format": "table",
+            "instant": true
+          }
+        ],
+        "transformations": [
+          {
+            "id": "organize",
+            "options": {
+              "renameByName": {
+                "pod": "Pod",
+                "Value": "CPU Usage"
+              }
+            }
+          }
+        ]
+      }
+    ]
+  }
+}

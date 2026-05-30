@@ -1,362 +1,80 @@
-.digital-twin-lab {
-  display: flex;
-  flex-direction: column;
-  height: 100vh;
-  background: #f5f5f5;
+s:host {
+  --panel-width: 320px;
+  --toolbar-height: 72px;
+  --component-col: 2;
 }
 
-.loading-container, .error-container {
-  display: flex;
-  flex-direction: column;
-  justify-content: center;
-  align-items: center;
-  gap: 16px;
-  height: 100%;
-}
+.digital-twin-lab { display: flex; flex-direction: column; height: 100vh; background: #f5f5f5; }
+.loading-container, .error-container { display: flex; flex-direction: column; justify-content: center; align-items: center; gap: 16px; height: 100%; }
+.error-container { text-align: center; mat-icon { width: 48px; height: 48px; color: #f44336; font-size: 48px; } h2 { margin: 0; color: #333; } p { margin: 8px 0; color: #666; } }
+.lab-container { display: flex; flex: 1; flex-direction: column; }
+.toolbar { z-index: 10; display: flex; align-items: center; gap: 24px; padding: 16px 24px; height: var(--toolbar-height); background: #fff; box-shadow: 0 2px 4px rgb(0 0 0 / 10%); .session-info { flex: 1; h1 { margin: 0 0 4px; color: #333; font-size: 20px; font-weight: 500; } p { margin: 0; color: #666; font-size: 14px; } } .connection-status { display: flex; align-items: center; gap: 8px; padding: 8px 16px; border-radius: 20px; background: #f0f0f0; mat-icon { &.connected { color: #4caf50; } &.disconnected { color: #f44336; } } span { font-size: 14px; font-weight: 500; } } .toolbar-controls { display: flex; gap: 8px; } }
+.main-content { display: flex; overflow: hidden; flex: 1; }
+.unity-section { position: relative; flex: 1; min-width: 0; }
+.unity-container { position: relative; width: 100%; height: 100%; background: #000; &.fullscreen { position: fixed; top: 0; left: 0; z-index: 1000; width: 100vw; height: 100vh; } }
+.unity-loading { position: absolute; inset: 0; display: flex; flex-direction: column; justify-content: center; align-items: center; gap: 16px; background: #000; color: #fff; p { margin: 0; font-size: 16px; } }
+.control-panel { display: flex; overflow-y: auto; flex-direction: column; gap: 16px; width: var(--panel-width); padding: 16px; border-left: 1px solid #e0e0e0; background: #fff; }
+.control-section mat-card-header { padding-bottom: 12px; }
+.control-section mat-card-header mat-card-title { color: #333; font-size: 16px; font-weight: 500; }
+.control-section mat-card-content { padding: 0; }
+.control-group { display: flex; flex-direction: column; gap: 12px; padding: 0 16px 16px; }
+.control-group button { justify-content: flex-start; gap: 8px; }
+.status-info { padding: 0 16px 16px; }
+.status-info p { margin: 8px 0; color: #666; font-size: 14px; }
+.status-info p:first-child { margin-top: 0; }
+.device-stats { padding: 0 16px 16px; }
+.device-stats p { margin: 8px 0; color: #666; font-size: 14px; }
+.component-library { display: grid; grid-template-columns: repeat(var(--component-col), 1fr); gap: 12px; padding: 0 16px 16px; }
+.component-library button { flex-direction: column; gap: 8px; min-height: 60px; }
+.component-library button mat-icon { width: 20px; height: 20px; font-size: 20px; }
+.component-library button span { font-size: 12px; }
+.monitoring-data { display: flex; flex-direction: column; gap: 12px; padding: 0 16px 16px; }
+.element-monitor { padding: 12px; border: 1px solid #e0e0e0; border-radius: 8px; background: #fafafa; }
+.element-monitor .element-header { display: flex; justify-content: space-between; margin-bottom: 8px; }
+.element-monitor .element-header .element-id { color: #333; font-size: 14px; font-weight: 500; }
+.element-monitor .element-header .element-type { padding: 2px 8px; border-radius: 12px; background: #e0e0e0; color: #666; font-size: 12px; }
+.element-monitor .element-values { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
+.element-monitor .element-values .value-item { display: flex; justify-content: space-between; font-size: 13px; }
+.element-monitor .element-values .value-item .label { color: #666; }
+.element-monitor .element-values .value-item .value { color: #333; font-weight: 500; }
+.no-data { padding: 24px; color: #999; text-align: center; }
+.no-data p { margin: 0; font-size: 14px; }
 
-.error-container {
-  text-align: center;
-
-  mat-icon {
-    width: 48px;
-    height: 48px;
-    font-size: 48px;
-    color: #f44336;
-  }
-
-  h2 {
-    margin: 0;
-    color: #333;
-  }
-
-  p {
-    margin: 8px 0;
-    color: #666;
-  }
-}
-
-.lab-container {
-  display: flex;
-  flex-direction: column;
-  flex: 1;
-}
-
-/* 工具栏样式 */
-.toolbar {
-  z-index: 10;
-  display: flex;
-  align-items: center;
-  gap: 24px;
-  padding: 16px 24px;
-  background: #fff;
-  box-shadow: 0 2px 4px rgb(0 0 0 / 10%);
-
-  .session-info {
-    flex: 1;
-
-    h1 {
-      margin: 0 0 4px;
-      font-weight: 500;
-      font-size: 20px;
-      color: #333;
-    }
-
-    p {
-      margin: 0;
-      font-size: 14px;
-      color: #666;
-    }
-  }
-
-  .connection-status {
-    display: flex;
-    align-items: center;
-    gap: 8px;
-    padding: 8px 16px;
-    border-radius: 20px;
-    background: #f0f0f0;
-
-    mat-icon {
-      &.connected {
-        color: #4caf50;
-      }
-
-      &.disconnected {
-        color: #f44336;
-      }
-    }
-
-    span {
-      font-weight: 500;
-      font-size: 14px;
-    }
-  }
-
-  .toolbar-controls {
-    display: flex;
-    gap: 8px;
-  }
-}
-
-/* 主内容区域 */
-.main-content {
-  display: flex;
-  overflow: hidden;
-  flex: 1;
-}
-
-/* Unity区域 */
-.unity-section {
-  position: relative;
-  flex: 1;
-  min-width: 0;
-}
-
-.unity-container {
-  position: relative;
-  width: 100%;
-  height: 100%;
-  background: #000;
-
-  &.fullscreen {
-    position: fixed;
-    top: 0;
-    left: 0;
-    z-index: 1000;
-    width: 100vw;
-    height: 100vh;
-  }
-}
-
-.unity-loading {
-  position: absolute;
-  display: flex;
-  flex-direction: column;
-  justify-content: center;
-  align-items: center;
-  gap: 16px;
-  background: #000;
-  color: #fff;
-  inset: 0;
-
-  p {
-    margin: 0;
-    font-size: 16px;
-  }
-}
-
-/* 控制面板 */
-.control-panel {
-  display: flex;
-  overflow-y: auto;
-  flex-direction: column;
-  gap: 16px;
-  width: 320px;
-  padding: 16px;
-  border-left: 1px solid #e0e0e0;
-  background: #fff;
-}
-
-.control-section {
-  mat-card-header {
-    padding-bottom: 12px;
-
-    mat-card-title {
-      font-weight: 500;
-      font-size: 16px;
-      color: #333;
-    }
-  }
-
-  mat-card-content {
-    padding: 0;
-  }
-}
-
-/* 控制组 */
-.control-group {
-  display: flex;
-  flex-direction: column;
-  gap: 12px;
-  padding: 0 16px 16px;
-
-  button {
-    justify-content: flex-start;
-    gap: 8px;
-  }
-}
-
-/* 状态信息 */
-.status-info {
-  padding: 0 16px 16px;
-
-  p {
-    margin: 8px 0;
-    font-size: 14px;
-    color: #666;
-
-    &:first-child {
-      margin-top: 0;
-    }
-  }
-}
-
-/* 设备统计 */
-.device-stats {
-  padding: 0 16px 16px;
-
-  p {
-    margin: 8px 0;
-    font-size: 14px;
-    color: #666;
-  }
-}
-
-/* 元件库 */
-.component-library {
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 12px;
-  padding: 0 16px 16px;
-
-  button {
-    flex-direction: column;
-    gap: 8px;
-    min-height: 60px;
-
-    mat-icon {
-      width: 20px;
-      height: 20px;
-      font-size: 20px;
-    }
-
-    span {
-      font-size: 12px;
-    }
-  }
-}
-
-/* 监控数据 */
-.monitoring-data {
-  display: flex;
-  flex-direction: column;
-  gap: 12px;
-  padding: 0 16px 16px;
-}
-
-.element-monitor {
-  padding: 12px;
-  border: 1px solid #e0e0e0;
-  border-radius: 8px;
-  background: #fafafa;
-
-  .element-header {
-    display: flex;
-    justify-content: space-between;
-    margin-bottom: 8px;
-
-    .element-id {
-      font-weight: 500;
-      font-size: 14px;
-      color: #333;
-    }
-
-    .element-type {
-      padding: 2px 8px;
-      border-radius: 12px;
-      background: #e0e0e0;
-      font-size: 12px;
-      color: #666;
-    }
-  }
-
-  .element-values {
-    display: grid;
-    grid-template-columns: 1fr 1fr;
-    gap: 8px;
-
-    .value-item {
-      display: flex;
-      justify-content: space-between;
-      font-size: 13px;
-
-      .label {
-        color: #666;
-      }
-
-      .value {
-        font-weight: 500;
-        color: #333;
-      }
-    }
-  }
-}
-
-.no-data {
-  padding: 24px;
-  text-align: center;
-  color: #999;
-
-  p {
-    margin: 0;
-    font-size: 14px;
-  }
-}
-
-/* 响应式设计 */
+/* ===== 响应式：中屏 (≤1200px) ===== */
 @media (width <= 1200px) {
-  .control-panel {
-    width: 280px;
-  }
-
-  .component-library {
-    grid-template-columns: 1fr;
-  }
+  :host { --panel-width: 280px; --component-col: 1; }
 }
 
+/* ===== 响应式：移动端 (≤768px) ===== */
 @media (width <= 768px) {
-  .main-content {
-    flex-direction: column;
-  }
-
-  .control-panel {
-    width: 100%;
-    max-height: 300px;
-    border-top: 1px solid #e0e0e0;
-    border-left: none;
-  }
-
-  .toolbar {
-    flex-wrap: wrap;
-    gap: 16px;
-
-    .session-info {
-      min-width: 200px;
-    }
-  }
+  .main-content { flex-direction: column; }
+  .control-panel { width: 100%; max-height: 300px; border-top: 1px solid #e0e0e0; border-left: none; }
+  .toolbar { flex-wrap: wrap; gap: 16px; height: auto; }
+  .toolbar .session-info { min-width: 200px; }
 }
 
-/* 暗色主题支持 */
-@media (prefers-color-scheme: dark) {
-  .digital-twin-lab {
-    background: #121212;
+/* ===== 响应式：大屏桌面 (≥1600px) ===== */
+@media (min-width: 1600px) {
+  :host {
+    --panel-width: 380px;
+    --component-col: 3;
   }
 
-  .toolbar, .control-panel {
-    background: #1e1e1e;
-    color: #fff;
-  }
-
-  .connection-status {
-    background: #333;
-  }
-
-  .element-monitor {
-    border-color: #444;
-    background: #2d2d2d;
-  }
-
-  .status-info p, .device-stats p {
-    color: #ccc;
-  }
+  .toolbar { padding: 20px 40px; }
+  .control-panel { padding: 20px; gap: 20px; }
+  .control-section mat-card-header mat-card-title { font-size: 18px; }
+  .element-monitor .element-values { grid-template-columns: 1fr 1fr 1fr; }
 }
+
+/* ===== 响应式：超宽屏 (≥2000px) ===== */
+@media (min-width: 2000px) {
+  :host {
+    --panel-width: 420px;
+    --component-col: 4;
+  }
+
+  .toolbar { padding: 24px 56px; }
+  .control-panel { padding: 24px; gap: 24px; }
+}
+
+@media (prefers-color-scheme: dark) { .digital-twin-lab { background: #121212; } .toolbar, .control-panel { background: #1e1e1e; color: #fff; } .connection-status { background: #333; } .element-monitor { border-color: #444; background: #2d2d2d; } .status-info p, .device-stats p { color: #ccc; } }

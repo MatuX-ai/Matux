@@ -1,0 +1,91 @@
+{
+  "common": {
+    "loading": "加载中...",
+    "error": "出错了",
+    "success": "成功",
+    "cancel": "取消",
+    "confirm": "确认",
+    "save": "保存",
+    "delete": "删除",
+    "edit": "编辑",
+    "search": "搜索",
+    "filter": "筛选",
+    "refresh": "刷新"
+  },
+  "nav": {
+    "home": "首页",
+    "features": "功能",
+    "pricing": "价格",
+    "about": "关于",
+    "contact": "联系",
+    "admin": "管理后台",
+    "dashboard": "仪表盘",
+    "aiEdu": "AI教育",
+    "arLab": "AR实验室"
+  },
+  "home": {
+    "title": "MatuX - 欢迎来到机器人的世界！",
+    "subtitle": "探索AI教育与AR技术的无限可能",
+    "heroTitle": "开启智能学习之旅",
+    "heroSubtitle": "利用最先进的AI和AR技术,打造沉浸式学习体验",
+    "getStarted": "立即开始",
+    "learnMore": "了解更多"
+  },
+  "pricing": {
+    "title": "选择适合您的方案",
+    "subtitle": "灵活的价格选项,满足不同需求",
+    "free": {
+      "name": "免费版",
+      "price": "¥0",
+      "features": [
+        "基础课程访问",
+        "社区支持",
+        "有限存储空间"
+      ]
+    },
+    "pro": {
+      "name": "专业版",
+      "price": "¥99/月",
+      "features": [
+        "所有课程访问",
+        "优先支持",
+        "无限存储空间",
+        "离线学习"
+      ]
+    },
+    "enterprise": {
+      "name": "企业版",
+      "price": "定制",
+      "features": [
+        "所有专业版功能",
+        "定制化课程",
+        "专属客服",
+        "数据分析报告"
+      ]
+    }
+  },
+  "contact": {
+    "title": "联系我们",
+    "subtitle": "有任何问题？随时与我们取得联系",
+    "name": "姓名",
+    "email": "邮箱",
+    "message": "留言",
+    "send": "发送"
+  },
+  "about": {
+    "title": "关于我们",
+    "subtitle": "了解MatuX的使命和愿景",
+    "mission": "通过AI和AR技术,让学习更加有趣、高效",
+    "vision": "成为全球领先的AI教育平台"
+  },
+  "pwa": {
+    "installPrompt": "安装到桌面",
+    "notNow": "暂不安装",
+    "installing": "安装中...",
+    "installed": "安装成功！",
+    "offline": "当前处于离线状态,部分功能可能不可用",
+    "reconnected": "网络已重新连接",
+    "updateAvailable": "发现新版本,点击立即更新",
+    "update": "更新"
+  }
+}

@@ -1,0 +1,146 @@
+/**
+ * Mac 风格导航栏样式
+ */
+@use '../mac-theme';
+
+.mac-navbar {
+  background: rgba(255, 255, 255, 0.8);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+  border-bottom: 1px solid var(--color-brand-200, rgba(0, 0, 0, 0.05));
+  transition: all var(--transition-normal);
+
+  &.scrolled {
+    background: rgba(255, 255, 255, 0.95);
+    box-shadow: var(--shadow-sm);
+  }
+}
+
+.mac-navbar-container {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  height: 52px;
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 0 24px;
+}
+
+.mac-navbar-brand {
+  font-size: var(--font-size-lg);
+  font-weight: var(--font-weight-semibold, 600);
+  color: var(--color-brand-800);
+  text-decoration: none;
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-sm, 8px);
+
+      &:hover {
+        color: var(--gradient-primary-start, #0B1426);
+      }
+}
+
+.mac-navbar-menu {
+  display: flex;
+  align-items: center;
+}
+
+.mac-navbar-list {
+  display: flex;
+  list-style: none;
+  gap: var(--spacing-2xl, 32px);
+  margin: 0;
+  padding: 0;
+}
+
+.mac-navbar-link {
+  font-size: var(--font-size-sm);
+  color: var(--color-brand-500);
+  text-decoration: none;
+  transition: color var(--transition-fast);
+
+  &:hover {
+    color: var(--color-brand-800);
+  }
+}
+
+.mac-navbar-actions {
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-md, 12px);
+}
+
+.mac-navbar-toggle {
+  display: none;
+  flex-direction: column;
+  gap: 5px;
+  padding: 8px;
+  background: none;
+  border: none;
+  cursor: pointer;
+
+  span {
+    width: 20px;
+    height: 2px;
+    background: var(--color-brand-800);
+    transition: all var(--transition-normal);
+  }
+
+  &.active {
+    span:nth-child(1) {
+      transform: rotate(45deg) translate(5px, 5px);
+    }
+    span:nth-child(2) {
+      opacity: 0;
+    }
+    span:nth-child(3) {
+      transform: rotate(-45deg) translate(7px, -6px);
+    }
+  }
+}
+
+.mac-navbar-mobile-menu {
+  display: none;
+  position: absolute;
+  top: 52px;
+  left: 0;
+  right: 0;
+  background: white;
+  border-bottom: 1px solid var(--color-brand-200);
+  box-shadow: var(--shadow-md);
+  padding: var(--spacing-lg) var(--spacing-xl);
+  z-index: 999;
+
+  ul {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+
+    li {
+      margin-bottom: var(--spacing-lg);
+
+      a {
+        font-size: var(--font-size-base);
+        color: var(--color-brand-800);
+        text-decoration: none;
+        display: block;
+        padding: var(--spacing-sm) 0;
+      }
+    }
+  }
+}
+
+@media (max-width: 768px) {
+  .mac-navbar-menu,
+  .mac-navbar-actions {
+    display: none;
+  }
+
+  .mac-navbar-toggle {
+    display: flex;
+  }
+
+  .mac-navbar-mobile-menu {
+    display: block;
+  }
+}

@@ -1,0 +1,149 @@
+@use '../../../../styles/design-tokens' as tokens;
+
+.dialog-content {
+  min-width: 480px;
+  max-width: 600px;
+
+  .warning-section {
+    display: flex;
+    align-items: flex-start;
+    gap: tokens.$spacing-md;
+    margin-bottom: tokens.$spacing-lg;
+    padding: tokens.$spacing-md;
+    background-color: tokens.$color-warning-light;
+    border-radius: tokens.$radius-md;
+    border-left: 4px solid tokens.$color-warning;
+
+    .warning-icon {
+      font-size: tokens.$font-size-xl;
+      width: tokens.$font-size-xl;
+      height: tokens.$font-size-xl;
+      margin-top: 2px;
+    }
+
+    .warning-text {
+      margin: 0;
+      color: tokens.$color-warning-dark;
+      font-size: tokens.$font-size-sm;
+      line-height: 1.5;
+    }
+  }
+
+  .module-info {
+    h3 {
+      margin: 0 0 tokens.$spacing-md 0;
+      font-size: tokens.$font-size-lg;
+      font-weight: 500;
+      color: tokens.$color-neutral-800;
+    }
+
+    .info-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: tokens.$spacing-md;
+      margin-bottom: tokens.$spacing-lg;
+
+      .info-item {
+        display: flex;
+        flex-direction: column;
+        gap: tokens.$spacing-xs;
+
+        .label {
+          font-size: tokens.$font-size-xs;
+          color: tokens.$color-neutral-600;
+          font-weight: 500;
+          text-transform: uppercase;
+        }
+
+        .value {
+          font-size: tokens.$font-size-sm;
+          color: tokens.$color-neutral-800;
+          font-weight: 500;
+        }
+
+        .highlight {
+          color: tokens.$color-brand-primary;
+          font-weight: 600;
+        }
+
+        .table-code {
+          background-color: tokens.$color-neutral-100;
+          padding: tokens.$spacing-xs tokens.$spacing-sm;
+          border-radius: tokens.$radius-sm;
+          font-family: 'Courier New', monospace;
+          font-size: tokens.$font-size-xs;
+          color: tokens.$color-error-dark;
+        }
+
+        .category-chip {
+          align-self: flex-start;
+          font-size: tokens.$font-size-xs;
+          min-height: 24px;
+        }
+
+        .version-badge {
+          background-color: tokens.$color-brand-primary-light;
+          color: tokens.$color-brand-primary;
+          padding: tokens.$spacing-xs tokens.$spacing-sm;
+          border-radius: tokens.$radius-full;
+          font-size: tokens.$font-size-xs;
+          font-weight: 500;
+          align-self: flex-start;
+        }
+      }
+    }
+
+    .description-section {
+      .label {
+        display: block;
+        font-size: tokens.$font-size-xs;
+        color: tokens.$color-neutral-600;
+        font-weight: 500;
+        text-transform: uppercase;
+        margin-bottom: tokens.$spacing-sm;
+      }
+
+      .description {
+        margin: 0;
+        color: tokens.$color-neutral-800;
+        font-size: tokens.$font-size-sm;
+        line-height: 1.5;
+        background-color: tokens.$color-neutral-50;
+        padding: tokens.$spacing-md;
+        border-radius: tokens.$radius-sm;
+        border-left: 3px solid tokens.$color-brand-primary; // 藏青色左边框
+      }
+    }
+  }
+
+  .current-status {
+    .status-item {
+      display: flex;
+      align-items: center;
+      gap: tokens.$spacing-md;
+      margin-bottom: tokens.$spacing-md;
+
+      .label {
+        font-size: tokens.$font-size-sm;
+        color: tokens.$color-neutral-600;
+        min-width: 80px;
+      }
+    }
+  }
+
+  mat-divider {
+    margin: tokens.$spacing-lg 0;
+  }
+}
+
+// 响应式设计
+@media (max-width: 600px) {
+  .dialog-content {
+    min-width: unset;
+    width: 100%;
+
+    .info-grid {
+      grid-template-columns: 1fr !important;
+    }
+  }
+}

@@ -1,0 +1,540 @@
+/* 对话框头部 */
+h2[mat-dialog-title] {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  font-size: 20px;
+  font-weight: 600;
+  margin: 0;
+
+  mat-icon {
+    color: var(--mat-sys-primary);
+  }
+}
+
+/* 对话框内容 */
+.dialog-content {
+  padding: 20px 0;
+  min-width: 550px;
+  max-height: 600px;
+  overflow-y: auto;
+}
+
+/* 加载状态 */
+.loading-container {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  min-height: 400px;
+  gap: 16px;
+
+  p {
+    margin: 0;
+    color: var(--mat-sys-on-surface-variant);
+  }
+}
+
+/* 报告头部 */
+.report-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  padding: 20px;
+  background-color: var(--mat-sys-primary-container);
+  border-radius: 8px;
+
+  .header-left {
+    flex: 1;
+
+    .report-title {
+      margin: 0 0 8px 0;
+      font-size: 22px;
+      font-weight: 600;
+      color: var(--mat-sys-on-primary-container);
+    }
+
+    .report-period {
+      margin: 0 0 12px 0;
+      font-size: 14px;
+      color: var(--mat-sys-on-primary-container);
+      opacity: 0.9;
+    }
+
+    .report-meta {
+      display: flex;
+      gap: 16px;
+      flex-wrap: wrap;
+
+      .meta-item {
+        display: flex;
+        align-items: center;
+        gap: 6px;
+        font-size: 13px;
+        color: var(--mat-sys-on-primary-container);
+
+        mat-icon {
+          font-size: 16px;
+          width: 16px;
+          height: 16px;
+        }
+      }
+    }
+  }
+
+  .header-right {
+    flex-shrink: 0;
+    margin-left: 20px;
+
+    .score-circle {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      width: 80px;
+      height: 80px;
+      background-color: white;
+      border-radius: 50%;
+      box-shadow: var(--mat-sys-elevation-2);
+
+      .score-value {
+        font-size: 32px;
+        font-weight: 700;
+        color: var(--mat-sys-primary);
+        line-height: 1;
+      }
+
+      .score-label {
+        font-size: 12px;
+        color: var(--mat-sys-on-surface-variant);
+        margin-top: 4px;
+      }
+    }
+  }
+}
+
+/* 详细信息标签页 */
+.detail-tabs {
+  ::ng-deep .mat-mdc-tab-header {
+    margin-top: 20px;
+  }
+
+  .tab-content {
+    padding: 20px 0;
+  }
+}
+
+/* 学习统计 */
+.stats-content {
+  .stats-grid {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 16px;
+  }
+
+  .stat-item {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 16px;
+    background-color: var(--mat-sys-surface-container);
+    border-radius: 8px;
+
+    .stat-icon {
+      font-size: 32px;
+      width: 32px;
+      height: 32px;
+      color: var(--mat-sys-primary);
+      flex-shrink: 0;
+    }
+
+    .stat-info {
+      display: flex;
+      flex-direction: column;
+      gap: 2px;
+
+      .stat-label {
+        font-size: 12px;
+        color: var(--mat-sys-on-surface-variant);
+      }
+
+      .stat-value {
+        font-size: 20px;
+        font-weight: 600;
+        color: var(--mat-sys-on-surface);
+      }
+    }
+  }
+}
+
+/* 课程成绩 */
+.grades-content {
+  .grades-list {
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+  }
+
+  .grade-item {
+    padding: 16px;
+    background-color: var(--mat-sys-surface-container);
+    border-radius: 8px;
+
+    .grade-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 12px;
+
+      .course-name {
+        margin: 0;
+        font-size: 16px;
+        font-weight: 500;
+        color: var(--mat-sys-on-surface);
+      }
+
+      .grade-score {
+        display: flex;
+        align-items: baseline;
+        gap: 4px;
+        padding: 8px 12px;
+        border-radius: 20px;
+        background-color: var(--mat-sys-surface);
+
+        .score-value {
+          font-size: 24px;
+          font-weight: 700;
+          color: var(--mat-sys-on-surface);
+        }
+
+        .score-label {
+          font-size: 12px;
+          color: var(--mat-sys-on-surface-variant);
+        }
+
+        &.grade-excellent {
+          background-color: var(--mat-sys-success);
+          .score-value,
+          .score-label {
+            color: white;
+          }
+        }
+
+        &.grade-good {
+          background-color: var(--mat-sys-primary);
+          .score-value,
+          .score-label {
+            color: white;
+          }
+        }
+
+        &.grade-average {
+          background-color: var(--mat-sys-tertiary);
+          .score-value,
+          .score-label {
+            color: white;
+          }
+        }
+
+        &.grade-needs_improvement {
+          background-color: var(--mat-sys-error);
+          .score-value,
+          .score-label {
+            color: white;
+          }
+        }
+      }
+    }
+
+    .grade-body {
+      .grade-meta {
+        display: flex;
+        gap: 16px;
+        margin-bottom: 8px;
+        flex-wrap: wrap;
+
+        .meta-item {
+          display: flex;
+          align-items: center;
+          gap: 4px;
+          font-size: 13px;
+          color: var(--mat-sys-on-surface-variant);
+
+          mat-icon {
+            font-size: 16px;
+            width: 16px;
+            height: 16px;
+          }
+        }
+      }
+
+      .grade-comment {
+        display: flex;
+        align-items: flex-start;
+        gap: 8px;
+        padding: 12px;
+        background-color: var(--mat-sys-surface);
+        border-radius: 6px;
+
+        mat-icon {
+          flex-shrink: 0;
+          font-size: 18px;
+          width: 18px;
+          height: 18px;
+          color: var(--mat-sys-primary);
+        }
+
+        .comment-text {
+          font-size: 13px;
+          line-height: 1.5;
+          color: var(--mat-sys-on-surface);
+        }
+      }
+    }
+  }
+
+  .no-data {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    min-height: 200px;
+    gap: 12px;
+
+    mat-icon {
+      font-size: 48px;
+      width: 48px;
+      height: 48px;
+      color: var(--mat-sys-outline-variant);
+    }
+
+    p {
+      margin: 0;
+      color: var(--mat-sys-on-surface-variant);
+    }
+  }
+}
+
+/* 能力评估 */
+.competency-content {
+  .competency-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+    gap: 16px;
+  }
+
+  .competency-card {
+    padding: 16px;
+
+    .competency-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 12px;
+
+      .dimension-name {
+        margin: 0;
+        font-size: 15px;
+        font-weight: 500;
+        color: var(--mat-sys-on-surface);
+      }
+
+      .competency-score {
+        display: flex;
+        align-items: baseline;
+        gap: 2px;
+
+        .score-value {
+          font-size: 20px;
+          font-weight: 700;
+          color: var(--mat-sys-primary);
+        }
+
+        .score-max {
+          font-size: 12px;
+          color: var(--mat-sys-on-surface-variant);
+        }
+      }
+    }
+
+    .competency-body {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      margin-bottom: 8px;
+
+      .progress-bar {
+        flex: 1;
+        height: 6px;
+        background-color: var(--mat-sys-surface);
+        border-radius: 3px;
+        overflow: hidden;
+
+        .progress-fill {
+          height: 100%;
+          background-color: var(--mat-sys-primary);
+          border-radius: 3px;
+        }
+      }
+
+      .progress-text {
+        font-size: 12px;
+        color: var(--mat-sys-on-surface-variant);
+        min-width: 40px;
+        text-align: right;
+      }
+    }
+
+    .competency-desc {
+      padding-top: 8px;
+      border-top: 1px solid var(--mat-sys-outline-variant);
+
+      p {
+        margin: 0;
+        font-size: 13px;
+        line-height: 1.5;
+        color: var(--mat-sys-on-surface-variant);
+      }
+    }
+  }
+
+  .no-data {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    min-height: 200px;
+    gap: 12px;
+
+    mat-icon {
+      font-size: 48px;
+      width: 48px;
+      height: 48px;
+      color: var(--mat-sys-outline-variant);
+    }
+
+    p {
+      margin: 0;
+      color: var(--mat-sys-on-surface-variant);
+    }
+  }
+}
+
+/* 学习建议 */
+.recommendations-content {
+  .recommendations-list {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+  }
+
+  .recommendation-item {
+    display: flex;
+    align-items: flex-start;
+    gap: 12px;
+    padding: 16px;
+    background-color: var(--mat-sys-secondary-container);
+    border-radius: 8px;
+    border-left: 4px solid var(--mat-sys-secondary);
+
+    .recommendation-icon {
+      flex-shrink: 0;
+      font-size: 20px;
+      width: 20px;
+      height: 20px;
+      color: var(--mat-sys-on-secondary-container);
+    }
+
+    .recommendation-text {
+      margin: 0;
+      font-size: 14px;
+      line-height: 1.6;
+      color: var(--mat-sys-on-secondary-container);
+    }
+  }
+
+  .no-data {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    min-height: 200px;
+    gap: 12px;
+
+    mat-icon {
+      font-size: 48px;
+      width: 48px;
+      height: 48px;
+      color: var(--mat-sys-outline-variant);
+    }
+
+    p {
+      margin: 0;
+      color: var(--mat-sys-on-surface-variant);
+    }
+  }
+}
+
+/* 响应式设计 */
+@media (max-width: 600px) {
+  .dialog-content {
+    min-width: 350px;
+  }
+
+  .report-header {
+    flex-direction: column;
+    gap: 16px;
+    text-align: center;
+
+    .header-right {
+      margin-left: 0;
+      margin-top: 16px;
+    }
+  }
+
+  .stats-content {
+    .stats-grid {
+      grid-template-columns: 1fr;
+    }
+  }
+
+  .competency-content {
+    .competency-grid {
+      grid-template-columns: 1fr;
+    }
+  }
+}
+
+/* 深色模式适配 */
+@media (prefers-color-scheme: dark) {
+  .report-header {
+    background-color: var(--mat-sys-secondary-container);
+
+    .header-left {
+      .report-title,
+      .report-period,
+      .report-meta .meta-item {
+        color: var(--mat-sys-on-secondary-container);
+      }
+    }
+  }
+
+  .stat-item,
+  .grade-item,
+  .competency-card {
+    background-color: var(--mat-sys-surface);
+  }
+
+  .recommendation-item {
+    background-color: var(--mat-sys-surface-container-high);
+    border-left-color: var(--mat-sys-primary);
+
+    .recommendation-icon {
+      color: var(--mat-sys-primary);
+    }
+
+    .recommendation-text {
+      color: var(--mat-sys-on-surface);
+    }
+  }
+}

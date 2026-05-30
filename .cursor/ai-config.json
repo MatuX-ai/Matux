@@ -1,0 +1,67 @@
+{
+  "aiAssistants": {
+    "primary": {
+      "name": "主AI助手",
+      "provider": "openai",
+      "model": "gpt-4-turbo",
+      "temperature": 0.7,
+      "maxTokens": 2000,
+      "systemPrompt": "你是一个专业的全栈开发工程师，熟悉Python/FastAPI后端和Angular/TypeScript前端开发。请提供高质量、符合最佳实践的代码解决方案。",
+      "capabilities": [
+        "codeGeneration",
+        "codeReview",
+        "architectureDesign",
+        "debugging",
+        "optimization",
+        "documentation"
+      ]
+    },
+    "secondary": {
+      "name": "代码审查助手",
+      "provider": "openai",
+      "model": "gpt-4",
+      "temperature": 0.3,
+      "maxTokens": 1500,
+      "systemPrompt": "你是一个严格的代码审查专家，专注于代码质量、安全性和性能优化。请指出潜在问题并提供改进建议。",
+      "capabilities": [
+        "codeReview",
+        "securityAnalysis",
+        "performanceOptimization",
+        "bestPractices"
+      ]
+    }
+  },
+  "promptTemplates": {
+    "featureImplementation": {
+      "name": "功能实现",
+      "template": "请帮我实现在{framework}中{feature}功能。要求：{requirements}。需要考虑：{considerations}。"
+    },
+    "bugFix": {
+      "name": "Bug修复",
+      "template": "发现一个{severity}级别的bug：{description}。重现步骤：{reproduction}。请分析原因并提供修复方案。"
+    },
+    "codeReview": {
+      "name": "代码审查",
+      "template": "请审查以下代码的{aspects}方面：{codeSnippet}。重点关注{focusAreas}。"
+    },
+    "optimization": {
+      "name": "性能优化",
+      "template": "这段代码存在{performanceIssue}问题：{codeSnippet}。请提供优化建议，重点关注{optimizationGoals}。"
+    }
+  },
+  "knowledgeBase": {
+    "projectContext": {
+      "technologies": ["Python", "FastAPI", "Angular", "TypeScript", "PostgreSQL", "Redis"],
+      "architecture": "微服务架构，前后端分离",
+      "codingStandards": "遵循PEP8和Angular Style Guide",
+      "deployment": "Docker容器化部署"
+    },
+    "customInstructions": [
+      "优先使用异步编程模式",
+      "遵循RESTful API设计原则",
+      "使用类型注解提高代码可读性",
+      "编写单元测试确保代码质量",
+      "考虑错误处理和边界情况"
+    ]
+  }
+}

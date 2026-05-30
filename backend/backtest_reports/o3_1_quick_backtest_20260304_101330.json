@@ -1,0 +1,37 @@
+{
+  "timestamp": "2026-03-04T10:13:30.250452",
+  "tests": [
+    {
+      "name": "任务编排服务",
+      "passed": false
+    },
+    {
+      "name": "路由模块结构",
+      "passed": false
+    },
+    {
+      "name": "Notebook 文件",
+      "passed": false
+    }
+  ],
+  "summary": {
+    "total": 3,
+    "passed": 0,
+    "failed": 3,
+    "success_rate": "0.0%"
+  },
+  "deliverables": {
+    "backend_services": [
+      "backend/services/task_orchestration_service.py"
+    ],
+    "backend_routes": [
+      "backend/routes/linked_task_routes.py"
+    ],
+    "notebooks": [
+      "backend/notebooks/01_greenhouse_ai_training.ipynb"
+    ],
+    "documentation": [
+      "docs/O3.1_LINKED_TASK_DESIGN.md"
+    ]
+  }
+}

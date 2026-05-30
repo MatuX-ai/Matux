@@ -1,0 +1,60 @@
+# ---------------------------------------------------------------------------
+# "OrdererOrgs" - Definition of organizations managing orderer nodes
+# ---------------------------------------------------------------------------
+OrdererOrgs:
+  # ---------------------------------------------------------------------------
+  # Orderer
+  # ---------------------------------------------------------------------------
+  - Name: Orderer
+    Domain: example.com
+    EnableNodeOUs: true
+    # ---------------------------------------------------------------------------
+    # "Specs" - See PeerOrgs below for complete description
+    # ---------------------------------------------------------------------------
+    Specs:
+      - Hostname: orderer
+        SANS:
+          - localhost
+
+# ---------------------------------------------------------------------------
+# "PeerOrgs" - Definition of organizations managing peer nodes
+# ---------------------------------------------------------------------------
+PeerOrgs:
+  # ---------------------------------------------------------------------------
+  # 教育局组织 (Education Bureau)
+  # ---------------------------------------------------------------------------
+  - Name: EducationBureau
+    Domain: education.imatu.com
+    EnableNodeOUs: true
+    Template:
+      Count: 1
+      SANS:
+        - localhost
+    Users:
+      Count: 2
+
+  # ---------------------------------------------------------------------------
+  # 学校组织 (School)
+  # ---------------------------------------------------------------------------
+  - Name: School
+    Domain: school.imatu.com
+    EnableNodeOUs: true
+    Template:
+      Count: 1
+      SANS:
+        - localhost
+    Users:
+      Count: 2
+
+  # ---------------------------------------------------------------------------
+  # 企业组织 (Enterprise)
+  # ---------------------------------------------------------------------------
+  - Name: Enterprise
+    Domain: enterprise.imatu.com
+    EnableNodeOUs: true
+    Template:
+      Count: 1
+      SANS:
+        - localhost
+    Users:
+      Count: 2

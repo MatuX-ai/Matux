@@ -1,0 +1,61 @@
+{
+  "test_suite": "IssueIntegral功能回测",
+  "start_time": "2026-02-28T21:42:52.191264",
+  "end_time": "2026-02-28T21:42:53.866454",
+  "duration_seconds": 1.67519,
+  "total_tests": 7,
+  "passed_tests": 3,
+  "failed_tests": 4,
+  "pass_rate": 42.86,
+  "results": [
+    {
+      "test_name": "Fabric网络状态检查",
+      "status": "FAIL",
+      "message": "缺少必要容器: ['peer0.education.imatu.com', 'peer0.school.imatu.com', 'peer0.enterprise.imatu.com', 'orderer.example.com', 'cli']",
+      "details": "",
+      "timestamp": "2026-02-28T21:42:52.436233"
+    },
+    {
+      "test_name": "权限控制验证 - 教育局权限",
+      "status": "FAIL",
+      "message": "教育局发行积分失败",
+      "details": "Error response from daemon: Docker Desktop is unable to start",
+      "timestamp": "2026-02-28T21:42:52.666040"
+    },
+    {
+      "test_name": "数据持久化验证",
+      "status": "FAIL",
+      "message": "积分发行失败",
+      "details": "Error response from daemon: Docker Desktop is unable to start",
+      "timestamp": "2026-02-28T21:42:52.908762"
+    },
+    {
+      "test_name": "业务逻辑验证 - 第1次发行",
+      "status": "FAIL",
+      "message": "发行失败: 100积分",
+      "details": "Error response from daemon: Docker Desktop is unable to start",
+      "timestamp": "2026-02-28T21:42:53.142298"
+    },
+    {
+      "test_name": "边界条件测试 - 零积分发行",
+      "status": "PASS",
+      "message": "正确拒绝无效请求",
+      "details": "",
+      "timestamp": "2026-02-28T21:42:53.384403"
+    },
+    {
+      "test_name": "边界条件测试 - 负积分发行",
+      "status": "PASS",
+      "message": "正确拒绝无效请求",
+      "details": "",
+      "timestamp": "2026-02-28T21:42:53.612771"
+    },
+    {
+      "test_name": "边界条件测试 - 空学生ID",
+      "status": "PASS",
+      "message": "正确拒绝无效请求",
+      "details": "",
+      "timestamp": "2026-02-28T21:42:53.866057"
+    }
+  ]
+}

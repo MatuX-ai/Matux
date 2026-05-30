@@ -1,4 +1,4 @@
-# iMatuProject 样式文档中心
+# MatuX Project 样式文档中心
 
 欢迎来到 iMatuProject 设计系统的样式文档中心！这里包含了所有关于我们的 SCSS 架构、组件和设计规范的详细信息。
 

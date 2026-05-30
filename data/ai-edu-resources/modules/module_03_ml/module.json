@@ -1,0 +1,13 @@
+{
+  "module_code": "ml_basics_01",
+  "name": "机器学习入门",
+  "description": "初步了解机器学习概念，体验 AI 模型训练过程",
+  "category": "machine_learning",
+  "grade_ranges": [
+    {"min": 6, "max": 9}
+  ],
+  "expected_lessons": 5,
+  "expected_duration_minutes": 100,
+  "is_active": true,
+  "display_order": 3
+}

@@ -1,0 +1,46 @@
+{
+  "lesson_code": "dp_01_sensor_basics",
+  "title": "传感器基础知识",
+  "subtitle": "认识各种常用的传感器",
+  "content_type": "hybrid",
+  "content_url": "",
+  "resources": [
+    {
+      "type": "video",
+      "url": "https://example.com/sensor-intro.mp4",
+      "title": "传感器介绍视频",
+      "description": "10 分钟动画介绍常见传感器类型"
+    },
+    {
+      "type": "code",
+      "url": "python/temperature_sensor.py",
+      "title": "温度传感器示例代码",
+      "description": "使用 Python 读取温度传感器数据"
+    },
+    {
+      "type": "interactive",
+      "url": "html/sensor_simulator.html",
+      "title": "传感器模拟器",
+      "description": "在线模拟各种传感器的工作原理"
+    }
+  ],
+  "learning_objectives": [
+    "了解常见传感器的类型和用途",
+    "掌握温度传感器的使用方法",
+    "能够编写简单的传感器读取程序"
+  ],
+  "knowledge_points": [
+    "传感器的定义和作用",
+    "数字传感器 vs 模拟传感器",
+    "GPIO 引脚的使用",
+    "ADC 模数转换原理"
+  ],
+  "estimated_duration_minutes": 25,
+  "has_quiz": true,
+  "quiz_passing_score": 70.0,
+  "has_practice": true,
+  "practice_type": "python",
+  "base_points": 25,
+  "is_active": true,
+  "display_order": 1
+}

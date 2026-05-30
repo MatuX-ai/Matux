@@ -1,0 +1,454 @@
+// MatuX Angular Material Theme - Mac 渐变紫风格
+// 基于 Material Design 3 的定制主题
+
+@use '@angular/material' as mat;
+@use '../design-tokens/matux-tokens' as *;
+
+// 渐变变量
+$gradient-primary: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+$gradient-secondary: linear-gradient(135deg, #4f46e5 0%, #7c3aed 100%);
+$gradient-success: linear-gradient(135deg, #10b981 0%, #059669 100%);
+$gradient-error: linear-gradient(135deg, #ef4444 0%, #dc2626 100%);
+$gradient-warning: linear-gradient(135deg, #f59e0b 0%, #d97706 100%);
+$gradient-info: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+
+// =============================================================================
+// 初始化 Material Design
+// =============================================================================
+
+@include mat.core();
+
+// =============================================================================
+// 定义调色板 - Color Palettes
+// =============================================================================
+
+// 主色调色板 - Navy Blue Primary
+$matux-primary-palette: mat.m2-define-palette((
+  50: $color-primary-50,
+  100: $color-primary-100,
+  200: $color-primary-200,
+  300: $color-primary-300,
+  400: $color-primary-400,
+  500: $color-primary-500,
+  600: $color-primary-600,
+  700: $color-primary-700,
+  800: $color-primary-800,
+  900: $color-primary-900,
+  A100: $color-primary-200,
+  A200: $color-primary-400,
+  A400: $color-primary-600,
+  A700: $color-primary-800,
+  contrast: (
+    50: $color-text-primary,
+    100: $color-text-primary,
+    200: $color-text-primary,
+    300: $color-text-primary,
+    400: $color-text-primary,
+    500: $color-text-white,
+    600: $color-text-white,
+    700: $color-text-white,
+    800: $color-text-white,
+    900: $color-text-white,
+    A100: $color-text-primary,
+    A200: $color-text-white,
+    A400: $color-text-white,
+    A700: $color-text-white,
+  )
+));
+
+// 辅助色调色板 - Indigo Accent
+$matux-accent-palette: mat.m2-define-palette((
+  50: $color-secondary-50,
+  100: $color-secondary-100,
+  200: $color-secondary-200,
+  300: $color-secondary-300,
+  400: $color-secondary-400,
+  500: $color-secondary-500,
+  600: $color-secondary-600,
+  700: $color-secondary-700,
+  800: $color-secondary-800,
+  900: $color-secondary-900,
+  A100: $color-secondary-200,
+  A200: $color-secondary-400,
+  A400: $color-secondary-600,
+  A700: $color-secondary-800,
+  contrast: (
+    50: $color-text-primary,
+    100: $color-text-primary,
+    200: $color-text-primary,
+    300: $color-text-primary,
+    400: $color-text-primary,
+    500: $color-text-white,
+    600: $color-text-white,
+    700: $color-text-white,
+    800: $color-text-white,
+    900: $color-text-white,
+    A100: $color-text-primary,
+    A200: $color-text-white,
+    A400: $color-text-white,
+    A700: $color-text-white,
+  )
+));
+
+// 警告色调色板 - Red Warn
+$matux-warn-palette: mat.m2-define-palette((
+  50: #fef2f2,
+  100: #fee2e2,
+  200: #fecaca,
+  300: #fca5a5,
+  400: #f87171,
+  500: #ef4444,
+  600: #dc2626,
+  700: #b91c1c,
+  800: #991b1b,
+  900: #7f1d1d,
+  A100: #fee2e2,
+  A200: #fca5a5,
+  A400: #ef4444,
+  A700: #b91c1c,
+  contrast: (
+    50: $color-text-primary,
+    100: $color-text-primary,
+    200: $color-text-primary,
+    300: $color-text-primary,
+    400: $color-text-primary,
+    500: $color-text-white,
+    600: $color-text-white,
+    700: $color-text-white,
+    800: $color-text-white,
+    900: $color-text-white,
+    A100: $color-text-primary,
+    A200: $color-text-primary,
+    A400: $color-text-white,
+    A700: $color-text-white,
+  )
+));
+
+// =============================================================================
+// 定义主题 - Define Themes
+// =============================================================================
+
+// 亮色主题 - Light Theme
+$matux-light-theme: mat.m2-define-light-theme((
+  color: (
+    primary: $matux-primary-palette,
+    accent: $matux-accent-palette,
+    warn: $matux-warn-palette,
+  ),
+  typography: mat.m2-define-typography-config(
+    $font-family: $font-family-sans,
+  ),
+));
+
+// 暗色主题 - Dark Theme
+$matux-dark-theme: mat.m2-define-dark-theme((
+  color: (
+    primary: $matux-primary-palette,
+    accent: $matux-accent-palette,
+    warn: $matux-warn-palette,
+  ),
+  typography: mat.m2-define-typography-config(
+    $font-family: $font-family-sans,
+  ),
+));
+
+// =============================================================================
+// 应用主题 - Apply Themes
+// =============================================================================
+
+// 亮色主题
+@include mat.all-component-themes($matux-light-theme);
+
+// 暗色主题 (通过 data-theme 属性激活)
+[data-theme="dark"] {
+  @include mat.all-component-colors($matux-dark-theme);
+}
+
+// =============================================================================
+// 自定义组件样式增强 - Component Style Enhancements
+// =============================================================================
+
+// 按钮 - Buttons
+.mat-mdc-button,
+.mat-mdc-raised-button,
+.mat-mdc-outlined-button,
+.mat-mdc-flat-button {
+  border-radius: $border-radius-button;
+  font-weight: $font-weight-medium;
+  transition: all $transition-normal;
+
+  &:hover {
+    transform: translateY(-2px);
+    box-shadow: $shadow-md;
+  }
+}
+
+.mat-mdc-raised-button {
+  box-shadow: $shadow-button;
+
+  &:hover {
+    box-shadow: $shadow-button-hover;
+  }
+}
+
+// 卡片 - Cards
+.mat-mdc-card {
+  border-radius: $border-radius-card;
+  box-shadow: $shadow-card;
+  transition: all $transition-normal;
+  overflow: hidden;
+
+  &:hover {
+    box-shadow: $shadow-card-hover;
+    transform: translateY(-4px);
+  }
+}
+
+.mat-mdc-card-header {
+  padding: $spacing-6;
+}
+
+.mat-mdc-card-content {
+  padding: $spacing-6;
+}
+
+.mat-mdc-card-actions {
+  padding: $spacing-4 $spacing-6;
+}
+
+// 表单字段 - Form Fields
+.mat-mdc-form-field {
+  width: 100%;
+
+  .mat-mdc-text-field-wrapper {
+    border-radius: $border-radius-input;
+    transition: all $transition-normal;
+  }
+
+  &.mat-focused {
+    .mat-mdc-text-field-wrapper {
+      box-shadow: $shadow-focus-ring;
+    }
+  }
+}
+
+.mat-mdc-form-field-label {
+  font-weight: $font-weight-medium;
+  color: $color-text-secondary;
+}
+
+// 输入框 - Input
+input.mat-mdc-input-element,
+textarea.mat-mdc-input-element {
+  font-size: $font-size-base;
+  color: $color-text-primary;
+
+  &::placeholder {
+    color: $color-placeholder;
+  }
+}
+
+// 选择器 - Select
+.mat-mdc-select-panel {
+  border-radius: $border-radius-lg;
+  box-shadow: $shadow-dropdown;
+}
+
+// 对话框 - Dialog
+.mat-mdc-dialog-container {
+  border-radius: $border-radius-xl;
+  box-shadow: $shadow-modal;
+
+  .mat-mdc-dialog-title {
+    font-size: $font-size-2xl;
+    font-weight: $font-weight-semi-bold;
+    color: $color-text-primary;
+  }
+
+  .mat-mdc-dialog-content {
+    font-size: $font-size-base;
+    color: $color-text-secondary;
+    line-height: $line-height-relaxed;
+  }
+}
+
+// 工具提示 - Tooltip
+.mat-mdc-tooltip {
+  border-radius: $border-radius-md;
+  background: $color-gray-800;
+  color: $color-white;
+  font-size: $font-size-sm;
+  box-shadow: $shadow-tooltip;
+}
+
+// 零食栏 - Snack Bar
+.mat-mdc-snack-bar-container {
+  .mat-mdc-snack-bar-action {
+    color: $color-primary-light;
+    font-weight: $font-weight-medium;
+  }
+}
+
+// 进度条 - Progress Bar
+.mat-mdc-progress-bar {
+  border-radius: $border-radius-full;
+
+  .mdc-linear-progress__bar-inner {
+    border-color: $color-primary;
+  }
+}
+
+// 复选框 - Checkbox
+.mat-mdc-checkbox {
+  .mdc-checkbox__native-control:checked ~ .mdc-checkbox__background {
+    background-color: $color-primary;
+    border-color: $color-primary;
+  }
+}
+
+// 单选按钮 - Radio Button
+.mat-mdc-radio-button {
+  .mdc-radio__native-control:checked ~ .mdc-radio__background {
+    .mdc-radio__outer-circle {
+      border-color: $color-primary;
+    }
+
+    .mdc-radio__inner-circle {
+      background-color: $color-primary;
+    }
+  }
+}
+
+// 滑块 - Slider
+.mat-mdc-slider {
+  .mdc-slider__thumb-knob {
+    background-color: $color-primary;
+  }
+
+  .mdc-slider__track--active {
+    background-color: $color-primary;
+  }
+}
+
+// 标签页 - Tabs
+.mat-mdc-tab-group {
+  .mat-mdc-tab {
+    font-weight: $font-weight-medium;
+    transition: all $transition-normal;
+
+    &:hover {
+      background: rgba(30, 58, 138, 0.04);
+    }
+
+    &.mat-mdc-tab-active {
+      color: $color-primary;
+    }
+  }
+
+  .mat-mdc-ink-bar {
+    background: $gradient-primary;
+  }
+}
+
+// 列表 - List
+.mat-mdc-list-item {
+  border-radius: $border-radius-md;
+  transition: all $transition-normal;
+
+  &:hover {
+    background: $color-hover;
+  }
+
+  &.mat-mdc-list-item-selected {
+    background: $color-selected;
+  }
+}
+
+// 菜单 - Menu
+.mat-mdc-menu-panel {
+  border-radius: $border-radius-lg;
+  box-shadow: $shadow-dropdown;
+  overflow: hidden;
+
+  .mat-mdc-menu-item {
+    font-size: $font-size-base;
+    transition: all $transition-fast;
+
+    &:hover {
+      background: $color-hover;
+    }
+  }
+}
+
+// 展开面板 - Expansion Panel
+.mat-expansion-panel {
+  border-radius: $border-radius-lg !important;
+  box-shadow: $shadow-sm !important;
+  margin-bottom: $spacing-4;
+
+  &:hover {
+    box-shadow: $shadow-md !important;
+  }
+
+  .mat-expansion-panel-header {
+    font-weight: $font-weight-medium;
+    height: auto !important;
+    padding: $spacing-4 $spacing-6;
+
+    &:not([aria-disabled='true']) {
+      &:hover {
+        background: $color-hover;
+      }
+    }
+  }
+
+  .mat-expansion-panel-content {
+    padding: $spacing-4 $spacing-6 $spacing-6;
+  }
+}
+
+// 徽章 - Badge
+.mat-badge-content {
+  background: $color-primary;
+  color: $color-white;
+  font-weight: $font-weight-medium;
+}
+
+// 图标 - Icon
+.mat-icon {
+  color: #64748b;
+
+  &.icon-primary {
+    color: $color-primary;
+  }
+
+  &.icon-secondary {
+    color: $color-secondary;
+  }
+
+  &.icon-success {
+    color: $color-success;
+  }
+
+  &.icon-warning {
+    color: $color-warning;
+  }
+
+  &.icon-error {
+    color: $color-error;
+  }
+}
+
+// =============================================================================
+// 响应式优化 - Responsive Optimization
+// =============================================================================
+
+@media (max-width: $breakpoint-md) {
+  .mat-mdc-card {
+    border-radius: $border-radius-md;
+  }
+
+  .mat-mdc-dialog-container {
+    max-width: 95vw;
+  }
+}

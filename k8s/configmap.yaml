@@ -1,0 +1,186 @@
+# iMato Cloud - Kubernetes ConfigMap 配置
+
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: imato-config
+  namespace: imato-cloud
+  labels:
+    app: imato
+data:
+  # 数据库配置
+  DB_HOST: "imato-postgres"
+  DB_PORT: "5432"
+  DB_NAME: "imato_cloud"
+
+  # Redis 配置
+  REDIS_HOST: "imato-redis"
+  REDIS_PORT: "6379"
+
+  # 应用配置
+  APP_ENV: "production"
+  LOG_LEVEL: "info"
+  LOG_FORMAT: "json"
+
+  # JWT 配置
+  JWT_ALGORITHM: "HS256"
+  ACCESS_TOKEN_EXPIRE_MINUTES: "30"
+  REFRESH_TOKEN_EXPIRE_DAYS: "7"
+
+  # Token 计费配置
+  TOKEN_BONUS_ENABLED: "true"
+  TOKEN_FREE_AMOUNT: "100"
+  TOKEN_STANDARD_AMOUNT: "1000"
+  TOKEN_PREMIUM_AMOUNT: "5000"
+  TOKEN_ENTERPRISE_AMOUNT: "20000"
+
+  # AI 降级配置
+  AI_FALLBACK_ENABLED: "true"
+  AI_MAX_RETRIES: "3"
+  AI_TIMEOUT_SECONDS: "30"
+
+  # Celery 配置
+  CELERY_WORKER_CONCURRENCY: "4"
+  CELERY_WORKER_POOL: "eventlet"
+  CELERY_TASK_SERIALIZER: "json"
+  CELERY_RESULT_SERIALIZER: "json"
+  CELERY_TIMEZONE: "UTC"
+
+  # 文件上传配置
+  MAX_UPLOAD_SIZE_MB: "100"
+  UPLOAD_DIR: "/app/backend/uploads"
+  ALLOWED_EXTENSIONS: "jpg,jpeg,png,gif,pdf,doc,docx,mp4,webm"
+
+  # Nginx 配置
+  NGINX_WORKER_PROCESSES: "auto"
+  NGINX_KEEPALIVE_TIMEOUT: "65"
+  NGINX_CLIENT_MAX_BODY_SIZE_MB: "100"
+
+  # 监控配置
+  PROMETHEUS_ENABLED: "true"
+  METRICS_ENABLED: "true"
+  HEALTH_CHECK_INTERVAL: "30"
+
+  # 特性开关
+  FEATURE_AI_CODE_GENERATOR: "true"
+  FEATURE_3D_MODEL_VIEWER: "true"
+  FEATURE_VIRCADIA_INTEGRATION: "true"
+  FEATURE_TOKEN_BILLING: "true"
+
+  # AI 降级配置文件（JSON 格式）
+  AI_FALLBACK_CONFIG: |
+    {
+      "enabled": true,
+      "max_retries": 3,
+      "timeout_seconds": 30,
+      "fallback_responses": {
+        "course_generation": "课程生成服务暂时不可用，请稍后重试",
+        "ai_chat": "AI 对话服务暂时不可用，请稍后重试",
+        "code_completion": "代码补全服务暂时不可用，请稍后重试"
+      },
+      "circuit_breaker": {
+        "failure_threshold": 5,
+        "recovery_timeout": 60
+      }
+    }
+
+  # Nginx 日志格式配置
+  NGINX_LOG_FORMAT: |
+    log_format main '$remote_addr - $remote_user [$time_local] "$request" '
+                    '$status $body_bytes_sent "$http_referer" '
+                    '"$http_user_agent" "$http_x_forwarded_for" '
+                    'rt=$request_time uct="$upstream_connect_time" '
+                    'uht="$upstream_header_time" urt="$upstream_response_time"';
+
+---
+# Prometheus ConfigMap
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: prometheus-config
+  namespace: imato-cloud
+  labels:
+    app: prometheus
+data:
+  prometheus.yml: |
+    global:
+      scrape_interval: 15s
+      evaluation_interval: 15s
+      external_labels:
+        monitor: 'imato-cloud-monitor'
+
+    alerting:
+      alertmanagers:
+        - static_configs:
+            - targets: []
+
+    rule_files:
+      - "/etc/prometheus/rules/*.yml"
+
+    scrape_configs:
+      - job_name: 'prometheus'
+        static_configs:
+          - targets: ['localhost:9090']
+
+      - job_name: 'backend'
+        kubernetes_sd_configs:
+          - role: pod
+        relabel_configs:
+          - source_labels: [__meta_kubernetes_pod_label_app]
+            action: keep
+            regex: imato-backend
+          - source_labels: [__meta_kubernetes_pod_annotation_prometheus_io_scrape]
+            action: keep
+            regex: true
+        metrics_path: /metrics
+        scheme: http
+
+      - job_name: 'nginx'
+        static_configs:
+          - targets: ['imato-ingress-nginx:10254']  # Nginx Ingress Controller metrics 端口
+
+      - job_name: 'postgres'
+        static_configs:
+          - targets: ['imato-postgres:5432']
+
+      - job_name: 'redis'
+        static_configs:
+          - targets: ['imato-redis:6379']
+
+---
+# Grafana ConfigMap（数据源配置）
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: grafana-datasources
+  namespace: imato-cloud
+  labels:
+    app: grafana
+data:
+  datasources.yml: |
+    apiVersion: 1
+
+    datasources:
+      - name: Prometheus
+        type: prometheus
+        access: proxy
+        url: http://imato-prometheus:9090
+        isDefault: true
+        editable: true
+        jsonData:
+          timeInterval: "15s"
+          queryTimeout: "60s"
+          httpMethod: "POST"
+
+  dashboard-providers.yml: |
+    apiVersion: 1
+
+    providers:
+      - name: 'default'
+        orgId: 1
+        folder: ''
+        type: file
+        disableDeletion: false
+        updateIntervalSeconds: 30
+        options:
+          path: /var/lib/grafana/dashboards

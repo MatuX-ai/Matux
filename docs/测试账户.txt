@@ -1,0 +1,25 @@
+可用测试账户
+管理员: admin / password123
+企业管理员: orgadmin / password123
+普通用户: user1 / password123
+高级用户: user2 / password123
+
+
+
+admin
+用户名：user_3936318150
+邮箱：3936318150@qq.com
+密码：testpass123
+
+集成
+可选方案（仅在必要时）：
+SSO 单点登录
+用户在一个系统登录后，可以访问另一个系统
+通过 JWT Token 共享用户身份
+Webhook 通知
+当机构信息变更时，通知 iMato 系统
+异步更新，非实时依赖
+数据同步服务
+定期同步用户-机构关联关系
+批量处理，降低耦合度
+

@@ -1,0 +1,25 @@
+{
+  "version": 1,
+  "model_type": "classification",
+  "input_shape": [1, 40],
+  "output_classes": 5,
+  "labels": ["开灯", "关灯", "播放音乐", "停止播放", "其他"],
+  "created_at": "2026-02-28T18:30:00Z",
+  "training_samples": 5000,
+  "validation_accuracy": 0.92,
+  "testing_accuracy": 0.89,
+  "model_parameters": {
+    "architecture": "MobileNetV2",
+    "quantization": "INT8",
+    "optimization": "Quantization-aware training"
+  },
+  "deployment_targets": ["ESP32", "Arduino Nano 33 BLE", "Raspberry Pi Pico"],
+  "performance_metrics": {
+    "esp32_latency_ms": 45.2,
+    "esp32_memory_kb": 156,
+    "nano_latency_ms": 89.7,
+    "nano_memory_kb": 142
+  },
+  "edge_impulse_project_id": "voice-commands-project-12345",
+  "edge_impulse_model_id": "model-67890"
+}

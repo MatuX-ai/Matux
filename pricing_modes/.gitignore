@@ -1,0 +1,61 @@
+# iMato Pricing Modes - .gitignore
+
+# ==================== Electron / Windows ====================
+pricing_modes/windows_local/electron/node_modules/
+pricing_modes/windows_local/electron/dist/
+pricing_modes/windows_local/electron/out/
+pricing_modes/windows_local/electron/build/
+pricing_modes/windows_local/installer/*.exe
+pricing_modes/windows_local/installer/*.msi
+pricing_modes/windows_local/installer/*.appx
+*.asar
+*.dmg
+*.deb
+*.rpm
+
+# ==================== Docker / K8s ====================
+pricing_modes/cloud_hosted/docker/.env
+pricing_modes/cloud_hosted/docker/certs/
+pricing_modes/cloud_hosted/k8s/*-generated.yaml
+!pricing_modes/cloud_hosted/k8s/*.yaml.example
+
+# ==================== Build Outputs ====================
+pricing_modes/*/build/
+pricing_modes/*/dist/
+pricing_modes/*/target/
+*.log
+*.tmp
+
+# ==================== IDE / Editor ====================
+pricing_modes/**/.vscode/
+pricing_modes/**/.idea/
+pricing_modes/**/*.swp
+pricing_modes/**/*.swo
+pricing_modes/**/*~
+
+# ==================== OS Files ====================
+pricing_modes/**/.DS_Store
+pricing_modes/**/Thumbs.db
+pricing_modes/**/desktop.ini
+
+# ==================== Temporary Files ====================
+pricing_modes/**/tmp/
+pricing_modes/**/temp/
+pricing_modes/**/*.bak
+pricing_modes/**/*.old
+
+# ==================== Secrets and Keys ====================
+pricing_modes/**/.env.local
+pricing_modes/**/.env.production
+pricing_modes/**/secrets/
+pricing_modes/**/keys/
+!**/README.md
+!**/.gitkeep
+
+# ==================== Test Coverage ====================
+pricing_modes/**/coverage/
+pricing_modes/**/.nyc_output/
+
+# ==================== Package Manager ====================
+pricing_modes/windows_local/electron/package-lock.json
+pricing_modes/windows_local/electron/yarn.lock

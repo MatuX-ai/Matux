@@ -1,0 +1,23 @@
+{
+  "name": "imato-marketing-monitor",
+  "version": "1.0.0",
+  "description": "iMato营销页面自动化监控工具",
+  "main": "marketing-page-monitor.js",
+  "scripts": {
+    "monitor": "node marketing-page-monitor.js",
+    "monitor:visible": "node marketing-page-monitor.js --no-headless",
+    "monitor:mobile": "node marketing-page-monitor.js --mobile",
+    "monitor:all": "npm run monitor && npm run monitor:mobile"
+  },
+  "keywords": [
+    "monitor",
+    "playwright",
+    "marketing",
+    "testing"
+  ],
+  "author": "iMato Team",
+  "license": "GPL-3.0",
+  "devDependencies": {
+    "playwright": "^1.58.2"
+  }
+}

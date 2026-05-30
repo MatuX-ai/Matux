@@ -1,0 +1,68 @@
+<div class="explanation-panel" *ngIf="showExplanationPanel">
+  <div class="panel-header">
+    <h2>📋 答案解析</h2>
+    <div class="panel-stats" *ngIf="quizResult">
+      <span>得分: {{ quizResult.score }}/{{ quizResult.total_score }}</span>
+      <span>积分: {{ quizResult.points_earned }}</span>
+    </div>
+    <button class="close-btn" (click)="close.emit()">✕</button>
+  </div>
+
+  <div class="panel-content">
+    <div class="explanation-card" *ngFor="let explanation of questionExplanations">
+      <div class="explanation-header">
+        <div class="question-info">
+          <span class="question-number">第 {{ explanation.question_number }} 题</span>
+          <span class="question-type">{{ getQuestionTypeLabel(explanation.question_type) }}</span>
+        </div>
+        <div class="question-score">
+          正确答案: {{ formatCorrectAnswer(explanation) }}
+        </div>
+      </div>
+
+      <div class="question-content">
+        <h4>{{ explanation.question_content }}</h4>
+        
+        <div class="choice-options" *ngIf="explanation.question_type === 'choice' && explanation.options">
+          <div class="option-item" *ngFor="let option of explanation.options; let i = index">
+            <span class="option-label">{{ getOptionLabel(i) }}.</span>
+            <span class="option-text">{{ option }}</span>
+            <mat-icon class="correct-icon" *ngIf="explanation.correct_answer == i">check_circle</mat-icon>
+          </div>
+        </div>
+      </div>
+
+      <div class="explanation-content" *ngIf="explanation.explanation">
+        <h5>💡 解析</h5>
+        <p>{{ explanation.explanation }}</p>
+      </div>
+
+      <div class="knowledge-points" *ngIf="explanation.knowledge_points && explanation.knowledge_points.length > 0">
+        <h5>📚 知识点</h5>
+        <div class="knowledge-tags">
+          <span class="tag" *ngFor="let point of explanation.knowledge_points">
+            {{ point }}
+          </span>
+        </div>
+      </div>
+
+      <div class="tips" *ngIf="explanation.tips && explanation.tips.length > 0">
+        <h5>💡 学习建议</h5>
+        <ul>
+          <li *ngFor="let tip of explanation.tips">{{ tip }}</li>
+        </ul>
+      </div>
+
+      <div class="feedback" *ngIf="explanation.general_feedback">
+        <h5>📝 总体反馈</h5>
+        <p>{{ explanation.general_feedback }}</p>
+      </div>
+    </div>
+  </div>
+
+  <div class="panel-footer">
+    <button class="btn btn-primary" (click)="close.emit()">
+      关闭解析
+    </button>
+  </div>
+</div>

@@ -1,0 +1,385 @@
+// 认证系统样式文件
+@import '../../styles/design-tokens/tokens';
+
+// 认证页面基础样式
+.auth-page {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  min-height: 100vh;
+  padding: $spacing-lg;
+  background: linear-gradient(135deg, $color-primary 0%, $color-secondary 100%);
+  font-family: $font-family-system;
+
+  // 响应式调整
+  @include respond-to('mobile') {
+    padding: $spacing-md;
+  }
+}
+
+// 认证容器
+.auth-container {
+  overflow: hidden;
+  width: 100%;
+  max-width: 450px;
+  border-radius: $border-radius-xl;
+  background: var(--surface-color, $color-surface);
+  box-shadow: $shadow-xl;
+  animation: slideUp 0.3s ease-out;
+
+  @include respond-to('mobile') {
+    max-width: 100%;
+    margin: $spacing-sm;
+  }
+}
+
+// 动画效果
+@keyframes slideUp {
+  from {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+// 认证头部
+.auth-header {
+  padding: $spacing-xl $spacing-lg;
+  background: linear-gradient(135deg, $color-primary 0%, $color-primary-dark 100%);
+  color: $color-text-white;
+  text-align: center;
+
+  @include respond-to('mobile') {
+    padding: $spacing-lg $spacing-md;
+  }
+}
+
+.auth-logo {
+  margin-bottom: $spacing-sm;
+  font-size: 2.5rem;
+
+  @include respond-to('mobile') {
+    font-size: 2rem;
+  }
+}
+
+.auth-title {
+  margin: 0 0 $spacing-xs;
+  font-size: 1.75rem;
+  font-weight: $font-weight-semibold;
+
+  @include respond-to('mobile') {
+    font-size: 1.5rem;
+  }
+}
+
+.auth-subtitle {
+  margin: 0;
+  opacity: 0.9;
+  font-size: $font-size-body-medium;
+}
+
+// 认证表单
+.auth-form {
+  padding: $spacing-xl $spacing-lg;
+
+  @include respond-to('mobile') {
+    padding: $spacing-lg $spacing-md;
+  }
+}
+
+.form-group {
+  margin-bottom: $spacing-lg;
+}
+
+.form-label {
+  display: block;
+  margin-bottom: $spacing-xs;
+  color: var(--text-primary-color, $color-text-primary);
+  font-size: 0.95rem;
+  font-weight: $font-weight-medium;
+}
+
+.form-input {
+  width: 100%;
+  padding: $spacing-md $spacing-lg;
+  border: 2px solid var(--border-color, $color-border);
+  border-radius: $border-radius-md;
+  background: var(--surface-color, $color-surface);
+  color: var(--text-primary-color, $color-text-primary);
+  font-family: inherit;
+  font-size: $font-size-body-medium;
+  transition: all $transition-fast;
+
+  &:focus {
+    border-color: $color-primary;
+    outline: none;
+    box-shadow: 0 0 0 3px rgba($color-primary, 0.1);
+  }
+
+  &.error {
+    border-color: $color-error;
+  }
+
+  // [待修复的中文注释]
+  @media (prefers-color-scheme: dark) {
+    border-color: var(--border-color, #444);
+    background: var(--surface-color, #2d2d2d);
+    color: var(--text-primary-color, #fff);
+  }
+}
+
+.input-error {
+  display: none;
+  margin-top: $spacing-xs;
+  color: $color-error;
+  font-size: $font-size-body-small;
+
+  &.show {
+    display: block;
+  }
+}
+
+// 认证按钮
+.auth-button {
+  position: relative;
+  overflow: hidden;
+  width: 100%;
+  margin-bottom: $spacing-md;
+  padding: $spacing-lg;
+  border: none;
+  border-radius: $border-radius-md;
+  background: $color-primary;
+  color: $color-text-white;
+  font-size: 1.1rem;
+  font-weight: $font-weight-semibold;
+  cursor: pointer;
+  transition: all $transition-fast;
+
+  &:hover:not(:disabled) {
+    background: $color-primary-dark;
+    box-shadow: $shadow-lg;
+    transform: translateY(-2px);
+  }
+
+  &:disabled {
+    opacity: 0.7;
+    cursor: not-allowed;
+    transform: none;
+  }
+
+  &.secondary {
+    border: 2px solid $color-primary;
+    background: transparent;
+    color: $color-primary;
+
+    &:hover:not(:disabled) {
+      background: $color-primary;
+      color: $color-text-white;
+    }
+  }
+}
+
+// OAuth按钮
+.oauth-buttons {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: $spacing-sm;
+  margin: $spacing-lg 0;
+
+  @include respond-to('tablet') {
+    grid-template-columns: repeat(4, 1fr);
+  }
+
+  @include respond-to('mobile') {
+    grid-template-columns: 1fr;
+  }
+}
+
+.oauth-button {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: $spacing-xs;
+  padding: $spacing-sm;
+  border: 2px solid var(--border-color, $color-border);
+  border-radius: $border-radius-md;
+  background: var(--surface-color, $color-surface);
+  color: var(--text-primary-color, $color-text-primary);
+  font-weight: $font-weight-medium;
+  cursor: pointer;
+  transition: all $transition-fast;
+
+  &:hover {
+    border-color: var(--text-secondary-color, $color-text-secondary);
+    transform: translateY(-1px);
+  }
+
+  // [待修复的中文注释]
+  @media (prefers-color-scheme: dark) {
+    border-color: var(--border-color, #444);
+    background: var(--surface-color, #2d2d2d);
+    color: var(--text-primary-color, #fff);
+  }
+}
+
+// 分隔线
+.divider {
+  display: flex;
+  align-items: center;
+  margin: $spacing-lg 0;
+  color: var(--text-secondary-color, $color-text-secondary);
+
+  &::before,
+  &::after {
+    flex: 1;
+    height: 1px;
+    background: var(--border-color, $color-border);
+    content: '';
+  }
+
+  span {
+    padding: 0 $spacing-lg;
+    font-size: 0.9rem;
+  }
+}
+
+// 认证页脚
+.auth-footer {
+  margin-top: $spacing-lg;
+  color: var(--text-secondary-color, $color-text-secondary);
+  font-size: 0.95rem;
+  text-align: center;
+
+  p {
+    margin: $spacing-sm 0;
+  }
+}
+
+.auth-link {
+  color: $color-primary;
+  font-weight: $font-weight-medium;
+  text-decoration: none;
+  transition: color $transition-fast;
+
+  &:hover {
+    color: $color-primary-dark;
+    text-decoration: underline;
+  }
+}
+
+// 密码切换
+.password-toggle {
+  position: relative;
+}
+
+.toggle-password {
+  position: absolute;
+  top: 50%;
+  right: $spacing-sm;
+  border: none;
+  background: none;
+  color: var(--text-secondary-color, $color-text-secondary);
+  font-size: 1.2rem;
+  cursor: pointer;
+  transform: translateY(-50%);
+
+  &:hover {
+    color: var(--text-primary-color, $color-text-primary);
+  }
+}
+
+// 加载动画
+.loading-spinner {
+  display: inline-block;
+  width: 20px;
+  height: 20px;
+  border: 3px solid rgb(255 255 255 / 30%);
+  border-top-color: #fff;
+  border-radius: 50%;
+  animation: spin 1s ease-in-out infinite;
+}
+
+@keyframes spin {
+  to { transform: rotate(360deg); }
+}
+
+// 消息提示
+.auth-message {
+  display: none;
+  margin-bottom: $spacing-lg;
+  padding: $spacing-md;
+  border-radius: $border-radius-md;
+  font-size: 0.95rem;
+
+  &.success {
+    border: 1px solid $color-success;
+    background: var(--success-bg-color, #{lighten($color-success, 45%)});
+    color: $color-success;
+  }
+
+  &.error {
+    border: 1px solid $color-error;
+    background: var(--error-bg-color, #{lighten($color-error, 45%)});
+    color: $color-error;
+  }
+
+  &.show {
+    display: block;
+  }
+}
+
+// 表单切换
+.form-section {
+  display: none;
+
+  &.active {
+    display: block;
+    animation: fadeIn 0.3s ease-out;
+  }
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+// 响应式断点混合（统一使用 Design Tokens 标准）
+@mixin respond-to($breakpoint) {
+  @if $breakpoint == 'mobile' {
+    @media (max-width: 767px) {
+      @content;
+    }
+  } @else if $breakpoint == 'tablet' {
+    @media (min-width: 768px) and (max-width: 1023px) {
+      @content;
+    }
+  } @else if $breakpoint == 'desktop' {
+    @media (min-width: 1024px) {
+      @content;
+    }
+  }
+}
+
+// 暗色主题媒体查询
+@media (prefers-color-scheme: dark) {
+  .auth-container {
+    background: var(--surface-color, #1e1e1e);
+  }
+
+  .form-input {
+    border-color: var(--border-color, #444);
+    background: var(--surface-color, #2d2d2d);
+    color: var(--text-primary-color, #fff);
+  }
+
+  .oauth-button {
+    border-color: var(--border-color, #444);
+    background: var(--surface-color, #2d2d2d);
+    color: var(--text-primary-color, #fff);
+  }
+}

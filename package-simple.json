@@ -1,0 +1,26 @@
+{
+  "name": "imatuproject-design-system",
+  "version": "1.0.0",
+  "description": "iMatuProject Design Token and Style System",
+  "main": "src/design-tokens/index.ts",
+  "scripts": {
+    "test": "echo \"No tests specified\" && exit 0",
+    "clean": "rimraf dist"
+  },
+  "keywords": [
+    "design-tokens",
+    "design-system",
+    "education"
+  ],
+  "author": "iMatuProject Team",
+  "license": "GPL-3.0",
+  "dependencies": {
+    "@tensorflow/tfjs": "^4.10.0",
+    "onnxruntime-web": "^1.14.0",
+    "web-ifc": "^0.0.50",
+    "three": "^0.158.0"
+  },
+  "devDependencies": {
+    "rimraf": "^5.0.5"
+  }
+}

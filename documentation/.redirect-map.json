@@ -1,0 +1,231 @@
+{
+  "version": "1.0.0",
+  "migrationDate": "2026-03-04",
+  "description": "文档迁移重定向映射表",
+  "redirects": {
+    "AI-Edu 教育平台": {
+      "pattern": "docs/AI_EDU_*.md",
+      "target": "documentation/backend/ai-edu/",
+      "examples": [
+        {
+          "old": "docs/AI_EDU_ACHIEVEMENT_SYSTEM_GUIDE.md",
+          "new": "documentation/backend/ai-edu/achievement-system-guide.md"
+        },
+        {
+          "old": "docs/AI_EDU_CODE_SANDBOX_DOCKER_IMPLEMENTATION.md",
+          "new": "documentation/backend/ai-edu/code-sandbox-docker-implementation.md"
+        },
+        {
+          "old": "docs/AI_EDU_FINAL_COMPREHENSIVE_SUMMARY.md",
+          "new": "documentation/backend/ai-edu/final-comprehensive-summary.md"
+        }
+      ]
+    },
+    "推荐系统": {
+      "pattern": "docs/AI_RECOMMENDATION_*.md",
+      "target": "documentation/backend/services/",
+      "examples": [
+        {
+          "old": "docs/AI_RECOMMENDATION_SYSTEM.md",
+          "new": "documentation/backend/services/recommendation-service.md"
+        },
+        {
+          "old": "docs/AI_RECOMMENDATION_SYSTEM_GUIDE.md",
+          "new": "documentation/backend/services/recommendation-service-guide.md"
+        }
+      ]
+    },
+    "区块链": {
+      "pattern": "docs/FABRIC_*.md|docs/BLOCKCHAIN_*.md",
+      "target": "documentation/backend/blockchain/",
+      "examples": [
+        {
+          "old": "docs/FABRIC_DEVELOPER_DOCUMENTATION.md",
+          "new": "documentation/backend/blockchain/developer-documentation.md"
+        },
+        {
+          "old": "docs/BLOCKCHAIN_GATEWAY_TECHNICAL_DOCUMENTATION.md",
+          "new": "documentation/backend/blockchain/gateway-technical-documentation.md"
+        }
+      ]
+    },
+    "硬件集成": {
+      "pattern": "docs/HARDWARE_*.md",
+      "target": "documentation/backend/hardware/",
+      "examples": [
+        {
+          "old": "docs/HARDWARE_COMMUNICATION_README.md",
+          "new": "documentation/backend/hardware/communication-readme.md"
+        },
+        {
+          "old": "docs/HARDWARE_CERTIFICATION_SYSTEM.md",
+          "new": "documentation/backend/hardware/certification-system.md"
+        }
+      ]
+    },
+    "API 路由": {
+      "pattern": "docs/BACKEND_API_MAPPING.md|docs/API_*.md",
+      "target": "documentation/backend/routes/",
+      "examples": [
+        {
+          "old": "docs/BACKEND_API_MAPPING.md",
+          "new": "documentation/backend/routes/api-mapping.md"
+        },
+        {
+          "old": "docs/API_USER_MANUAL.md",
+          "new": "documentation/backend/routes/user-manual.md"
+        }
+      ]
+    },
+    "Design System": {
+      "pattern": "docs/component-style-guide.md|docs/FRONTEND_*.md|docs/STYLE_*.md",
+      "target": "documentation/frontend/design-system/",
+      "examples": [
+        {
+          "old": "docs/component-style-guide.md",
+          "new": "documentation/frontend/design-system/component-guide.md"
+        },
+        {
+          "old": "docs/FRONTEND_ROUTING.md",
+          "new": "documentation/frontend/design-system/routing.md"
+        },
+        {
+          "old": "docs/STYLE_CI_CD_INTEGRATION.md",
+          "new": "documentation/frontend/design-system/style-ci-cd.md"
+        }
+      ]
+    },
+    "认证组件": {
+      "pattern": "docs/AUTH_*.md",
+      "target": "documentation/frontend/components/auth/",
+      "examples": [
+        {
+          "old": "docs/AUTH_SYSTEM_IMPLEMENTATION_REPORT.md",
+          "new": "documentation/frontend/components/auth/system-implementation.md"
+        },
+        {
+          "old": "docs/AUTH_SYSTEM_DOCUMENTATION.md",
+          "new": "documentation/frontend/components/auth/system-documentation.md"
+        }
+      ]
+    },
+    "架构设计": {
+      "pattern": "docs/SYSTEM_ARCHITECTURE.md|docs/GLOBAL_TECHNICAL_ARCHITECTURE.md|docs/PROJECT_OVERVIEW.md",
+      "target": "documentation/shared/architecture/",
+      "examples": [
+        {
+          "old": "docs/SYSTEM_ARCHITECTURE.md",
+          "new": "documentation/shared/architecture/system-architecture.md"
+        },
+        {
+          "old": "docs/GLOBAL_TECHNICAL_ARCHITECTURE.md",
+          "new": "documentation/shared/architecture/global-architecture.md"
+        },
+        {
+          "old": "docs/PROJECT_OVERVIEW.md",
+          "new": "documentation/shared/architecture/project-overview.md"
+        }
+      ]
+    },
+    "多模态激励": {
+      "pattern": "docs/MULTIMODAL_INCENTIVE_SYSTEM_TECHNICAL_DOC.md",
+      "target": "documentation/shared/architecture/",
+      "examples": [
+        {
+          "old": "docs/MULTIMODAL_INCENTIVE_SYSTEM_TECHNICAL_DOC.md",
+          "new": "documentation/shared/architecture/multimodal-incentive.md"
+        }
+      ]
+    },
+    "Vircadia 元宇宙": {
+      "pattern": "docs/VIRCADIA_*.md",
+      "target": "documentation/shared/architecture/vircadia/",
+      "examples": [
+        {
+          "old": "docs/VIRCADIA_INTEGRATION_PLAN.md",
+          "new": "documentation/shared/architecture/vircadia/integration-plan.md"
+        },
+        {
+          "old": "docs/VIRCADIA_IMPLEMENTATION_STATUS_REPORT.md",
+          "new": "documentation/shared/architecture/vircadia/implementation-status.md"
+        }
+      ]
+    },
+    "开发指南": {
+      "pattern": "docs/QUICK_START.md|docs/SECURITY_SPECIFICATIONS.md",
+      "target": "documentation/shared/guides/",
+      "examples": [
+        {
+          "old": "docs/QUICK_START.md",
+          "new": "documentation/shared/guides/quick-start.md"
+        },
+        {
+          "old": "docs/SECURITY_SPECIFICATIONS.md",
+          "new": "documentation/shared/guides/security.md"
+        }
+      ]
+    },
+    "部署运维": {
+      "pattern": "docs/DEPLOYMENT_*.md|docs/JENKINS_*.md|docs/SONARQUBE_*.md",
+      "target": "documentation/deployment/",
+      "examples": [
+        {
+          "old": "docs/DEPLOYMENT_GUIDE.md",
+          "new": "documentation/deployment/guide.md"
+        },
+        {
+          "old": "docs/JENKINS_CI_CD_CONFIGURATION.md",
+          "new": "documentation/deployment/jenkins-ci-cd.md"
+        },
+        {
+          "old": "docs/SONARQUBE_USER_GUIDE.md",
+          "new": "documentation/deployment/sonarqube-user-guide.md"
+        }
+      ]
+    },
+    "测试报告": {
+      "pattern": "docs/*_BACKTEST_*.md|docs/*_TEST_*.md|docs/*_VERIFICATION_*.md",
+      "target": "documentation/tests/",
+      "examples": [
+        {
+          "old": "docs/AI_EDU_BACKTEST_REPORT.md",
+          "new": "documentation/tests/backtest/ai-edu-backtest-report.md"
+        },
+        {
+          "old": "docs/SECURITY_PENETRATION_TESTING_REPORT.md",
+          "new": "documentation/tests/security-penetration-testing.md"
+        }
+      ]
+    },
+    "演示资源": {
+      "pattern": "docs/auth-demo.html|docs/dashboard-demo.html|docs/playground.html",
+      "target": "documentation/resources/",
+      "examples": [
+        {
+          "old": "docs/auth-demo.html",
+          "new": "documentation/resources/auth-demo.html"
+        },
+        {
+          "old": "docs/dashboard-demo.html",
+          "new": "documentation/resources/dashboard-demo.html"
+        },
+        {
+          "old": "docs/playground.html",
+          "new": "documentation/resources/playground.html"
+        }
+      ]
+    }
+  },
+  "preservedPaths": [
+    "docs/INDEX.md",
+    "docs/assets/",
+    "docs/styles/",
+    "docs/enterprise/"
+  ],
+  "notes": [
+    "所有技术文档已迁移到 documentation/ 目录",
+    "原文档位置建议保留重定向提示",
+    "外部链接需要更新为新的路径",
+    "交叉引用需要手动检查和更新"
+  ]
+}

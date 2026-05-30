@@ -1,0 +1,18 @@
+{
+  "test_summary": {
+    "total_tests": 5,
+    "failures": 2,
+    "errors": 0,
+    "success_rate": 0.6
+  },
+  "test_results": {
+    "integration_tests": "FAILED",
+    "performance_tests": "FAILED",
+    "validation_tests": "FAILED"
+  },
+  "timestamp": "2026-03-01T19:35:49.708978",
+  "environment": {
+    "python_version": "3.x",
+    "test_framework": "unittest"
+  }
+}

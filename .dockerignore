@@ -1,0 +1,77 @@
+# Docker 构建忽略文件
+# 减小镜像体积，提高构建速度
+
+# Git
+.git
+.gitignore
+.gitattributes
+
+# Node
+node_modules
+npm-debug.log
+yarn-error.log
+.npm
+.eslintcache
+
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+env/
+venv/
+ENV/
+.venv
+*.egg-info/
+.pytest_cache/
+.coverage
+htmlcov/
+
+# IDE
+.idea
+.vscode
+*.swp
+*.swo
+*~
+
+# OS
+.DS_Store
+Thumbs.db
+desktop.ini
+
+# 日志
+*.log
+logs/
+
+# 测试
+tests/
+test_*.py
+*_test.py
+conftest.py
+
+# 文档
+docs/
+*.md
+!requirements.txt
+
+# 备份
+backup*/
+backups/
+backtest_reports/
+
+# 开发配置
+.env.local
+.env.development
+.env.test
+
+# Docker 相关文件（避免递归）
+Dockerfile*
+docker-compose*.yml
+.docker/
+
+# 其他
+dist/
+build/
+coverage/
+.angular/

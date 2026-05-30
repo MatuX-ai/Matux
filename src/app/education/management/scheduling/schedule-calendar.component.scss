@@ -1,0 +1,439 @@
+.schedule-calendar {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  background: #fff;
+  border-radius: 8px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+}
+
+// ==================== 顶部工具�?====================
+.calendar-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 16px 24px;
+  border-bottom: 1px solid #e8e8e8;
+  background: #fafafa;
+  border-radius: 8px 8px 0 0;
+
+  h2 {
+    margin: 0;
+    font-size: 20px;
+    font-weight: 600;
+    color: #333;
+  }
+
+  .header-center {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+
+    button {
+      min-width: auto;
+      padding: 0 12px;
+    }
+  }
+
+  .header-right {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+
+    .view-switcher {
+      display: flex;
+      border: 1px solid #d9d9d9;
+      border-radius: 4px;
+      overflow: hidden;
+
+      button {
+        border-radius: 0;
+        border: none;
+
+        &.active {
+          background: #1890ff;
+          color: #fff;
+        }
+      }
+    }
+  }
+}
+
+// ==================== 筛选器 ====================
+.filters-bar {
+  display: flex;
+  gap: 16px;
+  padding: 16px 24px;
+  border-bottom: 1px solid #e8e8e8;
+  background: #fff;
+
+  .filter-field {
+    width: 200px;
+  }
+}
+
+// ==================== 日历主体 ====================
+.calendar-body {
+  flex: 1;
+  overflow: hidden;
+  position: relative;
+}
+
+// ==================== 周视�?日视�?====================
+.week-view {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+}
+
+.calendar-grid-header {
+  display: flex;
+  border-bottom: 1px solid #e8e8e8;
+  background: #fafafa;
+
+  .time-column-header {
+    width: 80px;
+    flex-shrink: 0;
+    border-right: 1px solid #e8e8e8;
+  }
+
+  .day-column-header {
+    flex: 1;
+    text-align: center;
+    padding: 12px 0;
+    border-right: 1px solid #e8e8e8;
+
+    &:last-child {
+      border-right: none;
+    }
+
+    .day-name {
+      font-size: 14px;
+      font-weight: 500;
+      color: #666;
+      margin-bottom: 4px;
+    }
+
+    .day-date {
+      font-size: 18px;
+      font-weight: 600;
+      color: #333;
+
+      &.today {
+        color: #1890ff;
+        background: #e6f7ff;
+        border-radius: 50%;
+        padding: 4px 8px;
+      }
+    }
+  }
+}
+
+.calendar-grid-content {
+  display: flex;
+  flex: 1;
+  overflow: hidden;
+}
+
+.time-column {
+  width: 80px;
+  flex-shrink: 0;
+  border-right: 1px solid #e8e8e8;
+  background: #fafafa;
+
+  .time-slot {
+    height: 60px;
+    display: flex;
+    align-items: flex-start;
+    justify-content: center;
+    padding-top: 8px;
+    font-size: 12px;
+    color: #999;
+    border-bottom: 1px solid #f0f0f0;
+  }
+}
+
+.day-column {
+  flex: 1;
+  border-right: 1px solid #e8e8e8;
+  position: relative;
+
+  &:last-child {
+    border-right: none;
+  }
+
+  .time-slot {
+    height: 60px;
+    border-bottom: 1px solid #f0f0f0;
+    position: relative;
+
+    &:hover {
+      background: #f5f5f5;
+    }
+  }
+}
+
+// ==================== 课程卡片 ====================
+.schedule-item {
+  position: absolute;
+  left: 4px;
+  right: 4px;
+  padding: 8px;
+  background: #e6f7ff;
+  border-left: 3px solid #1890ff;
+  border-radius: 4px;
+  cursor: pointer;
+  transition: all 0.2s;
+  font-size: 12px;
+  z-index: 1;
+
+  &:hover {
+    box-shadow: 0 2px 8px rgba(24, 144, 255, 0.3);
+    z-index: 10;
+    transform: translateY(-2px);
+  }
+
+  &.conflict {
+    background: #ffebee;
+    border-left-color: #f44336;
+  }
+
+  // CDK Drag 样式
+  &.cdk-drag-animating {
+    transition: transform 250ms cubic-bezier(0, 0, 0.2, 1);
+  }
+
+  &.cdk-drag-preview {
+    box-sizing: border-box;
+    border-radius: 4px;
+    box-shadow: 0 5px 5px -3px rgba(0, 0, 0, 0.2),
+                0 8px 10px 1px rgba(0, 0, 0, 0.14),
+                0 3px 14px 2px rgba(0, 0, 0, 0.12);
+  }
+
+  &.cdk-drag-placeholder {
+    opacity: 0;
+  }
+
+  .schedule-title {
+    font-weight: 600;
+    color: #333;
+    margin-bottom: 4px;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+
+  .schedule-meta {
+    display: flex;
+    align-items: center;
+    gap: 4px;
+    color: #666;
+    margin-bottom: 2px;
+    font-size: 11px;
+
+    .meta-icon {
+      font-size: 12px;
+      width: 12px;
+      height: 12px;
+    }
+  }
+
+  .schedule-time {
+    color: #999;
+    font-size: 10px;
+    margin-top: 4px;
+  }
+
+  .conflict-badge {
+    position: absolute;
+    top: 4px;
+    right: 4px;
+    background: #f44336;
+    color: #fff;
+    border-radius: 12px;
+    padding: 2px 6px;
+    font-size: 10px;
+    display: flex;
+    align-items: center;
+    gap: 2px;
+
+    mat-icon {
+      font-size: 12px;
+      width: 12px;
+      height: 12px;
+    }
+  }
+}
+
+// ==================== 月视�?====================
+.month-view {
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+}
+
+.month-grid-header {
+  display: grid;
+  grid-template-columns: repeat(7, 1fr);
+  border-bottom: 1px solid #e8e8e8;
+  background: #fafafa;
+
+  .day-name-header {
+    padding: 12px;
+    text-align: center;
+    font-size: 14px;
+    font-weight: 500;
+    color: #666;
+    border-right: 1px solid #e8e8e8;
+
+    &:last-child {
+      border-right: none;
+    }
+  }
+}
+
+.month-grid-content {
+  display: grid;
+  grid-template-columns: repeat(7, 1fr);
+  grid-auto-rows: 1fr;
+  flex: 1;
+  gap: 1px;
+  background: #e8e8e8;
+}
+
+.month-day-cell {
+  background: #fff;
+  padding: 8px;
+  min-height: 100px;
+  position: relative;
+
+  &.today {
+    background: #e6f7ff;
+  }
+
+  &.weekend {
+    background: #fafafa;
+  }
+
+  .date-number {
+    font-size: 14px;
+    font-weight: 600;
+    color: #333;
+    margin-bottom: 8px;
+
+    &.today {
+      color: #1890ff;
+      background: #1890ff;
+      color: #fff;
+      width: 28px;
+      height: 28px;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+  }
+
+  .month-schedule-item {
+    background: #e6f7ff;
+    border-left: 2px solid #1890ff;
+    border-radius: 2px;
+    padding: 4px 6px;
+    margin-bottom: 4px;
+    font-size: 11px;
+    cursor: pointer;
+    transition: all 0.2s;
+
+    &:hover {
+      background: #bae7ff;
+    }
+
+    &.conflict {
+      background: #ffebee;
+      border-left-color: #f44336;
+    }
+
+    .schedule-name {
+      font-weight: 500;
+      color: #333;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+      margin-bottom: 2px;
+    }
+
+    .schedule-time-short {
+      color: #999;
+      font-size: 10px;
+    }
+  }
+}
+
+// ==================== 加载状�?====================
+.loading-overlay {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(255, 255, 255, 0.8);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  z-index: 1000;
+
+  p {
+    margin-top: 16px;
+    color: #666;
+    font-size: 14px;
+  }
+}
+
+// ==================== 响应式设�?====================
+@media (max-width: 768px) {
+  .calendar-header {
+    flex-direction: column;
+    gap: 12px;
+    padding: 12px 16px;
+
+    h2 {
+      font-size: 16px;
+    }
+
+    .header-center,
+    .header-right {
+      width: 100%;
+      justify-content: center;
+    }
+  }
+
+  .filters-bar {
+    flex-wrap: wrap;
+    padding: 12px 16px;
+
+    .filter-field {
+      width: calc(50% - 8px);
+    }
+  }
+
+  .time-column {
+    width: 60px;
+
+    .time-slot {
+      font-size: 10px;
+      height: 50px;
+    }
+  }
+
+  .schedule-item {
+    font-size: 10px;
+    padding: 4px;
+
+    .schedule-meta,
+    .schedule-time {
+      display: none;
+    }
+  }
+}

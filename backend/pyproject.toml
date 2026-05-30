@@ -1,0 +1,27 @@
+[tool.black]
+# Black 代码格式化配置
+line-length = 88
+target-version = ['py39', 'py310', 'py311']
+include = '\.pyi?$'
+exclude = '''
+/(
+    \.git
+  | \.hg
+  | \.mypy_cache
+  | \.tox
+  | \.venv
+  | _build
+  | buck-out
+  | build
+  | dist
+  | migrations
+  | alembic
+  | __pycache__
+)/
+'''
+
+# 使用双引号
+skip-string-normalization = false
+
+# 实验性未来特性
+# enable-unstable-feature = []

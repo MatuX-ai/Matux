@@ -1,0 +1,41 @@
+# Prometheus监控配置
+global:
+  scrape_interval: 15s
+  evaluation_interval: 15s
+
+rule_files:
+  # - "first_rules.yml"
+  # - "second_rules.yml"
+
+scrape_configs:
+  # 企业API网关监控
+  - job_name: 'enterprise-gateway'
+    static_configs:
+      - targets: ['enterprise-gateway:8001']
+    metrics_path: '/metrics'
+    scrape_interval: 30s
+
+  # PostgreSQL数据库监控
+  - job_name: 'enterprise-db'
+    static_configs:
+      - targets: ['enterprise-db:9187']
+    scrape_interval: 30s
+
+  # Redis缓存监控
+  - job_name: 'redis-cache'
+    static_configs:
+      - targets: ['redis-cache:9121']
+    scrape_interval: 30s
+
+  # Nginx监控
+  - job_name: 'nginx'
+    static_configs:
+      - targets: ['enterprise-nginx:8080']
+    scrape_interval: 30s
+
+# 告警管理器配置
+alerting:
+  alertmanagers:
+    - static_configs:
+        - targets:
+          # - alertmanager:9093

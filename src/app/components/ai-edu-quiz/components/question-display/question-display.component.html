@@ -1,0 +1,52 @@
+<div class="question-card">
+  <div class="question-header">
+    <span class="question-type-badge" [class]="'type-' + question.type">
+      {{ getQuestionTypeLabel(question.type) }}
+    </span>
+    <span class="question-points">{{ question.points }} 分</span>
+  </div>
+
+  <h3 class="question-content">{{ question.content }}</h3>
+
+  <!-- 选择题 -->
+  <div class="answer-section choice-answer" *ngIf="question.type === 'choice'">
+    <div
+      class="choice-option"
+      *ngFor="let option of question.options; let i = index"
+      [class.selected]="userAnswer === i"
+      [class.correct]="showCorrectAnswer && isCorrectChoice(i)"
+      [class.incorrect]="showWrongAnswer && userAnswer === i && !isCorrectChoice(i)"
+      (click)="selectChoice(i)">
+      <span class="option-label">{{ getOptionLabel(i) }}</span>
+      <span class="option-content">{{ option }}</span>
+    </div>
+  </div>
+
+  <!-- 填空题 -->
+  <div class="answer-section fill-answer" *ngIf="question.type === 'fill'">
+    <input
+      type="text"
+      class="fill-input"
+      [value]="userAnswer || ''"
+      (input)="onFillAnswerChanged($event)"
+      placeholder="请输入答案..."
+      [disabled]="submitted" />
+  </div>
+
+  <!-- 编程题 -->
+  <div class="answer-section code-answer" *ngIf="question.type === 'code'">
+    <ng-container *ngIf="question.type === 'code'">
+      <div class="code-editor-placeholder">
+        <p>代码编辑器功能暂不可用</p>
+        <textarea 
+          [(ngModel)]="userAnswer" 
+          (ngModelChange)="onCodeChanged($event)"
+          class="code-textarea"
+          placeholder="请输入代码..."></textarea>
+      </div>
+    </ng-container>
+    <button class="run-code-btn" (click)="runCode()" [disabled]="submitted">
+      ▶️ 运行代码
+    </button>
+  </div>
+</div>

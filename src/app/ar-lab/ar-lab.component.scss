@@ -1,0 +1,280 @@
+// AR实验室组件样式 — 大屏桌面适配
+
+:host {
+  --panel-width: 280px;
+  --status-height: 48px;
+}
+
+.ar-lab-container {
+  display: flex;
+  flex-direction: column;
+  height: 100vh;
+  background-color: #f5f5f5;
+}
+
+// 顶部状态栏
+.status-bar {
+  display: flex;
+  align-items: center;
+  padding: 8px 16px;
+  height: var(--status-height);
+  border-bottom: 1px solid #e0e0e0;
+  background-color: white;
+  box-shadow: 0 2px 4px rgb(0 0 0 / 10%);
+
+  .status-item {
+    display: flex;
+    align-items: center;
+    margin-right: 24px;
+    font-size: 14px;
+    
+    mat-icon {
+      margin-right: 8px;
+    }
+  }
+
+  .spacer {
+    flex: 1;
+  }
+}
+
+// 主要内容区域
+.main-content {
+  display: flex;
+  overflow: hidden;
+  flex: 1;
+}
+
+// 控制面板
+.control-panel {
+  overflow-y: auto;
+  width: var(--panel-width);
+  padding: 16px;
+  border-right: 1px solid #e0e0e0;
+  background-color: white;
+
+  mat-card {
+    margin-bottom: 16px;
+  }
+
+  .control-section {
+    margin-bottom: 24px;
+
+    h3 {
+      margin: 0 0 16px;
+      color: #333;
+      font-size: 16px;
+      font-weight: 500;
+    }
+
+    .port-selector {
+      width: 100%;
+      margin: 16px 0;
+    }
+
+    .connection-buttons {
+      display: flex;
+      gap: 8px;
+      margin-top: 16px;
+
+      button {
+        flex: 1;
+      }
+    }
+
+    mat-slide-toggle {
+      display: block;
+      margin: 16px 0;
+    }
+
+    button {
+      width: 100%;
+      margin: 8px 0;
+    }
+  }
+}
+
+// 传感器面板
+.sensor-panel {
+  .sensor-data {
+    .sensor-item {
+      display: flex;
+      justify-content: space-between;
+      padding: 8px 0;
+      border-bottom: 1px solid #f0f0f0;
+
+      .sensor-name {
+        color: #666;
+        font-weight: 500;
+      }
+
+      .sensor-value {
+        color: #333;
+        font-family: 'Courier New', monospace;
+      }
+    }
+
+    .last-update {
+      margin-top: 16px;
+      padding-top: 8px;
+      border-top: 1px solid #e0e0e0;
+      color: #999;
+      font-size: 12px;
+      text-align: center;
+    }
+  }
+}
+
+// Unity容器区域
+.unity-wrapper {
+  display: flex;
+  flex: 1;
+  padding: 16px;
+  background-color: #2d2d2d;
+}
+
+.unity-container {
+  position: relative;
+  overflow: hidden;
+  flex: 1;
+  border-radius: 8px;
+  background-color: #000;
+  box-shadow: 0 4px 12px rgb(0 0 0 / 30%);
+
+  .loading-overlay,
+  .error-overlay {
+    position: absolute;
+    inset: 0;
+    z-index: 10;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    background-color: rgb(0 0 0 / 80%);
+    color: white;
+
+    mat-spinner {
+      margin-bottom: 16px;
+    }
+
+    p {
+      margin: 8px 0;
+      font-size: 16px;
+    }
+
+    h2 {
+      margin: 16px 0 8px;
+      color: #ff6b6b;
+    }
+  }
+
+  .unity-content {
+    width: 100%;
+    height: 100%;
+  }
+}
+
+// 信息面板
+.info-panel {
+  overflow-y: auto;
+  width: var(--panel-width);
+  padding: 16px;
+  border-left: 1px solid #e0e0e0;
+  background-color: white;
+
+  mat-card {
+    margin-bottom: 16px;
+  }
+
+  .experiment-info {
+    p {
+      margin: 8px 0;
+      font-size: 14px;
+
+      strong {
+        color: #333;
+      }
+    }
+  }
+
+  .no-experiment {
+    padding: 24px 0;
+    color: #999;
+    font-style: italic;
+    text-align: center;
+  }
+
+  .instructions {
+    margin: 0;
+    padding-left: 16px;
+
+    li {
+      margin: 8px 0;
+      font-size: 14px;
+      line-height: 1.4;
+    }
+  }
+}
+
+// ===== 响应式：中屏 (≤1200px) =====
+@media (width <= 1200px) {
+  :host { --panel-width: 240px; }
+}
+
+// ===== 响应式：平板 (≤992px) =====
+@media (width <= 992px) {
+  .main-content {
+    flex-direction: column;
+  }
+
+  .control-panel,
+  .info-panel {
+    width: 100%;
+    height: auto;
+    border-right: none;
+    border-bottom: 1px solid #e0e0e0;
+    border-left: none;
+  }
+
+  .unity-wrapper {
+    height: 60vh;
+    padding: 8px;
+  }
+}
+
+// ===== 响应式：移动端 (≤768px) =====
+@media (width <= 768px) {
+  .status-bar {
+    flex-wrap: wrap;
+    padding: 4px 8px;
+    height: auto;
+
+    .status-item {
+      margin: 4px 12px 4px 0;
+      font-size: 12px;
+    }
+  }
+
+  .control-panel,
+  .info-panel {
+    padding: 8px;
+  }
+}
+
+// ===== 响应式：大屏桌面 (≥1600px) =====
+@media (min-width: 1600px) {
+  :host { --panel-width: 340px; }
+
+  .status-bar { padding: 12px 32px; }
+  .control-panel, .info-panel { padding: 20px; }
+  .unity-wrapper { padding: 20px; }
+}
+
+// ===== 响应式：超宽屏 (≥2000px) =====
+@media (min-width: 2000px) {
+  :host { --panel-width: 380px; }
+
+  .status-bar { padding: 16px 48px; }
+  .control-panel, .info-panel { padding: 24px; }
+  .unity-wrapper { padding: 24px; }
+}

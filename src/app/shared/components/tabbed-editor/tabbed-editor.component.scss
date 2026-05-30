@@ -1,0 +1,304 @@
+/**
+ * 多标签页编辑器样式
+ * 参考 VS Code 标签栏设计，桌面端大屏优化
+ */
+$tab-height: 36px;
+$statusbar-height: 24px;
+$bg-primary: #0f172a;
+$bg-secondary: #1e293b;
+$bg-tab: #1a2332;
+$bg-tab-active: #1e293b;
+$text-primary: #e2e8f0;
+$text-secondary: #94a3b8;
+$text-muted: #64748b;
+$accent: #3b82f6;
+$border-color: #334155;
+$dirty-color: #f59e0b;
+$success: #22c55e;
+$error: #ef4444;
+
+.tabbed-editor {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  background: $bg-primary;
+  border-radius: 12px;
+  overflow: hidden;
+  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.2);
+}
+
+// ==================== 标签栏 ====================
+
+.tab-bar {
+  display: flex;
+  align-items: center;
+  height: $tab-height;
+  background: $bg-secondary;
+  border-bottom: 1px solid $border-color;
+  user-select: none;
+}
+
+.tab-list {
+  display: flex;
+  flex: 1;
+  overflow-x: auto;
+  scrollbar-width: none;
+
+  &::-webkit-scrollbar {
+    display: none;
+  }
+}
+
+.tab-item {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  height: $tab-height;
+  padding: 0 12px;
+  background: $bg-tab;
+  border-right: 1px solid $border-color;
+  cursor: pointer;
+  white-space: nowrap;
+  transition: background 0.15s;
+  min-width: 0;
+  position: relative;
+
+  &:hover {
+    background: lighten($bg-tab, 4%);
+  }
+
+  &.active {
+    background: $bg-tab-active;
+    border-bottom: 2px solid $accent;
+  }
+
+  &.dirty .tab-title {
+    font-style: italic;
+  }
+}
+
+.tab-icon {
+  font-size: 14px;
+  color: $accent;
+  flex-shrink: 0;
+}
+
+.tab-title {
+  font-size: 13px;
+  color: $text-primary;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  max-width: 160px;
+}
+
+.tab-dirty-indicator {
+  font-size: 10px;
+  color: $dirty-color;
+  flex-shrink: 0;
+}
+
+.tab-close-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 18px;
+  height: 18px;
+  border: none;
+  background: transparent;
+  color: $text-muted;
+  border-radius: 4px;
+  cursor: pointer;
+  flex-shrink: 0;
+  opacity: 0;
+  transition: opacity 0.15s, background 0.15s;
+
+  .tab-item:hover & {
+    opacity: 1;
+  }
+
+  &:hover {
+    background: rgba(239, 68, 68, 0.2);
+    color: #ef4444;
+  }
+
+  i {
+    font-size: 14px;
+  }
+}
+
+.tab-actions {
+  display: flex;
+  align-items: center;
+  gap: 2px;
+  margin: 0 4px;
+}
+
+.tab-action-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 28px;
+  height: 28px;
+  border: none;
+  background: transparent;
+  color: $text-muted;
+  border-radius: 4px;
+  cursor: pointer;
+  flex-shrink: 0;
+  transition: background 0.15s, color 0.15s;
+
+  &:hover {
+    background: rgba($accent, 0.1);
+    color: $accent;
+  }
+
+  i {
+    font-size: 16px;
+  }
+}
+
+// ==================== 编辑器区域 ====================
+
+.editor-area {
+  flex: 1;
+  overflow: hidden;
+}
+
+.editor-content {
+  height: 100%;
+
+  .monaco-editor {
+    height: 100%;
+    width: 100%;
+  }
+}
+
+.editor-empty {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  height: 100%;
+  gap: 8px;
+  color: $text-muted;
+}
+
+.empty-icon {
+  font-size: 48px;
+  opacity: 0.3;
+}
+
+.empty-text {
+  font-size: 15px;
+  margin: 0;
+}
+
+.empty-hint {
+  font-size: 12px;
+  color: $text-muted;
+  margin: 0;
+}
+
+// ==================== 输出面板 ====================
+
+.output-panel {
+  border-top: 1px solid $border-color;
+  background: #0d1117;
+  max-height: 35%;
+  display: flex;
+  flex-direction: column;
+}
+
+.output-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 6px 12px;
+  background: $bg-secondary;
+  border-bottom: 1px solid $border-color;
+}
+
+.output-title {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 13px;
+  color: $text-secondary;
+
+  .success { color: $success; }
+  .error { color: $error; }
+
+  .exec-time {
+    font-size: 11px;
+    color: $text-muted;
+  }
+}
+
+.output-close-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border: none;
+  background: transparent;
+  color: $text-muted;
+  cursor: pointer;
+  padding: 2px;
+  border-radius: 4px;
+
+  &:hover {
+    color: $text-primary;
+    background: rgba(255, 255, 255, 0.05);
+  }
+}
+
+.output-content {
+  flex: 1;
+  margin: 0;
+  padding: 12px;
+  font-family: 'Cascadia Code', 'Fira Code', 'JetBrains Mono', 'Geist Mono', 'Consolas', monospace;
+  font-size: 13px;
+  color: $text-primary;
+  white-space: pre-wrap;
+  overflow: auto;
+  line-height: 1.5;
+
+  &.error-output {
+    color: #f48771;
+  }
+}
+
+// ==================== 状态栏 ====================
+
+.editor-statusbar {
+  display: flex;
+  align-items: center;
+  height: $statusbar-height;
+  padding: 0 12px;
+  background: $bg-secondary;
+  border-top: 1px solid $border-color;
+  font-size: 11px;
+  color: $text-muted;
+  gap: 16px;
+}
+
+.status-spacer {
+  flex: 1;
+}
+
+.status-dirty {
+  color: $dirty-color;
+}
+
+.status-running {
+  color: $accent;
+  animation: pulse 1.5s ease-in-out infinite;
+}
+
+@keyframes pulse {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.5; }
+}
+
+.status-tabs {
+  color: $text-muted;
+}

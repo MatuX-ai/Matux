@@ -1,0 +1,81 @@
+/**
+ * Mac 风格主题变量
+ * Apple-inspired design system variables
+ */
+
+// CSS 自定义属性 (方便在组件内联样式中使用)
+:root {
+  // 品牌色 - Mac 风格中性灰
+  --color-brand-50: #f5f5f7;      // Apple 浅灰背景
+  --color-brand-100: #e8e8ed;     // 次级背景
+  --color-brand-200: #d2d2d7;     // 分隔线
+  --color-brand-300: #aeaeb2;     // 次要文本
+  --color-brand-400: #86868b;     // 辅助文本
+  --color-brand-500: #6e6e73;     // 主按钮
+  --color-brand-600: #48484a;     // 强调元素
+  --color-brand-700: #3a3a3c;     // 重要文本
+  --color-brand-800: #1d1d1f;     // 主标题
+  --color-brand-900: #000000;     // 纯黑
+
+  // 渐变主色 - 星空蓝 (Starry Blue gradient)
+  --gradient-primary-start: #0B1426;    // 深蓝（夜空）
+  --gradient-primary-end: #3B82F6;      // 亮蓝（星空）
+
+  // 强调色
+  --color-accent-gold: #FFD700;
+  --color-accent-orange: #FFA500;
+
+  // 成功色 - Apple 绿
+  --color-success-500: #34c759;
+  --color-success-700: #30b34e;
+
+  // 错误色
+  --color-error-500: #ff3b30;  // Apple 红
+  --color-error-700: #d70015;
+
+  // 警告色
+  --color-warning-500: #ff9500;  // Apple 橙
+  --color-warning-700: #bf6e00;
+
+  // 信息色 - Mac 渐变紫
+  --color-info-500: var(--gradient-primary-start, #667eea);
+  --color-info-700: var(--gradient-primary-end, #764ba2);
+
+  // 间距
+  --spacing-xs: 0.25rem;   // 4px
+  --spacing-sm: 0.5rem;    // 8px
+  --spacing-md: 1rem;      // 16px
+  --spacing-lg: 1.5rem;    // 24px
+  --spacing-xl: 2rem;      // 32px
+  --spacing-2xl: 3rem;     // 48px
+
+  // 圆角
+  --radius-sm: 0.25rem;    // 4px
+  --radius-md: 0.5rem;     // 8px
+  --radius-lg: 0.75rem;    // 12px
+  --radius-xl: 1rem;       // 16px
+  --radius-2xl: 1.5rem;    // 24px
+  --radius-full: 9999px;
+
+  // 阴影
+  --shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.04);
+  --shadow-md: 0 4px 8px rgba(0, 0, 0, 0.08);
+  --shadow-lg: 0 10px 20px rgba(0, 0, 0, 0.12);
+  --shadow-xl: 0 20px 40px rgba(0, 0, 0, 0.16);
+
+  // 过渡
+  --transition-fast: 150ms cubic-bezier(0.4, 0, 0.2, 1);
+  --transition-normal: 300ms cubic-bezier(0.4, 0, 0.2, 1);
+  --transition-slow: 500ms cubic-bezier(0.4, 0, 0.2, 1);
+
+  // 字体
+  --font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+  --font-size-xs: 0.75rem;    // 12px
+  --font-size-sm: 0.875rem;   // 14px
+  --font-size-base: 1rem;     // 16px
+  --font-size-lg: 1.125rem;   // 18px
+  --font-size-xl: 1.25rem;    // 20px
+  --font-size-2xl: 1.5rem;    // 24px
+  --font-size-3xl: 1.875rem;  // 30px
+  --font-size-4xl: 2.25rem;   // 36px
+}

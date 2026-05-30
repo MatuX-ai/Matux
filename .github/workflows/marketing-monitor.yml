@@ -1,0 +1,220 @@
+name: Marketing Pages Monitor
+
+on:
+  # 定时执行（每天 UTC 时间 02:00）
+  schedule:
+    - cron: '0 2 * * *'
+  
+  # 手动触发
+  workflow_dispatch:
+    inputs:
+      environment:
+        description: '测试环境'
+        required: true
+        default: 'staging'
+        type: choice
+        options:
+          - local
+          - staging
+          - production
+      
+      mode:
+        description: '测试模式'
+        required: true
+        default: 'all'
+        type: choice
+        options:
+          - desktop
+          - mobile
+          - all
+
+  # 推送到营销相关分支
+  push:
+    branches:
+      - 'feature/marketing-*'
+      - 'fix/marketing-*'
+    paths:
+      - 'src/app/marketing/**'
+      - 'src/styles/shared/marketing.scss'
+      - 'src/styles/design-tokens/**'
+
+  # 合并请求
+  pull_request:
+    branches:
+      - main
+      - develop
+    paths:
+      - 'src/app/marketing/**'
+      - 'src/styles/shared/marketing.scss'
+      - 'src/styles/design-tokens/**'
+
+jobs:
+  monitor:
+    name: Monitor Marketing Pages
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    
+    strategy:
+      matrix:
+        node-version: [18.x]
+    
+    steps:
+      - name: 🔄 Checkout code
+        uses: actions/checkout@v4
+      
+      - name: 🔧 Setup Node.js ${{ matrix.node-version }}
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ matrix.node-version }}
+          cache: 'npm'
+      
+      - name: 📦 Install dependencies
+        run: |
+          cd scripts
+          npm ci
+      
+      - name: 🔧 Install Playwright browsers
+        run: |
+          cd scripts
+          npx playwright install --with-deps chromium
+      
+      - name: 🏗️ Build application (for local testing)
+        if: github.event.inputs.environment == 'local' || github.event.inputs.environment == ''
+        run: |
+          npm ci
+          npm run build:prod
+      
+      - name: 🚀 Start application in background
+        if: github.event.inputs.environment == 'local' || github.event.inputs.environment == ''
+        run: |
+          npx http-server dist/ -p 4200 -c-1 &
+          npx wait-on http://localhost:4200 --timeout 60000
+      
+      - name: 📱 Determine base URL
+        id: vars
+        run: |
+          if [ "${{ github.event.inputs.environment }}" == "production" ]; then
+            echo "BASE_URL=https://imato.com" >> $GITHUB_ENV
+          elif [ "${{ github.event.inputs.environment }}" == "staging" ]; then
+            echo "BASE_URL=https://staging.imato.com" >> $GITHUB_ENV
+          else
+            echo "BASE_URL=http://localhost:4200" >> $GITHUB_ENV
+          fi
+      
+      - name: 🖥️ Run desktop monitor
+        if: github.event.inputs.mode == 'desktop' || github.event.inputs.mode == 'all' || github.event.inputs.mode == ''
+        run: |
+          cd scripts
+          node marketing-page-monitor.js \
+            --base-url=${{ env.BASE_URL }} \
+            --timeout=60000 \
+            --output=../monitoring-reports/desktop-report.json
+      
+      - name: 📱 Run mobile monitor
+        if: github.event.inputs.mode == 'mobile' || github.event.inputs.mode == 'all'
+        run: |
+          cd scripts
+          node marketing-page-monitor.js \
+            --mobile \
+            --base-url=${{ env.BASE_URL }} \
+            --timeout=60000 \
+            --output=../monitoring-reports/mobile-report.json
+      
+      - name: 📊 Generate combined report
+        run: |
+          cd scripts
+          node -e "
+          const fs = require('fs');
+          const path = require('path');
+          
+          const reports = [];
+          const desktopReportPath = '../monitoring-reports/desktop-report.json';
+          const mobileReportPath = '../monitoring-reports/mobile-report.json';
+          
+          if (fs.existsSync(desktopReportPath)) {
+            reports.push(JSON.parse(fs.readFileSync(desktopReportPath, 'utf8')));
+          }
+          if (fs.existsSync(mobileReportPath)) {
+            reports.push(JSON.parse(fs.readFileSync(mobileReportPath, 'utf8')));
+          }
+          
+          if (reports.length > 0) {
+            const combined = {
+              timestamp: new Date().toISOString(),
+              summary: {
+                totalErrors: reports.reduce((sum, r) => sum + r.summary.totalErrors, 0),
+                hasCriticalErrors: reports.some(r => r.criticalIssues && r.criticalIssues.length > 0)
+              },
+              reports
+            };
+            
+            fs.writeFileSync('../monitoring-reports/combined-report.json', JSON.stringify(combined, null, 2));
+          }
+          "
+      
+      - name: 📈 Analyze results
+        id: analyze
+        run: |
+          cd scripts
+          node -e "
+          const fs = require('fs');
+          const reportPath = '../monitoring-reports/combined-report.json';
+          
+          if (fs.existsSync(reportPath)) {
+            const report = JSON.parse(fs.readFileSync(reportPath, 'utf8'));
+            
+            console.log('=== 监控结果 ===');
+            console.log('总错误数:', report.summary.totalErrors);
+            console.log('关键错误:', report.summary.hasCriticalErrors);
+            
+            if (report.summary.hasCriticalErrors) {
+              console.log('\n🔥 发现关键错误！');
+              process.exit(1);
+            }
+            
+            if (report.summary.totalErrors > 10) {
+              console.log('\n⚠️  错误数超过阈值！');
+              process.exit(1);
+            }
+          }
+          "
+      
+      - name: 📤 Upload reports
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: monitoring-reports-${{ github.run_number }}
+          path: |
+            monitoring-reports/
+            !monitoring-reports/**/*.backup-*
+          retention-days: 30
+      
+      - name: 🔔 Send notification on failure
+        if: failure() && github.event_name == 'schedule'
+        run: |
+          cd scripts
+          node -e "
+          const reportPath = '../monitoring-reports/combined-report.json';
+          const fs = require('fs');
+          
+          if (fs.existsSync(reportPath)) {
+            const report = JSON.parse(fs.readFileSync(reportPath, 'utf8'));
+            
+            // 发送通知到 Slack/Teams/DingTalk
+            const webhookUrl = process.env.MONITORING_WEBHOOK_URL;
+            if (webhookUrl) {
+              // 通知逻辑
+              console.log('Sending notification...');
+            }
+          }
+          "
+        env:
+          MONITORING_WEBHOOK_URL: ${{ secrets.MONITORING_WEBHOOK_URL }}
+      
+      - name: 🧹 Cleanup
+        if: always()
+        run: |
+          # 清理旧报告（保留最近30天的）
+          find monitoring-reports -name "*.json" -type f -mtime +30 -delete || true
+          find monitoring-reports -name "*.html" -type f -mtime +30 -delete || true
+          find monitoring-reports/screenshots -name "*.png" -type f -mtime +30 -delete || true

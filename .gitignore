@@ -25,6 +25,7 @@ build/
 
 # OS generated files
 .DS_Store
+*.sock
 .DS_Store?
 ._*
 .Spotlight-V100
@@ -35,9 +36,13 @@ Thumbs.db
 # Angular
 .angular/
 .tmp/
+out-tsc/
+*.ngfactory.ts
+*.ngstyle.ts
 
 # Python
 __pycache__/
+backend/venv/
 *.py[cod]
 *$py.class
 *.so
@@ -78,7 +83,22 @@ tmp/
 temp/
 *.tmp
 
-# Ghost CMS themes (exclude all third-party themes)
+# Build artifacts and caches
+build_error_*.log
+build_detailed.log
+tsc_check.log
+build_progress.log
+
+# Backup directories (auto-generated)
+backup_configs_*/
+backup_course_material/
+
+# Embedded git repos
+flutter/
+edu-proto-clean/
+edu-proto/
+
+# Ghost CMS
 data/ghost/content/themes/*
 !data/ghost/content/themes/.gitkeep
-!data/ghost/content/themes/maco/
+data/ghost/mysql/

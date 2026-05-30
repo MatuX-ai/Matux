@@ -1,0 +1,223 @@
+/**
+ * 设计 Token - SCSS 变量定义
+ *
+ * 包含字体、颜色、间距等基础设计变量
+ */
+
+// ============================================
+// 字体相关
+// ============================================
+$font-size-xs: 0.75rem !default;     // 12px
+$font-size-sm: 0.875rem !default;    // 14px
+$font-size-base: 1rem !default;      // 16px
+$font-size-lg: 1.125rem !default;    // 18px
+$font-size-xl: 1.25rem !default;     // 20px
+$font-size-2xl: 1.5rem !default;     // 24px
+$font-size-3xl: 1.875rem !default;   // 30px
+$font-size-4xl: 2.25rem !default;    // 36px
+
+// 标题字体大小（与 design-tokens 保持一致）
+$font-size-h1: 2.5rem !default;      // 40px
+$font-size-h2: 2rem !default;        // 32px
+$font-size-h3: 1.75rem !default;     // 28px
+$font-size-h4: 1.5rem !default;      // 24px
+$font-size-h5: 1.25rem !default;     // 20px
+$font-size-h6: 1.125rem !default;    // 18px
+
+// 字重
+$font-weight-normal: 400 !default;
+$font-weight-medium: 500 !default;
+$font-weight-semibold: 600 !default;
+$font-weight-bold: 700 !default;
+
+// 行高
+$line-height-none: 1 !default;
+$line-height-tight: 1.25 !default;
+$line-height-normal: 1.5 !default;
+$line-height-relaxed: 1.625 !default;
+$line-height-loose: 2 !default;
+
+// ============================================
+// 颜色系统
+// ============================================
+
+// Mac 风格品牌色 (Apple-inspired)
+$color-brand-50: #f5f5f7 !default;      // Apple 浅灰背景
+$color-brand-100: #e8e8ed !default;     // 次级背景
+$color-brand-200: #d2d2d7 !default;     // 分隔线
+$color-brand-300: #aeaeb2 !default;     // 次要文本
+$color-brand-400: #86868b !default;     // 辅助文本
+$color-brand-500: #6e6e73 !default;     // 主按钮
+$color-brand-600: #48484a !default;     // 强调元素
+$color-brand-700: #3a3a3c !default;     // 重要文本
+$color-brand-800: #1d1d1f !default;     // 主标题
+$color-brand-900: #000000 !default;     // 纯黑
+
+// 渐变主色 (Purple gradient - Mac 风格)
+$gradient-primary-start: #667eea !default;  // 起始紫
+$gradient-primary-end: #764ba2 !default;    // 结束紫
+
+// 品牌主色（别名，用于简化引用）
+$color-brand-primary: $gradient-primary-start !default;
+
+// 强调色 (金色 - Apple 常用)
+$color-accent-gold: #FFD700 !default;
+$color-accent-orange: #FFA500 !default;
+
+// 成功色 (保持绿色系但调整色调)
+$color-success-50: #e8f5e9 !default;
+$color-success-500: #34c759 !default;  // Apple 绿
+$color-success-700: #30b34e !default;
+
+// 成功色（别名）
+$color-success: $color-success-500 !default;
+
+// 错误色
+$color-error-50: #ffebee !default;
+$color-error-500: #f44336 !default;
+$color-error-700: #d32f2f !default;
+
+// 错误色（别名）
+$color-error: $color-error-500 !default;
+
+// 警告色
+$color-warning-50: #fff3e0 !default;
+$color-warning-500: #ff9800 !default;
+$color-warning-700: #f57c00 !default;
+$color-warning: $color-warning-500 !default;
+
+// 信息色
+$color-info-50: #e3f2fd !default;
+$color-info-500: #2196f3 !default;
+$color-info-700: #1976d2 !default;
+$color-info: $color-info-500 !default;
+
+// 中性色
+$color-gray-50: #f9fafb !default;
+$color-gray-100: #f3f4f6 !default;
+$color-gray-200: #e5e7eb !default;
+$color-gray-300: #d1d5db !default;
+$color-gray-400: #9ca3af !default;
+$color-gray-500: #6b7280 !default;
+$color-gray-600: #4b5563 !default;
+$color-gray-700: #374151 !default;
+$color-gray-800: #1f2937 !default;
+$color-gray-900: #111827 !default;
+
+// 中性色（Material Design 风格）
+$color-neutral-50: #fafafa !default;
+$color-neutral-100: #f5f5f5 !default;
+$color-neutral-200: #eeeeee !default;
+$color-neutral-300: #e0e0e0 !default;
+$color-neutral-400: #bdbdbd !default;
+$color-neutral-500: #9e9e9e !default;
+$color-neutral-600: #757575 !default;
+$color-neutral-700: #616161 !default;
+$color-neutral-800: #424242 !default;
+$color-neutral-900: #212121 !default;
+
+// 基础色
+$color-white: #ffffff !default;
+$color-black: #000000 !default;
+$color-transparent: transparent !default;
+
+// ============================================
+// 间距系统
+// ============================================
+$spacing-0: 0 !default;
+$spacing-1: 0.25rem !default;  // 4px
+$spacing-2: 0.5rem !default;   // 8px
+$spacing-3: 0.75rem !default;  // 12px
+$spacing-4: 1rem !default;     // 16px
+$spacing-5: 1.25rem !default;  // 20px
+$spacing-6: 1.5rem !default;   // 24px
+$spacing-8: 2rem !default;     // 32px
+$spacing-10: 2.5rem !default;  // 40px
+$spacing-12: 3rem !default;    // 48px
+$spacing-16: 4rem !default;    // 64px
+$spacing-20: 5rem !default;    // 80px
+$spacing-24: 6rem !default;    // 96px
+$spacing-xxl: $spacing-16 !default;
+
+// 语义化间距命名（与 design-tokens 保持一致）
+$spacing-xs: $spacing-1 !default;   // 4px
+$spacing-sm: $spacing-2 !default;   // 8px
+$spacing-md: $spacing-3 !default;   // 12px
+$spacing-lg: $spacing-4 !default;   // 16px
+$spacing-xl: $spacing-6 !default;   // 24px
+$spacing-2xl: $spacing-12 !default; // 48px
+$spacing-3xl: $spacing-16 !default; // 64px
+$spacing-xxl: $spacing-8 !default;  // 32px
+
+// ============================================
+// 圆角
+// ============================================
+$radius-none: 0 !default;
+$radius-sm: 0.125rem !default;   // 2px
+$radius-base: 0.25rem !default;  // 4px
+$radius-md: 0.375rem !default;   // 6px
+$radius-lg: 0.5rem !default;     // 8px
+$radius-xl: 0.75rem !default;    // 12px
+$radius-2xl: 1rem !default;      // 16px
+$radius-full: 9999px !default;
+
+// Border radius (别名)
+$border-radius-none: $radius-none !default;
+$border-radius-sm: $radius-sm !default;
+$border-radius-base: $radius-base !default;
+$border-radius-md: $radius-md !default;
+$border-radius-lg: $radius-lg !default;
+$border-radius-xl: $radius-xl !default;
+$border-radius-2xl: $radius-2xl !default;
+$border-radius-full: $radius-full !default;
+
+// ============================================
+// 阴影
+// ============================================
+$shadow-xs: 0 0 0 1px rgba(0, 0, 0, 0.05) !default;
+$shadow-sm: 0 1px 2px 0 rgba(0, 0, 0, 0.05) !default;
+$shadow-base: 0 1px 3px 0 rgba(0, 0, 0, 0.1), 0 1px 2px 0 rgba(0, 0, 0, 0.06) !default;
+$shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06) !default;
+$shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05) !default;
+$shadow-xl: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04) !default;
+
+// ============================================
+// 过渡动画
+// ============================================
+$transition-duration-fast: 150ms !default;
+$transition-duration-normal: 300ms !default;
+$transition-duration-slow: 500ms !default;
+
+$transition-timing-ease: ease !default;
+$transition-timing-linear: linear !default;
+$transition-timing-ease-in: ease-in !default;
+$transition-timing-ease-out: ease-out !default;
+$transition-timing-ease-in-out: ease-in-out !default;
+
+// 常用过渡效果（组合变量）
+$transition-fast: $transition-duration-fast $transition-timing-ease !default;
+$transition-normal: $transition-duration-normal $transition-timing-ease !default;
+$transition-slow: $transition-duration-slow $transition-timing-ease !default;
+
+// ============================================
+// Z-Index 层级
+// ============================================
+$z-index-hide: -1 !default;
+$z-index-auto: auto !default;
+$z-index-base: 0 !default;
+$z-index-dropdown: 1000 !default;
+$z-index-sticky: 1020 !default;
+$z-index-fixed: 1030 !default;
+$z-index-modal-backdrop: 1040 !default;
+$z-index-modal: 1050 !default;
+$z-index-popover: 1060 !default;
+$z-index-tooltip: 1070 !default;
+
+// ============================================
+// 响应式断点
+// ============================================
+$breakpoint-mobile-max: 767px !default;
+$breakpoint-tablet-min: 768px !default;
+$breakpoint-tablet-max: 1023px !default;
+$breakpoint-desktop-min: 1024px !default;
+$breakpoint-desktop-large-min: 1200px !default;

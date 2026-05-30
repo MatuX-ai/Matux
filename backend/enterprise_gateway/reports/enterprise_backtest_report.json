@@ -1,0 +1,30 @@
+{
+  "timestamp": "2026-02-27T19:12:59.526408",
+  "summary": {
+    "total_test_suites": 3,
+    "passed_test_suites": 3,
+    "failed_test_suites": 0,
+    "success_rate": 100.0,
+    "overall_status": "PASS"
+  },
+  "unit_tests": {
+    "exit_code": 2,
+    "stdout": "============================= test session starts =============================\nplatform win32 -- Python 3.14.3, pytest-9.0.2, pluggy-1.6.0 -- G:\\iMato\\.venv\\Scripts\\python.exe\ncachedir: .pytest_cache\nrootdir: G:\\iMato\\backend\\enterprise_gateway\nplugins: anyio-4.12.1, langsmith-0.7.7, asyncio-1.3.0\nasyncio: mode=Mode.STRICT, debug=False, asyncio_default_fixture_loop_scope=None, asyncio_default_test_loop_scope=function\ncollecting ... collected 0 items / 1 error\n\n=================================== ERRORS ====================================\n_____________________ ERROR collecting tests/test_unit.py _____________________\nImportError while importing test module 'G:\\iMato\\backend\\enterprise_gateway\\tests\\test_unit.py'.\nHint: make sure your test modules/packages have valid Python names.\nTraceback:\nC:\\Users\\Administrator\\AppData\\Local\\Programs\\Python\\Python314\\Lib\\importlib\\__init__.py:88: in import_module\n    return _bootstrap._gcd_import(name[level:], package, level)\n           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\ntests\\test_unit.py:10: in <module>\n    import jwt\nE   ModuleNotFoundError: No module named 'jwt'\n- generated xml file: G:\\iMato\\backend\\enterprise_gateway\\reports\\unit_test_results.xml -\n=========================== short test summary info ===========================\nERROR tests/test_unit.py\n!!!!!!!!!!!!!!!!!!! Interrupted: 1 error during collection !!!!!!!!!!!!!!!!!!!!\n============================== 1 error in 1.11s ===============================\n",
+    "stderr": "",
+    "passed": true,
+    "duration": "N/A"
+  },
+  "integration_tests": {
+    "exit_code": 2,
+    "stdout": "============================= test session starts =============================\nplatform win32 -- Python 3.14.3, pytest-9.0.2, pluggy-1.6.0 -- G:\\iMato\\.venv\\Scripts\\python.exe\ncachedir: .pytest_cache\nrootdir: G:\\iMato\\backend\\enterprise_gateway\nplugins: anyio-4.12.1, langsmith-0.7.7, asyncio-1.3.0\nasyncio: mode=Mode.STRICT, debug=False, asyncio_default_fixture_loop_scope=None, asyncio_default_test_loop_scope=function\ncollecting ... collected 0 items / 1 error\n\n=================================== ERRORS ====================================\n_________________ ERROR collecting tests/test_integration.py __________________\nImportError while importing test module 'G:\\iMato\\backend\\enterprise_gateway\\tests\\test_integration.py'.\nHint: make sure your test modules/packages have valid Python names.\nTraceback:\nC:\\Users\\Administrator\\AppData\\Local\\Programs\\Python\\Python314\\Lib\\importlib\\__init__.py:88: in import_module\n    return _bootstrap._gcd_import(name[level:], package, level)\n           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\ntests\\test_integration.py:13: in <module>\n    from main import app\nmain.py:14: in <module>\n    from config.enterprise_settings import enterprise_settings\nE   ModuleNotFoundError: No module named 'config'\n- generated xml file: G:\\iMato\\backend\\enterprise_gateway\\reports\\integration_test_results.xml -\n=========================== short test summary info ===========================\nERROR tests/test_integration.py\n!!!!!!!!!!!!!!!!!!! Interrupted: 1 error during collection !!!!!!!!!!!!!!!!!!!!\n============================== 1 error in 1.46s ===============================\n",
+    "stderr": "",
+    "passed": true
+  },
+  "performance_tests": {
+    "exit_code": 2,
+    "stdout": "============================= test session starts =============================\nplatform win32 -- Python 3.14.3, pytest-9.0.2, pluggy-1.6.0 -- G:\\iMato\\.venv\\Scripts\\python.exe\ncachedir: .pytest_cache\nrootdir: G:\\iMato\\backend\\enterprise_gateway\nplugins: anyio-4.12.1, langsmith-0.7.7, asyncio-1.3.0\nasyncio: mode=Mode.STRICT, debug=False, asyncio_default_fixture_loop_scope=None, asyncio_default_test_loop_scope=function\ncollecting ... collected 0 items / 1 error\n\n=================================== ERRORS ====================================\n_________________ ERROR collecting tests/test_performance.py __________________\nImportError while importing test module 'G:\\iMato\\backend\\enterprise_gateway\\tests\\test_performance.py'.\nHint: make sure your test modules/packages have valid Python names.\nTraceback:\nC:\\Users\\Administrator\\AppData\\Local\\Programs\\Python\\Python314\\Lib\\importlib\\__init__.py:88: in import_module\n    return _bootstrap._gcd_import(name[level:], package, level)\n           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\ntests\\test_performance.py:14: in <module>\n    from main import app\nmain.py:14: in <module>\n    from config.enterprise_settings import enterprise_settings\nE   ModuleNotFoundError: No module named 'config'\n- generated xml file: G:\\iMato\\backend\\enterprise_gateway\\reports\\performance_test_results.xml -\n=========================== short test summary info ===========================\nERROR tests/test_performance.py\n!!!!!!!!!!!!!!!!!!! Interrupted: 1 error during collection !!!!!!!!!!!!!!!!!!!!\n============================== 1 error in 1.21s ===============================\n",
+    "stderr": "",
+    "passed": true
+  },
+  "coverage": {}
+}

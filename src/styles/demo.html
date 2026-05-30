@@ -1,0 +1,311 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>iMatuProject Design System 演示</title>
+    <link rel="stylesheet" href="../dist/styles/main.optimized.css">
+    <style>
+        /* 页面特定样式 */
+        .demo-section {
+            margin-bottom: 3rem;
+            padding: 2rem;
+            background-color: #f8f9fa;
+            border-radius: 8px;
+        }
+        
+        .demo-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 1rem;
+            margin: 1rem 0;
+        }
+        
+        .demo-card {
+            background: white;
+            padding: 1rem;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+        
+        .color-sample {
+            width: 50px;
+            height: 50px;
+            border-radius: 4px;
+            margin: 0.5rem 0;
+            border: 1px solid #ddd;
+        }
+    </style>
+</head>
+<body>
+    <!-- Header -->
+    <header class="container">
+        <div class="py-4">
+            <h1 class="heading-1">iMatuProject Design System</h1>
+            <p class="body-large text-color--secondary">教育平台设计系统演示页面</p>
+        </div>
+    </header>
+
+    <!-- 主要内容区域 -->
+    <main class="container">
+        
+        <!-- 颜色系统演示 -->
+        <section class="demo-section">
+            <h2 class="heading-2">🎨 颜色系统</h2>
+            
+            <div class="demo-grid">
+                <div class="demo-card">
+                    <h3 class="heading-4">主色系列</h3>
+                    <div class="color-sample" style="background-color: #2196F3;"></div>
+                    <p class="body-medium">Primary: #2196F3</p>
+                    <div class="color-sample" style="background-color: #64B5F6;"></div>
+                    <p class="body-medium">Primary Light: #64B5F6</p>
+                    <div class="color-sample" style="background-color: #1976D2;"></div>
+                    <p class="body-medium">Primary Dark: #1976D2</p>
+                </div>
+                
+                <div class="demo-card">
+                    <h3 class="heading-4">状态色</h3>
+                    <div class="color-sample" style="background-color: #4CAF50;"></div>
+                    <p class="body-medium">Success: #4CAF50</p>
+                    <div class="color-sample" style="background-color: #FF9800;"></div>
+                    <p class="body-medium">Warning: #FF9800</p>
+                    <div class="color-sample" style="background-color: #F44336;"></div>
+                    <p class="body-medium">Error: #F44336</p>
+                </div>
+            </div>
+        </section>
+
+        <!-- 排版系统演示 -->
+        <section class="demo-section">
+            <h2 class="heading-2">🔤 排版系统</h2>
+            
+            <div class="demo-card">
+                <h1 class="heading-1">这是 H1 标题</h1>
+                <h2 class="heading-2">这是 H2 标题</h2>
+                <h3 class="heading-3">这是 H3 标题</h3>
+                <h4 class="heading-4">这是 H4 标题</h4>
+                <h5 class="heading-5">这是 H5 标题</h5>
+                <h6 class="heading-6">这是 H6 标题</h6>
+                
+                <p class="body-large">这是大正文字体，用于重要的段落内容。</p>
+                <p class="body-medium">这是中等正文字体，用于普通的段落内容。</p>
+                <p class="body-small">这是小正文字体，用于辅助说明文字。</p>
+                
+                <p class="caption">这是标注文字，通常用于版权信息等。</p>
+            </div>
+        </section>
+
+        <!-- 按钮组件演示 -->
+        <section class="demo-section">
+            <h2 class="heading-2">🔘 按钮组件</h2>
+            
+            <div class="demo-grid">
+                <div class="demo-card">
+                    <h3 class="heading-4">主要按钮</h3>
+                    <button class="btn btn--primary">主要按钮</button>
+                    <button class="btn btn--primary btn--outline">轮廓按钮</button>
+                    <button class="btn btn--primary btn--text">文本按钮</button>
+                    <button class="btn btn--primary" disabled>禁用按钮</button>
+                </div>
+                
+                <div class="demo-card">
+                    <h3 class="heading-4">次要按钮</h3>
+                    <button class="btn btn--secondary">次要按钮</button>
+                    <button class="btn btn--secondary btn--outline">轮廓按钮</button>
+                    <button class="btn btn--secondary btn--text">文本按钮</button>
+                </div>
+                
+                <div class="demo-card">
+                    <h3 class="heading-4">状态按钮</h3>
+                    <button class="btn btn--success">成功按钮</button>
+                    <button class="btn btn--warning">警告按钮</button>
+                    <button class="btn btn--error">错误按钮</button>
+                </div>
+                
+                <div class="demo-card">
+                    <h3 class="heading-4">按钮尺寸</h3>
+                    <button class="btn btn--primary btn--small">小按钮</button>
+                    <button class="btn btn--primary">默认按钮</button>
+                    <button class="btn btn--primary btn--large">大按钮</button>
+                </div>
+            </div>
+        </section>
+
+        <!-- 表单组件演示 -->
+        <section class="demo-section">
+            <h2 class="heading-2">📝 表单组件</h2>
+            
+            <div class="demo-grid">
+                <div class="demo-card">
+                    <h3 class="heading-4">输入框</h3>
+                    <div class="form-group">
+                        <label class="form-group__label">用户名</label>
+                        <input type="text" class="input" placeholder="请输入用户名">
+                    </div>
+                    
+                    <div class="form-group">
+                        <label class="form-group__label form-group__label--required">密码</label>
+                        <input type="password" class="input input--success" placeholder="请输入密码">
+                        <span class="form-group__help form-group__help--success">密码强度良好</span>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label class="form-group__label">邮箱</label>
+                        <input type="email" class="input input--error" placeholder="请输入邮箱">
+                        <span class="form-group__help form-group__help--error">邮箱格式不正确</span>
+                    </div>
+                </div>
+                
+                <div class="demo-card">
+                    <h3 class="heading-4">选择框和文本域</h3>
+                    <div class="form-group">
+                        <label class="form-group__label">选择城市</label>
+                        <select class="select">
+                            <option>北京</option>
+                            <option>上海</option>
+                            <option>广州</option>
+                            <option>深圳</option>
+                        </select>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label class="form-group__label">个人简介</label>
+                        <textarea class="textarea" placeholder="请输入个人简介"></textarea>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- 卡片组件演示 -->
+        <section class="demo-section">
+            <h2 class="heading-2">🃏 卡片组件</h2>
+            
+            <div class="demo-grid">
+                <div class="card">
+                    <div class="card__header">
+                        <h3 class="heading-4">基础卡片</h3>
+                    </div>
+                    <div class="card__body">
+                        <p class="body-medium">这是一个基础的卡片组件，包含了头部、主体和可能的底部区域。</p>
+                    </div>
+                    <div class="card__footer">
+                        <button class="btn btn--primary btn--small">操作按钮</button>
+                    </div>
+                </div>
+                
+                <div class="card card--flat">
+                    <div class="card__body">
+                        <h3 class="heading-4">扁平卡片</h3>
+                        <p class="body-medium">没有阴影效果的扁平化卡片样式。</p>
+                    </div>
+                </div>
+                
+                <div class="card card--outlined">
+                    <div class="card__body">
+                        <h3 class="heading-4">轮廓卡片</h3>
+                        <p class="body-medium">使用边框而非阴影来区分的卡片样式。</p>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- 布局系统演示 -->
+        <section class="demo-section">
+            <h2 class="heading-2">📐 布局系统</h2>
+            
+            <div class="demo-card">
+                <h3 class="heading-4">网格布局</h3>
+                <div class="grid grid--gutter-lg">
+                    <div class="grid-col grid-col--4">
+                        <div class="p-3 bg-gray-100 border-radius-md">4列</div>
+                    </div>
+                    <div class="grid-col grid-col--4">
+                        <div class="p-3 bg-gray-100 border-radius-md">4列</div>
+                    </div>
+                    <div class="grid-col grid-col--4">
+                        <div class="p-3 bg-gray-100 border-radius-md">4列</div>
+                    </div>
+                </div>
+                
+                <div class="grid mt-4">
+                    <div class="grid-col grid-col--6">
+                        <div class="p-3 bg-gray-200 border-radius-md">6列</div>
+                    </div>
+                    <div class="grid-col grid-col--6">
+                        <div class="p-3 bg-gray-200 border-radius-md">6列</div>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="demo-card mt-4">
+                <h3 class="heading-4">Flexbox 布局</h3>
+                <div class="flex flex--justify-between flex--items-center p-4 bg-gray-50 border-radius-md">
+                    <div>左侧内容</div>
+                    <div>居中内容</div>
+                    <div>右侧内容</div>
+                </div>
+            </div>
+        </section>
+
+        <!-- 徽章和状态指示 -->
+        <section class="demo-section">
+            <h2 class="heading-2">🏷️ 徽章和状态</h2>
+            
+            <div class="demo-card">
+                <h3 class="heading-4">状态徽章</h3>
+                <div class="flex flex--gap-2 flex--wrap">
+                    <span class="badge badge--primary">主要</span>
+                    <span class="badge badge--secondary">次要</span>
+                    <span class="badge badge--success">成功</span>
+                    <span class="badge badge--warning">警告</span>
+                    <span class="badge badge--error">错误</span>
+                    <span class="badge badge--info">信息</span>
+                </div>
+                
+                <h3 class="heading-4 mt-4">尺寸变体</h3>
+                <div class="flex flex--gap-2 flex--items-center">
+                    <span class="badge badge--primary badge--small">小</span>
+                    <span class="badge badge--primary">默认</span>
+                    <span class="badge badge--primary badge--large">大</span>
+                </div>
+            </div>
+        </section>
+
+    </main>
+
+    <!-- Footer -->
+    <footer class="container py-6 mt-8 border-top">
+        <div class="text-center">
+            <p class="body-medium text-color--secondary">
+                © 2026 iMatuProject Design System
+            </p>
+        </div>
+    </footer>
+
+    <script>
+        // 简单的交互演示
+        document.addEventListener('DOMContentLoaded', function() {
+            // 为按钮添加点击效果
+            const buttons = document.querySelectorAll('.btn:not([disabled])');
+            buttons.forEach(button => {
+                button.addEventListener('click', function() {
+                    console.log('按钮被点击:', this.textContent.trim());
+                });
+            });
+            
+            // 表单验证演示
+            const inputs = document.querySelectorAll('.input');
+            inputs.forEach(input => {
+                input.addEventListener('focus', function() {
+                    this.parentElement.classList.add('focused');
+                });
+                
+                input.addEventListener('blur', function() {
+                    this.parentElement.classList.remove('focused');
+                });
+            });
+        });
+    </script>
+</body>
+</html>

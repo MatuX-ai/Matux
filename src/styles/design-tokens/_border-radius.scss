@@ -1,0 +1,212 @@
+// Design Tokens - Border Radius
+//
+// 圆角设计变量系统锛屽畾涔夌粺涓€鐨勭粍浠跺渾瑙掕鑼?
+// 纭繚鐣岄潰鍏冪礌鍏锋湁鍗忚皟涓€鑷寸殑圆角效果
+
+// 圆角灏哄规范
+/// 鏃犲渾瑙?
+$border-radius-none: 0 !default;
+
+/// 鏋佸皬圆角 - 鐢ㄤ簬缁嗗井鐨勫渾瑙掓晥鏋?(2px)
+$border-radius-xs: 0.125rem !default;
+
+/// 灏忓渾瑙?- 鐢ㄤ簬鎸夐挳銆佽緭鍏ユ绛夊熀纭€组件 (4px)
+$border-radius-sm: 0.25rem !default;
+
+/// 涓瓑圆角 - 鐢ㄤ簬鍗＄墖銆侀潰鏉跨瓑容器组件 (8px)
+$border-radius-md: 0.5rem !default;
+
+/// 澶у渾瑙?- 鐢ㄤ簬鐗硅壊鍗＄墖銆佹ā鎬佹绛?(12px)
+$border-radius-lg: 0.75rem !default;
+
+/// 瓒呭ぇ圆角 - 鐢ㄤ簬绐佸嚭鏄剧ず鐨勭粍浠?(16px)
+$border-radius-xl: 1rem !default;
+
+/// 瀹屽叏鍦嗗舰 - 鐢ㄤ簬澶村儚銆佸窘绔犵瓑鍦嗗舰鍏冪礌
+$border-radius-full: 9999px !default;
+
+// 组件鐗瑰畾圆角
+/// 鎸夐挳圆角
+$border-radius-button: $border-radius-sm !default;
+
+/// 杈撳叆妗嗗渾瑙?
+$border-radius-input: $border-radius-sm !default;
+
+/// 鍗＄墖圆角
+$border-radius-card: $border-radius-md !default;
+
+/// 妯℃€佹圆角
+$border-radius-modal: $border-radius-lg !default;
+
+/// 寰界珷圆角
+$border-radius-badge: $border-radius-full !default;
+
+/// 澶村儚圆角
+$border-radius-avatar: $border-radius-full !default;
+
+/// 涓嬫媺鑿滃崟圆角
+$border-radius-dropdown: $border-radius-md !default;
+
+/// 提示妗嗗渾瑙?
+$border-radius-tooltip: $border-radius-sm !default;
+
+// 方向鎬у渾瑙?
+/// 顶部宸︿晶圆角
+$border-top-left-radius: $border-radius-md !default;
+
+/// 顶部鍙充晶圆角
+$border-top-right-radius: $border-radius-md !default;
+
+/// 搴曢儴宸︿晶圆角
+$border-bottom-left-radius: $border-radius-md !default;
+
+/// 搴曢儴鍙充晶圆角
+$border-bottom-right-radius: $border-radius-md !default;
+
+// 响应式忓渾瑙?
+/// 移动端寜閽渾瑙?
+$border-radius-mobile-button: $border-radius-sm !default;
+
+/// 移动端崱鐗囧渾瑙?
+$border-radius-mobile-card: $border-radius-md !default;
+
+/// 移动端ā鎬佹圆角
+$border-radius-mobile-modal: $border-radius-lg !default;
+
+/// 桌面端寜閽渾瑙?
+$border-radius-desktop-button: $border-radius-xs !default;
+
+/// 桌面端崱鐗囧渾瑙?
+$border-radius-desktop-card: $border-radius-sm !default;
+
+/// 桌面端ā鎬佹圆角
+$border-radius-desktop-modal: $border-radius-md !default;
+
+// 圆角 Mixins
+/// 应用鎸囧畾圆角
+/// @param {String} $radius - 圆角澶у皬 (none|xs|sm|md|lg|xl|full)
+@mixin border-radius($radius: md) {
+  @if $radius == none {
+    border-radius: $border-radius-none;
+  } @else if $radius == xs {
+    border-radius: $border-radius-xs;
+  } @else if $radius == sm {
+    border-radius: $border-radius-sm;
+  } @else if $radius == md {
+    border-radius: $border-radius-md;
+  } @else if $radius == lg {
+    border-radius: $border-radius-lg;
+  } @else if $radius == xl {
+    border-radius: $border-radius-xl;
+  } @else if $radius == full {
+    border-radius: $border-radius-full;
+  } @else {
+    border-radius: $border-radius-md;
+  }
+}
+
+/// 应用组件鐗瑰畾圆角
+/// @param {String} $component - 组件绫诲瀷 (button|input|card|modal|badge|avatar|dropdown|tooltip)
+@mixin component-border-radius($component: card) {
+  @if $component == button {
+    border-radius: $border-radius-button;
+  } @else if $component == input {
+    border-radius: $border-radius-input;
+  } @else if $component == card {
+    border-radius: $border-radius-card;
+  } @else if $component == modal {
+    border-radius: $border-radius-modal;
+  } @else if $component == badge {
+    border-radius: $border-radius-badge;
+  } @else if $component == avatar {
+    border-radius: $border-radius-avatar;
+  } @else if $component == dropdown {
+    border-radius: $border-radius-dropdown;
+  } @else if $component == tooltip {
+    border-radius: $border-radius-tooltip;
+  } @else {
+    border-radius: $border-radius-card;
+  }
+}
+
+/// 应用方向鎬у渾瑙?
+/// @param {String} $direction - 方向 (top-left|top-right|bottom-left|bottom-right)
+/// @param {String} $radius - 圆角澶у皬
+@mixin directional-border-radius($direction, $radius: md) {
+  $radius-value: get-border-radius($radius);
+  
+  @if $direction == top-left {
+    border-top-left-radius: $radius-value;
+  } @else if $direction == top-right {
+    border-top-right-radius: $radius-value;
+  } @else if $direction == bottom-left {
+    border-bottom-left-radius: $radius-value;
+  } @else if $direction == bottom-right {
+    border-bottom-right-radius: $radius-value;
+  }
+}
+
+/// 响应式忓渾瑙?
+/// @param {String} $breakpoint - 断点 (mobile|desktop)
+/// @param {String} $component - 组件绫诲瀷
+@mixin responsive-border-radius($breakpoint: mobile, $component: card) {
+  @if $breakpoint == mobile {
+    @if $component == button {
+      border-radius: $border-radius-mobile-button;
+    } @else if $component == card {
+      border-radius: $border-radius-mobile-card;
+    } @else if $component == modal {
+      border-radius: $border-radius-mobile-modal;
+    }
+  } @else if $breakpoint == desktop {
+    @if $component == button {
+      border-radius: $border-radius-desktop-button;
+    } @else if $component == card {
+      border-radius: $border-radius-desktop-card;
+    } @else if $component == modal {
+      border-radius: $border-radius-desktop-modal;
+    }
+  }
+}
+
+// 圆角工具函数
+/// 鑾峰彇圆角鍊?
+/// @param {String} $size - 圆角标识 (none|xs|sm|md|lg|xl|full)
+/// @return {String} 瀵瑰簲鐨勫渾瑙掑€?
+@function get-border-radius($size) {
+  @if $size == none {
+    @return $border-radius-none;
+  } @else if $size == xs {
+    @return $border-radius-xs;
+  } @else if $size == sm {
+    @return $border-radius-sm;
+  } @else if $size == md {
+    @return $border-radius-md;
+  } @else if $size == lg {
+    @return $border-radius-lg;
+  } @else if $size == xl {
+    @return $border-radius-xl;
+  } @else if $size == full {
+    @return $border-radius-full;
+  } @else {
+    @return $border-radius-md;
+  }
+}
+
+/// 创建圆角缁勫悎
+/// @param {String} $top-left - 宸︿笂圆角
+/// @param {String} $top-right - 鍙充笂圆角
+/// @param {String} $bottom-right - 鍙充笅圆角
+/// @param {String} $bottom-left - 宸︿笅圆角
+/// @return {String} 鍥涗釜圆角鍊肩殑缁勫悎
+@function border-radius-combine($top-left: none, $top-right: none, $bottom-right: none, $bottom-left: none) {
+  @return "#{get-border-radius($top-left)} #{get-border-radius($top-right)} #{get-border-radius($bottom-right)} #{get-border-radius($bottom-left)}";
+}
+
+/// 应用圆角鍒伴€夋嫨鍣?
+/// @param {String} $selector - CSS 閫夋嫨鍣?
+/// @param {String} $radius - 圆角澶у皬
+/// @return {String} 鐢熸垚鐨?CSS 规则
+@function apply-border-radius($selector, $radius: md) {
+  @return "#{$selector} { border-radius: #{get-border-radius($radius)}; }";
+}

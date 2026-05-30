@@ -1,0 +1,46 @@
+{
+  "lesson_code": "ml_01_what_is_ml",
+  "title": "什么是机器学习？",
+  "subtitle": "让计算机学会自己思考",
+  "content_type": "hybrid",
+  "content_url": "",
+  "resources": [
+    {
+      "type": "video",
+      "url": "https://example.com/ml-intro.mp4",
+      "title": "机器学习入门视频",
+      "description": "15 分钟趣味介绍机器学习是什么"
+    },
+    {
+      "type": "interactive",
+      "url": "html/ml_demo.html",
+      "title": "机器学习演示",
+      "description": "互动体验简单的分类算法"
+    },
+    {
+      "type": "code",
+      "url": "python/simple_classifier.py",
+      "title": "简易分类器代码",
+      "description": "使用 scikit-learn 创建第一个 ML 模型"
+    }
+  ],
+  "learning_objectives": [
+    "理解机器学习的基本概念",
+    "了解监督学习和非监督学习的区别",
+    "体验完整的模型训练流程"
+  ],
+  "knowledge_points": [
+    "机器学习的定义",
+    "训练集和测试集",
+    "特征工程基础",
+    "模型评估指标"
+  ],
+  "estimated_duration_minutes": 30,
+  "has_quiz": true,
+  "quiz_passing_score": 75.0,
+  "has_practice": true,
+  "practice_type": "python",
+  "base_points": 30,
+  "is_active": true,
+  "display_order": 1
+}

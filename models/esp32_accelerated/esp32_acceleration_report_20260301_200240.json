@@ -1,0 +1,130 @@
+{
+  "timestamp": "2026-03-01T20:02:40.329059",
+  "acceleration_summary": {
+    "nnapi_initialization": {
+      "delegate_type": "NNAPI",
+      "acceleration_backend": "gpu",
+      "precision_mode": "fp16",
+      "initialization_time_ms": 227.54,
+      "status": "SUCCESS",
+      "supported_operations": [
+        "CONV_2D",
+        "DEPTHWISE_CONV_2D",
+        "FULLY_CONNECTED",
+        "MAX_POOL_2D",
+        "ADD",
+        "MUL"
+      ],
+      "unsupported_operations": [
+        "CUSTOM_OPERATION_1",
+        "CUSTOM_OPERATION_2"
+      ]
+    },
+    "model_compilation": {
+      "model_path": "models/optimized_hardware_classifier/optimized_model_combined_optimization.tflite",
+      "compilation_time_ms": 1394.33,
+      "optimized_model_size_kb": 245.0,
+      "compilation_status": "SUCCESS",
+      "optimizations_applied": [
+        "Weight Quantization",
+        "Operator Fusion",
+        "Memory Layout Optimization",
+        "Kernel Optimization"
+      ],
+      "delegate_fallback_count": 2
+    },
+    "performance_results": {
+      "scenarios_tested": 4,
+      "results": [
+        {
+          "scenario": "Baseline_CPU",
+          "delegate_enabled": false,
+          "acceleration_type": "CPU",
+          "batch_size": 1,
+          "latency_ms": 41.38,
+          "throughput_fps": 24.2,
+          "speedup_ratio": 1.09,
+          "power_consumption_mw": 100
+        },
+        {
+          "scenario": "NNAPI_GPU_Full",
+          "delegate_enabled": true,
+          "acceleration_type": "GPU",
+          "batch_size": 1,
+          "latency_ms": 11.84,
+          "throughput_fps": 84.4,
+          "speedup_ratio": 3.8,
+          "power_consumption_mw": 180.0
+        },
+        {
+          "scenario": "NNAPI_GPU_Batch4",
+          "delegate_enabled": true,
+          "acceleration_type": "GPU",
+          "batch_size": 4,
+          "latency_ms": 17.91,
+          "throughput_fps": 55.8,
+          "speedup_ratio": 2.51,
+          "power_consumption_mw": 180.0
+        },
+        {
+          "scenario": "NNAPI_DSP_Hybrid",
+          "delegate_enabled": true,
+          "acceleration_type": "DSP+GPU",
+          "batch_size": 1,
+          "latency_ms": 7.74,
+          "throughput_fps": 129.1,
+          "speedup_ratio": 5.81,
+          "power_consumption_mw": 150.0
+        }
+      ],
+      "best_scenario": {
+        "scenario": "NNAPI_DSP_Hybrid",
+        "delegate_enabled": true,
+        "acceleration_type": "DSP+GPU",
+        "batch_size": 1,
+        "latency_ms": 7.74,
+        "throughput_fps": 129.1,
+        "speedup_ratio": 5.81,
+        "power_consumption_mw": 150.0
+      }
+    },
+    "memory_optimization": {
+      "configurations_tested": 3,
+      "results": [
+        {
+          "configuration": "Default_Allocation",
+          "arena_size_kb": 1024,
+          "peak_memory_kb": 856,
+          "memory_savings_percent": 16.4,
+          "fragmentation_ratio": 0.15,
+          "recommended": false
+        },
+        {
+          "configuration": "Optimized_Pooling",
+          "arena_size_kb": 768,
+          "peak_memory_kb": 612,
+          "memory_savings_percent": 40.2,
+          "fragmentation_ratio": 0.08,
+          "recommended": false
+        },
+        {
+          "configuration": "External_Buffer",
+          "arena_size_kb": 512,
+          "peak_memory_kb": 445,
+          "memory_savings_percent": 56.5,
+          "fragmentation_ratio": 0.05,
+          "recommended": true
+        }
+      ],
+      "recommended_config": "External_Buffer"
+    }
+  },
+  "recommendations": [
+    "推荐使用 NNAPI_DSP_Hybrid 配置，可获得 5.8x 加速",
+    "推荐使用 External_Buffer 配置，可节省 56.5% 内存",
+    "启用NNAPI委托可显著提升推理性能",
+    "考虑使用混合加速模式(DSP+GPU)平衡性能和功耗",
+    "启用外部缓冲区可有效减少内存碎片",
+    "定期清理NNAPI缓存以保持最佳性能"
+  ]
+}

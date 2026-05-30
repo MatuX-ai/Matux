@@ -1,0 +1,82 @@
+# Prometheus测试配置文件
+
+global:
+  scrape_interval: 15s
+  evaluation_interval: 15s
+
+rule_files:
+  - "alert_rules_test.yml"
+
+alerting:
+  alertmanagers:
+    - static_configs:
+        - targets:
+            - alertmanager:9093
+
+scrape_configs:
+  # 测试应用监控
+  - job_name: 'ai-backend-test'
+    static_configs:
+      - targets: ['ai-backend-test:8000']
+    metrics_path: '/metrics'
+    scrape_interval: 10s
+
+  # 测试数据库监控
+  - job_name: 'postgres-test'
+    static_configs:
+      - targets: ['postgres-exporter:9187']
+    scrape_interval: 30s
+
+  # 测试Redis监控
+  - job_name: 'redis-test'
+    static_configs:
+      - targets: ['redis-exporter:9121']
+    scrape_interval: 15s
+
+  # Node Exporter（系统监控）
+  - job_name: 'node-exporter'
+    static_configs:
+      - targets: ['node-exporter:9100']
+    scrape_interval: 15s
+
+# 告警规则
+groups:
+  - name: circuit_breaker_alerts
+    rules:
+      - alert: CircuitBreakerOpen
+        expr: circuit_breaker_state == 2  # 2表示OPEN状态
+        for: 30s
+        labels:
+          severity: warning
+        annotations:
+          summary: "熔断器处于开启状态"
+          description: "服务 {{ $labels.instance }} 的熔断器已开启，请求被拒绝"
+
+      - alert: HighFailureRate
+        expr: circuit_breaker_failure_rate > 50
+        for: 1m
+        labels:
+          severity: critical
+        annotations:
+          summary: "高失败率"
+          description: "服务 {{ $labels.instance }} 失败率超过50%，当前值为 {{ $value }}%"
+
+  - name: service_health_alerts
+    rules:
+      - alert: ServiceDown
+        expr: up{job="ai-backend-test"} == 0
+        for: 1m
+        labels:
+          severity: critical
+        annotations:
+          summary: "服务不可用"
+          description: "测试服务 {{ $labels.instance }} 不可用"
+
+      - alert: HighLatency
+        expr: histogram_quantile(0.95, rate(circuit_breaker_request_duration_seconds_bucket[5m])) > 2
+        for: 2m
+        labels:
+          severity: warning
+        annotations:
+          summary: "高延迟"
+          description: "95%的请求延迟超过2秒，当前值为 {{ $value }}秒"

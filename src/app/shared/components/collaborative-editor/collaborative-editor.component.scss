@@ -1,79 +1,80 @@
-.collaborative-editor-container {
+@use '../../../../styles/shared/variables' as *;
+@use '../../../../styles/shared/mixins' as *;
+
+// Mixin for flex column layout
+@mixin flex-column {
   display: flex;
-  overflow: hidden;
   flex-direction: column;
+}
+
+.collaborative-editor-container {
+  @include flex-column;
   height: 100%;
   border: 1px solid #e0e0e0;
-  border-radius: 4px;
-  background-color: #fff;
+  border-radius: $border-radius-sm;
+  background: #fff;
 }
 
 /* 工具栏样式 */
 .editor-toolbar {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
+  @include flex-between;
   min-height: 64px;
-  padding: 12px 16px;
+  padding: $spacing-md $spacing-lg;
   border-bottom: 1px solid #e0e0e0;
-  background-color: #fafafa;
+  background: #fafafa;
 }
 
 .toolbar-left {
-  display: flex;
-  align-items: center;
-  gap: 16px;
+  @include flex-center;
+  gap: $spacing-lg;
 }
 
 .toolbar-left h2 {
   margin: 0;
-  font-weight: 500;
+  color: $text-primary;
   font-size: 18px;
-  color: #333;
+  font-weight: 500;
 }
 
 .document-status {
-  display: flex;
-  align-items: center;
-  gap: 6px;
+  @include flex-center;
+  gap: $spacing-xs;
+  color: $text-secondary;
   font-size: 14px;
-  color: #666;
 }
 
 .document-status .status-indicator {
   width: 8px;
   height: 8px;
   border-radius: 50%;
-  background-color: #f44336;
+  background: $status-error;
 }
 
 .document-status.connected .status-indicator {
-  background-color: #4caf50;
+  background: $status-completed;
 }
 
 .user-count {
-  padding: 4px 8px;
-  border-radius: 12px;
-  background-color: #e3f2fd;
+  padding: $spacing-xs $spacing-sm;
+  border-radius: $border-radius-xl;
+  background: #e3f2fd;
+  color: $text-secondary;
   font-size: 14px;
-  color: #666;
 }
 
 .toolbar-right {
   display: flex;
-  gap: 8px;
+  gap: $spacing-xs;
 }
 
 /* 主要内容区域 */
 .editor-main-content {
-  display: flex;
-  overflow: hidden;
+  @include flex-center;
   flex: 1;
 }
 
 .editor-area {
-  display: flex;
-  flex-direction: column;
+  @include flex-column;
   flex: 1;
   min-width: 0;
 }
@@ -87,135 +88,113 @@
 .editor-textarea {
   width: 100%;
   height: 100%;
-  padding: 20px;
+  padding: $spacing-xl;
   border: none;
   outline: none;
-  background-color: #fff;
-  resize: none;
-  font-size: 14px;
+  background: #fff;
+  color: $text-primary;
   font-family: Consolas, Monaco, 'Courier New', monospace;
+  font-size: 14px;
   line-height: 1.5;
-  color: #333;
+  resize: none;
 }
 
 .editor-textarea:disabled {
-  background-color: #f5f5f5;
-  color: #999;
-}
-
-.editor-textarea:focus {
-  background-color: #fff;
+  background: #f5f5f5;
+  color: $text-disabled;
 }
 
 /* 光标覆盖层 */
 .cursor-overlay {
   position: absolute;
-  top: 0;
-  left: 0;
+  inset: 0;
   z-index: 10;
-  width: 100%;
-  height: 100%;
   pointer-events: none;
 }
 
 .remote-cursor {
   position: absolute;
-  top: 20px;
+  top: $spacing-xl;
   width: 2px;
   height: 20px;
-  background-color: #2196f3;
-  animation: blink 1s infinite;
+  background: #14b8a6; // 藏青色光标
 }
 
 .remote-cursor .cursor-tooltip {
   position: absolute;
   top: -24px;
   left: -50%;
-  padding: 2px 8px;
-  border-radius: 4px;
-  background-color: #2196f3;
-  transform: translateX(-50%);
-  white-space: nowrap;
-  font-size: 12px;
+  padding: $spacing-xs $spacing-sm;
+  border-radius: $border-radius-sm;
+  background: #14b8a6; // 藏青色提示框
   color: #fff;
+  font-size: 12px;
+  white-space: nowrap;
+  transform: translateX(-50%);
 }
 
-@keyframes blink {
-  0%, 50% { opacity: 1; }
-  51%, 100% { opacity: 0; }
-}
+
 
 /* 编辑器状态栏 */
 .editor-status {
-  display: flex;
-  align-items: center;
+  @include flex-center;
   min-height: 40px;
-  padding: 8px 16px;
+  padding: $spacing-sm $spacing-lg;
   border-top: 1px solid #e0e0e0;
-  background-color: #f5f5f5;
+  background: #f5f5f5;
 }
 
 .status-item {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  margin-right: 16px;
+  @include flex-center;
+  gap: $spacing-xs;
+  margin-right: $spacing-lg;
+  color: $text-secondary;
   font-size: 13px;
-  color: #666;
-}
-
-.status-item mat-spinner {
-  ::ng-deep circle {
-    stroke: #666;
-  }
 }
 
 .version-info {
   margin-left: auto;
+  color: #14b8a6; // 藏青色版本信息
   font-weight: 500;
-  color: #2196f3;
 }
 
 /* 侧边面板 */
 .sidebar-panel {
   z-index: 20;
-  display: flex;
-  flex-direction: column;
+  @include flex-column;
   width: 320px;
   border-left: 1px solid #e0e0e0;
-  background-color: #fafafa;
+  background: #fafafa;
 }
 
 .panel-header {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  padding: 12px 16px;
+  @include flex-between;
+  padding: $spacing-md $spacing-lg;
   border-bottom: 1px solid #e0e0e0;
-  background-color: #fff;
+  background: #fff;
 }
 
 .panel-header h3 {
   margin: 0;
-  font-weight: 500;
+  color: $text-primary;
   font-size: 16px;
-  color: #333;
+  font-weight: 500;
 }
 
 .panel-content {
   overflow-y: auto;
   flex: 1;
-  padding: 16px;
+  padding: $spacing-lg;
 }
 
 /* 评论和建议表单 */
 .add-comment-form,
 .add-suggestion-form {
-  margin-bottom: 24px;
-  padding: 16px;
+  margin-bottom: $spacing-xl;
+  padding: $spacing-lg;
   border: 1px solid #e0e0e0;
-  border-radius: 4px;
-  background-color: #fff;
+  border-radius: $border-radius-sm;
+  background: #fff;
 }
 
 .full-width {
@@ -226,230 +205,148 @@
 .suggestion-actions {
   display: flex;
   justify-content: flex-end;
-  margin-top: 12px;
+  margin-top: $spacing-md;
 }
 
 /* 评论列表 */
 .comments-list,
 .suggestions-list {
-  display: flex;
-  flex-direction: column;
-  gap: 16px;
+  @include flex-column;
+  gap: $spacing-lg;
 }
 
 .comment-item,
 .suggestion-item {
-  padding: 16px;
+  padding: $spacing-lg;
   border: 1px solid #e0e0e0;
-  border-radius: 4px;
-  background-color: #fff;
-  transition: all 0.2s ease;
-}
-
-.comment-item:hover,
-.suggestion-item:hover {
-  box-shadow: 0 2px 8px rgb(0 0 0 / 10%);
+  border-radius: $border-radius-sm;
+  background: #fff;
 }
 
 .comment-item.resolved {
   border-color: #c8e6c9;
-  background-color: #f1f8e9;
+  background: #f1f8e9;
   opacity: 0.7;
 }
 
 .comment-header,
 .suggestion-header {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  margin-bottom: 12px;
+  @include flex-between;
+  margin-bottom: $spacing-md;
 }
 
 .comment-author,
 .suggestion-author {
+  color: #14b8a6; // 藏青色作者名
   font-weight: 500;
-  color: #2196f3;
 }
 
 .comment-date,
 .suggestion-date {
+  color: $text-disabled;
   font-size: 12px;
-  color: #999;
 }
 
 .comment-content,
 .suggestion-content {
-  margin-bottom: 12px;
+  margin-bottom: $spacing-md;
+  color: $text-primary;
   line-height: 1.5;
-  color: #333;
 }
 
 .comment-meta {
-  display: flex;
-  justify-content: space-between;
+  @include flex-between;
   align-items: center;
 }
 
 .comment-type {
-  padding: 2px 8px;
-  border-radius: 12px;
-  background-color: #e3f2fd;
+  padding: $spacing-xs $spacing-sm;
+  border-radius: $border-radius-xl;
+  background: #ccfbf1; // 浅藏青色背景
+  color: #14b8a6; // 藏青色文本
   font-size: 12px;
-  color: #2196f3;
 }
 
 .comment-type.suggestion {
-  background-color: #fff3e0;
-  color: #ff9800;
+  background: #fff3e0;
+  color: $status-in-progress;
 }
 
 .comment-type.question {
-  background-color: #fce4ec;
+  background: #fce4ec;
   color: #e91e63;
 }
 
 /* 建议内容样式 */
-.original-content,
-.suggested-content,
-.suggestion-reason {
-  margin-bottom: 8px;
-}
-
-.original-content strong,
-.suggested-content strong,
-.suggestion-reason strong {
-  display: block;
-  margin-bottom: 4px;
-  font-size: 13px;
-  color: #666;
-}
-
 .original-content span {
-  padding: 2px 4px;
-  border-radius: 2px;
-  background-color: #ffebee;
+  padding: $spacing-xs;
+  border-radius: $border-radius-sm;
+  background: #ffebee;
 }
 
 .suggested-content span {
-  padding: 2px 4px;
-  border-radius: 2px;
-  background-color: #e8f5e8;
+  padding: $spacing-xs;
+  border-radius: $border-radius-sm;
+  background: #e8f5e8;
 }
 
 .suggestion-actions {
   display: flex;
-  gap: 8px;
-  margin-top: 12px;
-}
-
-.suggestion-status {
-  margin-top: 12px;
-}
-
-.status-badge {
-  padding: 4px 12px;
-  border-radius: 16px;
-  font-weight: 500;
-  font-size: 12px;
-}
-
-.status-badge.accepted {
-  background-color: #c8e6c9;
-  color: #388e3c;
-}
-
-.status-badge.rejected {
-  background-color: #ffcdd2;
-  color: #d32f2f;
+  gap: $spacing-xs;
+  margin-top: $spacing-md;
 }
 
 /* 空状态 */
 .empty-state {
-  padding: 40px 20px;
+  padding: $spacing-xxl $spacing-xl;
+  color: $text-disabled;
   text-align: center;
-  color: #999;
 }
 
 .empty-state mat-icon {
   width: 48px;
   height: 48px;
-  margin-bottom: 16px;
+  margin-bottom: $spacing-lg;
   opacity: 0.5;
-  font-size: 48px;
-}
-
-/* 选区工具栏 */
-.selection-toolbar {
-  position: absolute;
-  z-index: 100;
-  display: flex;
-  padding: 4px;
-  border: 1px solid #e0e0e0;
-  border-radius: 4px;
-  background-color: #fff;
-  box-shadow: 0 2px 10px rgb(0 0 0 / 20%);
 }
 
 /* 响应式设计 */
 @media (width <= 768px) {
   .editor-toolbar {
     flex-direction: column;
-    align-items: stretch;
-    gap: 12px;
+    gap: $spacing-md;
   }
-  
+
   .toolbar-left {
     justify-content: space-between;
   }
-  
-  .toolbar-right {
-    justify-content: center;
-  }
-  
+
   .editor-main-content {
     flex-direction: column;
   }
-  
+
   .sidebar-panel {
     width: 100%;
     height: 300px;
     border-top: 1px solid #e0e0e0;
     border-left: none;
   }
-  
+
   .panel-content {
-    padding: 12px;
+    padding: $spacing-md;
   }
 }
 
 /* 加载状态 */
 .loading-overlay {
   position: absolute;
-  z-index: 1000;
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  background-color: rgb(255 255 255 / 80%);
   inset: 0;
+  z-index: 1000;
+  @include flex-center;
+  background: rgb(255 255 255 / 80%);
 }
 
-/* 动画效果 */
-.comment-item,
-.suggestion-item {
-  animation: fadeInUp 0.3s ease-out;
-}
 
-@keyframes fadeInUp {
-  from {
-    opacity: 0;
-    transform: translateY(20px);
-  }
-
-  to {
-    opacity: 1;
-    transform: translateY(0);
-  }
-}
 
 /* 滚动条样式 */
 .panel-content::-webkit-scrollbar {

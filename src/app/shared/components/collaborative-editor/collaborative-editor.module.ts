@@ -1,19 +1,19 @@
-import { NgModule } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { FormsModule } from '@angular/forms';
 import { HttpClientModule } from '@angular/common/http';
+import { NgModule } from '@angular/core';
+import { FormsModule } from '@angular/forms';
 import { MatButtonModule } from '@angular/material/button';
-import { MatIconModule } from '@angular/material/icon';
 import { MatFormFieldModule } from '@angular/material/form-field';
+import { MatIconModule } from '@angular/material/icon';
 import { MatInputModule } from '@angular/material/input';
-import { MatSnackBarModule } from '@angular/material/snack-bar';
 import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
+import { MatSnackBarModule } from '@angular/material/snack-bar';
 
 import { CollaborativeEditorComponent } from './collaborative-editor.component';
 
 @NgModule({
   declarations: [
-    CollaborativeEditorComponent
+    // CollaborativeEditorComponent,  // standalone组件
   ],
   imports: [
     CommonModule,
@@ -24,10 +24,10 @@ import { CollaborativeEditorComponent } from './collaborative-editor.component';
     MatFormFieldModule,
     MatInputModule,
     MatSnackBarModule,
-    MatProgressSpinnerModule
+    MatProgressSpinnerModule,
+    // Standalone组件
+    CollaborativeEditorComponent,
   ],
-  exports: [
-    CollaborativeEditorComponent
-  ]
+  // 注意：standalone组件不能放在exports中
 })
-export class CollaborativeEditorModule { }
+export class CollaborativeEditorModule {}

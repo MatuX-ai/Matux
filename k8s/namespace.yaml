@@ -1,0 +1,84 @@
+# iMato Cloud - Kubernetes Namespace 配置
+
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: imato-cloud
+  labels:
+    name: imato-cloud
+    environment: production
+    team: imato-dev
+  annotations:
+    description: "iMato Cloud 云托管版本命名空间"
+    owner: "devops@imato.cloud"
+
+---
+# ResourceQuota - 资源配额限制
+apiVersion: v1
+kind: ResourceQuota
+metadata:
+  name: imato-quota
+  namespace: imato-cloud
+spec:
+  hard:
+    # 计算资源
+    requests.cpu: "10"           # 总 CPU 请求上限
+    requests.memory: "20Gi"      # 总内存请求上限
+    limits.cpu: "20"             # 总 CPU 限制上限
+    limits.memory: "40Gi"        # 总内存限制上限
+
+    # 存储资源
+    persistentvolumeclaims: "10" # PVC 数量上限
+    requests.storage: "100Gi"    # 存储总量上限
+
+    # 对象数量
+    pods: "50"                   # Pod 数量上限
+    services: "20"               # Service 数量上限
+    secrets: "30"                # Secret 数量上限
+    configmaps: "30"             # ConfigMap 数量上限
+    replicationcontrollers: "10" # RC 数量上限
+    services.loadbalancers: "2"  # LoadBalancer 类型 Service 上限
+    services.nodeports: "5"      # NodePort 类型 Service 上限
+
+---
+# LimitRange - 默认资源限制
+apiVersion: v1
+kind: LimitRange
+metadata:
+  name: imato-limits
+  namespace: imato-cloud
+spec:
+  limits:
+    # 容器默认限制
+    - type: Container
+      default:              # 默认限制值
+        cpu: "500m"
+        memory: "512Mi"
+      defaultRequest:       # 默认请求值
+        cpu: "250m"
+        memory: "256Mi"
+      max:                  # 最大允许值
+        cpu: "4"
+        memory: "8Gi"
+      min:                  # 最小允许值
+        cpu: "100m"
+        memory: "128Mi"
+      maxLimitRequestRatio: # 请求/限制最大比例
+        cpu: "4"
+        memory: "2"
+
+    # PVC 限制
+    - type: PersistentVolumeClaim
+      max:
+        storage: "50Gi"
+      min:
+        storage: "1Gi"
+
+    # Pod 限制
+    - type: Pod
+      max:
+        cpu: "8"
+        memory: "16Gi"
+      min:
+        cpu: "100m"
+        memory: "128Mi"

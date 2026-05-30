@@ -1,0 +1,111 @@
+<div class="achievement-gallery" [class.layout-grid]="layout === 'grid'" [class.layout-list]="layout === 'list'" [class.layout-timeline]="layout === 'timeline'">
+  <!-- 筛选栏 -->
+  <div class="gallery-filter-bar">
+    <form [formGroup]="filterForm" class="filter-form">
+      <!-- 搜索框 -->
+      <input
+        type="text"
+        formControlName="searchQuery"
+        placeholder="搜索成果标题、描述..."
+        class="search-input"
+        (keyup.enter)="applyFilters()"
+      />
+
+      <!-- 类型筛选 -->
+      <div class="filter-group">
+        <label>类型:</label>
+        <select formControlName="type" multiple class="filter-select">
+          <option *ngFor="let type of achievementTypes" [value]="type.value">
+            {{ type.label }}
+          </option>
+        </select>
+      </div>
+
+      <!-- 状态筛选 -->
+      <div class="filter-group">
+        <label>状态:</label>
+        <select formControlName="status" multiple class="filter-select">
+          <option *ngFor="let status of statusOptions" [value]="status.value">
+            {{ status.label }}
+          </option>
+        </select>
+      </div>
+
+      <!-- 排序 -->
+      <div class="sort-group">
+        <select class="sort-select" (change)="sortByField('submittedAt')">
+          <option value="submittedAt">提交时间</option>
+          <option value="updatedAt">更新时间</option>
+          <option value="score">评分</option>
+          <option value="title">标题</option>
+        </select>
+        <button type="button" class="sort-direction" (click)="sortByField('submittedAt')">
+          {{ sortBy?.direction === 'asc' ? '↑' : '↓' }}
+        </button>
+      </div>
+
+      <!-- 布局切换 -->
+      <div class="layout-toggles">
+        <button type="button" class="layout-toggle" [class.active]="layout === 'grid'" (click)="changeLayout('grid')" title="网格视图">
+          ⊞
+        </button>
+        <button type="button" class="layout-toggle" [class.active]="layout === 'list'" (click)="changeLayout('list')" title="列表视图">
+          ☰
+        </button>
+        <button type="button" class="layout-toggle" [class.active]="layout === 'timeline'" (click)="changeLayout('timeline')" title="时间线视图">
+          ○
+        </button>
+      </div>
+
+      <!-- 操作按钮 -->
+      <div class="filter-actions">
+        <button type="button" class="btn-apply" (click)="applyFilters()">筛选</button>
+        <button type="button" class="btn-reset" (click)="resetFilters()">重置</button>
+      </div>
+    </form>
+  </div>
+
+  <!-- 加载状态 -->
+  <div class="loading-state" *ngIf="loading">
+    <div class="loading-spinner"></div>
+    <p>加载中...</p>
+  </div>
+
+  <!-- 空状态 -->
+  <div class="empty-state" *ngIf="!loading && achievements.length === 0">
+    <span class="empty-icon">📭</span>
+    <h3>暂无成果</h3>
+    <p>还没有上传任何学习成果</p>
+  </div>
+
+  <!-- 成果列表 -->
+  <div *ngIf="!loading && achievements.length > 0" class="achievements-container" [class.view-grid]="layout === 'grid'" [class.view-list]="layout === 'list'" [class.view-timeline]="layout === 'timeline'">
+    <div *ngFor="let achievement of achievements" class="achievement-item" [class.selected]="selectedAchievement?.id === achievement.id" (click)="selectAchievement(achievement)">
+      <div class="achievement-type-badge">{{ getTypeLabel(achievement.type) }}</div>
+      <div class="achievement-status-badge" [style.background-color]="getStatusColor(achievement.status)">
+        {{ getStatusLabel(achievement.status) }}
+      </div>
+      <h3 class="achievement-title">{{ achievement.title }}</h3>
+      <p class="achievement-description" [innerHTML]="getSummary(achievement.description)"></p>
+      <div class="achievement-meta">
+        <span class="meta-date">📅 {{ formatDate(achievement.submittedAt) }}</span>
+        <span class="meta-files" *ngIf="achievement.files.length > 0">📎 {{ achievement.files.length }} 个文件</span>
+        <span class="meta-score" *ngIf="achievement.score">{{ getStarRating(achievement.score) }}</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- 分页 -->
+  <div class="pagination" *ngIf="!loading && getTotalPages() > 1">
+    <button type="button" class="pagination-button" [disabled]="currentPage === 1" (click)="changePage(currentPage - 1)">
+      ← 上一页
+    </button>
+    <div class="pagination-info">
+      第 {{ currentPage }} / {{ getTotalPages() }} 页
+      <span class="total-items">(共 {{ totalItems }} 条)</span>
+    </div>
+    <button type="button" class="pagination-button" [disabled]="currentPage === getTotalPages()" (click)="changePage(currentPage + 1)">
+      下一页 →
+    </button>
+  </div>
+</div>

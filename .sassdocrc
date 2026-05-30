@@ -1,0 +1,79 @@
+# SassDoc 配置文件
+# 用于生成 SCSS 样式文档
+
+# 基本配置
+dest: docs/styles/sassdoc
+theme: default
+exclude:
+  - "**/_*.scss"
+  - "**/node_modules/**"
+  - "**/dist/**"
+  - "**/build/**"
+
+# 文档信息
+package:
+  name: "iMatuProject Design System"
+  version: "1.0.0"
+  description: "iMatuProject 设计系统样式文档"
+  homepage: "https://github.com/iMatuProject/design-system"
+  license: "GPL-3.0"
+
+# 分组配置
+groups:
+  design-tokens: "Design Tokens"
+  components: "Components"
+  utilities: "Utilities"
+  mixins: "Mixins & Functions"
+  themes: "Themes"
+  layout: "Layout System"
+  typography: "Typography"
+  undefined: "Miscellaneous"
+
+# 自定义显示选项
+display:
+  access: ['public']  # 只显示 public 成员
+  alias: false
+  watermark: true
+
+# 排序配置
+sort:
+  - group
+  - file
+  - line
+  - access
+
+# 自定义注释解析
+# 支持中文注释
+comments:
+  parse:
+    # 启用中文支持
+    encoding: utf-8
+    # 解析 @example 标签
+    examples: true
+    # 解析 @link 标签
+    links: true
+    # 解析 @see 标签
+    see: true
+
+# 主题配置
+themeConfig:
+  # 主题颜色
+  brandColor: "#2196F3"
+  # 自定义 CSS
+  customCSS:
+    - "docs/styles/custom-sassdoc.css"
+  # 自定义 JS
+  customJS:
+    - "docs/styles/custom-sassdoc.js"
+  # 显示文件导航
+  displayFileTree: true
+  # 显示搜索框
+  displaySearch: true
+  # 显示侧边栏
+  displaySidebar: true
+  # 显示面包屑导航
+  displayBreadcrumbs: true
+  # 显示代码高亮
+  highlight: true
+  # 代码高亮主题
+  highlightTheme: "github"

@@ -1,0 +1,284 @@
+<div class="creativity-engine-container">
+  <!-- 标题栏 -->
+  <div class="header">
+    <h1>🧠 AI创意激发引擎</h1>
+    <p>释放你的创造力，让AI帮你生成创新想法</p>
+  </div>
+
+  <!-- 主要内容区域 -->
+  <div class="main-content">
+    <!-- 左侧：创意生成面板 -->
+    <div class="creation-panel">
+      <mat-card>
+        <mat-card-header>
+          <mat-card-title>✨ 创意生成</mat-card-title>
+          <mat-card-subtitle>使用AI生成创新想法</mat-card-subtitle>
+        </mat-card-header>
+
+        <mat-card-content>
+          <form [formGroup]="ideaForm" (ngSubmit)="generateIdea()" class="idea-form">
+
+            <!-- 标题输入 -->
+            <mat-form-field appearance="outline" class="full-width">
+              <mat-label>创意标题</mat-label>
+              <input matInput formControlName="title" placeholder="为你的创意起个名字">
+              <mat-error *ngIf="ideaForm.get('title')?.hasError('required')">
+                标题不能为空
+              </mat-error>
+              <mat-error *ngIf="ideaForm.get('title')?.hasError('minlength')">
+                标题至少需要3个字符
+              </mat-error>
+            </mat-form-field>
+
+            <!-- 分类选择 -->
+            <mat-form-field appearance="outline" class="full-width">
+              <mat-label>创意分类</mat-label>
+              <mat-select formControlName="category">
+                <mat-option *ngFor="let category of categories" [value]="category.value">
+                  {{category.label}}
+                </mat-option>
+              </mat-select>
+            </mat-form-field>
+
+            <!-- Prompt模板选择 -->
+            <mat-form-field appearance="outline" class="full-width">
+              <mat-label>Prompt模板</mat-label>
+              <mat-select formControlName="templateId" (selectionChange)="onTemplateChange($event.value)">
+                <mat-option [value]="null">不使用模板</mat-option>
+                <mat-option *ngFor="let template of templates" [value]="template.id">
+                  {{template.name}} ({{template.category}})
+                </mat-option>
+              </mat-select>
+            </mat-form-field>
+
+            <!-- 自定义Prompt -->
+            <mat-form-field appearance="outline" class="full-width">
+              <mat-label>自定义Prompt</mat-label>
+              <textarea matInput formControlName="customPrompt" rows="3"
+                        placeholder="描述你想要生成的创意方向..."></textarea>
+            </mat-form-field>
+
+            <!-- 生成参数 -->
+            <div class="parameters-section">
+              <h3>⚙️ 生成参数</h3>
+
+              <div class="param-row">
+                <span class="param-label">创造性温度:</span>
+                <mat-slider formControlName="temperature" min="0" max="1" step="0.1" class="param-slider">
+                  <input matSliderThumb/>
+                </mat-slider>
+                <span class="param-value">{{ideaForm.get('temperature')?.value}}</span>
+              </div>
+
+              <div class="param-row">
+                <span class="param-label">最大长度:</span>
+                <mat-slider formControlName="maxTokens" min="500" max="3000" step="100" class="param-slider">
+                  <input matSliderThumb/>
+                </mat-slider>
+                <span class="param-value">{{ideaForm.get('maxTokens')?.value}} tokens</span>
+              </div>
+            </div>
+
+            <!-- 图像生成选项 -->
+            <mat-checkbox formControlName="generateImage" class="image-toggle">
+              🎨 同时生成配套图像
+            </mat-checkbox>
+
+            <div *ngIf="ideaForm.get('generateImage')?.value" class="image-options">
+              <mat-form-field appearance="outline" class="full-width">
+                <mat-label>图像描述</mat-label>
+                <input matInput formControlName="imagePrompt" placeholder="描述想要生成的图像内容">
+              </mat-form-field>
+
+              <div class="image-settings">
+                <mat-form-field appearance="outline">
+                  <mat-label>图像风格</mat-label>
+                  <mat-select formControlName="imageStyle">
+                    <mat-option *ngFor="let style of imageStyles" [value]="style.value">
+                      {{style.label}}
+                    </mat-option>
+                  </mat-select>
+                </mat-form-field>
+
+                <mat-form-field appearance="outline">
+                  <mat-label>生成数量</mat-label>
+                  <mat-select formControlName="imageCount">
+                    <mat-option [value]="1">1张</mat-option>
+                    <mat-option [value]="2">2张</mat-option>
+                    <mat-option [value]="3">3张</mat-option>
+                    <mat-option [value]="4">4张</mat-option>
+                  </mat-select>
+                </mat-form-field>
+              </div>
+            </div>
+
+            <!-- 生成按钮 -->
+            <div class="action-buttons">
+              <button mat-raised-button color="primary" type="submit"
+                      [disabled]="!isFormValid() || isGenerating"
+                      class="generate-btn">
+                <mat-icon *ngIf="isGenerating">hourglass_empty</mat-icon>
+                <mat-icon *ngIf="!isGenerating">auto_fix_high</mat-icon>
+                {{isGenerating ? '生成中...' : '生成创意'}}
+              </button>
+
+              <button mat-button type="button" (click)="ideaForm.reset()"
+                      [disabled]="isGenerating">
+                重置表单
+              </button>
+            </div>
+          </form>
+        </mat-card-content>
+      </mat-card>
+    </div>
+
+    <!-- 右侧：结果展示区域 -->
+    <div class="results-panel">
+
+      <!-- 当前生成的创意 -->
+      <div *ngIf="currentIdea" class="current-idea">
+        <mat-card>
+          <mat-card-header>
+            <mat-card-title>{{currentIdea.title}}</mat-card-title>
+            <mat-card-subtitle>
+              {{getCategoryLabel(currentIdea.category)}} · {{formatTime(currentIdea.created_at)}}
+            </mat-card-subtitle>
+          </mat-card-header>
+
+          <mat-card-content>
+            <div class="idea-content">
+              <h3>💡 创意内容</h3>
+              <div class="content-text">{{currentIdea.ai_generated_content || currentIdea.description || '暂无内容'}}</div>
+            </div>
+
+            <!-- 生成的图像 -->
+            <div *ngIf="generatedImages.length > 0" class="generated-images">
+              <h3>🎨 生成图像</h3>
+              <div class="image-gallery">
+                <img *ngFor="let imageUrl of generatedImages"
+                     [src]="imageUrl"
+                     alt="Generated image"
+                     class="generated-image">
+              </div>
+            </div>
+
+            <!-- 评分结果 -->
+            <div *ngIf="scoreResults" class="score-results">
+              <h3>📊 创意评分</h3>
+              <div class="scores-grid">
+                <div class="score-item">
+                  <span class="score-label">创新性</span>
+                  <span class="score-value {{getScoreColor(scoreResults.innovation)}}">
+                    {{scoreResults.innovation}}
+                  </span>
+                  <span class="score-desc">{{getScoreDescription(scoreResults.innovation)}}</span>
+                </div>
+
+                <div class="score-item">
+                  <span class="score-label">可行性</span>
+                  <span class="score-value {{getScoreColor(scoreResults.practicality)}}">
+                    {{scoreResults.practicality}}
+                  </span>
+                  <span class="score-desc">{{getScoreDescription(scoreResults.practicality)}}</span>
+                </div>
+
+                <div class="score-item">
+                  <span class="score-label">商业价值</span>
+                  <span class="score-value {{getScoreColor(scoreResults.business_value)}}">
+                    {{scoreResults.business_value}}
+                  </span>
+                  <span class="score-desc">{{getScoreDescription(scoreResults.business_value)}}</span>
+                </div>
+
+                <div class="score-item total-score">
+                  <span class="score-label">综合评分</span>
+                  <span class="score-value {{getScoreColor(scoreResults.overall_score)}}">
+                    {{scoreResults.overall_score}}
+                  </span>
+                </div>
+              </div>
+
+              <!-- 详细分析 -->
+              <div *ngIf="showScoreDetails && scoreResults.detailed_analysis" class="detailed-analysis">
+                <h4>🔍 详细分析</h4>
+                <div class="analysis-content">
+                  {{scoreResults.detailed_analysis.analysis_text}}
+                </div>
+
+                <h4>💡 改进建议</h4>
+                <ul class="recommendations-list">
+                  <li *ngFor="let recommendation of scoreResults.recommendations">
+                    {{recommendation}}
+                  </li>
+                </ul>
+              </div>
+            </div>
+
+            <!-- 操作按钮 -->
+            <div class="idea-actions">
+              <button mat-button color="primary" (click)="scoreIdea(getIdeaContent(currentIdea))"
+                      [disabled]="isScoring">
+                <mat-icon>assessment</mat-icon>
+                {{isScoring ? '评分中...' : '评分创意'}}
+              </button>
+
+              <button mat-button (click)="saveIdea()" [disabled]="!currentIdea">
+                <mat-icon>save</mat-icon>
+                保存想法
+              </button>
+
+              <button mat-button (click)="exportIdea(currentIdea)">
+                <mat-icon>download</mat-icon>
+                导出
+              </button>
+            </div>
+          </mat-card-content>
+        </mat-card>
+      </div>
+
+      <!-- 历史创意列表 -->
+      <div class="ideas-history">
+        <mat-card>
+          <mat-card-header>
+            <mat-card-title>📚 我的创意想法</mat-card-title>
+          </mat-card-header>
+
+          <mat-card-content>
+            <div *ngIf="generatedIdeas.length === 0" class="empty-state">
+              <mat-icon>lightbulb</mat-icon>
+              <p>还没有生成任何创意想法</p>
+              <p>开始使用左侧表单生成你的第一个创意吧！</p>
+            </div>
+
+            <div *ngFor="let idea of generatedIdeas" class="idea-item"
+                 (click)="viewIdeaDetails(idea)">
+              <div class="idea-summary">
+                <h4>{{idea.title}}</h4>
+                <div class="idea-meta">
+                  <span class="category-tag">{{getCategoryLabel(idea.category)}}</span>
+                  <span class="time-info">{{formatTime(idea.created_at)}}</span>
+                </div>
+                <p class="idea-preview">{{(idea.ai_generated_content || idea.description || '')?.substring(0, 100)}}...</p>
+              </div>
+
+              <div class="idea-actions-small">
+                <button mat-icon-button (click)="deleteIdea(idea.id); $event.stopPropagation()">
+                  <mat-icon>delete</mat-icon>
+                </button>
+                <button mat-icon-button (click)="exportIdea(idea); $event.stopPropagation()">
+                  <mat-icon>download</mat-icon>
+                </button>
+              </div>
+            </div>
+          </mat-card-content>
+        </mat-card>
+      </div>
+    </div>
+  </div>
+
+  <!-- 加载指示器 -->
+  <div *ngIf="isGenerating || isScoring || isGeneratingImage" class="loading-overlay">
+    <mat-spinner></mat-spinner>
+    <p>{{isGenerating ? '正在生成创意...' : isScoring ? '正在评分...' : '正在生成图像...'}}</p>
+  </div>
+</div>

@@ -1,0 +1,186 @@
+// Design Tokens - Fonts
+// 字体设计变量系统，定义项目中的字体系、字号、行高和字重规范
+
+// 字体族
+/// 默认无衬线字体
+$font-family-sans: 'Helvetica Neue', helvetica, arial, sans-serif !default;
+
+/// 衬线字体
+$font-family-serif: georgia, 'Times New Roman', times, serif !default;
+
+/// 等宽字体
+$font-family-mono: 'Courier New', courier, monospace !default;
+
+/// 系统字体栈
+$font-family-system: -apple-system, blinkmacsystemfont, 'Segoe UI', roboto, oxygen, ubuntu, cantarell, sans-serif !default;
+
+// 字号层级 - 基于 16px 根字体大小
+/// 超大标题 (40px)
+$font-size-h1: 2.5rem !default;
+
+/// 大标题 (32px)
+$font-size-h2: 2rem !default;
+
+/// 中标题 (28px)
+$font-size-h3: 1.75rem !default;
+
+/// 小标题 (24px)
+$font-size-h4: 1.5rem !default;
+
+/// 副标题 (20px)
+$font-size-h5: 1.25rem !default;
+
+/// 最小标题 (18px)
+$font-size-h6: 1.125rem !default;
+
+/// 大正文字体 (16px)
+$font-size-body-large: 1rem !default;
+
+/// 中等正文字体 (14px)
+$font-size-body-medium: 0.875rem !default;
+
+/// 小正文字体 (12px)
+$font-size-body-small: 0.75rem !default;
+
+/// 标注字体 (10px)
+$font-size-caption: 0.625rem !default;
+
+// 行高比例
+/// 紧凑行高
+$line-height-tight: 1.2 !default;
+
+/// 稍紧行高
+$line-height-snug: 1.375 !default;
+
+/// 标准行高
+$line-height-normal: 1.5 !default;
+
+/// 宽松行高
+$line-height-relaxed: 1.625 !default;
+
+/// 超宽松行高
+$line-height-loose: 2 !default;
+
+// 字重
+/// 细体
+$font-weight-thin: 100 !default;
+
+/// 超细体
+$font-weight-extra-light: 200 !default;
+
+/// 细体
+$font-weight-light: 300 !default;
+
+/// 常规
+$font-weight-regular: 400 !default;
+
+/// 常规（兼容旧变量名）
+$font-weight-normal: $font-weight-regular !default;
+
+/// 中等
+$font-weight-medium: 500 !default;
+
+/// 半粗体
+$font-weight-semi-bold: 600 !default;
+$font-weight-semibold: $font-weight-semi-bold !default; // Alias for semibold
+
+/// 粗体
+$font-weight-bold: 700 !default;
+
+/// 超粗体
+$font-weight-extra-bold: 800 !default;
+
+/// 黑体
+$font-weight-black: 900 !default;
+
+// 字体组合样式 Mixins
+/// 页面标题样式
+@mixin typography-page-title {
+  font-family: $font-family-system;
+  font-size: $font-size-h1;
+  font-weight: $font-weight-bold;
+  line-height: $line-height-tight;
+}
+
+/// 卡片标题样式
+@mixin typography-card-title {
+  font-family: $font-family-system;
+  font-size: $font-size-h4;
+  font-weight: $font-weight-semi-bold;
+  line-height: $line-height-snug;
+}
+
+/// 大号正文样式
+@mixin typography-body-large {
+  font-family: $font-family-system;
+  font-size: $font-size-body-large;
+  font-weight: $font-weight-regular;
+  line-height: $line-height-normal;
+}
+
+/// 中号正文样式
+@mixin typography-body-medium {
+  font-family: $font-family-system;
+  font-size: $font-size-body-medium;
+  font-weight: $font-weight-regular;
+  line-height: $line-height-normal;
+}
+
+/// 小号正文样式
+@mixin typography-body-small {
+  font-family: $font-family-system;
+  font-size: $font-size-body-small;
+  font-weight: $font-weight-regular;
+  line-height: $line-height-relaxed;
+}
+
+/// 按钮文本样式
+@mixin typography-button {
+  font-family: $font-family-system;
+  font-size: $font-size-body-medium;
+  font-weight: $font-weight-medium;
+  line-height: $line-height-normal;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+/// 链接样式
+@mixin typography-link {
+  font-family: $font-family-system;
+  font-size: $font-size-body-medium;
+  font-weight: $font-weight-medium;
+  line-height: $line-height-normal;
+  text-decoration: underline;
+  cursor: pointer;
+}
+
+/// 代码字体样式
+@mixin typography-code {
+  font-family: $font-family-mono;
+  font-size: $font-size-body-small;
+  font-weight: $font-weight-regular;
+  line-height: $line-height-normal;
+}
+
+// 字重映射函数
+@function get-font-weight($name) {
+  $weights: (
+    thin: $font-weight-thin,
+    extra-light: $font-weight-extra-light,
+    light: $font-weight-light,
+    regular: $font-weight-regular,
+    medium: $font-weight-medium,
+    semi-bold: $font-weight-semi-bold,
+    semibold: $font-weight-semibold,
+    bold: $font-weight-bold,
+    extra-bold: $font-weight-extra-bold,
+    black: $font-weight-black
+  );
+
+  @if map-has-key($weights, $name) {
+    @return map-get($weights, $name);
+  } @else {
+    @warn "Unknown font weight: #{$name}";
+    @return $font-weight-regular;
+  }
+}

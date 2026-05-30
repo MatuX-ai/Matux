@@ -1,0 +1,152 @@
+{
+  "qualitygates": [
+    {
+      "name": "iMatu Main Quality Gate",
+      "conditions": [
+        {
+          "metric": "new_coverage",
+          "operator": "LT",
+          "threshold": "80",
+          "description": "新代码测试覆盖率不得低于80%"
+        },
+        {
+          "metric": "new_duplicated_lines_density",
+          "operator": "GT",
+          "threshold": "3",
+          "description": "新代码重复率不得超过3%"
+        },
+        {
+          "metric": "new_maintainability_rating",
+          "operator": "GT",
+          "threshold": "1",
+          "description": "新代码可维护性评级必须为A级"
+        },
+        {
+          "metric": "new_security_rating",
+          "operator": "GT",
+          "threshold": "1",
+          "description": "新代码安全性评级必须为A级"
+        },
+        {
+          "metric": "new_reliability_rating",
+          "operator": "GT",
+          "threshold": "1",
+          "description": "新代码可靠性评级必须为A级"
+        },
+        {
+          "metric": "new_security_hotspots_reviewed",
+          "operator": "LT",
+          "threshold": "100",
+          "description": "安全热点审查率必须达到100%"
+        },
+        {
+          "metric": "bugs",
+          "operator": "GT",
+          "threshold": "0",
+          "description": "不允许存在阻断级别的Bug"
+        },
+        {
+          "metric": "vulnerabilities",
+          "operator": "GT",
+          "threshold": "0",
+          "description": "不允许存在阻断级别的漏洞"
+        },
+        {
+          "metric": "code_smells",
+          "operator": "GT",
+          "threshold": "100",
+          "description": "代码异味数量控制在合理范围内"
+        }
+      ]
+    },
+    {
+      "name": "iMatu PR Quality Gate",
+      "conditions": [
+        {
+          "metric": "new_coverage",
+          "operator": "LT",
+          "threshold": "70",
+          "description": "Pull Request新代码覆盖率不得低于70%"
+        },
+        {
+          "metric": "new_duplicated_lines_density",
+          "operator": "GT",
+          "threshold": "5",
+          "description": "Pull Request新代码重复率不得超过5%"
+        },
+        {
+          "metric": "new_maintainability_rating",
+          "operator": "GT",
+          "threshold": "2",
+          "description": "Pull Request新代码可维护性评级不得低于B级"
+        }
+      ]
+    }
+  ],
+  "qualityprofiles": [
+    {
+      "name": "iMatu Python Profile",
+      "language": "py",
+      "parent": "Sonar way",
+      "rules": [
+        {
+          "key": "python:S1481",
+          "severity": "MAJOR",
+          "active": true
+        },
+        {
+          "key": "python:S1134",
+          "severity": "MINOR",
+          "active": true
+        },
+        {
+          "key": "python:S1135",
+          "severity": "INFO",
+          "active": true
+        },
+        {
+          "key": "python:S2068",
+          "severity": "BLOCKER",
+          "active": true
+        },
+        {
+          "key": "python:S5542",
+          "severity": "CRITICAL",
+          "active": true
+        }
+      ]
+    },
+    {
+      "name": "iMatu TypeScript Profile",
+      "language": "ts",
+      "parent": "Sonar way",
+      "rules": [
+        {
+          "key": "typescript:S1854",
+          "severity": "MAJOR",
+          "active": true
+        },
+        {
+          "key": "typescript:S1134",
+          "severity": "MINOR",
+          "active": true
+        },
+        {
+          "key": "typescript:S1135",
+          "severity": "INFO",
+          "active": true
+        },
+        {
+          "key": "typescript:S2068",
+          "severity": "BLOCKER",
+          "active": true
+        },
+        {
+          "key": "typescript:S5691",
+          "severity": "CRITICAL",
+          "active": true
+        }
+      ]
+    }
+  ]
+}

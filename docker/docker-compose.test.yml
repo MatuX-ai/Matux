@@ -1,0 +1,89 @@
+# Docker Compose 快速测试配置
+# 用于本地开发和测试
+# 用法：docker-compose -f docker-compose.test.yml up
+
+version: '3.8'
+
+services:
+  # PostgreSQL 数据库
+  db:
+    image: postgres:15-alpine
+    container_name: imato-db
+    environment:
+      POSTGRES_USER: imato
+      POSTGRES_PASSWORD: imato_password_123
+      POSTGRES_DB: imato_cloud
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    ports:
+      - "5432:5432"
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U imato"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    networks:
+      - imato-network
+
+  # Redis 缓存
+  redis:
+    image: redis:7-alpine
+    container_name: imato-redis
+    command: redis-server --requirepass imato_redis_password_123
+    volumes:
+      - redis_data:/data
+    ports:
+      - "6379:6379"
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    networks:
+      - imato-network
+
+  # iMato Cloud 应用（使用构建的镜像）
+  imato-cloud:
+    build:
+      context: .
+      dockerfile: Dockerfile.cloud
+    image: imato-cloud:latest
+    container_name: imato-app
+    depends_on:
+      db:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    environment:
+      DATABASE_URL: postgresql://imato:imato_password_123@db:5432/imato_cloud
+      REDIS_URL: redis://:imato_redis_password_123@redis:6379/0
+      APP_ENV: development
+      LOG_LEVEL: debug
+      SECRET_KEY: your-secret-key-change-in-production
+      JWT_ALGORITHM: HS256
+      ACCESS_TOKEN_EXPIRE_MINUTES: 30
+    ports:
+      - "80:80"
+      - "443:443"
+      - "8000:8000"
+    volumes:
+      - ./logs:/var/log
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8000/health"]
+      interval: 30s
+      timeout: 30s
+      retries: 3
+      start_period: 40s
+    networks:
+      - imato-network
+    restart: unless-stopped
+
+volumes:
+  postgres_data:
+    driver: local
+  redis_data:
+    driver: local
+
+networks:
+  imato-network:
+    driver: bridge

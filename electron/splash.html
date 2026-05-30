@@ -1,0 +1,337 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8" />
+  <title>MatuX - 启动中</title>
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+      background: linear-gradient(135deg, #0f172a 0%, #1e293b 50%, #0f172a 100%);
+      color: #e2e8f0;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      height: 100vh;
+      overflow: hidden;
+      user-select: none;
+      -webkit-app-region: drag;
+    }
+
+    .splash-container {
+      text-align: center;
+      animation: fadeIn 0.6s ease-out;
+    }
+
+    @keyframes fadeIn {
+      from { opacity: 0; transform: translateY(10px); }
+      to   { opacity: 1; transform: translateY(0); }
+    }
+
+    .logo-wrapper {
+      position: relative;
+      display: inline-block;
+      margin-bottom: 24px;
+    }
+
+    .logo-icon {
+      width: 80px;
+      height: 80px;
+      background: linear-gradient(135deg, #3b82f6, #8b5cf6);
+      border-radius: 20px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 42px;
+      box-shadow: 0 8px 32px rgba(59, 130, 246, 0.35);
+      animation: pulse 2s ease-in-out infinite;
+    }
+
+    @keyframes pulse {
+      0%, 100% { box-shadow: 0 8px 32px rgba(59, 130, 246, 0.35); }
+      50%      { box-shadow: 0 8px 48px rgba(139, 92, 246, 0.5); }
+    }
+
+    .brand-name {
+      font-size: 32px;
+      font-weight: 700;
+      background: linear-gradient(135deg, #3b82f6, #8b5cf6);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+      margin-bottom: 8px;
+    }
+
+    .tagline {
+      font-size: 14px;
+      color: #94a3b8;
+      margin-bottom: 40px;
+      letter-spacing: 0.5px;
+    }
+
+    .status-section {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 12px;
+    }
+
+    .progress-bar-container {
+      width: 240px;
+      height: 4px;
+      background: rgba(148, 163, 184, 0.2);
+      border-radius: 2px;
+      overflow: hidden;
+    }
+
+    .progress-bar-fill {
+      height: 100%;
+      background: linear-gradient(90deg, #3b82f6, #8b5cf6);
+      border-radius: 2px;
+      transition: width 0.4s ease-out;
+      width: 0%;
+    }
+
+    .progress-bar-fill.indeterminate {
+      width: 40%;
+      animation: indeterminate 1.5s ease-in-out infinite;
+    }
+
+    @keyframes indeterminate {
+      0%   { transform: translateX(-100%); }
+      100% { transform: translateX(350%); }
+    }
+
+    .status-text {
+      font-size: 13px;
+      color: #94a3b8;
+      min-height: 20px;
+      transition: color 0.3s;
+    }
+
+    .status-text.error {
+      color: #ef4444;
+    }
+
+    .status-text.success {
+      color: #22c55e;
+    }
+
+    .error-section {
+      display: none;
+      margin-top: 24px;
+      padding: 16px 20px;
+      background: rgba(239, 68, 68, 0.1);
+      border: 1px solid rgba(239, 68, 68, 0.3);
+      border-radius: 12px;
+      max-width: 400px;
+      text-align: left;
+    }
+
+    .error-section.visible {
+      display: block;
+      animation: fadeIn 0.3s ease-out;
+    }
+
+    .error-title {
+      font-size: 14px;
+      font-weight: 600;
+      color: #ef4444;
+      margin-bottom: 6px;
+    }
+
+    .error-message {
+      font-size: 12px;
+      color: #fca5a5;
+      line-height: 1.5;
+      margin-bottom: 12px;
+    }
+
+    .retry-button {
+      -webkit-app-region: no-drag;
+      padding: 8px 20px;
+      font-size: 13px;
+      font-weight: 500;
+      color: #fff;
+      background: #ef4444;
+      border: none;
+      border-radius: 8px;
+      cursor: pointer;
+      transition: background 0.2s;
+    }
+
+    .retry-button:hover {
+      background: #dc2626;
+    }
+
+    .retry-button:active {
+      background: #b91c1c;
+    }
+
+    .version-text {
+      position: fixed;
+      bottom: 16px;
+      left: 50%;
+      transform: translateX(-50%);
+      font-size: 11px;
+      color: #475569;
+    }
+
+    /* 加载圆点动画 */
+    .dots::after {
+      content: '';
+      animation: dots 1.5s steps(4, end) infinite;
+    }
+
+    @keyframes dots {
+      0%   { content: ''; }
+      25%  { content: '.'; }
+      50%  { content: '..'; }
+      75%  { content: '...'; }
+      100% { content: ''; }
+    }
+  </style>
+</head>
+<body>
+  <div class="splash-container">
+    <div class="logo-wrapper">
+      <div class="logo-icon">🧊</div>
+    </div>
+    <div class="brand-name">MatuX</div>
+    <div class="tagline">AI 驱动的 STEM 教育新纪元</div>
+
+    <div class="status-section">
+      <div class="progress-bar-container">
+        <div class="progress-bar-fill indeterminate" id="progressBar"></div>
+      </div>
+      <div class="status-text dots" id="statusText">正在启动后端服务</div>
+    </div>
+
+    <div class="error-section" id="errorSection">
+      <div class="error-title" id="errorTitle">⚠️ 启动失败</div>
+      <div class="error-message" id="errorMessage"></div>
+      <button class="retry-button" id="retryButton" onclick="handleRetry()">
+        重试
+      </button>
+    </div>
+  </div>
+
+  <div class="version-text">v1.0.0</div>
+
+  <script>
+    const { ipcRenderer } = require('electron');
+
+    const progressBar = document.getElementById('progressBar');
+    const statusText = document.getElementById('statusText');
+    const errorSection = document.getElementById('errorSection');
+    const errorTitle = document.getElementById('errorTitle');
+    const errorMessage = document.getElementById('errorMessage');
+
+    /**
+     * 更新加载状态文本
+     */
+    function setStatus(text, type) {
+      statusText.textContent = text;
+      statusText.className = 'status-text dots';
+      if (type === 'error') {
+        statusText.classList.add('error');
+        statusText.classList.remove('dots');
+      } else if (type === 'success') {
+        statusText.classList.add('success');
+        statusText.classList.remove('dots');
+      }
+    }
+
+    /**
+     * 显示错误信息
+     */
+    function showError(title, message, showRetry) {
+      errorTitle.textContent = title;
+      errorMessage.textContent = message;
+      errorSection.classList.add('visible');
+      document.getElementById('retryButton').style.display = showRetry ? 'inline-block' : 'none';
+      progressBar.classList.remove('indeterminate');
+      progressBar.style.width = '100%';
+      progressBar.style.background = '#ef4444';
+      setStatus(message, 'error');
+    }
+
+    /**
+     * 重试按钮处理
+     */
+    function handleRetry() {
+      errorSection.classList.remove('visible');
+      progressBar.style.background = '';
+      progressBar.classList.add('indeterminate');
+      progressBar.style.width = '';
+      setStatus('正在重新启动...');
+      ipcRenderer.send('splash-retry');
+    }
+
+    /**
+     * 接收主进程状态更新
+     */
+    ipcRenderer.on('splash-status', (_event, data) => {
+      const { phase, text, progress } = data;
+
+      setStatus(text);
+
+      if (progress !== undefined && progress >= 0) {
+        progressBar.classList.remove('indeterminate');
+        progressBar.style.width = `${Math.min(progress, 100)}%`;
+      }
+
+      switch (phase) {
+        case 'checking-python':
+          setStatus('正在检测 Python 环境...');
+          break;
+        case 'python-missing':
+          showError(
+            '未检测到 Python 环境',
+            'MatuX 需要 Python 3.9+ 来运行后端服务。\n\n请安装 Python 后重试：\nhttps://www.python.org/downloads/',
+            true
+          );
+          break;
+        case 'starting-backend':
+          setStatus('正在启动后端服务');
+          break;
+        case 'waiting-backend':
+          setStatus('等待后端服务就绪');
+          break;
+        case 'backend-ready':
+          setStatus('后端服务就绪', 'success');
+          break;
+        case 'backend-timeout':
+          showError(
+            '后端启动超时',
+            '后端服务未能在预期时间内启动。\n\n可能原因：\n• Python 依赖未安装\n• 端口 8000 被占用\n• 系统资源不足',
+            true
+          );
+          break;
+        case 'backend-error':
+          showError(
+            '后端启动失败',
+            data.detail || '后端进程异常退出，请检查日志。',
+            true
+          );
+          break;
+        case 'loading-app':
+          setStatus('正在加载应用');
+          break;
+        case 'app-ready':
+          setStatus('即将进入 MatuX', 'success');
+          break;
+        default:
+          break;
+      }
+    });
+
+    console.log('[Splash] 启动画面已就绪');
+  </script>
+</body>
+</html>

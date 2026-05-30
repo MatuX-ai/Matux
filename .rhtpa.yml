@@ -1,0 +1,23 @@
+# Red Hat Dependency Analytics 配置
+# 用于抑制 xlsx 包的误报安全警告
+
+{
+  "ignore": {
+    "xlsx": {
+      "versions": ["0.20.3"],
+      "reason": "官方确认的误报。SheetJS 官方文档 (xlsx.nodejs.cn) 明确说明：Snyk/RHT 等工具报告的漏洞是误报，实际已在 0.19.3+ 版本修复。当前使用的 0.20.3 来自官方 CDN，包含所有安全修复。",
+      "expires": "2027-12-31T23:59:59Z",
+      "references": [
+        "https://docs.sheetjs.com/docs/getting-started/installation/nodejs/",
+        "https://cdn.sheetjs.com/",
+        "https://security.snyk.io/vuln/SNYK-JS-XLSX-5457926"
+      ]
+    }
+  },
+
+  "notes": {
+    "background": "npm registry 上的旧版 xlsx 只到 0.18.5（确实有漏洞），新版必须从 SheetJS CDN 安装",
+    "official_statement": "Snyk 错误地报告了漏洞。这是 Snyk 工具中的一个错误。该问题已在 0.19.3 版本中解决。",
+    "recommendation": "官方建议抑制此警告，直到 Snyk/RHT 修复他们的检测工具"
+  }
+}

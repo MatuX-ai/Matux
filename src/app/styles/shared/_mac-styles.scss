@@ -1,0 +1,348 @@
+/**
+ * Mac 风格全局样式
+ * Apple-inspired global styles for marketing modules
+ */
+
+@use '../mac-theme';
+
+// ============================================
+// 基础样式重置
+// ============================================
+.matux-marketing-page {
+  font-family: var(--font-family);
+  background: var(--color-brand-50);
+  color: var(--color-brand-800);
+  line-height: var(--line-height-normal, 1.5);
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+// ============================================
+// 通用容器
+// ============================================
+.matux-container {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 0 var(--spacing-md, 20px);
+}
+
+// ============================================
+// Hero 区域通用样式
+// ============================================
+.matux-hero {
+  position: relative;
+  padding: 120px 0;
+  text-align: center;
+  background: linear-gradient(135deg,
+    var(--gradient-primary-start) 0%,
+    var(--gradient-primary-end) 100%);
+  color: white;
+  overflow: hidden;
+
+  &::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: radial-gradient(circle at 20% 50%, rgba(255, 255, 255, 0.1) 0%, transparent 50%);
+    pointer-events: none;
+  }
+
+  .hero-title {
+    font-size: var(--font-size-4xl, 48px);
+    font-weight: 700;
+    margin-bottom: var(--spacing-lg, 24px);
+    letter-spacing: -0.02em;
+  }
+
+  .hero-subtitle {
+    font-size: var(--font-size-xl, 20px);
+    opacity: 0.95;
+    max-width: 600px;
+    margin: 0 auto;
+  }
+}
+
+// ============================================
+// Section 通用样式
+// ============================================
+.matux-section {
+  padding: 80px 0;
+
+  &.alt-bg {
+    background: white;
+  }
+}
+
+.section-title {
+  font-size: var(--font-size-3xl, 36px);
+  font-weight: 700;
+  text-align: center;
+  margin-bottom: var(--spacing-2xl, 60px);
+  color: var(--color-brand-800);
+  letter-spacing: -0.01em;
+}
+
+.section-subtitle {
+  font-size: var(--font-size-lg, 18px);
+  color: var(--color-brand-400);
+  text-align: center;
+  margin-top: calc(var(--spacing-xl, 32px) * -1);
+  margin-bottom: var(--spacing-2xl, 60px);
+}
+
+// ============================================
+// 卡片系统
+// ============================================
+.matux-card {
+  background: white;
+  border-radius: var(--radius-xl, 16px);
+  padding: var(--spacing-2xl, 40px);
+  transition: all var(--transition-normal);
+  border: 2px solid transparent;
+
+  &:hover {
+    transform: translateY(-8px);
+    box-shadow: var(--shadow-xl);
+  }
+
+  &--featured {
+    border-color: var(--gradient-primary-start);
+    background: linear-gradient(135deg,
+      rgba(102, 126, 234, 0.05) 0%,
+      rgba(118, 75, 162, 0.05) 100%);
+  }
+
+  &--opensource {
+    border-color: var(--color-success-500);
+    background: rgba(52, 199, 89, 0.05);
+  }
+}
+
+// ============================================
+// 网格布局
+// ============================================
+.matux-grid {
+  display: grid;
+  gap: var(--spacing-2xl, 30px);
+
+  &--2-col {
+    grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+  }
+
+  &--3-col {
+    grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+  }
+
+  &--4-col {
+    grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+  }
+}
+
+// ============================================
+// 按钮系统
+// ============================================
+.matux-button {
+  display: inline-block;
+  padding: var(--spacing-md) var(--spacing-xl);
+  font-size: var(--font-size-base);
+  font-weight: 600;
+  text-decoration: none;
+  border: none;
+  border-radius: var(--radius-lg, 12px);
+  cursor: pointer;
+  transition: all var(--transition-fast);
+
+  &--primary {
+    background: linear-gradient(135deg,
+      var(--gradient-primary-start) 0%,
+      var(--gradient-primary-end) 100%);
+    color: white;
+
+    &:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 8px 20px rgba(102, 126, 234, 0.4);
+    }
+  }
+
+  &--secondary {
+    background: var(--color-brand-100);
+    color: var(--color-brand-800);
+
+    &:hover {
+      background: var(--color-brand-200);
+    }
+  }
+
+  &--large {
+    padding: var(--spacing-lg) var(--spacing-2xl);
+    font-size: var(--font-size-xl);
+  }
+}
+
+// ============================================
+// Badge 徽章
+// ============================================
+.matux-badge {
+  display: inline-block;
+  padding: 6px 16px;
+  font-size: 13px;
+  font-weight: 600;
+  border-radius: 20px;
+  background: linear-gradient(135deg,
+    var(--gradient-primary-start) 0%,
+    var(--gradient-primary-end) 100%);
+  color: white;
+}
+
+// ============================================
+// 价格卡片专用
+// ============================================
+.matux-pricing-card {
+  @extend .matux-card;
+  text-align: center;
+  position: relative;
+
+  .price {
+    display: flex;
+    align-items: baseline;
+    justify-content: center;
+    gap: 4px;
+    margin: var(--spacing-lg) 0;
+
+    .currency {
+      font-size: var(--font-size-2xl, 24px);
+      color: var(--color-brand-400);
+    }
+
+    .amount {
+      font-size: var(--font-size-4xl, 56px);
+      font-weight: 700;
+      color: var(--color-brand-800);
+    }
+
+    .period {
+      font-size: var(--font-size-base);
+      color: var(--color-brand-400);
+    }
+  }
+
+  .features {
+    list-style: none;
+    padding: 0;
+    margin: var(--spacing-xl) 0;
+    text-align: left;
+
+    li {
+      padding: var(--spacing-sm) 0;
+      border-bottom: 1px solid var(--color-brand-100);
+      font-size: var(--font-size-sm);
+      color: var(--color-brand-700);
+
+      &:last-child {
+        border-bottom: none;
+      }
+    }
+  }
+}
+
+// ============================================
+// Tab 切换
+// ============================================
+.matux-tabs {
+  .tab-buttons {
+    display: flex;
+    gap: var(--spacing-md);
+    margin-bottom: var(--spacing-xl);
+    justify-content: center;
+    flex-wrap: wrap;
+
+    button {
+      padding: var(--spacing-sm) var(--spacing-lg);
+      border: 2px solid var(--color-brand-200);
+      background: white;
+      border-radius: var(--radius-lg, 12px);
+      font-size: var(--font-size-sm);
+      font-weight: 600;
+      cursor: pointer;
+      transition: all var(--transition-fast);
+
+      &.active {
+        border-color: var(--gradient-primary-start);
+        background: linear-gradient(135deg,
+          var(--gradient-primary-start) 0%,
+          var(--gradient-primary-end) 100%);
+        color: white;
+      }
+    }
+  }
+
+  .tab-content {
+    background: white;
+    padding: var(--spacing-xl);
+    border-radius: var(--radius-xl);
+  }
+}
+
+// ============================================
+// CTA 区域
+// ============================================
+.matux-cta {
+  padding: 100px 0;
+  background: linear-gradient(135deg,
+    var(--gradient-primary-start) 0%,
+    var(--gradient-primary-end) 100%);
+  color: white;
+  text-align: center;
+
+  h2 {
+    font-size: var(--font-size-4xl, 42px);
+    margin-bottom: var(--spacing-lg);
+  }
+
+  p {
+    font-size: var(--font-size-xl, 20px);
+    opacity: 0.95;
+    margin-bottom: var(--spacing-2xl);
+  }
+
+  .cta-buttons {
+    display: flex;
+    gap: var(--spacing-lg);
+    justify-content: center;
+    flex-wrap: wrap;
+  }
+}
+
+// ============================================
+// 响应式
+// ============================================
+@media (max-width: 768px) {
+  .matux-hero {
+    padding: 80px 0;
+
+    .hero-title {
+      font-size: var(--font-size-3xl, 36px);
+    }
+  }
+
+  .section-title {
+    font-size: var(--font-size-2xl, 28px);
+  }
+
+  .matux-grid--2-col,
+  .matux-grid--3-col,
+  .matux-grid--4-col {
+    grid-template-columns: 1fr;
+  }
+
+  .matux-cta {
+    padding: 60px 0;
+
+    h2 {
+      font-size: var(--font-size-3xl, 32px);
+    }
+  }
+}

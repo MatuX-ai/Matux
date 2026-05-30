@@ -1,0 +1,28 @@
+# 机器学习相关依赖包
+# 由于Python 3.14与PyTorch/TensorFlow存在兼容性问题，我们采用传统ML方法
+
+# 核心数据处理
+numpy>=1.24.0
+pandas>=2.0.0
+scikit-learn>=1.3.0
+
+# 文本处理
+scipy>=1.10.0
+joblib>=1.2.0
+
+# 数据集处理
+datasets>=2.14.0  # HuggingFace datasets (纯Python实现)
+
+# 模型序列化
+pickle5>=0.0.11  # Python 3.8+的pickle增强
+
+# 数值计算优化
+numba>=0.57.0  # JIT编译加速
+
+# 可选：如果系统支持，可以尝试安装以下包
+# torch>=2.0.0  # PyTorch (可能存在DLL问题)
+# transformers>=4.30.0  # HuggingFace Transformers
+# tensorflow>=2.13.0  # TensorFlow (可能存在兼容性问题)
+
+# 监控和日志
+psutil>=5.9.0

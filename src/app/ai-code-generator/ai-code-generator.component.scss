@@ -1,0 +1,111 @@
+@use '../../styles/shared/variables' as *;
+@use '../../styles/shared/mixins' as *;
+
+.ai-code-generator {
+  min-height: 100vh;
+  padding: $spacing-xl 0;
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+
+  .container {
+    max-width: 1400px;
+    margin: 0 auto;
+    padding: 0 $spacing-lg;
+  }
+
+  // 头部样式
+  .header {
+    margin-bottom: $spacing-xxl;
+    color: white;
+    text-align: center;
+
+    h1 {
+      margin-bottom: $spacing-sm;
+      font-size: 2.5rem;
+      font-weight: $font-weight-bold;
+      text-shadow: 0 2px 4px rgb(0 0 0 / 30%);
+    }
+
+    p {
+      max-width: 600px;
+      margin: 0 auto;
+      opacity: 0.9;
+      font-size: 1.2rem;
+    }
+  }
+
+  // 主要内容区域
+  .main-content {
+    display: grid;
+    align-items: start;
+    grid-template-columns: 1fr 1.5fr;
+    gap: $spacing-xl;
+  }
+
+  // 配置面板
+  .config-panel {
+    position: sticky;
+    top: $spacing-lg;
+    padding: $spacing-lg;
+    border-radius: $border-radius-lg;
+    background: white;
+    box-shadow: 0 10px 30px rgb(0 0 0 / 20%);
+  }
+
+  // 结果面板
+  .result-panel {
+    display: flex;
+    flex-direction: column;
+    gap: $spacing-lg;
+  }
+
+  // 状态消息
+  .alert {
+    padding: $spacing-md $spacing-lg;
+    border-radius: $border-radius-md;
+    font-weight: $font-weight-medium;
+
+    &.alert-success {
+      border: 1px solid $color-success;
+      background: rgba(16, 185, 129, 0.1);
+      color: #0c9e6e; // darken($color-success, 10%)
+    }
+
+    &.alert-error {
+      border: 1px solid $color-danger;
+      background: rgba(239, 68, 68, 0.1);
+      color: #c53030; // darken($color-danger, 10%)
+    }
+  }
+
+  // 响应式设计
+  @media (width <= 1024px) {
+    .main-content {
+      grid-template-columns: 1fr;
+      gap: $spacing-lg;
+    }
+
+    .config-panel {
+      position: static;
+    }
+  }
+
+  @media (width <= 768px) {
+    padding: $spacing-md 0;
+
+    .container {
+      padding: 0 $spacing-md;
+    }
+
+    .header {
+      margin-bottom: $spacing-lg;
+
+      h1 {
+        font-size: 2rem;
+      }
+
+      p {
+        font-size: 1rem;
+      }
+    }
+  }
+}

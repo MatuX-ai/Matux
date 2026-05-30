@@ -1,0 +1,465 @@
+/**
+ * Admin Portal Shared Components Styles
+ *
+ * Platform Admin Portal 共享组件样式
+ * 提供通用卡片、表格、按钮等组件样式
+ *
+ * @author iMatu Development Team
+ * @version 1.0.0
+ */
+
+@use '../../styles/design-tokens' as tokens;
+@use '../../shared/mixins' as mixins;
+
+// Keyframes
+@keyframes fadeIn {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+/* ==================== 统计卡片 ==================== */
+.stat-card {
+  border-radius: tokens.$radius-lg;
+  box-shadow: tokens.$shadow-sm;
+  padding: tokens.$spacing-xl;
+  transition: transform tokens.$transition-fast, box-shadow tokens.$transition-fast;
+
+  mat-card-content {
+    display: flex;
+    align-items: center;
+    gap: tokens.$spacing-lg;
+  }
+
+  .stat-icon {
+    width: 64px;
+    height: 64px;
+    border-radius: tokens.$radius-lg;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+
+    mat-icon {
+      font-size: 32px;
+      width: 32px;
+      height: 32px;
+      color: white;
+    }
+
+    &.users {
+      background: linear-gradient(135deg, var(--color-primary) 0%, #764ba2 100%);
+    }
+
+    &.projects {
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    }
+
+    &.licenses {
+      background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+    }
+
+    &.hardware {
+      background: linear-gradient(135deg, #0ba360 0%, #3cba92 100%);
+    }
+  }
+
+  .stat-info {
+    flex: 1;
+
+    .stat-label {
+      font-size: tokens.$font-size-sm;
+      color: tokens.$color-neutral-600;
+      margin-bottom: tokens.$spacing-xs;
+      font-weight: tokens.$font-weight-medium;
+    }
+
+    .stat-value {
+      font-size: tokens.$font-size-3xl;
+      font-weight: tokens.$font-weight-bold;
+      color: tokens.$color-neutral-900;
+      line-height: tokens.$line-height-tight;
+    }
+
+    .stat-trend {
+      font-size: tokens.$font-size-xs;
+      margin-top: tokens.$spacing-xs;
+      display: flex;
+      align-items: center;
+      gap: tokens.$spacing-xs;
+
+      &.positive {
+        color: var(--color-success, #4caf50);
+      }
+
+      &.negative {
+        color: var(--color-error, #f44336);
+      }
+    }
+  }
+
+  // 响应式适配
+  @include mixins.tablet {
+    padding: tokens.$spacing-lg;
+
+    .stat-icon {
+      width: 56px;
+      height: 56px;
+
+      mat-icon {
+        font-size: 28px;
+        width: 28px;
+        height: 28px;
+      }
+    }
+
+    .stat-info .stat-value {
+      font-size: tokens.$font-size-2xl;
+    }
+  }
+
+  @include mixins.mobile {
+    .stat-icon {
+      width: 48px;
+      height: 48px;
+    }
+
+    .stat-info {
+      .stat-value {
+        font-size: tokens.$font-size-xl;
+      }
+    }
+  }
+}
+
+/* ==================== 数据表格 ==================== */
+.data-table {
+  width: 100%;
+
+  th {
+    background-color: tokens.$color-neutral-50;
+    font-weight: tokens.$font-weight-semibold;
+    color: tokens.$color-neutral-700;
+    padding: tokens.$spacing-md;
+    border-bottom: 2px solid tokens.$color-neutral-200;
+  }
+
+  td {
+    padding: tokens.$spacing-md;
+    border-bottom: 1px solid tokens.$color-neutral-100;
+    color: tokens.$color-neutral-600;
+    transition: background-color tokens.$transition-fast;
+  }
+
+  tr:hover td {
+    background-color: tokens.$color-neutral-50;
+  }
+
+  // 操作列
+  .action-column {
+    text-align: right;
+    white-space: nowrap;
+
+    button + button {
+      margin-left: tokens.$spacing-xs;
+    }
+  }
+
+  // 状态标签
+  .status-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: tokens.$spacing-xs;
+    padding: tokens.$spacing-xs tokens.$spacing-sm;
+    border-radius: tokens.$radius-full;
+    font-size: tokens.$font-size-xs;
+    font-weight: tokens.$font-weight-medium;
+
+    &.active {
+      background-color: rgba(76, 175, 80, 0.1);
+      color: var(--color-success, #4caf50);
+    }
+
+    &.inactive {
+      background-color: rgba(244, 67, 54, 0.1);
+      color: var(--color-error, #f44336);
+    }
+
+    &.pending {
+      background-color: rgba(255, 152, 0, 0.1);
+      color: var(--color-warning, #ff9800);
+    }
+  }
+}
+
+/* ==================== 加载状态 ==================== */
+.loading-container {
+  @include mixins.flex-center;
+  flex-direction: column;
+  gap: tokens.$spacing-lg;
+  padding: tokens.$spacing-3xl;
+  animation: fadeIn 0.3s ease-in;
+
+  p {
+    color: tokens.$color-neutral-600;
+    font-size: tokens.$font-size-base;
+  }
+}
+
+/* ==================== 错误状态 ==================== */
+.error-container {
+  @include mixins.flex-center;
+  flex-direction: column;
+  gap: tokens.$spacing-lg;
+  padding: tokens.$spacing-3xl;
+  text-align: center;
+  animation: fadeIn 0.3s ease-in;
+
+  .error-icon {
+    font-size: 64px;
+    width: 64px;
+    height: 64px;
+    color: var(--color-error, #f44336);
+  }
+
+  h3 {
+    font-size: tokens.$font-size-xl;
+    color: tokens.$color-neutral-800;
+    margin: 0;
+  }
+
+  p {
+    color: tokens.$color-neutral-600;
+    font-size: tokens.$font-size-base;
+    max-width: 400px;
+  }
+}
+
+/* ==================== 空状态 ==================== */
+.empty-state {
+  @include mixins.flex-center;
+  flex-direction: column;
+  gap: tokens.$spacing-lg;
+  padding: tokens.$spacing-3xl;
+  text-align: center;
+
+  mat-icon {
+    font-size: 80px;
+    width: 80px;
+    height: 80px;
+    color: tokens.$color-neutral-400;
+  }
+
+  h3 {
+    font-size: tokens.$font-size-xl;
+    color: tokens.$color-neutral-700;
+    margin: 0;
+  }
+
+  p {
+    color: tokens.$color-neutral-600;
+    font-size: tokens.$font-size-base;
+    max-width: 400px;
+  }
+
+  button {
+    margin-top: tokens.$spacing-md;
+  }
+}
+
+/* ==================== 页面头部 ==================== */
+.page-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: tokens.$spacing-2xl;
+  padding-bottom: tokens.$spacing-lg;
+  border-bottom: 2px solid tokens.$color-neutral-100;
+
+  h1 {
+    display: flex;
+    align-items: center;
+    gap: tokens.$spacing-sm;
+    margin: 0;
+    font-size: tokens.$font-size-3xl;
+    color: tokens.$color-neutral-900;
+    font-weight: tokens.$font-weight-bold;
+
+    mat-icon {
+      font-size: 32px;
+      width: 32px;
+      height: 32px;
+      color: tokens.$color-brand-primary;
+    }
+  }
+
+  .subtitle {
+    margin-top: tokens.$spacing-xs;
+    color: tokens.$color-neutral-600;
+    font-size: tokens.$font-size-sm;
+  }
+
+  @include mixins.mobile {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: tokens.$spacing-md;
+
+    .actions {
+      width: 100%;
+    }
+  }
+}
+
+/* ==================== 信息卡片 ==================== */
+.info-card {
+  border-radius: tokens.$radius-lg;
+  box-shadow: tokens.$shadow-sm;
+  padding: tokens.$spacing-lg;
+  border-left: 4px solid var(--color-info, #2196f3);
+
+  mat-card-header {
+    margin-bottom: tokens.$spacing-md;
+
+    mat-icon {
+      color: var(--color-info, #2196f3);
+    }
+
+    mat-card-title {
+      color: var(--color-info, #2196f3);
+      font-size: tokens.$font-size-lg;
+    }
+  }
+
+  ul {
+    margin: tokens.$spacing-md 0;
+    padding-left: tokens.$spacing-lg;
+
+    li {
+      margin-bottom: tokens.$spacing-xs;
+      color: tokens.$color-neutral-600;
+      line-height: 1.6;
+    }
+  }
+}
+
+/* ==================== 警告卡片 ==================== */
+.warning-card {
+  border-radius: tokens.$radius-lg;
+  box-shadow: tokens.$shadow-sm;
+  padding: tokens.$spacing-lg;
+  border-left: 4px solid var(--color-warning, #ff9800);
+
+  mat-card-header {
+    mat-icon {
+      color: var(--color-warning, #ff9800);
+    }
+
+    mat-card-title {
+      color: var(--color-warning, #ff9800);
+    }
+  }
+}
+
+/* ==================== 危险卡片 ==================== */
+.danger-card {
+  border-radius: tokens.$radius-lg;
+  box-shadow: tokens.$shadow-sm;
+  padding: tokens.$spacing-lg;
+  border-left: 4px solid var(--color-error, #f44336);
+
+  mat-card-header {
+    mat-icon {
+      color: var(--color-error, #f44336);
+    }
+
+    mat-card-title {
+      color: var(--color-error, #f44336);
+    }
+  }
+}
+
+/* ==================== 按钮组 ==================== */
+.button-group {
+  display: flex;
+  gap: tokens.$spacing-sm;
+  flex-wrap: wrap;
+
+  button {
+    transition: transform tokens.$transition-fast,
+                box-shadow tokens.$transition-fast;
+
+    &:hover {
+      transform: translateY(-2px);
+      box-shadow: tokens.$shadow-lg;
+    }
+
+    &:active {
+      transform: translateY(0);
+    }
+  }
+}
+
+/* ==================== 工具类 ==================== */
+
+// 文本对齐
+.text-center {
+  text-align: center;
+}
+
+.text-right {
+  text-align: right;
+}
+
+// Flex 布局
+.flex {
+  display: flex;
+}
+
+.flex-col {
+  flex-direction: column;
+}
+
+.items-center {
+  align-items: center;
+}
+
+.justify-between {
+  justify-content: space-between;
+}
+
+.gap-sm {
+  gap: tokens.$spacing-sm;
+}
+
+.gap-md {
+  gap: tokens.$spacing-md;
+}
+
+.gap-lg {
+  gap: tokens.$spacing-lg;
+}
+
+// 间距工具
+.mt-md {
+  margin-top: tokens.$spacing-md;
+}
+
+.mb-md {
+  margin-bottom: tokens.$spacing-md;
+}
+
+.p-md {
+  padding: tokens.$spacing-md;
+}
+
+// 显示控制
+.hidden {
+  display: none !important;
+}
+
+.visible {
+  visibility: visible;
+}
+
+.invisible {
+  visibility: hidden;
+}

@@ -1,0 +1,89 @@
+{
+  "timestamp": "2026-03-02T22:50:13.755560",
+  "summary": {
+    "total_test_files": 39,
+    "smoke_tests_passed": 0,
+    "total_smoke_tests": 3,
+    "redundancy_risks": 0,
+    "improvement_tasks": 7
+  },
+  "smoke_tests": {
+    "test_payment_service": {
+      "passed": false,
+      "output_lines": 12
+    },
+    "test_permission_system": {
+      "passed": false,
+      "output_lines": 12
+    },
+    "test_ai_service": {
+      "passed": false,
+      "output_lines": 12
+    }
+  },
+  "test_assets": {
+    "backend_tests": {
+      "count": 35,
+      "path": "backend\\tests"
+    },
+    "enterprise_tests": {
+      "count": 3,
+      "path": "backend\\enterprise_gateway\\tests"
+    },
+    "gamification_tests": {
+      "count": 1,
+      "path": "backend\\gamification\\tests"
+    }
+  },
+  "risks": [],
+  "priorities": [
+    {
+      "level": "HIGH",
+      "module": "ar_physics_service.py",
+      "action": "创建 test_ar_physics_service.py",
+      "reason": "核心服务缺少单元测试"
+    },
+    {
+      "level": "HIGH",
+      "module": "creativity_service.py",
+      "action": "创建 test_creativity_service.py",
+      "reason": "核心服务缺少单元测试"
+    },
+    {
+      "level": "HIGH",
+      "module": "document_service.py",
+      "action": "创建 test_document_service.py",
+      "reason": "核心服务缺少单元测试"
+    },
+    {
+      "level": "HIGH",
+      "module": "model_manager.py",
+      "action": "创建 test_model_manager.py",
+      "reason": "核心服务缺少单元测试"
+    },
+    {
+      "level": "HIGH",
+      "module": "order_manager.py",
+      "action": "创建 test_order_manager.py",
+      "reason": "核心服务缺少单元测试"
+    },
+    {
+      "level": "MEDIUM",
+      "module": "decorators.py",
+      "action": "创建 test_decorators.py",
+      "reason": "工具函数缺少独立测试"
+    },
+    {
+      "level": "MEDIUM",
+      "module": "database.py",
+      "action": "创建 test_database.py",
+      "reason": "工具函数缺少独立测试"
+    }
+  ],
+  "recommendations": [
+    {
+      "priority": "CRITICAL",
+      "suggestion": "部分现有测试失败，需立即修复"
+    }
+  ]
+}

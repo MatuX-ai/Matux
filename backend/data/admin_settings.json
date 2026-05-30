@@ -1,0 +1,39 @@
+{
+  "openHydra": {
+    "apiUrl": "http://localhost:8080",
+    "apiKey": "test-key-123",
+    "enabled": true,
+    "timeout": 5000,
+    "notes": "测试环境"
+  },
+  "jupyterHub": {
+    "url": "http://localhost:8000",
+    "apiToken": "jupyter-token-456",
+    "enabled": true,
+    "defaultRole": "user"
+  },
+  "databases": [
+    {
+      "name": "测试数据库",
+      "host": "localhost",
+      "port": 5432,
+      "database": "test_db",
+      "username": "postgres",
+      "password": "test_password",
+      "ssl": false,
+      "poolSize": 10,
+      "enabled": true
+    }
+  ],
+  "aiServices": [
+    {
+      "serviceName": "DeepSeek 测试",
+      "endpoint": "https://api.deepseek.com/v1",
+      "apiKey": "sk-test123",
+      "model": "deepseek-chat",
+      "maxTokens": 4096,
+      "temperature": 0.7,
+      "enabled": false
+    }
+  ]
+}

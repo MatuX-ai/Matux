@@ -1,0 +1,92 @@
+{
+  "baseUrl": "http://localhost:4200",
+  "headless": true,
+  "timeout": 30000,
+  "viewport": {
+    "width": 1920,
+    "height": 1080
+  },
+  "mobileViewport": {
+    "width": 375,
+    "height": 667
+  },
+  "pages": [
+    {
+      "path": "/marketing",
+      "name": "营销首页",
+      "critical": true,
+      "description": "营销首页，最重要的着陆页面"
+    },
+    {
+      "path": "/marketing/product",
+      "name": "产品展示页",
+      "critical": true,
+      "description": "产品功能展示和介绍"
+    },
+    {
+      "path": "/marketing/education",
+      "name": "教育页面",
+      "critical": true,
+      "description": "教育解决方案和课程"
+    },
+    {
+      "path": "/marketing/pricing",
+      "name": "定价页面",
+      "critical": true,
+      "description": "定价计划和购买信息"
+    },
+    {
+      "path": "/marketing/contact",
+      "name": "联系我们",
+      "critical": true,
+      "description": "联系方式和表单"
+    },
+    {
+      "path": "/marketing/features",
+      "name": "特性页面",
+      "critical": false,
+      "description": "产品详细特性"
+    },
+    {
+      "path": "/marketing/about",
+      "name": "关于我们",
+      "critical": false,
+      "description": "公司介绍和团队"
+    },
+    {
+      "path": "/marketing/tech-stack",
+      "name": "技术栈",
+      "critical": false,
+      "description": "技术架构和工具"
+    },
+    {
+      "path": "/marketing/roadmap",
+      "name": "路线图",
+      "critical": false,
+      "description": "产品发展规划"
+    }
+  ],
+  "performance": {
+    "maxLoadTime": 5000,
+    "maxDomContentLoaded": 3000,
+    "warningLoadTime": 3000
+  },
+  "errorHandling": {
+    "ignoreWarnings": false,
+    "criticalErrorTypes": ["js_error", "resource_error", "http_error"],
+    "retryCount": 1,
+    "retryDelay": 1000
+  },
+  "notifications": {
+    "enabled": false,
+    "webhookUrl": "",
+    "notifyOnCriticalOnly": true
+  },
+  "output": {
+    "dir": "../monitoring-reports",
+    "includeScreenshots": true,
+    "includeHtmlReport": true,
+    "compressOldReports": true,
+    "keepReportsForDays": 30
+  }
+}

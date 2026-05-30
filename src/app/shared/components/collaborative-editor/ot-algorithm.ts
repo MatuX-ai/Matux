@@ -33,17 +33,20 @@ export class OperationalTransformation {
     } else if (op1.type === 'delete' && op2.type === 'delete') {
       return this.transformDeleteDelete(op1, op2);
     }
-    
+
     return {
       ...op1,
-      originalPosition: op1.position
+      originalPosition: op1.position,
     };
   }
 
   /**
    * 转换两个插入操作
    */
-  private static transformInsertInsert(op1: TextOperation, op2: TextOperation): TransformedOperation {
+  private static transformInsertInsert(
+    op1: TextOperation,
+    op2: TextOperation
+  ): TransformedOperation {
     const pos1 = op1.position;
     const pos2 = op2.position;
     const content2Length = op2.content.length;
@@ -52,27 +55,27 @@ export class OperationalTransformation {
       // op1在op2之前插入，位置不变
       return {
         ...op1,
-        originalPosition: pos1
+        originalPosition: pos1,
       };
     } else if (pos1 > pos2) {
       // op1在op2之后插入，需要调整位置
       return {
         ...op1,
         position: pos1 + content2Length,
-        originalPosition: pos1
+        originalPosition: pos1,
       };
     } else {
       // 同一位置插入，根据clientId排序决定先后
       if (op1.clientId < op2.clientId) {
         return {
           ...op1,
-          originalPosition: pos1
+          originalPosition: pos1,
         };
       } else {
         return {
           ...op1,
           position: pos1 + content2Length,
-          originalPosition: pos1
+          originalPosition: pos1,
         };
       }
     }
@@ -81,7 +84,10 @@ export class OperationalTransformation {
   /**
    * 转换插入和删除操作
    */
-  private static transformInsertDelete(op1: TextOperation, op2: TextOperation): TransformedOperation {
+  private static transformInsertDelete(
+    op1: TextOperation,
+    op2: TextOperation
+  ): TransformedOperation {
     const insertPos = op1.position;
     const deletePos = op2.position;
     const deleteLength = op2.content.length;
@@ -90,14 +96,14 @@ export class OperationalTransformation {
       // 插入位置在删除之前，不受影响
       return {
         ...op1,
-        originalPosition: insertPos
+        originalPosition: insertPos,
       };
     } else if (insertPos > deletePos + deleteLength) {
       // 插入位置在删除范围之后，需要向前移动
       return {
         ...op1,
         position: insertPos - deleteLength,
-        originalPosition: insertPos
+        originalPosition: insertPos,
       };
     } else {
       // 插入位置在删除范围内，这种情况理论上不应该发生
@@ -105,7 +111,7 @@ export class OperationalTransformation {
       return {
         ...op1,
         position: deletePos,
-        originalPosition: insertPos
+        originalPosition: insertPos,
       };
     }
   }
@@ -113,7 +119,10 @@ export class OperationalTransformation {
   /**
    * 转换删除和插入操作
    */
-  private static transformDeleteInsert(op1: TextOperation, op2: TextOperation): TransformedOperation {
+  private static transformDeleteInsert(
+    op1: TextOperation,
+    op2: TextOperation
+  ): TransformedOperation {
     const deletePos = op1.position;
     const deleteLength = op1.content.length;
     const insertPos = op2.position;
@@ -123,24 +132,26 @@ export class OperationalTransformation {
       return {
         ...op1,
         position: deletePos + op2.content.length,
-        originalPosition: deletePos
+        originalPosition: deletePos,
       };
     } else if (insertPos >= deletePos + deleteLength) {
       // 插入在删除范围之后，删除操作不受影响
       return {
         ...op1,
-        originalPosition: deletePos
+        originalPosition: deletePos,
       };
     } else {
       // 插入在删除范围内，需要分割删除操作
       const beforeLength = insertPos - deletePos;
       const afterLength = deleteLength - beforeLength - op2.content.length;
-      
+
       return {
         ...op1,
         position: deletePos,
-        content: op1.content.substring(0, beforeLength) + op1.content.substring(beforeLength + op2.content.length),
-        originalPosition: deletePos
+        content:
+          op1.content.substring(0, beforeLength) +
+          op1.content.substring(beforeLength + op2.content.length),
+        originalPosition: deletePos,
       };
     }
   }
@@ -148,7 +159,10 @@ export class OperationalTransformation {
   /**
    * 转换两个删除操作
    */
-  private static transformDeleteDelete(op1: TextOperation, op2: TextOperation): TransformedOperation {
+  private static transformDeleteDelete(
+    op1: TextOperation,
+    op2: TextOperation
+  ): TransformedOperation {
     const pos1 = op1.position;
     const len1 = op1.content.length;
     const pos2 = op2.position;
@@ -158,25 +172,25 @@ export class OperationalTransformation {
       // op1完全在op2之前
       return {
         ...op1,
-        originalPosition: pos1
+        originalPosition: pos1,
       };
     } else if (pos2 + len2 <= pos1) {
       // op2完全在op1之前
       return {
         ...op1,
         position: pos1 - len2,
-        originalPosition: pos1
+        originalPosition: pos1,
       };
     } else {
       // 操作重叠，合并删除范围
       const start = Math.min(pos1, pos2);
       const end = Math.max(pos1 + len1, pos2 + len2);
-      
+
       return {
         ...op1,
         position: start,
         content: ' '.repeat(end - start), // 用空格填充重叠部分
-        originalPosition: pos1
+        originalPosition: pos1,
       };
     }
   }
@@ -192,7 +206,11 @@ export class OperationalTransformation {
       if (operation.position >= content.length) {
         return content + operation.content;
       } else {
-        return content.slice(0, operation.position) + operation.content + content.slice(operation.position);
+        return (
+          content.slice(0, operation.position) +
+          operation.content +
+          content.slice(operation.position)
+        );
       }
     } else if (operation.type === 'delete') {
       if (operation.position >= content.length) {
@@ -200,10 +218,13 @@ export class OperationalTransformation {
       } else if (operation.position + operation.content.length >= content.length) {
         return content.slice(0, operation.position);
       } else {
-        return content.slice(0, operation.position) + content.slice(operation.position + operation.content.length);
+        return (
+          content.slice(0, operation.position) +
+          content.slice(operation.position + operation.content.length)
+        );
       }
     }
-    
+
     return content;
   }
 
@@ -213,17 +234,20 @@ export class OperationalTransformation {
    * @param appliedOps 已经应用的操作列表
    * @returns 转换后的操作列表
    */
-  static transformBatch(operations: TextOperation[], appliedOps: TextOperation[]): TransformedOperation[] {
-    let transformedOps: TransformedOperation[] = operations.map(op => ({
+  static transformBatch(
+    operations: TextOperation[],
+    appliedOps: TextOperation[]
+  ): TransformedOperation[] {
+    let transformedOps: TransformedOperation[] = operations.map((op) => ({
       ...op,
-      originalPosition: op.position
+      originalPosition: op.position,
     }));
-    
+
     // 对每个已应用的操作进行转换
     for (const appliedOp of appliedOps) {
-      transformedOps = transformedOps.map(op => this.transform(op, appliedOp));
+      transformedOps = transformedOps.map((op) => this.transform(op, appliedOp));
     }
-    
+
     return transformedOps;
   }
 
@@ -245,17 +269,20 @@ export class OperationalTransformation {
    */
   static validateOperation(operation: TextOperation, content: string): boolean {
     if (operation.position < 0) return false;
-    
+
     if (operation.type === 'insert') {
       return operation.content !== undefined && operation.content !== null;
     } else if (operation.type === 'delete') {
       if (operation.position >= content.length) return false;
       if (operation.position + operation.content.length > content.length) return false;
       // 验证删除的内容是否匹配
-      const actualContent = content.substring(operation.position, operation.position + operation.content.length);
+      const actualContent = content.substring(
+        operation.position,
+        operation.position + operation.content.length
+      );
       return actualContent === operation.content;
     }
-    
+
     return false;
   }
 }
@@ -268,7 +295,7 @@ export class DocumentStateManager {
   private content: string = '';
   private operations: TextOperation[] = [];
   private revision: number = 0;
-  
+
   constructor(initialContent: string = '') {
     this.content = initialContent;
   }
@@ -287,12 +314,11 @@ export class DocumentStateManager {
       this.content = OperationalTransformation.applyOperation(this.content, operation);
       this.operations.push({
         ...operation,
-        operationId: OperationalTransformation.generateOperationId(operation)
+        operationId: OperationalTransformation.generateOperationId(operation),
       });
       this.revision++;
       return true;
     } catch (error) {
-      console.error('应用操作失败:', error);
       return false;
     }
   }
@@ -304,13 +330,13 @@ export class DocumentStateManager {
    */
   applyOperations(operations: TextOperation[]): number {
     let successCount = 0;
-    
+
     for (const op of operations) {
       if (this.applyOperation(op)) {
         successCount++;
       }
     }
-    
+
     return successCount;
   }
 
@@ -354,7 +380,7 @@ export class CollaborationClient {
   private remoteOperations: TextOperation[] = [];
   private stateManager: DocumentStateManager;
   private clientId: string;
-  
+
   constructor(clientId: string, initialContent: string = '') {
     this.clientId = clientId;
     this.stateManager = new DocumentStateManager(initialContent);
@@ -373,13 +399,13 @@ export class CollaborationClient {
       position,
       content,
       clientId: this.clientId,
-      timestamp: Date.now()
+      timestamp: Date.now(),
     };
 
     // 立即应用到本地状态
     this.stateManager.applyOperation(operation);
     this.localOperations.push(operation);
-    
+
     return operation;
   }
 

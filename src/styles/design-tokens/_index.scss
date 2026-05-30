@@ -1,0 +1,43 @@
+// Design Tokens 索引文件
+// 导入所有设计令牌
+
+// 导入 MatuX 设计令牌（包含完整的语义化颜色系统）
+@import 'matux-tokens';
+
+// 导入核心变量（包含颜色、间距、字体等）
+@import 'tokens';
+
+// 导入字体变量（包含 font-size-base, font-size-xs 等）
+@import 'fonts';
+
+// 导入间距变量
+@import 'spacing';
+
+// 导入颜色变量
+@import 'colors';
+
+// 导入圆角变量
+@import 'border-radius';
+
+// 导入阴影变量
+@import 'shadows';
+
+// 导入过渡动画变量
+@import 'transitions';
+
+// 显式导出 transition 变量（用于 @use 语法兼容）
+$transition-fast: $transition-duration-fast $transition-timing-default !default;
+$transition-base: $transition-duration-normal $transition-timing-default !default;
+$transition-normal: $transition-duration-normal $transition-timing-default !default;
+$transition-slow: $transition-duration-slow $transition-timing-default !default;
+
+// 导入 Z-index 层级变量
+@import 'z-index';
+
+// 导入布局变量（包含响应式断点）
+@import 'layout';
+
+// 补充字体大小变量（与 fonts.scss 保持一致）
+$font-size-xs: 0.75rem !default;     // 12px
+$font-size-sm: 0.875rem !default;    // 14px
+$font-size-base: 1rem !default;      // 16px

@@ -1,0 +1,272 @@
+# iMato Cloud - Kubernetes Deployment 配置
+# 用于 K8s 集群部署 FastAPI 后端应用
+
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: imato-backend
+  namespace: imato-cloud
+  labels:
+    app: imato-backend
+    version: v1
+    component: backend
+spec:
+  replicas: 3  # 默认 3 副本
+  selector:
+    matchLabels:
+      app: imato-backend
+  strategy:
+    type: RollingUpdate
+    rollingUpdate:
+      maxSurge: 1        # 最多允许超出 1 个 Pod
+      maxUnavailable: 0  # 更新时保证 0 不可用（零停机）
+  template:
+    metadata:
+      labels:
+        app: imato-backend
+        version: v1
+      annotations:
+        prometheus.io/scrape: "true"
+        prometheus.io/port: "8000"
+        prometheus.io/path: "/metrics"
+    spec:
+      # 服务账号（如果需要访问 K8s API）
+      serviceAccountName: imato-backend
+
+      # 镜像拉取密钥（如果使用私有仓库）
+      imagePullSecrets:
+        - name: imato-registry-secret
+
+      # 初始化容器（等待数据库就绪）
+      initContainers:
+        - name: wait-for-db
+          image: busybox:1.36
+          command: ['sh', '-c', 'until nc -z $DB_HOST 5432; do echo waiting for database; sleep 2; done;']
+          env:
+            - name: DB_HOST
+              valueFrom:
+                configMapKeyRef:
+                  name: imato-config
+                  key: DB_HOST
+
+      # 主容器
+      containers:
+        - name: backend
+          image: imato-cloud:latest
+          imagePullPolicy: Always
+
+          # 端口暴露
+          ports:
+            - name: http
+              containerPort: 8000
+              protocol: TCP
+
+          # 环境变量
+          env:
+            - name: APP_ENV
+              value: "production"
+            - name: LOG_LEVEL
+              value: "info"
+            - name: DATABASE_URL
+              valueFrom:
+                secretKeyRef:
+                  name: imato-secrets
+                  key: DATABASE_URL
+            - name: REDIS_URL
+              valueFrom:
+                secretKeyRef:
+                  name: imato-secrets
+                  key: REDIS_URL
+            - name: SECRET_KEY
+              valueFrom:
+                secretKeyRef:
+                  name: imato-secrets
+                  key: SECRET_KEY
+            - name: JWT_ALGORITHM
+              value: "HS256"
+            - name: ACCESS_TOKEN_EXPIRE_MINUTES
+              value: "30"
+
+          # 环境变量从 ConfigMap
+          envFrom:
+            - configMapRef:
+                name: imato-config
+
+          # 健康检查
+          livenessProbe:
+            httpGet:
+              path: /health
+              port: 8000
+            initialDelaySeconds: 30    # 容器启动后 30 秒开始检查
+            periodSeconds: 10          # 每 10 秒检查一次
+            timeoutSeconds: 5
+            failureThreshold: 3        # 失败 3 次重启容器
+            successThreshold: 1
+
+          readinessProbe:
+            httpGet:
+              path: /health
+              port: 8000
+            initialDelaySeconds: 10    # 容器启动后 10 秒开始检查
+            periodSeconds: 5           # 每 5 秒检查一次
+            timeoutSeconds: 3
+            failureThreshold: 3
+            successThreshold: 1
+
+          startupProbe:
+            httpGet:
+              path: /health
+              port: 8000
+            initialDelaySeconds: 0
+            periodSeconds: 5
+            timeoutSeconds: 3
+            failureThreshold: 30       # 给予 150 秒启动时间
+            successThreshold: 1
+
+          # 资源请求和限制
+          resources:
+            requests:
+              cpu: "500m"      # 申请 0.5 核
+              memory: "256Mi"  # 申请 256MB 内存
+            limits:
+              cpu: "1000m"     # 最多使用 1 核
+              memory: "512Mi"  # 最多使用 512MB 内存
+
+          # 挂载卷
+          volumeMounts:
+            - name: config-volume
+              mountPath: /app/backend/config
+              readOnly: true
+            - name: uploads-volume
+              mountPath: /app/backend/uploads
+            - name: logs-volume
+              mountPath: /var/log/backend
+
+          # 安全上下文
+          securityContext:
+            runAsNonRoot: true
+            runAsUser: 1001
+            runAsGroup: 1001
+            allowPrivilegeEscalation: false
+            capabilities:
+              drop:
+                - ALL
+
+      # 数据卷
+      volumes:
+        - name: config-volume
+          configMap:
+            name: imato-config
+            items:
+              - key: AI_FALLBACK_CONFIG
+                path: fallback_config.json
+        - name: uploads-volume
+          persistentVolumeClaim:
+            claimName: imato-uploads-pvc
+        - name: logs-volume
+          emptyDir: {}  # 临时目录
+
+      # 节点选择器（可选）
+      nodeSelector:
+        workload-type: backend
+
+      # 容忍度（如果节点有污点）
+      tolerations:
+        - key: "dedicated"
+          operator: "Equal"
+          value: "backend"
+          effect: "NoSchedule"
+
+      # 亲和性调度
+      affinity:
+        # 节点亲和性
+        nodeAffinity:
+          requiredDuringSchedulingIgnoredDuringExecution:
+            nodeSelectorTerms:
+              - matchExpressions:
+                  - key: kubernetes.io/os
+                    operator: In
+                    values:
+                      - linux
+        # Pod 反亲和性（避免同一节点部署多个相同 Pod）
+        podAntiAffinity:
+          preferredDuringSchedulingIgnoredDuringExecution:
+            - weight: 100
+              podAffinityTerm:
+                labelSelector:
+                  matchExpressions:
+                    - key: app
+                      operator: In
+                      values:
+                        - imato-backend
+                topologyKey: kubernetes.io/hostname
+
+      # DNS 配置
+      dnsConfig:
+        options:
+          - name: ndots
+            value: "5"
+
+      # 终止宽限期
+      terminationGracePeriodSeconds: 30
+
+      # 重启策略
+      restartPolicy: Always
+
+---
+# HorizontalPodAutoscaler - 自动水平扩展
+apiVersion: autoscaling/v2
+kind: HorizontalPodAutoscaler
+metadata:
+  name: imato-backend-hpa
+  namespace: imato-cloud
+spec:
+  scaleTargetRef:
+    apiVersion: apps/v1
+    kind: Deployment
+    name: imato-backend
+  minReplicas: 2  # 最小副本数
+  maxReplicas: 10 # 最大副本数
+  metrics:
+    - type: Resource
+      resource:
+        name: cpu
+        target:
+          type: Utilization
+          averageUtilization: 70  # CPU 使用率超过 70% 扩容
+    - type: Resource
+      resource:
+        name: memory
+        target:
+          type: Utilization
+          averageUtilization: 80  # 内存使用率超过 80% 扩容
+  behavior:
+    scaleDown:
+      stabilizationWindowSeconds: 300  # 缩容稳定窗口 5 分钟
+      policies:
+        - type: Percent
+          value: 10
+          periodSeconds: 60
+    scaleUp:
+      stabilizationWindowSeconds: 0    # 扩容立即执行
+      policies:
+        - type: Percent
+          value: 100
+          periodSeconds: 15
+        - type: Pods
+          value: 4
+          periodSeconds: 15
+      selectPolicy: Max
+
+---
+# PodDisruptionBudget - Pod 中断预算
+apiVersion: policy/v1
+kind: PodDisruptionBudget
+metadata:
+  name: imato-backend-pdb
+  namespace: imato-cloud
+spec:
+  minAvailable: 2  # 保证至少有 2 个 Pod 可用
+  selector:
+    matchLabels:
+      app: imato-backend

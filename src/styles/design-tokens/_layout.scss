@@ -1,0 +1,199 @@
+// Design Tokens - Layout Variables
+//
+// 布局相关鐨勮璁″彉閲忥紝包括断点銆佸鍣ㄥ昂瀵搞€佺綉鏍肩郴缁熺瓑
+
+// =============================================================================
+// 响应式忔柇鐐圭郴缁?
+// =============================================================================
+
+/// 移动端渶澶у搴?
+$breakpoint-mobile-max: 767px !default;
+
+/// 平板端渶灏忓搴?
+$breakpoint-tablet-min: 768px !default;
+
+/// 平板端渶澶у搴?
+$breakpoint-tablet-max: 1023px !default;
+
+/// 桌面端渶灏忓搴?
+$breakpoint-desktop-min: 1024px !default;
+
+/// 大桌面㈢最小宽度?
+$breakpoint-desktop-large-min: 1200px !default;
+
+// =============================================================================
+// 容器灏哄设置
+// =============================================================================
+
+/// 容器最大宽度?
+$container-max-width: 1200px !default;
+
+/// 容器最小宽度?
+$container-min-width: 320px !default;
+
+// =============================================================================
+// 容器内边距濊缃?
+// =============================================================================
+
+/// 移动端鍣ㄥ唴杈硅窛
+$container-padding-mobile: $spacing-md !default; // 12px
+
+/// 平板端鍣ㄥ唴杈硅窛
+$container-padding-tablet: $spacing-lg !default; // 16px
+
+/// 桌面端鍣ㄥ唴杈硅窛
+$container-padding-desktop: $spacing-xl !default; // 24px
+
+/// 大桌面㈢容器内边距?
+$container-padding-desktop-large: $spacing-xxl !default; // 32px
+
+// =============================================================================
+// 网格系统
+// =============================================================================
+
+/// 网格鍒楁暟
+$grid-columns: 12 !default;
+
+/// 网格间距锛坓utter锛?
+$grid-gutter: $spacing-md !default; // 12px
+
+/// 网格间距 - 平板端?
+$grid-gutter-tablet: $spacing-lg !default; // 16px
+
+/// 网格间距 - 桌面端?
+$grid-gutter-desktop: $spacing-xl !default; // 24px
+
+// =============================================================================
+// 布局工具 Mixins
+// =============================================================================
+
+/// 创建响应式忓鍣?
+/// @param {Boolean} $fluid - 鏄惁涓烘祦浣撳鍣?
+/// @param {String} $max-width - 最大宽度?
+@mixin container($fluid: false, $max-width: $container-max-width) {
+  width: 100%;
+  
+  @if not $fluid {
+    max-width: $max-width;
+    margin: 0 auto;
+  }
+  
+  // 移动端?
+  padding: 0 $container-padding-mobile;
+  
+  // 平板端?
+  @media (min-width: $breakpoint-tablet-min) {
+    padding: 0 $container-padding-tablet;
+  }
+  
+  // 桌面端?
+  @media (min-width: $breakpoint-desktop-min) {
+    padding: 0 $container-padding-desktop;
+  }
+  
+  // 大桌面㈢
+  @media (min-width: $breakpoint-desktop-large-min) {
+    padding: 0 $container-padding-desktop-large;
+  }
+}
+
+/// 创建网格容器
+@mixin grid-container {
+  display: flex;
+  flex-wrap: wrap;
+  margin: 0 (-$grid-gutter / 2);
+  
+  // 平板端?
+  @media (min-width: $breakpoint-tablet-min) {
+    margin: 0 (-$grid-gutter-tablet / 2);
+  }
+  
+  // 桌面端?
+  @media (min-width: $breakpoint-desktop-min) {
+    margin: 0 (-$grid-gutter-desktop / 2);
+  }
+}
+
+/// 创建网格鍒?
+/// @param {Number} $columns - 鍗犳嵁鐨勫垪鏁?
+/// @param {Number} $total-columns - 鎬诲垪鏁?
+@mixin grid-column($columns: 1, $total-columns: $grid-columns) {
+  flex: 0 0 percentage($columns / $total-columns);
+  max-width: percentage($columns / $total-columns);
+  padding: 0 ($grid-gutter / 2);
+  
+  // 平板端?
+  @media (min-width: $breakpoint-tablet-min) {
+    padding: 0 ($grid-gutter-tablet / 2);
+  }
+  
+  // 桌面端?
+  @media (min-width: $breakpoint-desktop-min) {
+    padding: 0 ($grid-gutter-desktop / 2);
+  }
+}
+
+/// 创建响应式忛殣钘忕被
+/// @param {String} $breakpoint - 断点 (mobile|tablet|desktop)
+@mixin hidden-at($breakpoint) {
+  @if $breakpoint == mobile {
+    @media (max-width: $breakpoint-mobile-max) {
+      display: none; /* 閫氳繃mixins璋冪敤鎻愰珮閫夋嫨鍣ㄧ壒寮傛€? */
+    }
+  } @else if $breakpoint == tablet {
+    @media (min-width: $breakpoint-tablet-min) and (max-width: $breakpoint-tablet-max) {
+      display: none; /* 閫氳繃mixins璋冪敤鎻愰珮閫夋嫨鍣ㄧ壒寮傛€? */
+    }
+  } @else if $breakpoint == desktop {
+    @media (min-width: $breakpoint-desktop-min) {
+      display: none; /* 閫氳繃mixins璋冪敤鎻愰珮閫夋嫨鍣ㄧ壒寮傛€? */
+    }
+  }
+}
+
+/// 创建响应式忔樉绀虹被
+/// @param {String} $breakpoint - 断点 (mobile|tablet|desktop)
+@mixin visible-at($breakpoint) {
+  @if $breakpoint == mobile {
+    @media (max-width: $breakpoint-mobile-max) {
+      display: block; /* 閫氳繃mixins璋冪敤鎻愰珮閫夋嫨鍣ㄧ壒寮傛€? */
+    }
+  } @else if $breakpoint == tablet {
+    @media (min-width: $breakpoint-tablet-min) and (max-width: $breakpoint-tablet-max) {
+      display: block; /* 閫氳繃mixins璋冪敤鎻愰珮閫夋嫨鍣ㄧ壒寮傛€? */
+    }
+  } @else if $breakpoint == desktop {
+    @media (min-width: $breakpoint-desktop-min) {
+      display: block; /* 閫氳繃mixins璋冪敤鎻愰珮閫夋嫨鍣ㄧ壒寮傛€? */
+    }
+  }
+}
+
+// =============================================================================
+// 布局工具函数
+// =============================================================================
+
+/// 鑾峰彇断点鍊?
+/// @param {String} $breakpoint - 断点鍚嶇О
+/// @return {Number} 瀵瑰簲鐨勫儚绱犲€?
+@function get-breakpoint($breakpoint) {
+  @if $breakpoint == mobile {
+    @return $breakpoint-mobile-max;
+  } @else if $breakpoint == tablet {
+    @return $breakpoint-tablet-min;
+  } @else if $breakpoint == desktop {
+    @return $breakpoint-desktop-min;
+  } @else if $breakpoint == desktop-large {
+    @return $breakpoint-desktop-large-min;
+  } @else {
+    @return $breakpoint-desktop-min;
+  }
+}
+
+/// 璁＄畻网格宽度
+/// @param {Number} $columns - 鍒楁暟
+/// @param {Number} $total-columns - 鎬诲垪鏁?
+/// @return {Percentage} 璁＄畻鍚庣殑鐧惧垎姣斿搴?
+@function grid-width($columns, $total-columns: $grid-columns) {
+  @return percentage($columns / $total-columns);
+}

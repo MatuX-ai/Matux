@@ -1,0 +1,13 @@
+{
+  "module_code": "data_perception_01",
+  "name": "数据感知与采集",
+  "description": "学习如何使用传感器采集数据，了解物联网基础概念",
+  "category": "data_perception",
+  "grade_ranges": [
+    {"min": 4, "max": 9}
+  ],
+  "expected_lessons": 4,
+  "expected_duration_minutes": 80,
+  "is_active": true,
+  "display_order": 2
+}

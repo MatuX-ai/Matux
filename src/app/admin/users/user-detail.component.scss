@@ -1,0 +1,427 @@
+@use '../../../styles/design-tokens' as tokens;
+
+// 用户详情组件样式
+
+.user-detail-container {
+  padding: tokens.$spacing-lg;
+  background-color: tokens.$color-neutral-100;
+  min-height: calc(100vh - 64px);
+  position: relative;
+
+  .loading-overlay {
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: rgba(255, 255, 255, 0.8);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 100;
+  }
+}
+
+// 页面头部
+.page-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  margin-bottom: tokens.$spacing-lg;
+
+  .header-left {
+    display: flex;
+    align-items: center;
+    gap: tokens.$spacing-md;
+
+    button {
+      margin-top: tokens.$spacing-sm;
+    }
+  }
+
+  .user-title {
+    display: flex;
+    align-items: center;
+    gap: tokens.$spacing-lg;
+
+    .user-avatar-large {
+      width: 80px;
+      height: 80px;
+      border-radius: tokens.$radius-full;
+      object-fit: cover;
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+    }
+
+    .user-info {
+      h1 {
+        margin: 0 0 tokens.$spacing-sm 0;
+        font-size: tokens.$font-size-xl;
+        font-weight: 600;
+        color: tokens.$color-neutral-900;
+      }
+
+      .user-meta {
+        display: flex;
+        align-items: center;
+        gap: tokens.$spacing-md;
+
+        .user-id {
+          font-size: tokens.$font-size-sm;
+          color: tokens.$color-neutral-600;
+        }
+
+        .status-badge {
+          padding: tokens.$spacing-xs tokens.$spacing-md;
+          border-radius: tokens.$radius-sm;
+          font-size: tokens.$font-size-xs;
+          font-weight: 500;
+
+          &.status-active { background: tokens.$color-success-light; color: tokens.$color-success-dark; }
+          &.status-inactive { background: tokens.$color-neutral-100; color: tokens.$color-neutral-600; }
+          &.status-suspended { background: tokens.$color-error-light; color: tokens.$color-error-dark; }
+          &.status-pending { background: tokens.$color-warning-light; color: tokens.$color-warning-dark; }
+        }
+      }
+    }
+  }
+
+  .header-actions {
+    display: flex;
+    gap: tokens.$spacing-md;
+  }
+}
+
+// 快捷操作
+.quick-actions {
+  display: flex;
+  gap: tokens.$spacing-md;
+  margin-bottom: tokens.$spacing-lg;
+  padding: tokens.$spacing-md tokens.$spacing-lg;
+  background: white;
+  border-radius: tokens.$radius-lg;
+  box-shadow: tokens.$shadow-md;
+}
+
+// 标签页内容
+.detail-tabs {
+  background: white;
+  border-radius: tokens.$radius-lg;
+  box-shadow: tokens.$shadow-md;
+
+  .tab-content {
+    padding: tokens.$spacing-lg;
+  }
+}
+
+// 信息卡片
+.info-card {
+  margin-bottom: tokens.$spacing-lg;
+  border-radius: tokens.$radius-lg;
+
+  &:last-child {
+    margin-bottom: 0;
+  }
+
+  mat-card-header {
+    margin-bottom: tokens.$spacing-md;
+
+    mat-card-title {
+      font-size: tokens.$font-size-lg;
+      font-weight: 600;
+    }
+  }
+
+  // 信息网格
+  .info-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: tokens.$spacing-lg;
+
+    .info-item {
+      display: flex;
+      flex-direction: column;
+      gap: tokens.$spacing-xs;
+
+      .label {
+        font-size: tokens.$font-size-xs + 2;
+        color: tokens.$color-neutral-500;
+      }
+
+      .value {
+        font-size: tokens.$font-size-sm + 2;
+        color: tokens.$color-neutral-900;
+        font-weight: 500;
+      }
+    }
+  }
+
+  // 机构信息
+  .org-info {
+    display: flex;
+    align-items: center;
+    gap: tokens.$spacing-lg;
+
+    .org-icon {
+      width: 64px;
+      height: 64px;
+      border-radius: tokens.$radius-lg;
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+
+      mat-icon {
+        font-size: tokens.$font-size-3xl;
+        width: tokens.$font-size-3xl;
+        height: tokens.$font-size-3xl;
+        color: white;
+      }
+    }
+
+    .org-details {
+      h3 {
+        margin: 0 0 tokens.$spacing-sm 0;
+        font-size: tokens.$font-size-lg;
+        font-weight: 600;
+      }
+
+      p {
+        margin: tokens.$spacing-xs 0;
+        font-size: tokens.$font-size-sm;
+        color: tokens.$color-neutral-600;
+      }
+    }
+  }
+
+  // 功能列表
+  .features-list {
+    margin-top: tokens.$spacing-lg;
+    padding-top: tokens.$spacing-lg;
+    border-top: 1px solid tokens.$color-neutral-200;
+
+    h4 {
+      margin: 0 0 tokens.$spacing-md 0;
+      font-size: tokens.$font-size-sm;
+      color: tokens.$color-neutral-600;
+    }
+  }
+}
+
+// 统计网格
+.stats-grid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: tokens.$spacing-lg;
+  margin-bottom: tokens.$spacing-lg;
+
+  .stat-item {
+    display: flex;
+    align-items: center;
+    gap: tokens.$spacing-md;
+    padding: tokens.$spacing-lg;
+    background: tokens.$color-neutral-100;
+    border-radius: tokens.$radius-lg;
+
+    mat-icon {
+      font-size: tokens.$font-size-3xl;
+      width: tokens.$font-size-3xl;
+      height: tokens.$font-size-3xl;
+      color: tokens.$color-brand-primary;
+    }
+
+    .stat-content {
+      display: flex;
+      flex-direction: column;
+
+      .stat-value {
+        font-size: tokens.$font-size-3xl;
+        font-weight: 700;
+        color: tokens.$color-neutral-900;
+      }
+
+      .stat-label {
+        font-size: tokens.$font-size-xs + 2;
+        color: tokens.$color-neutral-600;
+      }
+    }
+  }
+
+  .last-activity {
+    display: flex;
+    align-items: center;
+    gap: tokens.$spacing-sm;
+    font-size: tokens.$font-size-sm;
+    color: tokens.$color-neutral-600;
+
+    mat-icon {
+      font-size: tokens.$font-size-lg;
+      width: tokens.$font-size-lg;
+      height: tokens.$font-size-lg;
+    }
+  }
+}
+
+// 权限列表
+.permissions-list {
+  mat-chip {
+    mat-icon {
+      font-size: tokens.$font-size-base;
+      width: tokens.$font-size-base;
+      height: tokens.$font-size-base;
+      margin-right: tokens.$spacing-xs;
+    }
+  }
+}
+
+// 设备列表
+.devices-list {
+  display: flex;
+  flex-direction: column;
+  gap: tokens.$spacing-md;
+
+  .device-item {
+    display: flex;
+    align-items: center;
+    gap: tokens.$spacing-md;
+    padding: tokens.$spacing-md;
+    background: tokens.$color-neutral-100;
+    border-radius: tokens.$radius-md;
+
+    mat-icon {
+      font-size: tokens.$font-size-xl;
+      width: tokens.$font-size-xl;
+      height: tokens.$font-size-xl;
+      color: tokens.$color-brand-primary;
+    }
+
+    .device-info {
+      display: flex;
+      flex-direction: column;
+      gap: tokens.$spacing-xs;
+
+      .device-type {
+        font-weight: 500;
+        text-transform: capitalize;
+      }
+
+      .device-ip, .device-last-used {
+        font-size: tokens.$font-size-xs + 2;
+        color: tokens.$color-neutral-600;
+      }
+    }
+  }
+}
+
+// 活动列表
+.activity-list {
+  display: flex;
+  flex-direction: column;
+  gap: tokens.$spacing-md;
+
+  .activity-item {
+    display: flex;
+    align-items: flex-start;
+    gap: tokens.$spacing-md;
+    padding: tokens.$spacing-sm;
+    border-radius: tokens.$radius-md;
+    transition: background-color tokens.$transition-fast;
+
+    &:hover {
+      background: tokens.$color-neutral-100;
+    }
+
+    .activity-icon {
+      width: 36px;
+      height: 36px;
+      border-radius: tokens.$radius-full;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      flex-shrink: 0;
+
+      mat-icon {
+        font-size: tokens.$font-size-lg;
+        width: tokens.$font-size-lg;
+        height: tokens.$font-size-lg;
+        color: white;
+      }
+
+      &.activity-login { background: linear-gradient(135deg, #11998e 0%, #38ef7d 100%); }
+      &.activity-course_create { background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); }
+      &.activity-grade_update { background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%); }
+    }
+
+    .activity-content {
+      display: flex;
+      flex-direction: column;
+      gap: tokens.$spacing-xs;
+
+      .activity-description {
+        font-size: tokens.$font-size-sm;
+        color: tokens.$color-neutral-900;
+      }
+
+      .activity-time {
+        font-size: tokens.$font-size-xs;
+        color: tokens.$color-neutral-500;
+      }
+    }
+  }
+}
+
+// 错误容器
+.error-container {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  min-height: 400px;
+  gap: tokens.$spacing-md;
+
+  mat-icon {
+    font-size: tokens.$font-size-4xl;
+    width: tokens.$font-size-4xl;
+    height: tokens.$font-size-4xl;
+    color: tokens.$color-error;
+  }
+
+  h2 {
+    margin: 0;
+    color: tokens.$color-neutral-600;
+  }
+}
+
+// 响应式设计 - 平板端
+@media (max-width: tokens.$breakpoint-tablet-max) {
+  .stats-grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+
+  .info-card .info-grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+
+@media (max-width: tokens.$breakpoint-mobile-max) {
+  .page-header {
+    flex-direction: column;
+    gap: tokens.$spacing-lg;
+
+    .header-actions {
+      width: 100%;
+      justify-content: flex-end;
+    }
+  }
+
+  .quick-actions {
+    flex-wrap: wrap;
+  }
+
+  .stats-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .info-card .info-grid {
+    grid-template-columns: 1fr;
+  }
+}

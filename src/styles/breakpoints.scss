@@ -1,0 +1,483 @@
+/* Breakpoints System*/
+/**/
+/* 响应式忔柇鐐圭郴缁燂紝浣跨敤 CSS 自定义夊睘鎬у拰 SCSS 工具*/
+/* 鏀寔濯掍綋鏌ヨ銆佸鍣ㄦ煡璇㈠拰响应式忓伐鍏风被*/
+
+/* 瀵煎叆 Design Tokens*/
+@import 'design-tokens/index';
+
+/* =============================================================================*/
+/* CSS 自定义夊睘鎬ф柇鐐瑰畾涔?/
+/* =============================================================================*/
+
+:root {
+  --breakpoint-lg: 992px;
+  --breakpoint-md: 768px;
+  --breakpoint-sm: 576px;
+  --breakpoint-xl: 1200px;
+  --breakpoint-xs: 0px;
+  --breakpoint-xxl: 1400px;
+  --container-lg: 960px;
+  --container-md: 720px;
+  --container-sm: 540px;
+  --container-xl: 1140px;
+  --container-xxl: 1320px;
+  --font-size-base: #{$font-size-body-medium};
+  --font-size-lg: #{$font-size-body-large};
+  --font-size-sm: #{$font-size-body-small};
+  --spacing-lg: #{$spacing-lg};
+  --spacing-md: #{$spacing-md};
+  --spacing-sm: #{$spacing-sm};
+  --spacing-xl: #{$spacing-xl};
+  --spacing-xs: #{$spacing-xs};
+  --spacing-xxl: #{$spacing-xxl};
+  /* 基础断点*/
+  
+  /* 容器断点*/
+  
+  /* 间距断点*/
+  
+  /* 字体澶у皬断点*/
+}
+
+/* =============================================================================*/
+/* SCSS 断点鏄犲皠*/
+/* =============================================================================*/
+
+$grid-breakpoints: (
+  xs: 0,
+  sm: 576px,
+  md: 768px,
+  lg: 992px,
+  xl: 1200px,
+  xxl: 1400px
+) !default;
+$container-max-widths: (
+  sm: 540px,
+  md: 720px,
+  lg: 960px,
+  xl: 1140px,
+  xxl: 1320px
+) !default;
+
+/* =============================================================================*/
+/* 断点工具函数*/
+/* =============================================================================*/
+
+/**
+ * 获取断点的最小值
+ * @param {String} $name - 断点名称
+ * @param {Map} $breakpoints - 断点映射表
+ * @return {Number} 最小值或 null
+ */
+@function breakpoint-min($name, $breakpoints: $grid-breakpoints) {
+  $min: map-get($breakpoints, $name);
+
+  @return if($min != 0, $min, null);
+}
+
+/**/
+/**/ 
+/** @param {String} $name - 断点名称 */
+/** @param {Map} $breakpoints - 断点映射表 */
+/** @return {Number} 最大值或 null */
+@function breakpoint-max($name, $breakpoints: $grid-breakpoints) {
+  $next: breakpoint-next($name, $breakpoints);
+
+  @return if($next, breakpoint-min($next, $breakpoints) - .02, null);
+}
+
+/**/
+/**/ 
+/** @param {String} $name - 当前断点名称 */
+/** @param {Map} $breakpoints - 断点映射表 */
+/** @return {String} 下一个断点名称或 null */
+@function breakpoint-next($name, $breakpoints: $grid-breakpoints) {
+  $breakpoint-names: map-keys($breakpoints);
+  $n: index($breakpoint-names, $name);
+
+  @return if($n != null and $n < length($breakpoint-names), nth($breakpoint-names, $n + 1), null);
+}
+
+/**/
+/**/ 
+/** @param {String} $name - 断点名称 */
+/** @param {Map} $breakpoints - 断点映射表 */
+/** @return {Boolean} 是否存在 */
+@function breakpoint-exists($name, $breakpoints: $grid-breakpoints) {
+  @return map-has-key($breakpoints, $name);
+}
+
+/* =============================================================================*/
+/* 濯掍綋鏌ヨ Mixins*/
+/* =============================================================================*/
+
+/**/
+/**/ 
+/** @param {String} $name - 断点名称 */
+/** @param {Map} $breakpoints - 断点映射表 */
+@mixin media-breakpoint-up($name, $breakpoints: $grid-breakpoints) {
+  $min: breakpoint-min($name, $breakpoints);
+
+  @if $min {
+    @media (min-width: $min) {
+      @content;
+    }
+  } @else {
+    @content;
+  }
+}
+
+/**/
+/**/ 
+/** @param {String} $name - 断点名称 */
+/** @param {Map} $breakpoints - 断点映射表 */
+@mixin media-breakpoint-down($name, $breakpoints: $grid-breakpoints) {
+  $max: breakpoint-max($name, $breakpoints);
+
+  @if $max {
+    @media (max-width: $max) {
+      @content;
+    }
+  } @else {
+    @content;
+  }
+}
+
+/**/
+/**/ 
+/** @param {String} $lower - 下限断点 */
+/** @param {String} $upper - 上限断点 */
+/** @param {Map} $breakpoints - 断点映射表 */
+@mixin media-breakpoint-between($lower, $upper, $breakpoints: $grid-breakpoints) {
+  $min: breakpoint-min($lower, $breakpoints);
+  $max: breakpoint-max($upper, $breakpoints);
+  
+  @if $min != null and $max != null {
+    @media (min-width: $min) and (max-width: $max) {
+      @content;
+    }
+  } @else if $max == null {
+    @include media-breakpoint-up($lower, $breakpoints) {
+      @content;
+    }
+  } @else if $min == null {
+    @include media-breakpoint-down($upper, $breakpoints) {
+      @content;
+    }
+  }
+}
+
+/**/
+/**/ 
+/** @param {String} $name - 断点名称 */
+/** @param {Map} $breakpoints - 断点映射表 */
+@mixin media-breakpoint-only($name, $breakpoints: $grid-breakpoints) {
+  $min: breakpoint-min($name, $breakpoints);
+  $max: breakpoint-max($name, $breakpoints);
+  
+  @if $min != null and $max != null {
+    @media (min-width: $min) and (max-width: $max) {
+      @content;
+    }
+  } @else if $max == null {
+    @include media-breakpoint-up($name, $breakpoints) {
+      @content;
+    }
+  } @else if $min == null {
+    @include media-breakpoint-down($name, $breakpoints) {
+      @content;
+    }
+  }
+}
+
+/* =============================================================================*/
+/* 容器鏌ヨ Mixins*/
+/* =============================================================================*/
+
+/**/
+/**/ 
+/** @param {Number} $min-width - 最小宽度 */
+@mixin container-query-up($min-width) {
+  @container (min-width: #{$min-width}) {
+    @content;
+  }
+}
+
+/**/
+/**/ 
+/** @param {Number} $max-width - 最大宽度 */
+@mixin container-query-down($max-width) {
+  @container (max-width: #{$max-width}) {
+    @content;
+  }
+}
+
+/**/
+/**/ 
+/** @param {String} $name - 容器名称 */
+@mixin container-context($name: 'default') {
+  container: #{$name} / inline-size;
+}
+
+/* =============================================================================*/
+/* 响应式忓伐鍏风被*/
+/* =============================================================================*/
+
+/* 鏄剧ず鎺у埗绫?/
+@each $bp in map-keys($grid-breakpoints) {
+  /* 鍚戜笂鏄剧ず锛堝ぇ浜庣瓑浜庢柇鐐癸級*/
+  .d-#{$bp}-none { 
+    @include media-breakpoint-up($bp) { 
+      display: none !important; 
+    } 
+  }
+  
+  .d-#{$bp}-inline { 
+    @include media-breakpoint-up($bp) { 
+      display: inline !important; 
+    } 
+  }
+  
+  .d-#{$bp}-inline-block { 
+    @include media-breakpoint-up($bp) { 
+      display: inline-block !important; 
+    } 
+  }
+  
+  .d-#{$bp}-block { 
+    @include media-breakpoint-up($bp) { 
+      display: block !important; 
+    } 
+  }
+  
+  .d-#{$bp}-flex { 
+    @include media-breakpoint-up($bp) { 
+      display: flex !important; 
+    } 
+  }
+  
+  .d-#{$bp}-grid { 
+    @include media-breakpoint-up($bp) { 
+      display: grid !important; 
+    } 
+  }
+  
+  /* 鍚戜笅鏄剧ず锛堝皬浜庢柇鐐癸級*/
+  .d-#{$bp}-down-none { 
+    @include media-breakpoint-down($bp) { 
+      display: none !important; 
+    } 
+  }
+  
+  .d-#{$bp}-down-block { 
+    @include media-breakpoint-down($bp) { 
+      display: block !important; 
+    } 
+  }
+  
+  .d-#{$bp}-down-flex { 
+    @include media-breakpoint-down($bp) { 
+      display: flex !important; 
+    } 
+  }
+}
+
+/* 网格鍒楁暟响应式?/
+@each $bp in map-keys($grid-breakpoints) {
+  @include media-breakpoint-up($bp) {
+    @for $i from 1 through 12 {
+      .col-#{$bp}-#{$i} {
+        flex: 0 0 percentage($i / 12);
+        max-width: percentage($i / 12);
+      }
+    }
+    
+    .col-#{$bp} {
+  flex-grow: 1;
+  flex-basis: 0;
+  max-width: 100%;
+}
+    
+    .col-#{$bp}-auto {
+      flex: 0 0 auto;
+      width: auto;
+      max-width: 100%;
+    }
+  }
+}
+
+/* 间距响应式?/
+@each $bp in map-keys($grid-breakpoints) {
+  @include media-breakpoint-up($bp) {
+    /* Padding*/
+    @for $i from 0 through 5 {
+      .p-#{$bp}-#{$i} { padding: #{map-get((0: 0, 1: $spacing-xs, 2: $spacing-sm, 3: $spacing-md, 4: $spacing-lg, 5: $spacing-xl), $i)} !important; }
+      .pt-#{$bp}-#{$i} { padding-top: #{map-get((0: 0, 1: $spacing-xs, 2: $spacing-sm, 3: $spacing-md, 4: $spacing-lg, 5: $spacing-xl), $i)} !important; }
+      .pr-#{$bp}-#{$i} { padding-right: #{map-get((0: 0, 1: $spacing-xs, 2: $spacing-sm, 3: $spacing-md, 4: $spacing-lg, 5: $spacing-xl), $i)} !important; }
+      .pb-#{$bp}-#{$i} { padding-bottom: #{map-get((0: 0, 1: $spacing-xs, 2: $spacing-sm, 3: $spacing-md, 4: $spacing-lg, 5: $spacing-xl), $i)} !important; }
+      .pl-#{$bp}-#{$i} { padding-left: #{map-get((0: 0, 1: $spacing-xs, 2: $spacing-sm, 3: $spacing-md, 4: $spacing-lg, 5: $spacing-xl), $i)} !important; }
+      .px-#{$bp}-#{$i} { padding-right: #{map-get((0: 0, 1: $spacing-xs, 2: $spacing-sm, 3: $spacing-md, 4: $spacing-lg, 5: $spacing-xl), $i)} !important; padding-left: #{map-get((0: 0, 1: $spacing-xs, 2: $spacing-sm, 3: $spacing-md, 4: $spacing-lg, 5: $spacing-xl), $i)} !important; }
+      .py-#{$bp}-#{$i} { padding-top: #{map-get((0: 0, 1: $spacing-xs, 2: $spacing-sm, 3: $spacing-md, 4: $spacing-lg, 5: $spacing-xl), $i)} !important; padding-bottom: #{map-get((0: 0, 1: $spacing-xs, 2: $spacing-sm, 3: $spacing-md, 4: $spacing-lg, 5: $spacing-xl), $i)} !important; }
+    }
+    
+    /* Margin*/
+    @for $i from 0 through 5 {
+      .m-#{$bp}-#{$i} { margin: #{map-get((0: 0, 1: $spacing-xs, 2: $spacing-sm, 3: $spacing-md, 4: $spacing-lg, 5: $spacing-xl), $i)} !important; }
+      .mt-#{$bp}-#{$i} { margin-top: #{map-get((0: 0, 1: $spacing-xs, 2: $spacing-sm, 3: $spacing-md, 4: $spacing-lg, 5: $spacing-xl), $i)} !important; }
+      .mr-#{$bp}-#{$i} { margin-right: #{map-get((0: 0, 1: $spacing-xs, 2: $spacing-sm, 3: $spacing-md, 4: $spacing-lg, 5: $spacing-xl), $i)} !important; }
+      .mb-#{$bp}-#{$i} { margin-bottom: #{map-get((0: 0, 1: $spacing-xs, 2: $spacing-sm, 3: $spacing-md, 4: $spacing-lg, 5: $spacing-xl), $i)} !important; }
+      .ml-#{$bp}-#{$i} { margin-left: #{map-get((0: 0, 1: $spacing-xs, 2: $spacing-sm, 3: $spacing-md, 4: $spacing-lg, 5: $spacing-xl), $i)} !important; }
+      .mx-#{$bp}-#{$i} { margin-right: #{map-get((0: 0, 1: $spacing-xs, 2: $spacing-sm, 3: $spacing-md, 4: $spacing-lg, 5: $spacing-xl), $i)} !important; margin-left: #{map-get((0: 0, 1: $spacing-xs, 2: $spacing-sm, 3: $spacing-md, 4: $spacing-lg, 5: $spacing-xl), $i)} !important; }
+      .my-#{$bp}-#{$i} { margin-top: #{map-get((0: 0, 1: $spacing-xs, 2: $spacing-sm, 3: $spacing-md, 4: $spacing-lg, 5: $spacing-xl), $i)} !important; margin-bottom: #{map-get((0: 0, 1: $spacing-xs, 2: $spacing-sm, 3: $spacing-md, 4: $spacing-lg, 5: $spacing-xl), $i)} !important; }
+    }
+  }
+}
+
+/* 鏂囨湰对齐响应式?/
+@each $bp in map-keys($grid-breakpoints) {
+  @include media-breakpoint-up($bp) {
+    .text-#{$bp}-left { text-align: left !important; }
+    .text-#{$bp}-right { text-align: right !important; }
+    .text-#{$bp}-center { text-align: center !important; }
+    .text-#{$bp}-justify { text-align: justify !important; }
+  }
+}
+
+/* Flexbox 响应式?/
+@each $bp in map-keys($grid-breakpoints) {
+  @include media-breakpoint-up($bp) {
+    .flex-#{$bp}-row { flex-direction: row !important; }
+    .flex-#{$bp}-column { flex-direction: column !important; }
+    .flex-#{$bp}-wrap { flex-wrap: wrap !important; }
+    .flex-#{$bp}-nowrap { flex-wrap: nowrap !important; }
+    
+    .justify-#{$bp}-start { justify-content: flex-start !important; }
+    .justify-#{$bp}-end { justify-content: flex-end !important; }
+    .justify-#{$bp}-center { justify-content: center !important; }
+    .justify-#{$bp}-between { justify-content: space-between !important; }
+    .justify-#{$bp}-around { justify-content: space-around !important; }
+    
+    .align-#{$bp}-start { align-items: flex-start !important; }
+    .align-#{$bp}-end { align-items: flex-end !important; }
+    .align-#{$bp}-center { align-items: center !important; }
+    .align-#{$bp}-baseline { align-items: baseline !important; }
+    .align-#{$bp}-stretch { align-items: stretch !important; }
+  }
+}
+
+/* =============================================================================*/
+/* 响应式忓鍣?/
+/* =============================================================================*/
+
+.container-responsive {
+  width: 100%;
+  margin-right: auto;
+  margin-left: auto;
+  padding-right: $spacing-md;
+  padding-left: $spacing-md;
+  
+  @each $breakpoint, $container-max-width in $container-max-widths {
+    @include media-breakpoint-up($breakpoint) {
+      max-width: $container-max-width;
+    }
+  }
+  
+  /* 流体容器变体*/
+  &--fluid {
+    max-width: 100%;
+  }
+  
+  /* 鍥哄畾宽度变体*/
+  @each $breakpoint, $container-max-width in $container-max-widths {
+    &--#{$breakpoint} {
+      @include media-breakpoint-up($breakpoint) {
+        max-width: $container-max-width;
+      }
+    }
+  }
+}
+
+/* =============================================================================*/
+/* 响应式忓疄鐢ㄥ伐鍏?/
+/* =============================================================================*/
+
+/* 瑙嗗彛高度工具*/
+.vh-25 { height: 25vh !important; }
+.vh-50 { height: 50vh !important; }
+.vh-75 { height: 75vh !important; }
+.vh-100 { height: 100vh !important; }
+
+.min-vh-25 { min-height: 25vh !important; }
+.min-vh-50 { min-height: 50vh !important; }
+.min-vh-75 { min-height: 75vh !important; }
+.min-vh-100 { min-height: 100vh !important; }
+
+/* 瑙嗗彛宽度工具*/
+.vw-25 { width: 25vw !important; }
+.vw-50 { width: 50vw !important; }
+.vw-75 { width: 75vw !important; }
+.vw-100 { width: 100vw !important; }
+
+.min-vw-25 { min-width: 25vw !important; }
+.min-vw-50 { min-width: 50vw !important; }
+.min-vw-75 { min-width: 75vw !important; }
+.min-vw-100 { min-width: 100vw !important; }
+
+/* 鎵撳嵃工具绫?/
+@media print {
+  .d-print-none {
+    display: none !important;
+  }
+
+  .d-print-inline {
+    display: inline !important;
+  }
+
+  .d-print-inline-block {
+    display: inline-block !important;
+  }
+
+  .d-print-block {
+    display: block !important;
+  }
+
+  .d-print-flex {
+    display: flex !important;
+  }
+
+  .d-print-grid {
+    display: grid !important;
+  }
+}
+
+/* =============================================================================*/
+/* 响应式忔柇鐐硅皟璇?/
+/* =============================================================================*/
+
+.debug-breakpoints {
+  position: fixed;
+  top: 10px;
+  right: 10px;
+  z-index: 9999;
+  padding: 10px;
+  border-radius: 4px;
+  background: rgb(0 0 0 / 80%);
+  color: white;
+  font-family: monospace;
+  font-size: 12px;
+  
+  &::before {
+    content: "XS";
+
+    @include media-breakpoint-up(sm) { content: "SM"; }
+
+    @include media-breakpoint-up(md) { content: "MD"; }
+
+    @include media-breakpoint-up(lg) { content: "LG"; }
+
+    @include media-breakpoint-up(xl) { content: "XL"; }
+
+    @include media-breakpoint-up(xxl) { content: "XXL"; }
+  }
+}

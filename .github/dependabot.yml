@@ -1,0 +1,64 @@
+version: 2
+updates:
+  # NPM 依赖更新
+  - package-ecosystem: "npm"
+    directory: "/"
+    schedule:
+      interval: "weekly"
+      day: "monday"
+      time: "02:00"
+      timezone: "Asia/Tokyo"
+    open-pull-requests-limit: 10
+    labels:
+      - "dependencies"
+      - "security"
+      - "npm"
+    commit-message:
+      prefix: "chore(deps)"
+      include: "scope"
+    # 分组更新（减少 PR 数量）
+    groups:
+      angular-packages:
+        patterns:
+          - "@angular/*"
+      material-packages:
+        patterns:
+          - "@angular/material*"
+          - "@angular/cdk*"
+    
+  # Python 依赖更新
+  - package-ecosystem: "pip"
+    directory: "/backend"
+    schedule:
+      interval: "weekly"
+      day: "monday"
+      time: "03:00"
+      timezone: "Asia/Tokyo"
+    open-pull-requests-limit: 10
+    labels:
+      - "dependencies"
+      - "security"
+      - "python"
+    commit-message:
+      prefix: "chore(deps)"
+      include: "scope"
+    # 忽略开发依赖的大版本更新
+    ignore:
+      - dependency-name: "*"
+        update-types: ["version-update:semver-major"]
+        dependency-type: "development"
+    
+  # GitHub Actions 更新
+  - package-ecosystem: "github-actions"
+    directory: "/"
+    schedule:
+      interval: "weekly"
+      day: "monday"
+      time: "04:00"
+      timezone: "Asia/Tokyo"
+    open-pull-requests-limit: 5
+    labels:
+      - "dependencies"
+      - "github-actions"
+    commit-message:
+      prefix: "ci(actions)"

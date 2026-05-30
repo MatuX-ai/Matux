@@ -1,0 +1,144 @@
+# AlertManager 告警通知配置
+# 配置邮件、Slack、钉钉等通知渠道
+
+global:
+  # SMTP 邮件配置
+  smtp_smarthost: 'smtp.example.com:587'
+  smtp_from: 'alertmanager@imato.cloud'
+  smtp_auth_username: 'alertmanager@imato.cloud'
+  smtp_auth_password: 'your-smtp-password'
+  smtp_require_tls: true
+
+  # Slack API URL（可选）
+  slack_api_url: 'https://hooks.slack.com/services/YOUR/SLACK/WEBHOOK'
+
+  # 钉钉 Webhook（可选）
+  wechat_api_secret: 'your-wechat-corp-secret'
+  wechat_api_url: 'https://qyapi.weixin.qq.com/cgi-bin/'
+
+# 模板文件路径
+templates:
+  - '/etc/alertmanager/templates/*.tmpl'
+
+# 路由树配置
+route:
+  # 默认接收器
+  receiver: 'default-receiver'
+
+  # 分组标签
+  group_by: ['alertname', 'severity', 'service']
+
+  # 分组等待时间（用于聚合相同告警）
+  group_wait: 30s
+  group_interval: 5m
+
+  # 重复发送间隔（防止告警风暴）
+  repeat_interval: 4h
+
+  # 子路由（根据严重程度分发）
+  routes:
+    # 紧急告警 - 立即发送
+    - match:
+        severity: critical
+      receiver: 'critical-alerts'
+      group_wait: 10s
+      repeat_interval: 1h
+      continue: true
+
+    # 数据库相关告警 - 发送给 DBA
+    - match:
+        service: postgres
+      receiver: 'dba-team'
+      group_wait: 1m
+
+    # Redis 告警 - 发送给运维
+    - match:
+        service: redis
+      receiver: 'ops-team'
+      group_wait: 1m
+
+    # 业务告警 - 信息级别，仅记录
+    - match:
+        severity: info
+      receiver: 'info-logger'
+      group_wait: 5m
+      repeat_interval: 12h
+
+# 接收器配置
+receivers:
+  # 默认接收器（邮件通知）
+  - name: 'default-receiver'
+    email_configs:
+      - to: 'dev-team@imato.cloud'
+        send_resolved: true
+        html: '{{ template "email.default.html" . }}'
+
+  # 紧急告警接收器（邮件 + Slack）
+  - name: 'critical-alerts'
+    email_configs:
+      - to: 'oncall@imato.cloud'
+        send_resolved: true
+        html: '{{ template "email.critical.html" . }}'
+    slack_configs:
+      - channel: '#alerts-critical'
+        send_resolved: true
+        title: '{{ template "slack.title" . }}'
+        text: '{{ template "slack.text" . }}'
+        color: '{{ if eq .Status "firing" }}danger{{ else }}good{{ end }}'
+
+  # DBA 团队接收器（邮件 + 钉钉）
+  - name: 'dba-team'
+    email_configs:
+      - to: 'dba@imato.cloud'
+        send_resolved: true
+    wechat_configs:
+      - corp_id: 'your-corp-id'
+        to_party: 'DBA Team'
+        agent_id: '1000001'
+        message: '{{ template "wechat.message" . }}'
+
+  # 运维团队接收器（Slack）
+  - name: 'ops-team'
+    slack_configs:
+      - channel: '#ops-alerts'
+        send_resolved: true
+        title: '{{ template "slack.title" . }}'
+        text: '{{ template "slack.text" . }}'
+
+  # 信息日志接收器（仅记录）
+  - name: 'info-logger'
+    webhook_configs:
+      - url: 'http://localhost:5001/log'
+        send_resolved: true
+
+# 抑制规则（防止告警风暴）
+inhibit_rules:
+  # 如果节点宕机，抑制该节点上的所有 Pod 告警
+  - source_match:
+      alertname: NodeDown
+    target_match_re:
+      pod: '.+'
+    equal: ['node']
+
+  # 如果集群不可用，抑制所有服务告警
+  - source_match:
+      alertname: ClusterDown
+    target_match_re:
+      service: '.+'
+    equal: ['cluster']
+
+  # 严重告警抑制警告级别告警
+  - source_match:
+      severity: 'critical'
+    target_match:
+      severity: 'warning'
+    equal: ['alertname', 'service']
+
+# 告警静音（维护窗口）
+# mute_time_intervals:
+#   - name: 'weekend-maintenance'
+#     time_intervals:
+#       - weekdays: ['saturday', 'sunday']
+#         times:
+#           - start_time: '02:00'
+#             end_time: '06:00'

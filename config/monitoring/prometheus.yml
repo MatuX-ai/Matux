@@ -1,0 +1,225 @@
+# 教育数据联邦学习系统监控配置
+# Monitoring Configuration for Education Data Federated Learning System
+
+# Prometheus监控配置
+global:
+  scrape_interval: 15s
+  evaluation_interval: 15s
+
+rule_files:
+  - "alert_rules.yml"
+
+alerting:
+  alertmanagers:
+    - static_configs:
+        - targets:
+            - localhost:9093
+
+scrape_configs:
+  # 教育联邦学习应用监控
+  - job_name: 'edu_federated_learning'
+    static_configs:
+      - targets: ['localhost:8000']
+    metrics_path: '/metrics'
+    scrape_interval: 10s
+
+  # 系统资源监控
+  - job_name: 'node_exporter'
+    static_configs:
+      - targets: ['localhost:9100']
+    scrape_interval: 15s
+
+  # Redis监控
+  - job_name: 'redis_exporter'
+    static_configs:
+      - targets: ['localhost:9121']
+    scrape_interval: 15s
+
+  # PostgreSQL监控
+  - job_name: 'postgres_exporter'
+    static_configs:
+      - targets: ['localhost:9187']
+    scrape_interval: 30s
+
+# 告警规则配置
+groups:
+  - name: edu_federated_system
+    rules:
+      # 系统资源告警
+      - alert: HighCPUUsage
+        expr: 100 - (avg by(instance) (irate(node_cpu_seconds_total{mode="idle"}[5m])) * 100) > 85
+        for: 2m
+        labels:
+          severity: warning
+        annotations:
+          summary: "CPU使用率过高 ({{ $value }}%)"
+          description: "{{ $labels.instance }} CPU使用率超过85%，当前值为{{ $value }}%"
+
+      - alert: HighMemoryUsage
+        expr: (node_memory_MemAvailable_bytes / node_memory_MemTotal_bytes) * 100 < 15
+        for: 2m
+        labels:
+          severity: critical
+        annotations:
+          summary: "内存使用率过高 ({{ $value }}%)"
+          description: "{{ $labels.instance }} 可用内存低于15%，当前值为{{ $value }}%"
+
+      - alert: DiskSpaceLow
+        expr: (node_filesystem_avail_bytes{mountpoint="/"} / node_filesystem_size_bytes{mountpoint="/"}) * 100 < 10
+        for: 5m
+        labels:
+          severity: critical
+        annotations:
+          summary: "磁盘空间不足 ({{ $value }}%)"
+          description: "{{ $labels.instance }} 根分区剩余空间低于10%，当前值为{{ $value }}%"
+
+      - alert: HighNetworkTraffic
+        expr: irate(node_network_receive_bytes_total[5m]) > 100e6
+        for: 1m
+        labels:
+          severity: warning
+        annotations:
+          summary: "网络流量异常"
+          description: "{{ $labels.instance }} 网络接收流量过高，超过100MB/s"
+
+  - name: edu_federated_application
+    rules:
+      # 应用性能告警
+      - alert: HighResponseTime
+        expr: histogram_quantile(0.95, rate(http_request_duration_seconds_bucket[5m])) > 2
+        for: 2m
+        labels:
+          severity: warning
+        annotations:
+          summary: "API响应时间过长"
+          description: "95%的API请求响应时间超过2秒，当前值为{{ $value }}秒"
+
+      - alert: HighErrorRate
+        expr: rate(http_requests_total{status=~"5.."}[5m]) / rate(http_requests_total[5m]) > 0.05
+        for: 2m
+        labels:
+          severity: critical
+        annotations:
+          summary: "API错误率过高"
+          description: "API错误率超过5%，当前值为{{ $value | humanizePercentage }}"
+
+      - alert: LowAvailability
+        expr: avg_over_time(up{job="edu_federated_learning"}[5m]) < 0.95
+        for: 2m
+        labels:
+          severity: critical
+        annotations:
+          summary: "服务可用性低"
+          description: "教育联邦学习服务可用性低于95%，当前值为{{ $value | humanizePercentage }}"
+
+  - name: edu_federated_ml
+    rules:
+      # 联邦学习告警
+      - alert: TrainingFailureRate
+        expr: rate(fl_training_failures_total[10m]) / rate(fl_training_attempts_total[10m]) > 0.1
+        for: 5m
+        labels:
+          severity: warning
+        annotations:
+          summary: "联邦学习训练失败率过高"
+          description: "联邦学习训练失败率超过10%，当前值为{{ $value | humanizePercentage }}"
+
+      - alert: ParticipantOffline
+        expr: fl_active_participants < 3
+        for: 5m
+        labels:
+          severity: warning
+        annotations:
+          summary: "在线参与方不足"
+          description: "当前在线参与方数量为{{ $value }}，低于最小要求3个"
+
+      - alert: PrivacyBudgetExhausted
+        expr: fl_privacy_budget_consumed / fl_privacy_budget_total > 0.9
+        for: 1m
+        labels:
+          severity: critical
+        annotations:
+          summary: "隐私预算即将耗尽"
+          description: "隐私预算使用率达到{{ $value | humanizePercentage }}，请及时补充"
+
+      - alert: ModelConvergenceSlow
+        expr: rate(fl_convergence_metric[10m]) < 0.001
+        for: 10m
+        labels:
+          severity: warning
+        annotations:
+          summary: "模型收敛缓慢"
+          description: "模型收敛速度低于预期，当前速率为{{ $value }}"
+
+  - name: edu_data_quality
+    rules:
+      # 数据质量告警
+      - alert: DataQualityLow
+        expr: edu_data_quality_score < 80
+        for: 5m
+        labels:
+          severity: warning
+        annotations:
+          summary: "数据质量评分低"
+          description: "教育数据质量评分为{{ $value }}，低于阈值80分"
+
+      - alert: MissingDataHigh
+        expr: rate(edu_missing_data_count[5m]) > 100
+        for: 2m
+        labels:
+          severity: warning
+        annotations:
+          summary: "数据缺失严重"
+          description: "数据缺失率过高，每分钟缺失{{ $value }}条记录"
+
+      - alert: OutlierDetection
+        expr: edu_outlier_count > 50
+        for: 1m
+        labels:
+          severity: warning
+        annotations:
+          summary: "异常数据检测"
+          description: "检测到{{ $value }}条异常数据记录"
+
+  - name: edu_security
+    rules:
+      # 安全告警
+      - alert: UnauthorizedAccessAttempts
+        expr: rate(security_unauthorized_access_total[5m]) > 5
+        for: 1m
+        labels:
+          severity: warning
+        annotations:
+          summary: "未授权访问尝试"
+          description: "检测到频繁的未授权访问尝试，频率为{{ $value }}/分钟"
+
+      - alert: DataBreachDetected
+        expr: security_data_breach_events > 0
+        for: 0m
+        labels:
+          severity: critical
+        annotations:
+          summary: "检测到数据泄露事件"
+          description: "系统检测到{{ $value }}起潜在的数据泄露事件"
+
+      - alert: CertificateExpiration
+        expr: probe_ssl_earliest_cert_expiry - time() < 86400 * 7
+        for: 1h
+        labels:
+          severity: warning
+        annotations:
+          summary: "SSL证书即将过期"
+          description: "SSL证书将在7天内过期，请及时更新"
+
+# 记录规则
+record: job:fl_training_success_rate:ratio_rate5m
+expr: rate(fl_training_success_total[5m]) / rate(fl_training_attempts_total[5m])
+
+record: job:edu_api_latency:95percentile
+expr: histogram_quantile(0.95, rate(http_request_duration_seconds_bucket[5m]))
+
+record: job:system_cpu_utilization:ratio
+expr: 100 - (avg by(instance) (irate(node_cpu_seconds_total{mode="idle"}[5m])) * 100)
+
+record: job:system_memory_utilization:ratio
+expr: (1 - (node_memory_MemAvailable_bytes / node_memory_MemTotal_bytes)) * 100

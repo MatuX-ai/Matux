@@ -1,0 +1,162 @@
+<div class="path-map-container">
+  <!-- 标题栏 -->
+  <div class="header">
+    <h1>STEM学习路径地图</h1>
+    <p class="subtitle">基于知识图谱的个性化学习路径可视化</p>
+  </div>
+
+  <!-- 用户配置面板 -->
+  <div class="config-panel">
+    <div class="form-group">
+      <label for="userId">用户ID:</label>
+      <input
+        type="text"
+        id="userId"
+        [(ngModel)]="userId"
+        placeholder="输入用户ID"
+      />
+    </div>
+
+    <div class="form-group">
+      <label for="age">年龄:</label>
+      <input
+        type="number"
+        id="age"
+        [(ngModel)]="age"
+        min="6"
+        max="25"
+      />
+    </div>
+
+    <div class="form-group">
+      <label for="gradeLevel">学段:</label>
+      <select id="gradeLevel" [(ngModel)]="gradeLevel">
+        <option value="小学">小学</option>
+        <option value="初中">初中</option>
+        <option value="高中">高中</option>
+        <option value="大学">大学</option>
+      </select>
+    </div>
+
+    <div class="button-group">
+      <button
+        class="btn btn-primary"
+        (click)="generatePath()"
+        [disabled]="isLoading"
+      >
+        <span *ngIf="!isLoading">生成路径</span>
+        <span *ngIf="isLoading">生成中...</span>
+      </button>
+
+      <button
+        class="btn btn-secondary"
+        (click)="loadSamplePath()"
+        [disabled]="isLoading"
+      >
+        加载示例
+      </button>
+
+      <button
+        class="btn btn-outline"
+        (click)="clearChart()"
+      >
+        清空
+      </button>
+    </div>
+  </div>
+
+  <!-- 错误提示 -->
+  <div *ngIf="errorMessage" class="error-message">
+    {{ errorMessage }}
+  </div>
+
+  <!-- ECharts图表容器 -->
+  <div #chartContainer class="chart-container"></div>
+
+  <!-- 路径摘要信息 -->
+  <div *ngIf="learningPath" class="summary-panel">
+    <h2>路径摘要</h2>
+
+    <div class="summary-grid">
+      <div class="summary-item">
+        <div class="label">总节点数</div>
+        <div class="value">{{ learningPath.summary.total_nodes }}</div>
+      </div>
+
+      <div class="summary-item">
+        <div class="label">总学习时长</div>
+        <div class="value">{{ learningPath.summary.total_hours }}小时</div>
+      </div>
+
+      <div class="summary-item">
+        <div class="label">平均难度</div>
+        <div class="value">
+          {{ learningPath.summary.avg_difficulty }}/5
+          <span class="stars">
+            {{ '★'.repeat(round(learningPath.summary.avg_difficulty)) }}
+            {{ '☆'.repeat(5 - round(learningPath.summary.avg_difficulty)) }}
+          </span>
+        </div>
+      </div>
+
+      <div class="summary-item">
+        <div class="label">预计完成天数</div>
+        <div class="value">{{ learningPath.summary.estimated_completion_days }}天</div>
+      </div>
+    </div>
+
+    <!-- 节点类型分布 -->
+    <div class="distribution-chart">
+      <h3>节点类型分布</h3>
+      <div class="distribution-bars">
+        <div *ngFor="let item of learningPath.summary.type_distribution | keyvalue"
+             class="distribution-item">
+          <div class="dist-label">{{ getNodeCategoryLabel(item.key) }}</div>
+          <div class="dist-bar-container">
+            <div
+              class="dist-bar"
+              [style.width.%]="(item.value / learningPath.summary.total_nodes) * 100"
+              [class.course-unit]="item.key === 'course_unit'"
+              [class.transition-project]="item.key === 'transition_project'"
+              [class.textbook-chapter]="item.key === 'textbook_chapter'"
+              [class.hardware-project]="item.key === 'hardware_project'"
+            ></div>
+          </div>
+          <div class="dist-value">{{ item.value }}</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- 路径节点列表 -->
+    <div class="node-list">
+      <h3>路径节点详情</h3>
+      <div class="nodes">
+        <div *ngFor="let node of learningPath.path_nodes; let i = index"
+             class="node-card"
+             [class.course-unit]="node.node_type === 'course_unit'"
+             [class.transition-project]="node.node_type === 'transition_project'"
+             [class.textbook-chapter]="node.node_type === 'textbook_chapter'"
+             [class.hardware-project]="node.node_type === 'hardware_project'"
+        >
+          <div class="node-header">
+            <span class="node-index">{{ i + 1 }}</span>
+            <span class="node-type">{{ getNodeTypeLabel(node.node_type) }}</span>
+          </div>
+
+          <div class="node-title">{{ node.title }}</div>
+
+          <div class="node-meta">
+            <span class="difficulty">
+              难度: {{ '★'.repeat(node.difficulty) }}{{ '☆'.repeat(5 - node.difficulty) }}
+            </span>
+            <span class="hours">{{ node.estimated_hours }}小时</span>
+          </div>
+
+          <div *ngIf="node.description" class="node-description">
+            {{ node.description }}
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>

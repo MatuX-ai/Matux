@@ -1,0 +1,232 @@
+<div class="license-management-container">
+  <!-- 页面标题 -->
+  <div class="page-header">
+    <h1>许可证管理</h1>
+    <div class="header-actions">
+      <button mat-stroked-button (click)="exportToExcel()">
+        <mat-icon>file_download</mat-icon>
+        导出 Excel
+      </button>
+      <button mat-raised-button color="primary" (click)="openAssignDialog(null)">
+        <mat-icon>add</mat-icon>
+        分配许可证
+      </button>
+    </div>
+  </div>
+
+  <!-- 统计卡片 -->
+  <div class="stats-cards">
+    <mat-card class="stat-card">
+      <mat-card-content>
+        <div class="stat-icon primary">
+          <mat-icon>vpn_key</mat-icon>
+        </div>
+        <div class="stat-info">
+          <div class="stat-label">总许可证数</div>
+          <div class="stat-value">{{ stats.total }}</div>
+        </div>
+      </mat-card-content>
+    </mat-card>
+
+    <mat-card class="stat-card">
+      <mat-card-content>
+        <div class="stat-icon success">
+          <mat-icon>check_circle</mat-icon>
+        </div>
+        <div class="stat-info">
+          <div class="stat-label">活跃许可证</div>
+          <div class="stat-value">{{ stats.active }}</div>
+        </div>
+      </mat-card-content>
+    </mat-card>
+
+    <mat-card class="stat-card">
+      <mat-card-content>
+        <div class="stat-icon warning">
+          <mat-icon>warning</mat-icon>
+        </div>
+        <div class="stat-info">
+          <div class="stat-label">即将过期</div>
+          <div class="stat-value">{{ stats.expiring }}</div>
+        </div>
+      </mat-card-content>
+    </mat-card>
+
+    <mat-card class="stat-card">
+      <mat-card-content>
+        <div class="stat-icon danger">
+          <mat-icon>error</mat-icon>
+        </div>
+        <div class="stat-info">
+          <div class="stat-label">已过期/撤销</div>
+          <div class="stat-value">{{ stats.expired }}</div>
+        </div>
+      </mat-card-content>
+    </mat-card>
+  </div>
+
+  <!-- 筛选工具栏 -->
+  <div class="filter-toolbar">
+    <mat-form-field appearance="outline" subscriptSizing="dynamic">
+      <mat-label>搜索</mat-label>
+      <input matInput [(ngModel)]="searchText"
+             (input)="applyFilters()"
+             placeholder="许可证 ID / 密钥 / 组织名称">
+      <mat-icon matPrefix>search</mat-icon>
+    </mat-form-field>
+
+    <mat-form-field appearance="outline" subscriptSizing="dynamic">
+      <mat-label>状态筛选</mat-label>
+      <mat-select [(value)]="filterStatus" (selectionChange)="onFilterChange()">
+        <mat-option value="all">全部状态</mat-option>
+        <mat-option value="active">活跃</mat-option>
+        <mat-option value="expiring">即将过期</mat-option>
+        <mat-option value="expired">已过期</mat-option>
+        <mat-option value="revoked">已撤销</mat-option>
+      </mat-select>
+    </mat-form-field>
+
+    <mat-form-field appearance="outline" subscriptSizing="dynamic">
+      <mat-label>类型筛选</mat-label>
+      <mat-select [(value)]="filterType" (selectionChange)="onFilterChange()">
+        <mat-option value="all">全部类型</mat-option>
+        <mat-option value="cloud_hosted">云托管版</mat-option>
+        <mat-option value="enterprise">企业版</mat-option>
+        <mat-option value="education">教育版</mat-option>
+        <mat-option value="trial">试用版</mat-option>
+      </mat-select>
+    </mat-form-field>
+
+    <div class="results-count">
+      显示 {{ filteredLicenses.length }} / {{ licenses.length }} 条记录
+    </div>
+  </div>
+
+  <!-- 加载指示器 -->
+  <div *ngIf="isLoading" class="loading-container">
+    <mat-progress-bar mode="indeterminate"></mat-progress-bar>
+    <div class="loading-text">加载中...</div>
+  </div>
+
+  <!-- 数据表格 -->
+  <div *ngIf="!isLoading && filteredLicenses.length > 0" class="table-container">
+    <table mat-table [dataSource]="filteredLicenses" class="license-table">
+
+      <!-- 许可证密钥列 -->
+      <ng-container matColumnDef="licenseKey">
+        <th mat-header-cell *matHeaderCellDef>许可证密钥</th>
+        <td mat-cell *matCellDef="let license">
+          <div class="license-key-cell">
+            <span class="license-key">{{ license.license_key }}</span>
+            <span class="organization-name">{{ license.organization_name }}</span>
+          </div>
+        </td>
+      </ng-container>
+
+      <!-- 类型列 -->
+      <ng-container matColumnDef="type">
+        <th mat-header-cell *matHeaderCellDef>类型</th>
+        <td mat-cell *matCellDef="let license">
+          <mat-chip>{{ getLicenseTypeLabel(license.license_type) }}</mat-chip>
+        </td>
+      </ng-container>
+
+      <!-- 状态列 -->
+      <ng-container matColumnDef="status">
+        <th mat-header-cell *matHeaderCellDef>状态</th>
+        <td mat-cell *matCellDef="let license">
+          <mat-chip [color]="license.statusColor">
+            {{ license.statusLabel }}
+          </mat-chip>
+        </td>
+      </ng-container>
+
+      <!-- 用户数列 -->
+      <ng-container matColumnDef="users">
+        <th mat-header-cell *matHeaderCellDef>用户数</th>
+        <td mat-cell *matCellDef="let license">
+          <div class="users-cell">
+            <span class="users-count">{{ license.current_users }} / {{ license.max_users }}</span>
+            <mat-progress-bar
+              mode="determinate"
+              [value]="license.usagePercent"
+              [color]="getUsageBarColor(license.usagePercent)"
+              class="usage-bar">
+            </mat-progress-bar>
+            <span class="usage-percent">{{ license.usagePercent }}%</span>
+          </div>
+        </td>
+      </ng-container>
+
+      <!-- 功能特性列 -->
+      <ng-container matColumnDef="features">
+        <th mat-header-cell *matHeaderCellDef>功能特性</th>
+        <td mat-cell *matCellDef="let license">
+          <div class="features-cell">
+            <mat-chip *ngFor="let feature of license.features | slice:0:3"
+                      variant="outlined"
+                      [matTooltip]="$any(feature)">
+              {{ feature }}
+            </mat-chip>
+            <span *ngIf="license.features.length > 3" class="more-features">
+              +{{ license.features.length - 3 }}
+            </span>
+          </div>
+        </td>
+      </ng-container>
+
+      <!-- 到期时间列 -->
+      <ng-container matColumnDef="expiresAt">
+        <th mat-header-cell *matHeaderCellDef>到期时间</th>
+        <td mat-cell *matCellDef="let license">
+          <div class="expires-cell">
+            <span [class.expired]="license.days_until_expiry <= 0">
+              {{ license.expires_at | date:'yyyy-MM-dd' }}
+            </span>
+            <span class="days-left" *ngIf="license.days_until_expiry > 0 && license.days_until_expiry <= 30">
+              (剩余 {{ license.days_until_expiry }} 天)
+            </span>
+          </div>
+        </td>
+      </ng-container>
+
+      <!-- 操作列 -->
+      <ng-container matColumnDef="actions">
+        <th mat-header-cell *matHeaderCellDef>操作</th>
+        <td mat-cell *matCellDef="let license">
+          <div class="action-buttons">
+            <button mat-icon-button
+                    [matTooltip]="'查看详情'"
+                    (click)="viewDetails(license)">
+              <mat-icon>visibility</mat-icon>
+            </button>
+            <button mat-icon-button
+                    [matTooltip]="'分配用户'"
+                    [disabled]="license.status !== 'active'"
+                    (click)="openAssignDialog(license)">
+              <mat-icon>person_add</mat-icon>
+            </button>
+            <button mat-icon-button
+                    [matTooltip]="'撤销许可证'"
+                    [disabled]="license.status === 'revoked' || license.status === 'expired'"
+                    (click)="revokeLicense(license)">
+              <mat-icon>block</mat-icon>
+            </button>
+          </div>
+        </td>
+      </ng-container>
+
+      <tr mat-header-row *matHeaderRowDef="displayedColumns"></tr>
+      <tr mat-row *matRowDef="let row; columns: displayedColumns;"></tr>
+    </table>
+  </div>
+
+  <!-- 空状态提示 -->
+  <div *ngIf="!isLoading && filteredLicenses.length === 0" class="empty-state">
+    <mat-icon>folder_open</mat-icon>
+    <p>暂无许可证数据</p>
+    <button mat-raised-button color="primary" (click)="openAssignDialog(null)">
+      分配第一个许可证
+    </button>
+  </div>
+</div>

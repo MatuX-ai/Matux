@@ -1,0 +1,756 @@
+// Card Component
+//
+// 鍗＄墖组件样式锛屾敮鎸佸绉嶅彉浣撳拰布局閫夐」
+// 鍖呭惈标题鏍忋€佸唴瀹瑰尯銆佹搷浣滃尯绛夊畬鏁寸粨鏋?
+
+// 瀵煎叆 Design Tokens
+@import '../design-tokens/index';
+
+// =============================================================================
+// 鍗＄墖基础样式
+// =============================================================================
+
+.c-card {
+  // CSS 自定义夊睘鎬у畾涔夊熀纭€閰嶇疆
+  --card-background: #{$surface-color};
+  --card-border-radius: #{$border-radius-card};
+  --card-shadow: #{$shadow-card};
+  --card-border: 1px solid #{$divider-color};
+  --card-transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  
+  // 基础布局鍜屽瑙?
+  position: relative;
+  display: flex;
+  overflow: hidden;
+  flex-direction: column;
+  border: var(--card-border);
+  border-radius: var(--card-border-radius);
+  
+  // 外观样式
+  background-color: var(--card-background);
+  box-shadow: var(--card-shadow);
+  
+  // 浜や簰效果
+  transition: var(--card-transition);
+  
+  // 鎮仠效果
+  &:hover {
+    box-shadow: $shadow-card-hover;
+    transform: translateY(-2px);
+  }
+  
+  // 濯掍綋鏌ヨ - 移动端紭鍖?
+  @media (max-width: $breakpoint-mobile-max) {
+    &:hover {
+      transform: none;
+    }
+  }
+}
+
+// =============================================================================
+// 鍗＄墖瀛愬厓绱?
+// =============================================================================
+
+// 鍗＄墖濯掍綋区域锛堝浘鐗囥€佽棰戠瓑锛?
+.c-card__media {
+  position: relative;
+  width: 100%;
+  
+  // 濯掍綋鍐呭
+  img,
+  video {
+    display: block;
+    width: 100%;
+    height: auto;
+  }
+  
+  // 濯掍綋瑕嗙洊灞?
+  &--overlay {
+    position: relative;
+    
+    &::after {
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(to bottom, transparent 0%, rgb(0 0 0 / 70%) 100%);
+  content: '';
+}
+  }
+  
+  // 濯掍綋姣斾緥容器
+  &--16-9 {
+    position: relative;
+    padding-bottom: 56.25%; // 16:9 姣斾緥
+    
+    img,
+    video,
+    iframe {
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+    }
+  }
+  
+  &--4-3 {
+    position: relative;
+    padding-bottom: 75%; // 4:3 姣斾緥
+    
+    img,
+    video,
+    iframe {
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+    }
+  }
+  
+  &--1-1 {
+    position: relative;
+    padding-bottom: 100%; // 1:1 姣斾緥
+    
+    img,
+    video,
+    iframe {
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+    }
+  }
+}
+
+// 鍗＄墖澶撮儴
+.c-card__header {
+  padding: $spacing-lg;
+  
+  // 绱у噾妯″紡
+  &--compact {
+    padding: $spacing-md;
+  }
+
+  // 鏃犺竟妗嗘ā寮?
+  &--borderless {
+    border-bottom: none;
+  }
+  
+  // 鍗＄墖标题
+  .c-card__title {
+    margin: 0;
+    color: $text-primary-color;
+    
+    a {
+      color: inherit;
+      
+      &:hover {
+        color: $primary-color;
+      text-decoration: none;
+      color: inherit;
+      
+      &:hover {
+        color: $primary-color;
+      }
+    }
+  }
+  
+  // 鍗＄墖瀛愭爣棰?
+  .c-card__subtitle {
+    margin: $spacing-x{
+  margin: $spacing-xs 0 0 0;
+  color: $text-secondary-color;
+  font-family: $font-family-system;
+  font-size: $font-size-body-medium;
+  font-weight: $font-weight-regular;
+  line-height: $line-height-normal;
+}ard__actions {
+    display: flex;
+    align-items: center;
+    gap: $spacing-sm;
+    margin-top: $spacing-md;
+    
+    .c-btn {
+      --btn-height: 32px;
+      --btn-padding: #{$spacing-xs} #{$spacing-md};
+      --btn-font-size: #{$font-size-body-small};
+    }
+  }
+}
+
+// 鍗＄墖涓讳綋鍐呭
+.c-card__body {
+  padding: $spacing-lg;
+  
+  // 绱у噾妯″紡
+  &--compact {
+    padding: $spacing-md;
+  }
+
+  // 鍗＄墖鍐呭鏂囨湰
+  .c-card__content {
+    
+    p {
+      margin: 0 0 $spacing-md;
+      
+      &:last-child {
+    p {
+      margin: 0 0 $spacing-md;
+      
+      &:last-child {
+        margin-bottom: 0;
+      }
+    }
+  }
+  
+  // 鍗＄墖鍒楄〃
+  .c-card__list {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+    
+    li {
+      padding: $spacing-sm 0;
+      border-bottom: 1px solid $divider-color;
+      
+      &:last-child {
+        border-bottom: none;
+      }
+    }
+  }
+}
+
+// 鍗＄墖搴曢儴
+.c-card__footer {
+  padding: $spacing-lg;
+  
+  // 绱у噾妯″紡
+  &--compact {
+    padding: $spacing-md;
+  &--compact {
+    padding: $spacing-md;
+  }
+  
+  // 鏃犺儗鏅ā寮?
+  &--transparent {
+    background-color: transparent;
+  }
+  
+  // 搴曢儴鎿嶄綔区域
+  .c-card__actions {
+    display: flex;
+    align-items: center;
+    gap: $spacing-sm;
+    
+    // 宸﹀榻愭搷浣?
+    &--start {
+      justify-content: flex-start;
+    }
+    
+    // 居中对齐鎿嶄綔
+    &--center {
+      justify-content: center;
+    }
+    
+    // 鍙冲榻愭搷浣?
+    &--end {
+      justify-content: flex-end;
+    }
+    
+    // 涓ょ对齐鎿嶄綔
+    &--between {
+      justify-content: space-between;
+    }
+  }
+}
+
+// =============================================================================
+// 鍗＄墖变体
+// =============================================================================
+
+// 鎵佸钩鍗＄墖锛堟棤阴影锛?
+.c-card--flat {
+  --card-shadow: none;
+  --card-border: 1px solid #{$border-color};
+}
+
+// 鎶崌鍗＄墖锛堟洿澶ч槾褰憋級
+.c-card--raised {
+  --card-shadow: #{$shadow-lg};
+  
+  &:hover {
+    box-shadow: $shadow-xl;
+  }
+}
+
+// 杞粨鍗＄墖锛堥€忔槑鑳屾櫙锛屽己璋冭竟妗嗭級
+.c-card--outlined {
+  --card-background: transparent;
+  --card-shadow: none;
+  --card-border: 2px solid #{$border-color};
+}
+
+// 褰╄壊鍗＄墖
+.c-card--primary {
+  --card-background: #{$primary-color};
+  --card-border: none;
+  
+  .c-card__header,
+  .c-card__body,
+  .c-card__footer {
+    border-color: rgb(255 255 255 / 20%);
+    color: $text-white-color;
+  }
+  
+  .c-card__title,
+  .c-card__subtitle,
+  .c-card__content {
+    color: inherit;
+  }
+  
+  .c-card__actions {
+    .c-btn {
+      --btn-background: #{rgba(255,255,255,0.2)};
+      --btn-color: #{$text-white-color};
+      --btn-hover-background: #{rgba(255,255,255,0.3)};
+    }
+  }
+}
+
+.c-card--secondary {
+  --card-background: #{$secondary-color};
+  --card-border: none;
+  
+  // 绫讳技 primary 鍗＄墖鐨勬牱寮忓鐞?
+  .c-card__header,
+  .c-card__body,
+  .c-card__footer {
+    border-color: rgb(255 255 255 / 20%);
+    color: $text-white-color;
+  }
+  
+  .c-card__title,
+  .c-card__subtitle,
+  .c-card__content {
+    color: inherit;
+  }
+}
+
+// =============================================================================
+// 鍗＄墖灏哄变体
+// =============================================================================
+
+.c-card--sm {
+  .c-card__header,
+  .c-card__body,
+  .c-card__footer {
+    &--compact {
+      padding: $spacing-sm;
+    }
+  }
+  
+  .c-card__title {
+    font-size: $font-size-h5;
+  }
+  
+  .c-card__subtitle,
+  .c-card__content {
+    font-size: $font-size-body-small;
+  }
+}
+
+.c-card--lg {
+  .c-card__header,
+  .c-card__body,
+  .c-card__footer {
+    padding: $spacing-xl;
+    
+    &--compact {
+      padding: $spacing-lg;
+    }
+  }
+  
+  .c-card__title {
+    font-size: $font-size-h3;
+  }
+  
+  .c-card__subtitle {
+    font-size: $font-size-body-large;
+  }
+  
+  .c-card__content {
+    font-size: $font-size-body-medium;
+    line-height: $line-height-relaxed;
+  }
+}
+
+// =============================================================================
+// 鍗＄墖方向鍜屽竷灞€
+// =============================================================================
+
+// 水平鍗＄墖
+.c-card--horizontal {
+  
+  .c-card__media {
+    max-width: 40%;
+    flex: 0 0 40%;
+    max-width: 40%;
+  }
+  
+  .c-card__content-wrapper {
+    display: flex;
+    flex-direction: col{
+  display: flex;
+  flex: 1;
+  flex-direction: column;
+}.c-card__footer {
+    padding: $spacing-lg;
+  }
+  
+  // 响应式?- 移动端仮澶嶅瀭鐩村竷灞€
+  @media (max-width: $breakpoint-tablet-max) {
+    
+    .c-card__media {
+      max-width: 100%;
+      flex: 0 0 auto;
+      max-width: 100%;
+    }
+  }
+}
+
+// 鍗＄墖网格布局
+.c-card-grid {
+  display: grid;
+  
+  // 默认网格鍒楁暟
+  grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+  gap: $spacing-lg;
+  
+  // 响应式忕綉鏍?
+  @media (max-width: $breakpoint-tablet-max) {
+    grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+    gap: $spacing-md;
+  }
+  
+  @media (max-width: $breakpoint-mobile-max) {
+    grid-template-columns: 1fr;
+    gap: $spacing-sm;
+  }
+  
+  // 鍥哄畾鍒楁暟网格
+  &--2cols {
+    grid-template-columns: repeat(2, 1fr);
+    
+    @media (max-width: $breakpoint-mobile-max) {
+      grid-template-columns: 1fr;
+    }
+  }
+  
+  &--3cols {
+    grid-template-columns: repeat(3, 1fr);
+    
+    @media (max-width: $breakpoint-tablet-max) {
+      grid-template-columns: repeat(2, 1fr);
+    }
+    
+    @media (max-width: $breakpoint-mobile-max) {
+      grid-template-columns: 1fr;
+    }
+  }
+  
+  &--4cols {
+    grid-template-columns: repeat(4, 1fr);
+    
+    @media (max-width: $breakpoint-desktop-min) {
+      grid-template-columns: repeat(3, 1fr);
+    }
+    
+    @media (max-width: $breakpoint-tablet-max) {
+      grid-template-columns: repeat(2, 1fr);
+    }
+    
+    @media (max-width: $breakpoint-mobile-max) {
+      grid-template-columns: 1fr;
+    }
+  }
+}
+
+// =============================================================================
+// 鍗＄墖鍔犺浇鐘舵€?
+// =============================================================================
+
+.c-card--loading {
+  position: relative;
+  pointer-events: none;
+  
+  &::after {
+    content: '';
+    position: absolute;
+    z-index:{
+  position: absolute;
+  inset: 0;
+  z-index: 10;
+  border-radius: var(--card-border-radius);
+  background-color: rgba($background-color, 0.7);
+  content: '';
+};
+    top: 50%;
+    left: 50%;
+    z-index: 11;
+    transform: translate(-50%, -50%);
+    
+    .c-spinner {
+      width: 32px;
+      height: 32px;
+      border-width: 3px;
+    }
+  }
+}
+
+// =============================================================================
+// 鍗＄墖浜や簰效果
+// =============================================================================
+
+// 鍙偣鍑诲崱鐗?
+.c-card--clickable {
+  
+  &:hover {
+    box-shadow: $shadow-lg;
+    box-shadow: $shadow-lg;
+    transform: translateY(-4px);
+  }
+  
+  &:active {
+    transform: translateY(-2px);
+  }
+  
+  // 鐐瑰嚮鍙嶉
+  &.is-active {
+    box-shadow: $shadow-md;
+    transform: translateY(-2px);
+    transform: translateY(-2px);
+  }
+}
+
+// 閫変腑鐘舵€佸崱鐗?
+.c-card--selected {
+  
+  &::before {
+    position: absolute;
+    background-c{
+  position: absolute;
+}========
+// 鍗＄墖瀹炵敤工具绫?
+// =============================================================================
+
+// 鍗＄墖鍒嗛殧绾?
+.c-card-divider {
+  
+  &--sm {
+  pointer-events: none;
+}========
+// 鍗＄墖瀹炵敤工具绫?
+// =============================================================================
+
+// 鍗＄墖鍒嗛殧绾?
+.c-card-divider {
+  height: 1px;
+  margin: $spacing-lg 0;
+  border: 0;
+  background-color: $divider-color;
+  
+  &--sm {
+    margin: $spacing-md 0;
+  }
+  
+  &--lg {
+    margin: $spacing-xl 0;
+  }
+}
+
+// 鍗＄墖寰界珷
+.c-card-badge {
+  position: absolute;
+  top: $spacing-md;
+  right: $spacing-md;
+  z-index: 5;
+  
+  .c-badge {
+    box-shadow: $shadow-sm;
+  }
+}
+
+// 鍗＄墖瑕嗙洊灞?
+.c-card-overlay {
+  position: absolute;
+  z-index: 4;
+  display: flex;
+  padding: $spacing-lg;
+  background: linear-gradient(to bottom, transparent 0%, rgb(0 0 0 / 80%) 100%);
+  transition: opacity 0.3s ease;
+  
+  .c-card:hover & {
+  inset: 0;
+  
+  .c-card:hover & {
+    opacity: 1;
+  }
+}
+
+// =============================================================================
+// 鏆楅粦主题閫傞厤
+// =============================================================================
+
+[data-theme="dark"] {
+  .c-card {
+    // 鏆楄壊主题基础样式
+    
+    // 鏆楄壊主题鎮仠效果璋冩暣
+    &:hover {
+      box-shadow: 0 4px 12px rgb(0 0 0 / 40%);
+    &:hover {
+      box-shadow: 0 4px 12px rgb(0 0 0 / 40%);
+    }
+  }
+  
+  // 鍗＄墖澶撮儴閫傞厤
+  .c-card__header {
+    
+    .c-card__title {
+      color: var(--text-primary-color);
+      
+      a {
+        &:hover {
+          color: var(--primary-color);
+          color: var(--primary-color);
+        }
+      }
+    }
+    
+    .c-card__subtitle {
+      color: var(--text-secondary-color);
+    }
+  }
+  
+  // 鍗＄墖涓讳綋閫傞厤
+  .c-card__body {
+    .c-card__content {
+      color: var(--text-primary-color);
+    }
+    
+    .c-card__list {
+      li {
+        border-bottom: 1px solid var(--border-color);
+      }
+    }
+  }
+  
+  // 鍗＄墖搴曢儴閫傞厤
+  .c-card__footer {
+    background-color: var(--surface-color-hover);
+    
+    &--transparent {
+      background-color: transparent;
+      background-color: transparent;
+    }
+  }
+  
+  // 鍗＄墖变体閫傞厤
+  .c-card--flat {
+    --card-border: 1px solid var(--border-color);
+  }
+  
+  .c-card--outlined {
+    --card-background: transparent;
+    --card-border: 2px solid var(--border-color);
+  }
+  
+  .c-card--primary {
+    
+    .c-card__header,
+    .c-card__body,
+    .c-card__footer {
+      color: var(--on-primary-color);
+      border-color: rgb(0 0 0 / 20%);
+      color: var(--on-primary-color);
+    }
+    
+    .c-card__actions {
+      .c-btn {
+        --btn-background: rgb(0 0 0 / 20%);
+        --btn-color: var(--on-primary-color);
+        --btn-hover-background: rgb(0 0 0 / 30%);
+      }
+    }
+  }
+  
+  .c-card--secondary {
+    
+    .c-card__header,
+    .c-card__body,
+    .c-card__footer {
+      color: var(--on-secondary-color);
+      border-color: rgb(0 0 0 / 20%);
+      color: var(--on-secondary-color);
+    }
+  }
+  
+  // 鍗＄墖鍒嗛殧绾块€傞厤
+  .c-card-divider {
+    background-color: var(--divider-color);
+  }
+  
+  // 鍗＄墖寰界珷閫傞厤
+  .c-card-badge {
+    .c-badge {
+      box-shadow: 0 2px 4px rgb(0 0 0 / 30%);
+    }
+  }
+  
+  // 鍗＄墖瑕嗙洊灞傞€傞厤
+  .c-card-overlay {
+    background: linear-gradient(to bottom, transparent 0%, rgb(0 0 0 / 90%) 100%);
+  }
+  
+  // 鍙偣鍑诲崱鐗囬€傞厤
+  .c-card--clickable {
+    &:hover {
+      box-shadow: 0 6px 16px rgb(0 0 0 / 40%);
+    }
+    
+    &.is-active {
+      border-color: var(--primary-color);
+      box-shadow: 0 0 0 2px rgb(187 134 252 / 30%);
+    }
+  }
+  
+  // 閫変腑鐘舵€佸崱鐗囬€傞厤
+  .c-card--selected {
+    
+    &::before {
+      background-color: rgb(187 134 252 / 8%);
+    &::before {
+      background-color: rgb(187 134 252 / 8%);
+    }
+  }
+  
+  // 鍗＄墖鍔犺浇鐘舵€侀€傞厤
+  .c-card--loading {
+    &::after {
+      background-color: rgb(30 30 30 / 70%);
+    }
+  }
+  
+  // 濯掍綋瑕嗙洊灞傞€傞厤
+  .c-card__media {
+    &--overlay {
+      &::after {
+        background: linear-gradient(to bottom, transparent 0%, rgb(0 0 0 / 80%) 100%);
+      }
+    }
+  }
+}

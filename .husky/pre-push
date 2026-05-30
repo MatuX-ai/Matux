@@ -1,0 +1,20 @@
+#!/bin/sh
+. "$(dirname "$0")/_/husky.sh"
+
+# pre-push hook - 在推送前运行完整质量检查
+echo "🚀 运行完整代码质量检查..."
+
+# 运行完整的质量检查
+npm run quality:check
+
+# 如果检查失败，则阻止推送
+if [ $? -ne 0 ]; then
+    echo "❌ 完整代码质量检查失败，请修复后再推送"
+    echo "💡 可以运行以下命令来修复问题:"
+    echo "   npm run quality:fix  # 自动修复格式问题"
+    echo "   npm run lint:ts-report  # 查看TypeScript详细报告"
+    echo "   npm run lint:scss-report  # 查看SCSS详细报告"
+    exit 1
+fi
+
+echo "✅ 完整代码质量检查通过，准备推送..."

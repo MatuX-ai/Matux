@@ -10,7 +10,7 @@
     <mat-icon>error</mat-icon>
     <h2>加载失败</h2>
     <p>{{ errorMessage }}</p>
-    <button mat-raised-button color="primary" (click)="loadSession()">重试</button>
+    <button mat-raised-button color="primary" (click)="loadSessionPublic()">重试</button>
   </div>
 
   <!-- 主要内容区域 -->
@@ -80,9 +80,9 @@
             </div>
 
             <div class="status-info" *ngIf="circuitState">
-              <p>总功率: {{ circuitState.total_power | number:'1.2-2' }} W</p>
-              <p>总电流: {{ circuitState.total_current | number:'1.2-2' }} A</p>
-              <p>仿真时间: {{ circuitState.simulation_time | number:'1.1-1' }} s</p>
+              <p>总功率:{{ circuitState.total_power | number:'1.2-2' }} W</p>
+              <p>总电流:{{ circuitState.total_current | number:'1.2-2' }} A</p>
+              <p>仿真时间:{{ circuitState.simulation_time | number:'1.1-1' }} s</p>
             </div>
           </mat-card-content>
         </mat-card>
@@ -151,15 +151,15 @@
                 <div class="element-values">
                   <div class="value-item">
                     <span class="label">电压:</span>
-                    <span class="value">{{ element.voltage | number:'1.2-2' }}V</span>
+                    <span class="value">{{ element?.voltage | number:'1.2-2' }}V</span>
                   </div>
                   <div class="value-item">
                     <span class="label">电流:</span>
-                    <span class="value">{{ element.current | number:'1.2-2' }}A</span>
+                    <span class="value">{{ element?.current | number:'1.2-2' }}A</span>
                   </div>
                   <div class="value-item">
                     <span class="label">功率:</span>
-                    <span class="value">{{ element.power | number:'1.2-2' }}W</span>
+                    <span class="value">{{ element?.power | number:'1.2-2' }}W</span>
                   </div>
                 </div>
               </div>

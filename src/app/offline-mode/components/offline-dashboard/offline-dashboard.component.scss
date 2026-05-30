@@ -1,0 +1,205 @@
+@use '../../../../styles/shared/variables' as *;
+@use '../../../../styles/shared/mixins' as *;
+
+.offline-dashboard {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: $spacing-xl;
+
+  .dashboard-header {
+    margin-bottom: $spacing-xxl;
+    text-align: center;
+
+    h1 {
+      margin: 0 0 $spacing-sm;
+      color: #1976d2;
+      font-size: 2rem;
+      font-weight: 300;
+
+      .header-icon {
+        margin-right: $spacing-md;
+        font-size: 2.2rem;
+        vertical-align: middle;
+      }
+    }
+
+    .subtitle {
+      margin: 0;
+      color: $text-secondary;
+      font-size: 1.1rem;
+    }
+  }
+
+  .status-card {
+    margin-bottom: $spacing-xl;
+
+    mat-card-header {
+      @include flex-between;
+      align-items: center;
+
+      mat-card-title {
+        @include flex-center;
+        gap: $spacing-md;
+
+        mat-icon {
+          font-size: 1.8rem;
+        }
+      }
+    }
+
+    &.network-status {
+      .status-info {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+        gap: $spacing-lg;
+
+        .status-item {
+          @include flex-between;
+          padding: $spacing-sm 0;
+
+          .label {
+            color: $text-secondary;
+            font-weight: 500;
+          }
+
+          .value {
+            font-weight: 600;
+
+            &.online { color: $status-completed; }
+            &.offline { color: $status-error; }
+          }
+        }
+      }
+    }
+
+    &.storage-stats {
+      .storage-info {
+        .storage-summary {
+          @include flex-between;
+          margin-bottom: $spacing-lg;
+
+          .size-info, .pending-info {
+            .label {
+              display: block;
+              margin-bottom: $spacing-xs;
+              color: $text-secondary;
+              font-size: 0.9rem;
+            }
+
+            .value {
+              font-size: 1.2rem;
+              font-weight: 600;
+
+              &.badge {
+                padding: $spacing-xs $spacing-md;
+                border-radius: $border-radius-xl;
+                background: #e0e0e0;
+                font-size: 0.9rem;
+
+                &.warning {
+                  background: #fff3e0;
+                  color: $status-in-progress;
+                }
+              }
+            }
+          }
+        }
+
+        .item-counts {
+          margin-top: $spacing-lg;
+
+          .count-item {
+            @include flex-between;
+            padding: $spacing-sm 0;
+            border-bottom: 1px solid #eee;
+
+            &:last-child { border-bottom: none; }
+
+            .item-label { color: $text-secondary; }
+            .item-count { color: #1976d2; font-weight: 600; }
+          }
+        }
+      }
+    }
+  }
+
+  .quick-action-card {
+    width: 100%;
+    height: 100%;
+
+    mat-card-content {
+      padding: $spacing-xl;
+      text-align: center;
+
+      .action-icon {
+        margin-bottom: $spacing-lg;
+        color: #1976d2;
+        font-size: 3rem;
+      }
+
+      h3 {
+        margin: $spacing-lg 0 $spacing-sm;
+        font-size: 1.3rem;
+        font-weight: 500;
+      }
+
+      p {
+        min-height: 40px;
+        margin-bottom: $spacing-xl;
+        color: $text-secondary;
+      }
+
+      button { width: 120px; }
+    }
+  }
+
+  .info-card {
+    margin-top: $spacing-xxl;
+
+    .tips-list {
+      padding-left: $spacing-xl;
+
+      li {
+        margin: $spacing-sm 0;
+        color: #555;
+        line-height: 1.5;
+      }
+    }
+  }
+}
+
+// 响应式设计
+@media (width <= 768px) {
+  .offline-dashboard {
+    padding: $spacing-lg;
+
+    .dashboard-header h1 { font-size: 2rem; }
+    .dashboard-header .header-icon { font-size: 2.2rem; }
+
+    .status-card .storage-summary {
+      flex-direction: column;
+      gap: $spacing-lg;
+    }
+  }
+}
+
+@media (width <= 480px) {
+  .offline-dashboard {
+    .dashboard-header h1 { font-size: 1.6rem; }
+
+    .status-card mat-card-content {
+      padding: $spacing-md !important;
+    }
+
+    .quick-action-card mat-card-content {
+      padding: $spacing-lg;
+
+      .action-icon { font-size: 2rem; }
+      h3 { font-size: 1rem; }
+      button {
+        width: 100px;
+        font-size: 0.9rem;
+      }
+    }
+  }
+}

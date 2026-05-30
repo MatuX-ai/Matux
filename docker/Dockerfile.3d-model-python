@@ -1,0 +1,77 @@
+# 3D 模型库 Python 工具 Dockerfile
+#
+# 用途：提供 Python 运行环境，支持模型爬虫、转换、LOD 生成等功能
+# 使用方法:
+#   docker build -f Dockerfile.3d-model-python -t imato-3d-model-python .
+#
+
+FROM python:3.11-slim-bullseye
+
+# 设置工作目录
+WORKDIR /workspace
+
+# 设置环境变量
+ENV PYTHONUNBUFFERED=1 \
+    PYTHONDONTWRITEBYTECODE=1 \
+    PIP_NO_CACHE_DIR=1 \
+    PIP_DISABLE_PIP_VERSION_CHECK=1
+
+# 安装系统依赖
+RUN apt-get update && apt-get install -y \
+    # 基础工具
+    git \
+    curl \
+    wget \
+    ca-certificates \
+    \
+    # 编译工具 (某些包需要)
+    build-essential \
+    \
+    # 清理缓存
+    && rm -rf /var/lib/apt/lists/*
+
+# 安装 Python 依赖
+COPY requirements.txt .
+RUN pip install --no-cache-dir -r requirements.txt || true
+
+# 单独安装项目需要的包
+RUN pip install --no-cache-dir \
+    requests \
+    black \
+    flake8 \
+    mypy \
+    pytest \
+    pytest-cov
+
+# 创建工作目录
+RUN mkdir -p \
+    /workspace/models/electronic_components \
+    /workspace/models/electronic_components_lod \
+    /workspace/data/kicad_models \
+    /workspace/logs \
+    /workspace/temp/conversions
+
+# 复制脚本文件
+COPY scripts/ /workspace/scripts/
+COPY data/ /workspace/data/
+COPY backend/services/ /workspace/backend/services/
+
+# 设置日志目录权限
+RUN chmod 755 /workspace/logs
+
+# 健康检查
+HEALTHCHECK --interval=30s --timeout=10s --start-period=5s --retries=3 \
+    CMD python -c "import requests; print('OK')" || exit 1
+
+# 默认命令
+CMD ["bash"]
+
+# 暴露端口 (如果需要 HTTP 服务)
+EXPOSE 8000
+
+# 元数据
+LABEL maintainer="iMatu Development Team"
+LABEL version="1.0"
+LABEL description="3D Model Library Python Tools"
+LABEL com.imato.project="3d-model-library"
+LABEL com.imato.service="python-tools"

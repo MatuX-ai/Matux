@@ -1,0 +1,203 @@
+// Design Tokens - Colors
+//
+// 颜色设计变量系统锛屼负鏁翠釜椤圭洰鎻愪緵涓€鑷寸殑颜色规范
+// 鎵€鏈夐鑹插€煎潎浣跨敤 HEX 鏍煎紡锛屽叧閿鑹叉彁渚涙繁娴呭彉浣?
+
+// 涓昏鍝佺墝鑹?
+/// 涓诲搧鐗岃壊锛岀敤浜庢寜閽€侀摼鎺ュ拰重要鎿嶄綔
+$primary-color: #1e3a5f !default;
+
+/// 涓昏壊娴呰壊变体锛岀敤浜庢偓鍋滅姸鎬?
+$primary-color-light: #3d5a80 !default;
+
+/// 涓昏壊娣辫壊变体锛岀敤浜庢縺娲荤姸鎬?
+$primary-color-dark: #0f2744 !default;
+
+// 杈呭姪鍝佺墝鑹?
+/// 杈呭姪鍝佺墝鑹诧紝鐢ㄤ簬娆¤鎸夐挳鍜岃楗板厓绱?
+$secondary-color: #e8c547 !default;
+
+/// 杈呭姪鑹叉祬鑹插彉浣?
+$secondary-color-light: #f0d978 !default;
+
+/// 杈呭姪鑹叉繁鑹插彉浣?
+$secondary-color-dark: #c9a930 !default;
+
+// 鐘舵€侀鑹?
+/// 成功鐘舵€佽壊锛岀敤浜庢垚鍔熸彁绀哄拰纭鎿嶄綔
+$success-color: #4caf50 !default;
+
+/// 成功色（简化名称）
+$color-success: $success-color !default;
+
+/// 璀﹀憡鐘舵€佽壊锛岀敤浜庤鍛婃彁绀?
+$warning-color: #ff9800 !default;
+
+/// 错误鐘舵€佽壊锛岀敤浜庨敊璇彁绀哄拰危险鎿嶄綔
+$error-color: #f44336 !default;
+
+/// 错误色（简化名称）
+$color-error: $error-color !default;
+
+/// 淇℃伅鐘舵€佽壊锛岀敤浜庢櫘閫氫俊鎭彁绀?
+$info-color: #1e3a5f !default;
+
+// 涓€х伆搴﹁壊绯?
+/// 绾粦鑹?
+$black-color: #000 !default;
+
+/// 绾櫧鑹?
+$white-color: #fff !default;
+
+/// 鐏拌壊 50 - 鏈€娴呯伆鑹?
+$gray-50: #fafafa !default;
+
+/// 鐏拌壊 100
+$gray-100: #f5f5f5 !default;
+
+/// 鐏拌壊 200
+$gray-200: #eee !default;
+
+/// 鐏拌壊 300
+$gray-300: #e0e0e0 !default;
+
+/// 鐏拌壊 400
+$gray-400: #bdbdbd !default;
+
+/// 鐏拌壊 500
+$gray-500: #9e9e9e !default;
+
+/// 鐏拌壊 600
+$gray-600: #757575 !default;
+
+/// 鐏拌壊 700
+$gray-700: #616161 !default;
+
+/// 鐏拌壊 800
+$gray-800: #424242 !default;
+
+/// 鐏拌壊 900 - 鏈€娣辩伆鑹?
+$gray-900: #212121 !default;
+
+// 中性色（Material Design 风格，与 gray 系列相同）
+$color-neutral-50: $gray-50 !default;
+$color-neutral-100: $gray-100 !default;
+$color-neutral-200: $gray-200 !default;
+$color-neutral-300: $gray-300 !default;
+$color-neutral-400: $gray-400 !default;
+$color-neutral-500: $gray-500 !default;
+$color-neutral-600: $gray-600 !default;
+$color-neutral-700: $gray-700 !default;
+$color-neutral-800: $gray-800 !default;
+$color-neutral-900: $gray-900 !default;
+
+// 鏂囨湰颜色
+/// 涓昏鏂囨湰鑹诧紝鐢ㄤ簬标题鍜岄噸瑕佸唴瀹?
+$text-primary-color: #212121 !default;
+
+/// 娆¤鏂囨湰鑹诧紝鐢ㄤ簬鏅€氭鏂?
+$text-secondary-color: #757575 !default;
+
+/// 绂佺敤鏂囨湰鑹诧紝鐢ㄤ簬绂佺敤鐘舵€?
+$text-disabled-color: #9e9e9e !default;
+
+/// 鐧借壊鏂囨湰锛岀敤浜庢繁鑹茶儗鏅?
+$text-white-color: #fff !default;
+
+// 鑳屾櫙颜色
+/// 椤甸潰鑳屾櫙鑹?
+$background-color: #fff !default;
+
+/// 组件表面鑹诧紝鐢ㄤ簬鍗＄墖銆佸璇濇绛?
+$surface-color: #fff !default;
+
+/// 鍒嗗壊绾块鑹?
+$divider-color: #e0e0e0 !default;
+
+/// 鎮仠鑳屾櫙鑹?
+$hover-color: #f5f5f5 !default;
+
+/// 閫変腑鑳屾櫙鑹?
+$selected-color: #e8eff5 !default;
+
+// 璇箟鍖栭鑹插埆鍚?
+/// 鍝佺墝涓昏壊
+$brand-color: $primary-color !default;
+
+/// 鍝佺墝涓昏壊（绠€鍖栧悕绉帮級
+$color-brand-primary: $primary-color !default;
+
+/// 閾炬帴鑹?
+$link-color: $primary-color !default;
+
+/// 閾炬帴鎮仠鑹?
+$link-hover-color: $primary-color-dark !default;
+
+/// 杈规鑹?
+$border-color: $gray-300 !default;
+
+/// 杈撳叆妗嗙劍鐐硅壊
+$focus-color: $primary-color !default;
+
+/// 鍗犱綅绗︽枃鏈壊
+$placeholder-color: $gray-500 !default;
+
+// 颜色娣峰悎函数
+/// 鑾峰彇涓昏壊鍙婂叾变体
+/// @param {String} $variant - 变体绫诲瀷 (light|dark|base)
+/// @return {Color} 瀵瑰簲鐨勯鑹插€?
+@function get-primary-color($variant: base) {
+  @if $variant == light {
+    @return $primary-color-light;
+  } @else if $variant == dark {
+    @return $primary-color-dark;
+  } @else {
+    @return $primary-color;
+  }
+}
+
+/// 鑾峰彇鐘舵€佽壊
+/// @param {String} $state - 鐘舵€佺被鍨?(success|warning|error|info)
+/// @return {Color} 瀵瑰簲鐨勭姸鎬侀鑹?
+@function get-status-color($state) {
+  @if $state == success {
+    @return $success-color;
+  } @else if $state == warning {
+    @return $warning-color;
+  } @else if $state == error {
+    @return $error-color;
+  } @else if $state == info {
+    @return $info-color;
+  } @else {
+    @return $info-color;
+  }
+}
+
+/// 鑾峰彇鐏板害鑹?
+/// @param {Number} $level - 鐏板害绛夌骇 (50-900)
+/// @return {Color} 瀵瑰簲鐨勭伆搴﹂鑹?
+@function get-gray-color($level) {
+  @if $level == 50 {
+    @return $gray-50;
+  } @else if $level == 100 {
+    @return $gray-100;
+  } @else if $level == 200 {
+    @return $gray-200;
+  } @else if $level == 300 {
+    @return $gray-300;
+  } @else if $level == 400 {
+    @return $gray-400;
+  } @else if $level == 500 {
+    @return $gray-500;
+  } @else if $level == 600 {
+    @return $gray-600;
+  } @else if $level == 700 {
+    @return $gray-700;
+  } @else if $level == 800 {
+    @return $gray-800;
+  } @else if $level == 900 {
+    @return $gray-900;
+  } @else {
+    @return $gray-900;
+  }
+}

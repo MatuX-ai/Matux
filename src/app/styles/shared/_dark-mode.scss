@@ -1,0 +1,232 @@
+/**
+ * 深色模式样式
+ * Mac 风格深色主题配色
+ */
+
+:root {
+  /* 深色模式颜色系统 */
+  --color-dark-bg: #000000;
+  --color-dark-surface: #1c1c1e;
+  --color-dark-surface-2: #2c2c2e;
+  --color-dark-text: #f5f5f7;
+  --color-dark-text-secondary: #86868b;
+  --color-dark-border: #38383a;
+  
+  /* 深色模式渐变 */
+  --gradient-dark-start: #1a1f3a;
+  --gradient-dark-end: #0b1426;
+}
+
+[data-theme='dark'] {
+  /* 全局背景 */
+  background-color: var(--color-dark-bg);
+  color: var(--color-dark-text);
+
+  /* 营销页面背景 */
+  .marketing-page,
+  .matu-home-main,
+  .matu-pricing-main,
+  .matu-features-main,
+  .matu-about-main,
+  .matu-contact-main {
+    background-color: var(--color-dark-bg);
+  }
+
+  /* Hero 区域 */
+  .hero-section {
+    background: linear-gradient(
+      135deg,
+      var(--gradient-dark-start) 0%,
+      var(--gradient-dark-end) 100%
+    );
+  }
+
+  .contact-hero {
+    background: linear-gradient(
+      135deg,
+      var(--gradient-dark-start) 0%,
+      var(--gradient-dark-end) 100%
+    );
+  }
+
+  /* 卡片样式 */
+  .card,
+  .feature-card,
+  .pricing-card,
+  .tech-card,
+  .team-member,
+  .partner-item,
+  .office-card,
+  .channel-card,
+  .contact-card,
+  .solution-card,
+  .showcase-item {
+    background-color: var(--color-dark-surface);
+    color: var(--color-dark-text);
+    
+    &::before {
+      background-color: var(--color-dark-surface-2);
+    }
+  }
+
+  /* 导航栏 */
+  .marketing-header {
+    background: linear-gradient(
+      135deg,
+      var(--gradient-dark-start) 0%,
+      var(--gradient-dark-end) 100%
+    );
+    
+    .nav-link {
+      color: rgba(255, 255, 255, 0.9);
+      
+      &:hover {
+        color: rgba(255, 255, 255, 1);
+      }
+    }
+  }
+
+  /* 页脚 */
+  .marketing-footer {
+    background: linear-gradient(
+      135deg,
+      var(--gradient-dark-start) 0%,
+      var(--gradient-dark-end) 100%
+    );
+  }
+
+  /* 按钮样式 */
+  .mac-btn-secondary {
+    background-color: var(--color-dark-surface-2);
+    color: var(--color-dark-text);
+    
+    &:hover {
+      background-color: var(--color-dark-surface);
+    }
+  }
+
+  .mac-btn-outline {
+    color: rgba(255, 255, 255, 0.9);
+    border-color: rgba(255, 255, 255, 0.3);
+    
+    &:hover {
+      background-color: rgba(255, 255, 255, 0.1);
+    }
+  }
+
+  /* 表单元素 */
+  input,
+  select,
+  textarea {
+    background-color: var(--color-dark-surface-2);
+    color: var(--color-dark-text);
+    border-color: var(--color-dark-border);
+    
+    &:focus {
+      background-color: var(--color-dark-surface);
+    }
+    
+    &::placeholder {
+      color: var(--color-dark-text-secondary);
+    }
+  }
+
+  /* 文字颜色 */
+  .section-title,
+  h1, h2, h3, h4, h5, h6 {
+    color: var(--color-dark-text);
+  }
+
+  p,
+  span,
+  li,
+  a {
+    color: var(--color-dark-text-secondary);
+  }
+
+  /* 链接 */
+  a {
+    color: rgba(255, 255, 255, 0.8);
+    
+    &:hover {
+      color: rgba(255, 255, 255, 1);
+    }
+  }
+
+  /* 代码块 */
+  code,
+  pre {
+    background-color: var(--color-dark-surface-2);
+    color: #e5e5e5;
+  }
+
+  /* 边框 */
+  .pricing-card,
+  .feature-card,
+  .mac-card {
+    border-color: var(--color-dark-border);
+  }
+
+  /* 阴影调整 */
+  .card,
+  .feature-card,
+  .pricing-card {
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+    
+    &:hover {
+      box-shadow: 0 8px 24px rgba(0, 0, 0, 0.4);
+    }
+  }
+
+  /* 表格 */
+  table {
+    background-color: var(--color-dark-surface);
+    color: var(--color-dark-text);
+    
+    th,
+    td {
+      border-color: var(--color-dark-border);
+    }
+  }
+
+  /* 分割线 */
+  hr {
+    border-color: var(--color-dark-border);
+  }
+
+  /* CTA Section */
+  .cta-section {
+    background: linear-gradient(
+      135deg,
+      var(--gradient-dark-start) 0%,
+      var(--gradient-dark-end) 100%
+    );
+  }
+
+  /* Alt Background */
+  .alt-bg {
+    background-color: var(--color-dark-surface);
+  }
+
+  /* Logo Text */
+  .logo-text {
+    color: white;
+  }
+}
+
+/* 深色模式下的动画优化 */
+@media (prefers-reduced-motion: no-preference) {
+  [data-theme='dark'] {
+    * {
+      transition-duration: 0.3s;
+      transition-timing-function: cubic-bezier(0.4, 0, 0.2, 1);
+    }
+  }
+}
+
+/* 深色模式下的图片亮度调整 */
+[data-theme='dark'] {
+  img {
+    filter: brightness(0.9) contrast(1.1);
+  }
+}

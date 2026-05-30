@@ -1,0 +1,143 @@
+<div class="parent-list-container">
+  <!-- 顶部操作栏 -->
+  <div class="header-actions">
+    <h1>家长信息管理</h1>
+    <button mat-raised-button color="primary" (click)="addParent()">
+      <mat-icon>person_add</mat-icon>
+      新增家长
+    </button>
+  </div>
+
+  <!-- 筛选区域 -->
+  <mat-card class="filter-card">
+    <mat-card-content>
+      <div class="filter-row">
+        <mat-form-field appearance="outline" class="search-field">
+          <mat-label>搜索</mat-label>
+          <input matInput [(ngModel)]="searchKeyword" placeholder="姓名、手机号、微信" />
+          <mat-icon matPrefix>search</mat-icon>
+        </mat-form-field>
+
+        <mat-form-field appearance="outline">
+          <mat-label>关系类型</mat-label>
+          <mat-select [(ngModel)]="relationshipFilter">
+            <mat-option value="all">全部</mat-option>
+            <mat-option value="父亲">父亲</mat-option>
+            <mat-option value="母亲">母亲</mat-option>
+            <mat-option value="其他监护人">其他监护人</mat-option>
+          </mat-select>
+        </mat-form-field>
+
+        <div class="filter-buttons">
+          <button mat-flat-button color="primary" (click)="applyFilters()">
+            <mat-icon>filter_list</mat-icon>
+            筛选
+          </button>
+          <button mat-stroked-button (click)="clearFilters()">
+            <mat-icon>clear</mat-icon>
+            重置
+          </button>
+        </div>
+      </div>
+    </mat-card-content>
+  </mat-card>
+
+  <!-- 数据表格 -->
+  <mat-card class="table-card">
+    <mat-card-content>
+      <!-- 加载状态 -->
+      <div *ngIf="loading" class="loading-container">
+        <mat-progress-bar mode="indeterminate"></mat-progress-bar>
+        <p>加载中...</p>
+      </div>
+
+      <!-- 错误提示 -->
+      <div *ngIf="error && !loading" class="error-message">
+        <mat-icon color="warn">error</mat-icon>
+        <span>{{ error }}</span>
+      </div>
+
+      <!-- 数据表格 -->
+      <div *ngIf="!loading && !error" class="table-container">
+        <table mat-table [dataSource]="parents" matSort class="parent-table">
+          <!-- 姓名 -->
+          <ng-container matColumnDef="name">
+            <th mat-header-cell *matHeaderCellDef mat-sort-header>姓名</th>
+            <td mat-cell *matCellDef="let parent">{{ parent.name }}</td>
+          </ng-container>
+
+          <!-- 关系类型 -->
+          <ng-container matColumnDef="relationshipType">
+            <th mat-header-cell *matHeaderCellDef mat-sort-header>关系</th>
+            <td mat-cell *matCellDef="let parent">
+              <mat-chip-set>
+                <!-- eslint-disable-next-line @typescript-eslint/no-unsafe-member-access -->
+                <mat-chip color="primary">{{ getRelationshipLabel(parent.relationshipType) }}</mat-chip>
+              </mat-chip-set>
+            </td>
+          </ng-container>
+
+          <!-- 手机号 -->
+          <ng-container matColumnDef="phone">
+            <th mat-header-cell *matHeaderCellDef mat-sort-header>手机号</th>
+            <td mat-cell *matCellDef="let parent">
+              <mat-icon>phone</mat-icon>
+              {{ parent.phone }}
+            </td>
+          </ng-container>
+
+          <!-- 邮箱 -->
+          <ng-container matColumnDef="email">
+            <th mat-header-cell *matHeaderCellDef mat-sort-header>邮箱</th>
+            <td mat-cell *matCellDef="let parent">{{ parent.email || '-' }}</td>
+          </ng-container>
+
+          <!-- 微信 -->
+          <ng-container matColumnDef="wechat">
+            <th mat-header-cell *matHeaderCellDef mat-sort-header>微信</th>
+            <td mat-cell *matCellDef="let parent">{{ parent.wechat || '-' }}</td>
+          </ng-container>
+
+          <!-- 关联学员 -->
+          <ng-container matColumnDef="studentName">
+            <th mat-header-cell *matHeaderCellDef mat-sort-header>关联学员</th>
+            <td mat-cell *matCellDef="let parent">
+              <a href="javascript:void(0)" (click)="viewStudent(parent.studentId!)">
+                {{ parent.studentName }}
+              </a>
+            </td>
+          </ng-container>
+
+          <!-- 主要联系人 -->
+          <ng-container matColumnDef="isPrimary">
+            <th mat-header-cell *matHeaderCellDef mat-sort-header>主要联系人</th>
+            <td mat-cell *matCellDef="let parent">
+              <mat-icon *ngIf="parent.isPrimary" color="accent">check_circle</mat-icon>
+              <span *ngIf="!parent.isPrimary">-</span>
+            </td>
+          </ng-container>
+
+          <!-- 操作列 -->
+          <ng-container matColumnDef="actions">
+            <th mat-header-cell *matHeaderCellDef>操作</th>
+            <td mat-cell *matCellDef="let parent">
+              <button mat-icon-button color="accent" (click)="editParent(parent)" matTooltip="编辑">
+                <mat-icon>edit</mat-icon>
+              </button>
+              <button mat-icon-button color="warn" (click)="deleteParent(parent)" matTooltip="删除">
+                <mat-icon>delete</mat-icon>
+              </button>
+            </td>
+          </ng-container>
+
+          <tr mat-header-row *matHeaderRowDef="displayedColumns"></tr>
+          <tr mat-row *matRowDef="let row; columns: displayedColumns" class="parent-row"></tr>
+        </table>
+
+        <!-- 分页器 -->
+        <mat-paginator [pageSizeOptions]="[10, 20, 50]" showFirstLastButtons aria-label="选择页面">
+        </mat-paginator>
+      </div>
+    </mat-card-content>
+  </mat-card>
+</div>

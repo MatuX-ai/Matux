@@ -1,0 +1,104 @@
+name: Weekly Security Scan
+
+on:
+  schedule:
+    - cron: '0 3 * * 1'
+  workflow_dispatch:
+
+jobs:
+  security-audit:
+    name: Security Audit
+    runs-on: ubuntu-latest
+    
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+      
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '18'
+          cache: 'npm'
+      
+      - name: Install dependencies
+        run: npm ci
+      
+      - name: Run npm audit
+        id: npm-audit
+        run: |
+          echo "Running npm audit..."
+          npm audit --audit-level=moderate --json > npm-audit-report.json || true
+          npm audit --audit-level=moderate || true
+          
+          if [ -f "package-lock.json" ]; then
+            npx npm-check-updates --deep --color > dependency-updates.txt || true
+          fi
+      
+      - name: Setup Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: '3.11'
+      
+      - name: Install safety
+        run: pip install safety
+  
+      - name: Run safety check
+        id: safety-check
+        run: |
+          echo "Running Python safety check..."
+          
+          if [ -f "requirements.txt" ]; then
+            safety check -r requirements.txt --json > safety-report-main.json || true
+            safety check -r requirements.txt || true
+          fi
+          
+          if [ -f "requirements.dev.txt" ]; then
+            safety check -r requirements.dev.txt --json > safety-report-dev.json || true
+            safety check -r requirements.dev.txt || true
+          fi
+          
+          if [ -f "backend/requirements.txt" ]; then
+            safety check -r backend/requirements.txt --json > safety-report-backend.json || true
+            safety check -r backend/requirements.txt || true
+          fi
+          
+          if [ -f "backend/requirements.enterprise.txt" ]; then
+            safety check -r backend/requirements.enterprise.txt --json > safety-report-enterprise.json || true
+            safety check -r backend/requirements.enterprise.txt || true
+          fi
+      
+      - name: Generate security report
+        run: |
+          echo "# 每周安全扫描报告" > security-summary.md
+          echo "" >> security-summary.md
+          echo "扫描时间：$(date '+%Y-%m-%d %H:%M:%S')" >> security-summary.md
+          echo "" >> security-summary.md
+          echo "## NPM 依赖安全" >> security-summary.md
+          echo "" >> security-summary.md
+          
+          if [ -f "npm-audit-report.json" ]; then
+            echo '```json' >> security-summary.md
+            cat npm-audit-report.json >> security-summary.md
+            echo '```' >> security-summary.md
+          fi
+          
+          echo "" >> security-summary.md
+          echo "## Python 依赖安全" >> security-summary.md
+          echo "" >> security-summary.md
+          
+          for report in safety-report-*.json; do
+            if [ -f "$report" ]; then
+              echo "### $report" >> security-summary.md
+              echo '```json' >> security-summary.md
+              cat "$report" >> security-summary.md
+              echo '```' >> security-summary.md
+              echo "" >> security-summary.md
+            fi
+          done
+      
+      - name: Upload security report
+        uses: actions/upload-artifact@v3
+        with:
+          name: security-report-${{ github.run_id }}
+          path: security-summary.md
+          retention-days: 30

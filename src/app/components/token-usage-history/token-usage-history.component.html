@@ -1,0 +1,102 @@
+<div class="token-usage-history">
+  <div class="header">
+    <h3>Token 使用记录</h3>
+    <button mat-icon-button (click)="refresh()" [disabled]="loading" matTooltip="刷新">
+      <mat-icon>refresh</mat-icon>
+    </button>
+  </div>
+
+  <!-- 错误提示 -->
+  <div class="error-message" *ngIf="error">
+    <mat-icon>error_outline</mat-icon>
+    <span>{{ error }}</span>
+  </div>
+
+  <!-- 加载状态 -->
+  <div class="loading-state" *ngIf="loading">
+    <mat-spinner diameter="40"></mat-spinner>
+    <p>正在加载数据...</p>
+  </div>
+
+  <!-- 数据表格 -->
+  <div class="table-container" *ngIf="!loading && dataSource.data.length > 0">
+    <table mat-table [dataSource]="dataSource" matSort>
+      <!-- ID 列 -->
+      <ng-container matColumnDef="id">
+        <th mat-header-cell *matHeaderCellDef>ID</th>
+        <td mat-cell *matCellDef="let element">
+          <code class="record-id">{{ element.id | slice:0:8 }}...</code>
+        </td>
+      </ng-container>
+
+      <!-- 类型列 -->
+      <ng-container matColumnDef="type">
+        <th mat-header-cell *matHeaderCellDef mat-sort-header>类型</th>
+        <td mat-cell *matCellDef="let element">
+          <mat-chip [color]="getTypeColor(element.type)">
+            {{ getTypeText(element.type) }}
+          </mat-chip>
+        </td>
+      </ng-container>
+
+      <!-- 金额列 -->
+      <ng-container matColumnDef="amount">
+        <th mat-header-cell *matHeaderCellDef mat-sort-header>金额变化</th>
+        <td mat-cell *matCellDef="let element" [class.positive]="element.amount > 0" [class.negative]="element.amount < 0">
+          <span class="amount">{{ formatAmount(element.amount) }}</span>
+        </td>
+      </ng-container>
+
+      <!-- 余额列 -->
+      <ng-container matColumnDef="balanceAfter">
+        <th mat-header-cell *matHeaderCellDef mat-sort-header>余额</th>
+        <td mat-cell *matCellDef="let element">
+          <span class="balance">{{ element.balanceAfter | number }}</span>
+        </td>
+      </ng-container>
+
+      <!-- 来源列 -->
+      <ng-container matColumnDef="source">
+        <th mat-header-cell *matHeaderCellDef mat-sort-header>来源</th>
+        <td mat-cell *matCellDef="let element">
+          <span class="source">{{ getSourceText(element.source) }}</span>
+        </td>
+      </ng-container>
+
+      <!-- 描述列 -->
+      <ng-container matColumnDef="description">
+        <th mat-header-cell *matHeaderCellDef>描述</th>
+        <td mat-cell *matCellDef="let element">
+          <span class="description">{{ element.description }}</span>
+        </td>
+      </ng-container>
+
+      <!-- 时间列 -->
+      <ng-container matColumnDef="createdAt">
+        <th mat-header-cell *matHeaderCellDef mat-sort-header>时间</th>
+        <td mat-cell *matCellDef="let element">
+          <span class="time">{{ element.createdAt }}</span>
+        </td>
+      </ng-container>
+
+      <tr mat-header-row *matHeaderRowDef="displayedColumns"></tr>
+      <tr mat-row *matRowDef="let row; columns: displayedColumns;"></tr>
+    </table>
+  </div>
+
+  <!-- 空状态 -->
+  <div class="empty-state" *ngIf="!loading && dataSource.data.length === 0">
+    <mat-icon>inventory_2</mat-icon>
+    <p>暂无交易记录</p>
+  </div>
+
+  <!-- 分页器 -->
+  <mat-paginator
+    *ngIf="!loading && dataSource.data.length > 0"
+    [length]="totalRecords"
+    [pageSize]="pageSize"
+    [pageSizeOptions]="[10, 20, 50, 100]"
+    (page)="onPageChange($event)"
+    showFirstLastButtons>
+  </mat-paginator>
+</div>

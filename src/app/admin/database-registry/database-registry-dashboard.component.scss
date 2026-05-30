@@ -1,0 +1,180 @@
+@use '../../../styles/design-tokens' as tokens;
+
+.database-registry-dashboard {
+  padding: tokens.$spacing-lg;
+  max-width: 1400px;
+  margin: 0 auto;
+
+  .page-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    margin-bottom: tokens.$spacing-xl;
+    gap: tokens.$spacing-lg;
+    .header-content {
+      h1 {
+        display: flex;
+        align-items: center;
+        gap: tokens.$spacing-md;
+        margin: 0;
+        font-size: tokens.$font-size-4xl;
+        font-weight: 300;
+        color: tokens.$color-brand-primary;
+        mat-icon { font-size: tokens.$font-size-4xl + 4; width: tokens.$font-size-4xl + 4; height: tokens.$font-size-4xl + 4; }
+      }
+      .subtitle { margin: tokens.$spacing-sm 0 0 0; color: tokens.$color-neutral-600; font-size: tokens.$font-size-base; }
+    }
+    .header-actions { display: flex; gap: tokens.$spacing-md; align-items: center; }
+  }
+
+  .loading-container {
+    text-align: center;
+    padding: tokens.$spacing-4xl tokens.$spacing-lg;
+    mat-progress-bar { margin-bottom: tokens.$spacing-md; }
+    p { color: tokens.$color-neutral-600; margin: 0; }
+  }
+
+  .error-container {
+    .error-card {
+      border-left: 4px solid tokens.$color-error;
+      .error-content {
+        display: flex;
+        align-items: center;
+        gap: tokens.$spacing-md;
+        margin-bottom: tokens.$spacing-md;
+        mat-icon { font-size: tokens.$font-size-4xl; width: tokens.$font-size-4xl; height: tokens.$font-size-4xl; }
+        .error-text {
+          h3 { margin: 0 0 tokens.$spacing-sm 0; color: tokens.$color-error; }
+          p { margin: 0; color: tokens.$color-neutral-600; }
+        }
+      }
+    }
+  }
+
+  .dashboard-content {
+    .stats-row {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+      gap: tokens.$spacing-lg;
+      margin-bottom: tokens.$spacing-xl;
+    }
+    .stat-card {
+      &.status-card {
+        .status-indicator { margin-bottom: tokens.$spacing-md; }
+        .status-description { color: tokens.$color-neutral-600; margin: 0; }
+      }
+      &.modules-card {
+        .modules-stats {
+          display: flex;
+          justify-content: space-around;
+          text-align: center;
+          .stat-item {
+            display: flex;
+            flex-direction: column;
+            gap: tokens.$spacing-sm;
+            .stat-number {
+              font-size: tokens.$font-size-4xl;
+              font-weight: 500;
+              color: tokens.$color-brand-primary;
+              &.text-success { color: tokens.$color-success; }
+              &.text-warn { color: tokens.$color-warning; }
+            }
+            .stat-label { font-size: tokens.$font-size-sm; color: tokens.$color-neutral-600; }
+          }
+        }
+      }
+      &.categories-card {
+        .categories-stats {
+          .category-item {
+            margin-bottom: tokens.$spacing-md;
+            .category-info {
+              display: flex;
+              justify-content: space-between;
+              align-items: center;
+              margin-bottom: tokens.$spacing-sm;
+              .category-name { font-weight: 500; text-transform: capitalize; }
+              .category-count { font-size: tokens.$font-size-xs; color: tokens.$color-neutral-600; }
+            }
+            .category-progress { height: 6px; }
+          }
+        }
+      }
+    }
+
+    .health-section {
+      margin-bottom: tokens.$spacing-xl;
+      .health-card {
+        .health-content {
+          .issues-section {
+            margin-bottom: tokens.$spacing-lg;
+            h4 { margin: 0 0 tokens.$spacing-md 0; color: tokens.$color-error; }
+            .issues-list {
+              background-color: tokens.$color-error-light;
+              border-radius: tokens.$radius-sm;
+              max-height: 200px;
+              overflow-y: auto;
+            }
+          }
+          .no-issues {
+            text-align: center;
+            padding: tokens.$spacing-3xl;
+            color: tokens.$color-success;
+            mat-icon { font-size: tokens.$font-size-4xl; width: tokens.$font-size-4xl; height: tokens.$font-size-4xl; margin-bottom: tokens.$spacing-md; }
+            h4 { margin: 0 0 tokens.$spacing-sm 0; }
+            p { margin: 0; color: tokens.$color-neutral-600; }
+          }
+          mat-divider { margin: tokens.$spacing-lg 0; }
+          .modules-health-overview {
+            h4 { margin: 0 0 tokens.$spacing-md 0; }
+            .modules-summary {
+              display: grid;
+              grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+              gap: tokens.$spacing-md;
+              .summary-item {
+                display: flex;
+                justify-content: space-between;
+                align-items: center;
+                padding: tokens.$spacing-md;
+                background-color: tokens.$color-neutral-100;
+                border-radius: tokens.$radius-sm;
+                .summary-label { color: tokens.$color-neutral-600; }
+                .summary-value { font-weight: 500; color: tokens.$color-brand-primary; }
+              }
+            }
+          }
+        }
+      }
+    }
+
+    .quick-actions {
+      mat-card {
+        .actions-grid {
+          display: grid;
+          grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+          gap: tokens.$spacing-md;
+          .action-button {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: tokens.$spacing-sm;
+            padding: tokens.$spacing-lg;
+            height: auto;
+            text-align: center;
+            mat-icon { font-size: tokens.$font-size-3xl; width: tokens.$font-size-3xl; height: tokens.$font-size-3xl; }
+            span { font-size: tokens.$font-size-sm; }
+          }
+        }
+      }
+    }
+  }
+
+  // 响应式设计
+  @media (max-width: tokens.$breakpoint-mobile-max) {
+    padding: tokens.$spacing-md;
+    .page-header { flex-direction: column; align-items: stretch; .header-actions { justify-content: flex-start; flex-wrap: wrap; } }
+    .stats-row { grid-template-columns: 1fr !important; }
+    .modules-summary { grid-template-columns: 1fr !important; }
+    .actions-grid { grid-template-columns: 1fr !important; }
+  }
+}
+

@@ -1,20 +1,22 @@
+@use '../../../../styles/design-tokens' as tokens;
+
 .api-settings-container {
   display: flex;
   flex-direction: column;
   height: 100%;
-  background-color: #f5f5f5;
+  background-color: tokens.$color-neutral-100;
 }
 
 .settings-header {
   justify-content: space-between;
-  padding: 16px 24px;
-  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+  padding: tokens.$spacing-md tokens.$spacing-lg;
+  box-shadow: tokens.$shadow-sm;
   z-index: 10;
 
   .title {
-    font-size: 20px;
+    font-size: tokens.$font-size-lg;
     font-weight: 500;
-    margin-left: 16px;
+    margin-left: tokens.$spacing-md;
   }
 
   .spacer {
@@ -22,7 +24,7 @@
   }
 
   button {
-    margin-left: 8px;
+    margin-left: tokens.$spacing-sm;
   }
 }
 
@@ -38,24 +40,23 @@
   background-color: rgba(255, 255, 255, 0.8);
   z-index: 10;
   pointer-events: none; // 允许点击穿透
-
   mat-card {
-    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.15);
-    padding: 24px;
+    box-shadow: tokens.$shadow-lg;
+    padding: tokens.$spacing-lg;
 
     mat-card-content {
       display: flex;
       flex-direction: column;
       align-items: center;
-      gap: 16px;
+      gap: tokens.$spacing-md;
 
       mat-progress-spinner {
         margin-bottom: 0;
       }
 
       p {
-        color: #666;
-        font-size: 14px;
+        color: tokens.$color-neutral-600;
+        font-size: tokens.$font-size-sm;
         margin: 0;
       }
     }
@@ -69,15 +70,15 @@
   align-items: center;
   justify-content: center;
   flex: 1;
-  gap: 16px;
+  gap: tokens.$spacing-md;
 
   mat-progress-spinner {
-    margin-bottom: 16px;
+    margin-bottom: tokens.$spacing-md;
   }
 
   p {
-    color: #666;
-    font-size: 14px;
+    color: tokens.$color-neutral-600;
+    font-size: tokens.$font-size-sm;
   }
 }
 
@@ -85,48 +86,48 @@
 .database-list {
   display: flex;
   flex-direction: column;
-  gap: 20px;
+  gap: tokens.$spacing-lg;
 
   .database-card {
     mat-card {
-      transition: box-shadow 0.3s ease;
+      transition: box-shadow tokens.$transition-normal;
 
       &:hover {
-        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+        box-shadow: tokens.$shadow-md;
       }
 
       mat-card-header {
-        margin-bottom: 16px;
+        margin-bottom: tokens.$spacing-md;
 
         mat-card-title {
           display: flex;
           align-items: center;
-          gap: 12px;
-          font-size: 18px;
+          gap: tokens.$spacing-md;
+          font-size: tokens.$font-size-lg;
 
           mat-icon {
-            color: #1976d2;
+            color: tokens.$color-brand-primary;
           }
 
           .db-type {
-            font-size: 12px;
-            color: #666;
-            background-color: #e0e0e0;
-            padding: 2px 8px;
-            border-radius: 4px;
+            font-size: tokens.$font-size-xs;
+            color: tokens.$color-neutral-600;
+            background-color: tokens.$color-neutral-300;
+            padding: tokens.$spacing-xs tokens.$spacing-sm;
+            border-radius: tokens.$radius-sm;
           }
         }
 
         mat-card-subtitle {
           display: flex;
           align-items: center;
-          gap: 4px;
-          margin-top: 8px;
+          gap: tokens.$spacing-xs;
+          margin-top: tokens.$spacing-sm;
 
           mat-icon {
-            font-size: 16px;
-            width: 16px;
-            height: 16px;
+            font-size: tokens.$font-size-base;
+            width: tokens.$font-size-base;
+            height: tokens.$font-size-base;
           }
         }
       }
@@ -138,35 +139,35 @@
 .ai-services-list {
   display: flex;
   flex-direction: column;
-  gap: 20px;
+  gap: tokens.$spacing-lg;
 
   .service-card {
     mat-card {
-      transition: box-shadow 0.3s ease;
+      transition: box-shadow tokens.$transition-normal;
 
       &:hover {
-        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+        box-shadow: tokens.$shadow-md;
       }
 
       mat-card-header {
-        margin-bottom: 16px;
+        margin-bottom: tokens.$spacing-md;
 
         mat-card-title {
           display: flex;
           align-items: center;
-          gap: 12px;
-          font-size: 18px;
+          gap: tokens.$spacing-md;
+          font-size: tokens.$font-size-lg;
 
           mat-icon {
             color: #9c27b0; // AI 服务使用紫色图标
           }
 
           .provider-badge {
-            font-size: 12px;
+            font-size: tokens.$font-size-xs;
             color: white;
             background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            padding: 4px 12px;
-            border-radius: 16px;
+            padding: tokens.$spacing-xs tokens.$spacing-md;
+            border-radius: tokens.$radius-full;
             font-weight: 500;
           }
         }
@@ -174,13 +175,13 @@
         mat-card-subtitle {
           display: flex;
           align-items: center;
-          gap: 4px;
-          margin-top: 8px;
+          gap: tokens.$spacing-xs;
+          margin-top: tokens.$spacing-sm;
 
           mat-icon {
-            font-size: 16px;
-            width: 16px;
-            height: 16px;
+            font-size: tokens.$font-size-base;
+            width: tokens.$font-size-base;
+            height: tokens.$font-size-base;
           }
         }
       }
@@ -190,22 +191,21 @@
 
 .settings-content {
   flex: 1;
-  padding: 24px;
+  padding: tokens.$spacing-lg;
   overflow-y: auto;
   position: relative; // 为加载指示器提供定位上下文
 }
 
 .settings-tabs {
   background-color: white;
-  border-radius: 8px;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+  border-radius: tokens.$radius-md;
+  box-shadow: tokens.$shadow-md;
   min-height: calc(100vh - 200px);
   height: 100%; // 确保 Tab 组有正确的高度
-
   ::ng-deep {
     .mat-mdc-tab-header {
       background-color: white;
-      border-bottom: 1px solid #e0e0e0;
+      border-bottom: 1px solid tokens.$color-neutral-300;
 
       .mat-mdc-tab {
         min-width: 120px;
@@ -213,7 +213,7 @@
     }
 
     .mat-mdc-tab-body-content {
-      padding: 24px;
+      padding: tokens.$spacing-lg;
     }
   }
 }
@@ -224,46 +224,46 @@
 }
 
 mat-card {
-  margin-bottom: 24px;
-  border-radius: 8px;
+  margin-bottom: tokens.$spacing-lg;
+  border-radius: tokens.$radius-md;
 
   mat-card-header {
-    margin-bottom: 16px;
-    padding: 16px 24px 0;
+    margin-bottom: tokens.$spacing-md;
+    padding: tokens.$spacing-md tokens.$spacing-lg 0;
 
     mat-card-title {
       display: flex;
       align-items: center;
-      gap: 8px;
-      font-size: 18px;
-      color: #333;
+      gap: tokens.$spacing-sm;
+      font-size: tokens.$font-size-lg;
+      color: tokens.$color-neutral-900;
 
       mat-icon {
-        color: #1976d2;
+        color: tokens.$color-brand-primary;
       }
     }
   }
 
   mat-card-content {
-    padding: 24px;
+    padding: tokens.$spacing-lg;
   }
 
   mat-card-actions {
-    padding: 12px 24px;
-    border-top: 1px solid #e0e0e0;
+    padding: tokens.$spacing-md tokens.$spacing-lg;
+    border-top: 1px solid tokens.$color-neutral-300;
 
     button[mat-button] {
       text-transform: none;
       letter-spacing: 0.5px;
 
       mat-icon {
-        margin-right: 8px;
+        margin-right: tokens.$spacing-sm;
       }
     }
 
     // 帮助按钮样式
     .help-btn {
-      color: #666;
+      color: tokens.$color-neutral-600;
 
       &:hover {
         background-color: rgba(76, 175, 80, 0.04);
@@ -280,7 +280,7 @@ mat-card {
 .form-grid {
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
-  gap: 16px;
+  gap: tokens.$spacing-md;
 
   mat-form-field {
     width: 100%;
@@ -288,14 +288,14 @@ mat-card {
 
   mat-checkbox {
     grid-column: 1 / -1;
-    margin-top: 8px;
+    margin-top: tokens.$spacing-sm;
   }
 }
 
 .hint {
-  color: #666;
-  font-size: 14px;
-  margin-bottom: 16px;
+  color: tokens.$color-neutral-600;
+  font-size: tokens.$font-size-sm;
+  margin-bottom: tokens.$spacing-md;
   line-height: 1.5;
 }
 
@@ -304,36 +304,36 @@ mat-card {
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  padding: 48px 24px;
+  padding: tokens.$spacing-3xl tokens.$spacing-lg;
   text-align: center;
-  color: #999;
+  color: tokens.$color-neutral-500;
 
   mat-icon {
-    font-size: 64px;
-    width: 64px;
-    height: 64px;
-    margin-bottom: 16px;
+    font-size: tokens.$font-size-4xl + 16;
+    width: tokens.$font-size-4xl + 16;
+    height: tokens.$font-size-4xl + 16;
+    margin-bottom: tokens.$spacing-md;
     opacity: 0.3;
   }
 
   p {
-    font-size: 14px;
+    font-size: tokens.$font-size-sm;
     margin: 0;
   }
 }
 
 // 响应式设计
-@media (max-width: 768px) {
+@media (max-width: tokens.$breakpoint-mobile-max) {
   .settings-header {
-    padding: 12px 16px;
+    padding: tokens.$spacing-md tokens.$spacing-md;
 
     .title {
-      font-size: 16px;
+      font-size: tokens.$font-size-base;
     }
   }
 
   .settings-content {
-    padding: 16px;
+    padding: tokens.$spacing-md;
   }
 
   .form-grid {
@@ -344,7 +344,7 @@ mat-card {
     .mat-mdc-tab-header {
       .mat-mdc-tab {
         min-width: auto;
-        padding: 0 12px;
+        padding: 0 tokens.$spacing-md;
       }
     }
   }

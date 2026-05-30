@@ -1,0 +1,168 @@
+<h2 mat-dialog-title>
+  <mat-icon>description</mat-icon>
+  学习报告详情
+</h2>
+
+<mat-dialog-content>
+  <div *ngIf="isLoading" class="loading-container">
+    <mat-spinner diameter="30"></mat-spinner>
+    <p>加载中...</p>
+  </div>
+
+  <div *ngIf="!isLoading" class="dialog-content">
+    <!-- 头部摘要 -->
+    <div class="report-header">
+      <div class="header-left">
+        <h3 class="report-title">{{ report.title }}</h3>
+        <p class="report-period">{{ report.period }}</p>
+        <div class="report-meta">
+          <span class="meta-item">
+            <mat-icon>person</mat-icon>
+            {{ report.childName }}
+          </span>
+          <span class="meta-item">
+            <mat-icon>event</mat-icon>
+            {{ report.generatedAt | date:'yyyy-MM-dd HH:mm' }}
+          </span>
+        </div>
+      </div>
+      <div class="header-right" *ngIf="report.averageScore">
+        <div class="score-circle">
+          <span class="score-value">{{ report.averageScore }}</span>
+          <span class="score-label">平均分</span>
+        </div>
+      </div>
+    </div>
+
+    <mat-divider></mat-divider>
+
+    <!-- 详细信息标签页 -->
+    <mat-tab-group [(selectedIndex)]="selectedTab" class="detail-tabs">
+      <!-- 学习统计 -->
+      <mat-tab label="学习统计">
+        <div class="tab-content stats-content">
+          <div class="stats-grid">
+            <div class="stat-item">
+              <mat-icon class="stat-icon">schedule</mat-icon>
+              <div class="stat-info">
+                <span class="stat-label">总学习时长</span>
+                <span class="stat-value">{{ report.totalStudyTime }}</span>
+              </div>
+            </div>
+            <div class="stat-item">
+              <mat-icon class="stat-icon">check_circle</mat-icon>
+              <div class="stat-info">
+                <span class="stat-label">完成课程</span>
+                <span class="stat-value">{{ report.completedCourses }}节</span>
+              </div>
+            </div>
+            <div class="stat-item">
+              <mat-icon class="stat-icon">assignment</mat-icon>
+              <div class="stat-info">
+                <span class="stat-label">完成作业</span>
+                <span class="stat-value">{{ report.completedHomeworks }}份</span>
+              </div>
+            </div>
+            <div class="stat-item">
+              <mat-icon class="stat-icon">local_fire_department</mat-icon>
+              <div class="stat-info">
+                <span class="stat-label">连续学习</span>
+                <span class="stat-value">{{ report.learningStreak }}天</span>
+              </div>
+            </div>
+          </div>
+        </div>
+      </mat-tab>
+
+      <!-- 课程成绩 -->
+      <mat-tab label="课程成绩">
+        <div class="tab-content grades-content">
+          <div *ngIf="report.courseGrades && report.courseGrades.length > 0" class="grades-list">
+            <div class="grade-item" *ngFor="let grade of report.courseGrades">
+              <div class="grade-header">
+                <h4 class="course-name">{{ grade.courseName }}</h4>
+                <div class="grade-score" [class]="'grade-' + grade.gradeLevel">
+                  <span class="score-value">{{ grade.score }}</span>
+                  <span class="score-label">{{ getGradeLevelLabel(grade.gradeLevel) }}</span>
+                </div>
+              </div>
+              <div class="grade-body">
+                <div class="grade-meta">
+                  <span class="meta-item">
+                    <mat-icon>done_all</mat-icon>
+                    完成度: {{ grade.completionStatus }}
+                  </span>
+                  <span class="meta-item" *ngIf="grade.completedAt">
+                    <mat-icon>calendar_today</mat-icon>
+                    {{ grade.completedAt | date:'yyyy-MM-dd' }}
+                  </span>
+                </div>
+                <div class="grade-comment" *ngIf="grade.teacherComment">
+                  <mat-icon>comment</mat-icon>
+                  <span class="comment-text">{{ grade.teacherComment }}</span>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <div *ngIf="!report.courseGrades || report.courseGrades.length === 0" class="no-data">
+            <mat-icon>bar_chart</mat-icon>
+            <p>暂无课程成绩数据</p>
+          </div>
+        </div>
+      </mat-tab>
+
+      <!-- 能力评估 -->
+      <mat-tab label="能力评估">
+        <div class="tab-content competency-content">
+          <div *ngIf="report.competencyAssessments && report.competencyAssessments.length > 0" class="competency-grid">
+            <mat-card class="competency-card" *ngFor="let competency of report.competencyAssessments">
+              <div class="competency-header">
+                <h4 class="dimension-name">{{ competency.dimension }}</h4>
+                <div class="competency-score">
+                  <span class="score-value">{{ competency.score }}</span>
+                  <span class="score-max">/10</span>
+                </div>
+              </div>
+              <div class="competency-body">
+                <div class="progress-bar">
+                  <div class="progress-fill" [style.width.%]="competency.score * 10"></div>
+                </div>
+                <span class="progress-text">{{ competency.level }}</span>
+              </div>
+              <div class="competency-desc" *ngIf="competency.description">
+                <p>{{ competency.description }}</p>
+              </div>
+            </mat-card>
+          </div>
+
+          <div *ngIf="!report.competencyAssessments || report.competencyAssessments.length === 0" class="no-data">
+            <mat-icon>psychology</mat-icon>
+            <p>暂无能力评估数据</p>
+          </div>
+        </div>
+      </mat-tab>
+
+      <!-- 学习建议 -->
+      <mat-tab label="学习建议">
+        <div class="tab-content recommendations-content">
+          <div *ngIf="report.aiRecommendations && report.aiRecommendations.length > 0" class="recommendations-list">
+            <div class="recommendation-item" *ngFor="let recommendation of report.aiRecommendations">
+              <mat-icon class="recommendation-icon">lightbulb</mat-icon>
+              <p class="recommendation-text">{{ recommendation }}</p>
+            </div>
+          </div>
+
+          <div *ngIf="!report.aiRecommendations || report.aiRecommendations.length === 0" class="no-data">
+            <mat-icon>lightbulb_outline</mat-icon>
+            <p>暂无AI学习建议</p>
+          </div>
+        </div>
+      </mat-tab>
+    </mat-tab-group>
+  </div>
+</mat-dialog-content>
+
+<mat-dialog-actions align="end">
+  <button mat-button (click)="close()">关闭</button>
+</mat-dialog-actions>

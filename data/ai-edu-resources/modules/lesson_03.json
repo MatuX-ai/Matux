@@ -1,0 +1,39 @@
+{
+  "lesson_code": "bc_03_future_ai",
+  "title": "未来的 AI 世界",
+  "subtitle": "畅想人工智能的未来",
+  "content_type": "theory",
+  "content_url": "",
+  "resources": [
+    {
+      "type": "video",
+      "url": "https://example.com/future-ai.mp4",
+      "title": "未来 AI 应用展望",
+      "description": "10 分钟视频，展示未来 AI 的各种可能应用"
+    },
+    {
+      "type": "dataset",
+      "url": "data/ai_applications.csv",
+      "title": "AI 应用案例数据集",
+      "description": "包含各种 AI 应用的真实案例"
+    }
+  ],
+  "learning_objectives": [
+    "了解 AI 的发展趋势",
+    "培养创新思维",
+    "建立正确的 AI 伦理观"
+  ],
+  "knowledge_points": [
+    "AI 发展趋势",
+    "新兴 AI 技术",
+    "AI 伦理与安全"
+  ],
+  "estimated_duration_minutes": 15,
+  "has_quiz": true,
+  "quiz_passing_score": 60.0,
+  "has_practice": false,
+  "practice_type": null,
+  "base_points": 15,
+  "is_active": true,
+  "display_order": 3
+}

@@ -1,0 +1,65 @@
+name: Auto Format Code
+
+on:
+  workflow_dispatch:
+  schedule:
+    - cron: '0 2 * * 1'  # 每周一凌晨2点运行
+
+jobs:
+  auto-format:
+    name: Auto Format Code
+    runs-on: ubuntu-latest
+    
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+      with:
+        token: ${{ secrets.GITHUB_TOKEN }}
+        
+    - name: Setup Node.js
+      uses: actions/setup-node@v4
+      with:
+        node-version: '18'
+        cache: 'npm'
+        
+    - name: Setup Python
+      uses: actions/setup-python@v4
+      with:
+        python-version: '3.11'
+        
+    - name: Install frontend dependencies
+      run: npm ci
+      
+    - name: Install backend dependencies
+      run: |
+        python -m pip install --upgrade pip
+        pip install black isort
+        
+    - name: Run auto formatting
+      run: |
+        # 前端格式化
+        npm run format
+        npm run lint:ts
+        npm run lint:scss
+        
+        # 后端格式化
+        black backend/
+        isort backend/
+        
+    - name: Check for changes
+      id: changes
+      run: |
+        if [[ -n "$(git status --porcelain)" ]]; then
+          echo "has_changes=true" >> $GITHUB_OUTPUT
+        else
+          echo "has_changes=false" >> $GITHUB_OUTPUT
+        fi
+        
+    - name: Commit changes
+      if: steps.changes.outputs.has_changes == 'true'
+      run: |
+        git config --local user.email "actions@github.com"
+        git config --local user.name "GitHub Actions"
+        git add .
+        git commit -m "🎨 Auto format code [skip ci]"
+        git push

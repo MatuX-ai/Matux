@@ -1,0 +1,218 @@
+<div class="children-management-container">
+  <!-- 页面头部 -->
+  <div class="page-header">
+    <div class="header-content">
+      <h1 class="page-title">
+        <mat-icon>family_restroom</mat-icon>
+        <span>孩子管理</span>
+      </h1>
+      <p class="page-subtitle">管理已绑定的孩子，查看学习进度</p>
+    </div>
+  </div>
+
+  <!-- 标签页 -->
+  <mat-tab-group [(selectedIndex)]="selectedTab" class="management-tabs">
+    <!-- 已绑定的孩子 -->
+    <mat-tab label="已绑定孩子">
+      <div class="tab-content">
+        <!-- 加载状态 -->
+        <div *ngIf="isLoading" class="loading-container">
+          <mat-spinner diameter="40"></mat-spinner>
+          <p>加载中...</p>
+        </div>
+
+        <!-- 错误状态 -->
+        <div *ngIf="!isLoading && loadingError" class="error-container">
+          <mat-icon class="error-icon">error_outline</mat-icon>
+          <p class="error-message">{{ loadingError }}</p>
+          <button mat-raised-button color="primary" (click)="retry()">
+            <mat-icon>refresh</mat-icon>
+            重试
+          </button>
+        </div>
+
+        <!-- 空状态 -->
+        <div *ngIf="!isLoading && !loadingError && children.length === 0" class="empty-state">
+          <mat-icon class="empty-icon">child_care</mat-icon>
+          <h3>还没有绑定孩子</h3>
+          <p>点击"绑定新孩子"按钮，通过邀请码绑定您的孩子</p>
+          <button mat-raised-button color="primary" (click)="selectedTab = 2">
+            <mat-icon>add</mat-icon>
+            绑定新孩子
+          </button>
+        </div>
+
+        <!-- 孩子列表 -->
+        <div *ngIf="!isLoading && !loadingError && children.length > 0" class="children-list">
+          <!-- 绑定新孩子按钮 -->
+          <div class="action-bar">
+            <button mat-raised-button color="primary" (click)="selectedTab = 2">
+              <mat-icon>add</mat-icon>
+              绑定新孩子
+            </button>
+          </div>
+
+          <!-- 孩子卡片 -->
+          <div class="children-grid">
+            <mat-card class="child-card" *ngFor="let child of children">
+              <div class="child-card-header">
+                <div class="child-avatar">
+                  <img [src]="child.avatarUrl || '/assets/images/default-avatar.png'" [alt]="child.nickname">
+                </div>
+                <div class="child-info">
+                  <h3 class="child-name">{{ child.nickname }}</h3>
+                  <p class="child-grade">{{ child.grade || '年级未知' }}</p>
+                  <div class="child-badges">
+                    <mat-chip-listbox>
+                      <mat-chip-option *ngFor="let tag of child.tags" [selected]="true">
+                        {{ tag }}
+                      </mat-chip-option>
+                    </mat-chip-listbox>
+                  </div>
+                </div>
+              </div>
+
+              <mat-divider></mat-divider>
+
+              <div class="child-card-body">
+                <div class="info-row" *ngIf="child.school">
+                  <mat-icon>school</mat-icon>
+                  <span>{{ child.school }}</span>
+                </div>
+                <div class="info-row" *ngIf="child.phoneNumber">
+                  <mat-icon>phone</mat-icon>
+                  <span>{{ child.phoneNumber }}</span>
+                </div>
+                <div class="info-row">
+                  <mat-icon>calendar_today</mat-icon>
+                  <span>绑定时间: {{ child.bindTime | date:'yyyy-MM-dd' }}</span>
+                </div>
+              </div>
+
+              <div class="child-card-footer">
+                <button mat-button (click)="viewChildDetail(child)" matTooltip="查看详情">
+                  <mat-icon>info</mat-icon>
+                  详情
+                </button>
+                <button mat-button color="primary" (click)="viewChildLearning(child.id)" matTooltip="查看学习进度">
+                  <mat-icon>trending_up</mat-icon>
+                  学习进度
+                </button>
+                <button mat-button color="warn" (click)="unbindChild(child.id)" matTooltip="解绑孩子">
+                  <mat-icon>link_off</mat-icon>
+                  解绑
+                </button>
+              </div>
+            </mat-card>
+          </div>
+        </div>
+      </div>
+    </mat-tab>
+
+    <!-- 绑定申请 -->
+    <mat-tab label="绑定申请">
+      <div class="tab-content">
+        <!-- 加载状态 -->
+        <div *ngIf="isLoading" class="loading-container">
+          <mat-spinner diameter="40"></mat-spinner>
+          <p>加载中...</p>
+        </div>
+
+        <!-- 空状态 -->
+        <div *ngIf="!isLoading && pendingRequests.length === 0" class="empty-state">
+          <mat-icon class="empty-icon">inbox</mat-icon>
+          <h3>暂无待处理的绑定申请</h3>
+          <p>当您发送或收到绑定申请时，会显示在这里</p>
+        </div>
+
+        <!-- 申请列表 -->
+        <div *ngIf="!isLoading && pendingRequests.length > 0" class="requests-list">
+          <mat-card class="request-card" *ngFor="let request of pendingRequests">
+            <div class="request-header">
+              <mat-icon [color]="getStatusColor(request.status)">{{ getStatusIcon(request.status) }}</mat-icon>
+              <span class="request-status">{{ getBindingStatusText(request.status) }}</span>
+            </div>
+
+            <div class="request-body">
+              <h3 class="request-title">{{ request.childName }}</h3>
+              <p class="request-desc" *ngIf="request.description">{{ request.description }}</p>
+              <p class="request-time">
+                申请时间: {{ request.createdAt | date:'yyyy-MM-dd HH:mm' }}
+              </p>
+            </div>
+
+            <div class="request-footer">
+              <button mat-button color="primary" (click)="approveRequest(request.id)" *ngIf="request.isIncoming">
+                <mat-icon>check</mat-icon>
+                同意
+              </button>
+              <button mat-button color="warn" (click)="rejectRequest(request.id)" *ngIf="request.isIncoming">
+                <mat-icon>close</mat-icon>
+                拒绝
+              </button>
+              <button mat-button (click)="cancelRequest(request.id)" *ngIf="!request.isIncoming">
+                <mat-icon>cancel</mat-icon>
+                取消申请
+              </button>
+            </div>
+          </mat-card>
+        </div>
+      </div>
+    </mat-tab>
+
+    <!-- 绑定新孩子 -->
+    <mat-tab label="绑定新孩子">
+      <div class="tab-content">
+        <mat-card class="bind-card">
+          <mat-card-header>
+            <mat-card-title>
+              <mat-icon>person_add</mat-icon>
+              通过邀请码绑定孩子
+            </mat-card-title>
+            <mat-card-subtitle>
+              请输入孩子账户生成的邀请码来建立绑定关系
+            </mat-card-subtitle>
+          </mat-card-header>
+
+          <mat-card-content>
+            <form (ngSubmit)="bindChildByInviteCode()">
+              <mat-form-field appearance="fill" class="full-width">
+                <mat-label>邀请码</mat-label>
+                <input matInput 
+                       [(ngModel)]="inviteCode" 
+                       name="inviteCode"
+                       placeholder="请输入邀请码"
+                       maxlength="12"
+                       required>
+                <mat-icon matPrefix>vpn_key</mat-icon>
+                <mat-hint>邀请码由孩子账户生成，长度为12位</mat-hint>
+              </mat-form-field>
+
+              <div class="help-text">
+                <mat-icon>info</mat-icon>
+                <p>
+                  绑定后，您可以查看孩子的学习进度、成绩报告等信息。<br>
+                  如果孩子已设置家长验证，您的绑定申请需要孩子确认后才能生效。
+                </p>
+              </div>
+            </form>
+          </mat-card-content>
+
+          <mat-card-actions align="end">
+            <button mat-button type="button" (click)="selectedTab = 0">取消</button>
+            <button mat-raised-button 
+                    color="primary" 
+                    (click)="bindChildByInviteCode()"
+                    [disabled]="!inviteCode || isBinding">
+              <mat-spinner *ngIf="isBinding" diameter="20" class="button-spinner"></mat-spinner>
+              <span *ngIf="!isBinding">
+                <mat-icon>send</mat-icon>
+                发送绑定申请
+              </span>
+            </button>
+          </mat-card-actions>
+        </mat-card>
+      </div>
+    </mat-tab>
+  </mat-tab-group>
+</div>

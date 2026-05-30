@@ -1,0 +1,88 @@
+{
+  "recommendations": [
+    {
+      "id": "ms-python.python",
+      "name": "Python",
+      "description": "Python语言支持，包括调试、格式化、重构等功能",
+      "essential": true,
+      "settings": {
+        "python.linting.enabled": true,
+        "python.linting.pylintEnabled": false,
+        "python.linting.flake8Enabled": true,
+        "python.formatting.provider": "black"
+      }
+    },
+    {
+      "id": "ms-vscode.vscode-typescript-next",
+      "name": "TypeScript Nightly",
+      "description": "最新的TypeScript支持",
+      "essential": true
+    },
+    {
+      "id": "angular.ng-template",
+      "name": "Angular Language Service",
+      "description": "Angular模板智能提示和错误检查",
+      "essential": true
+    },
+    {
+      "id": "ms-vscode.vscode-json",
+      "name": "JSON Tools",
+      "description": "JSON文件语法高亮和验证",
+      "essential": true
+    },
+    {
+      "id": "bradlc.vscode-tailwindcss",
+      "name": "Tailwind CSS IntelliSense",
+      "description": "Tailwind CSS类名自动补全",
+      "essential": false
+    },
+    {
+      "id": "esbenp.prettier-vscode",
+      "name": "Prettier",
+      "description": "代码格式化工具",
+      "essential": true,
+      "settings": {
+        "editor.defaultFormatter": "esbenp.prettier-vscode",
+        "editor.formatOnSave": true
+      }
+    },
+    {
+      "id": "dbaeumer.vscode-eslint",
+      "name": "ESLint",
+      "description": "JavaScript/TypeScript代码检查",
+      "essential": true
+    },
+    {
+      "id": "ms-azuretools.vscode-docker",
+      "name": "Docker",
+      "description": "Docker容器开发支持",
+      "essential": false
+    },
+    {
+      "id": "ms-kubernetes-tools.vscode-kubernetes-tools",
+      "name": "Kubernetes",
+      "description": "Kubernetes配置文件支持",
+      "essential": false
+    },
+    {
+      "id": "github.vscode-pull-request-github",
+      "name": "GitHub Pull Requests",
+      "description": "GitHub PR管理和代码审查",
+      "essential": false
+    }
+  ],
+  "workspaceSettings": {
+    "[python]": {
+      "editor.defaultFormatter": "ms-python.black-formatter",
+      "editor.formatOnSave": true
+    },
+    "[typescript]": {
+      "editor.defaultFormatter": "esbenp.prettier-vscode",
+      "editor.formatOnSave": true
+    },
+    "[html]": {
+      "editor.defaultFormatter": "esbenp.prettier-vscode",
+      "editor.formatOnSave": true
+    }
+  }
+}

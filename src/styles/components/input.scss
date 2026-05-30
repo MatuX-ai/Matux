@@ -1,0 +1,707 @@
+// Input Component
+//
+// 杈撳叆妗嗙粍浠舵牱寮忥紝鍖呭惈鏂囨湰妗嗐€佹枃鏈煙銆侀€夋嫨妗嗙瓑澶氱琛ㄥ崟鍏冪礌
+// 鏀寔鐘舵€佹牱寮忋€佸墠鍚庣紑鍥炬爣銆佽〃鍗曠粍布局绛夊姛鑳?
+
+// 瀵煎叆 Design Tokens
+@import '../design-tokens/index';
+
+// =============================================================================
+// 杈撳叆妗嗗熀纭€样式
+// =============================================================================
+
+.c-input {
+  // CSS 自定义夊睘鎬у畾涔夊熀纭€閰嶇疆
+  --input-height: 40px;
+  --input-padding: #{$spacing-sm} #{$spacing-md};
+  --input-font-size: #{$font-size-body-medium};
+  --input-line-height: #{$line-height-normal};
+  --input-border-color: #{$border-color};
+  --input-border-radius: #{$border-radius-input};
+  --input-background: #{$background-color};
+  --input-color: #{$text-primary-color};
+  --input-transition: all 0.2s ease;
+  --input-box-shadow: none;
+  
+  // 基础布局鍜屽瑙?
+  display: block;
+  width: 100%;
+  height: var(--input-height);
+  padding: var(--input-padding);
+  border: 2px solid var(--input-border-color);
+  border-radius: var(--input-border-radius);
+  
+  // 外观样式
+  background-color: var(--input-background);
+  box-shadow: var(--input-box-shadow);
+  
+  // 浜や簰效果
+  transition: var(--input-transition);
+  font-size: var(--input-font-size);
+  
+  // 鏂囧瓧样式
+  font-family: $font-family-system;
+  line-height: var(--input-line-height);
+  color: var(--input-color);
+  
+  // 鐘舵€佹牱寮?
+  &:focus {
+    border-color: $focus-color;
+    outline: none;
+    box-shadow: 0 0 0 3px rgba($focus-color, 0.2);
+  }
+  
+  &:disabled {
+    background-color: $gray-100;
+    
+    &:focus {
+      border-color: var(--input-border-color);
+      box-shadow: none;
+    }
+  }
+  
+  // 鍗犱綅绗︽牱寮?
+  &::placeholder {
+  color: $placeholder-color;
+  font-weight: $font-weight-regular;
+  font-weight: $font-weight-regular;
+}
+  
+  // 鍙鐘舵€?
+  &[readonly] {
+    background-color: $gray-50;
+    
+    &:focus {
+      box-shadow: none;
+      box-shadow: none;
+    }
+  }
+  
+  // 文件杈撳叆特殊澶勭悊
+  &[type="file"] {
+    height: auto;
+    padding: 0;
+    border: none;
+    background: none;
+  }
+}
+
+// =============================================================================
+// 杈撳叆妗嗙姸鎬佸彉浣?
+// =============================================================================
+
+// 错误鐘舵€?
+.c-input--error {
+  
+  &:focus {
+    border-color: $error-color;
+    box-shadow: 0 0 0 3px rgba($error-color, 0.2);
+  }
+}
+
+// 成功鐘舵€?
+.c-input--success {
+  
+  &:focus {
+    border-color: $success-color;
+    box-shadow: 0 0 0 3px rgba($success-color, 0.2);
+  }
+}
+
+// 璀﹀憡鐘舵€?
+.c-input--warning {
+  
+  &:focus {
+    border-color: $warning-color;
+    box-shadow: 0 0 0 3px rgba($warning-color, 0.2);
+  }
+}
+
+// =============================================================================
+// 杈撳叆妗嗗昂瀵稿彉浣?
+// =============================================================================
+
+.c-input--sm {
+  --input-height: 32px;
+  --input-padding: #{$spacing-xs} #{$spacing-sm};
+  --input-font-size: #{$font-size-body-small};
+}
+
+.c-input--lg {
+  --input-height: 48px;
+  --input-padding: #{$spacing-md} #{$spacing-lg};
+  --input-font-size: #{$font-size-body-large};
+}
+
+// =============================================================================
+// 鏂囨湰鍩熸牱寮?
+// =============================================================================
+
+.c-textarea {
+  @extend .c-input;
+
+  max-width: 100%;
+  
+  // 鏂囨湰鍩熺壒鏈夊睘鎬?
+  min-height: 100px;
+  
+  // 灏哄变体
+  &--sm {
+    @extend .c-input--sm;
+
+    min-height: 80px;
+  }
+  
+  &--lg {
+    @extend .c-input--lg;
+
+    min-height: 140px;
+  }
+}
+
+// =============================================================================
+// 閫夋嫨妗嗘牱寮?
+// =============================================================================
+
+.c-select {
+  @extend .c-input;
+
+  padding-right: 40px;
+  
+  // 自定义変笅鎷夌澶?
+  background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 20 20'%3e%3cpath stroke='%236b7280' stroke-linecap='round' stroke-linejoin='round' stroke-width='1.5' d='m6 8 4 4 4-4'/%3e%3c/svg%3e");
+  background-repeat: no-repeat;
+  background-position: right 12px center;
+  background-size: 16px 16px;
+  cursor: pointer;
+  
+  // 閫夋嫨妗嗙壒鏈夋牱寮?
+  appearance: none;
+  
+  // 绂佺敤鐘舵€佺壒娈婂鐞?
+  &:disabled {
+    background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 20 20'%3e%3cpath stroke='%239ca3af' stroke-linecap='round' stroke-linejoin='round' stroke-width='1.5' d='m6 8 4 4 4-4'/%3e%3c/svg%3e");
+    cursor: not-allowed;
+  }
+  
+  // 灏哄变体
+  &--sm {
+    @extend .c-input--sm;
+
+    padding-right: 36px;
+    background-position: right 10px center;
+    background-size: 14px 14px;
+  }
+  
+  &--lg {
+    @extend .c-input--lg;
+
+    padding-right: 44px;
+    background-position: right 16px center;
+    background-size: 18px 18px;
+  }
+}
+
+// =============================================================================
+// 琛ㄥ崟缁勫鍣?
+// =============================================================================
+
+.c-form-group {
+  margin-bottom: $spacing-lg;
+  
+  // 绱у噾妯″紡
+  &--compact {
+    margin-bottom: $spacing-md;
+  }
+  
+  // 琛ㄥ崟鏍囩
+  &__label {
+    display: block;
+    color: $text-primary-color;
+    
+    // 蹇呭～标识
+    &.is-required {
+      &::after {
+        c{
+  color: $error-color;
+    // 蹇呭～标识
+    &.is-required {
+      &::after {
+        c{
+  color: $error-color;
+  font-weight: $font-weight-bold;
+  content: " *";
+} 
+    // 绂佺敤鐘舵€?
+    &.is-disabled {
+      color: $text-disabled-color;
+    }
+  }
+  
+  // 琛ㄥ崟甯姪鏂囨湰
+  &__help {
+    display: block;
+    color: $text-secondary-color;
+    
+    // 鐘舵€佸彉浣?
+    &--error {
+      color: $error-color;
+    
+    // 鐘舵€佸彉浣?
+    &--error {
+      color: $error-color;
+    }
+    
+    &--success {
+      color: $success-color;
+    }
+    
+    &--warning {
+      color: $warning-color;
+    }
+  }
+  
+  // 琛ㄥ崟鎺т欢容器
+  &__control {
+    position: relative;
+    
+    // 鍓嶇紑/鍚庣紑鍥炬爣容器
+    .c-input-icon {
+      position: absolute;
+      top: 50%;
+      pointer-events: none;
+      transform: translateY(-50%);
+      color: $placeholder-color;
+      
+      &--prefix {
+        left: $spacing-md;
+      }
+      
+      &--suffix {
+        right: $spacing-md;
+      }
+    }
+    
+    // 甯﹀浘鏍囩殑杈撳叆妗?
+    .c-input {
+      &.has-prefix {
+        padding-left: 40px;
+      }
+      
+      &.has-suffix {
+        padding-right: 40px;
+      }
+      
+      &.has-prefix.has-suffix {
+        padding-right: 40px;
+        padding-left: 40px;
+      }
+    }
+  }
+  
+  // 琛ㄥ崟楠岃瘉鐘舵€?
+  &.is-valid {
+    .c-input {
+      @extend .c-input--success;
+    }
+  }
+  
+  &.is-invalid {
+    .c-input {
+      @extend .c-input--error;
+    }
+  }
+  
+  &.is-warning {
+    .c-input {
+      @extend .c-input--warning;
+    }
+  }
+}
+
+// =============================================================================
+// 澶嶉€夋鍜屽崟閫夋样式
+// =============================================================================
+
+.c-checkbox,
+.c-radio {
+  // 闅愯棌鍘熺敓鎺т欢
+  position: absolute;
+  
+  // 自定义夋帶浠跺鍣?
+  + .c-control-label {
+    display: inline-flex;
+    
+    // 自定义夋帶浠跺瑙?
+    &::before {
+      display: in{
+  display: inline-block;
+}{
+    + .c-control-label::before {
+    font-size: $font-size-body-medium;
+    font-family: $font-family-system;
+    line-height: $line-height-normal;
+    color: $text-primary-color;
+    
+    // 自定义夋帶浠跺瑙?
+    &::before {
+      content: '';
+      display: in{
+  display: inline-block;
+  width: 18px;
+  height: 18px;
+  margin-right: $spacing-sm;
+  border: 2px solid $border-color;
+  background-color: $background-color;
+  content: '';
+  transition: all 0.2s ease;
+}{
+    + .c-control-label::before {
+      border-radius: $border-radius-xs;
+    }
+    
+    &:checked + .c-control-label::before {
+      border-color: $primary-color;
+      background-color: $primary-color;
+      background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 20 20' fill='white'%3e%3cpath fill-rule='evenodd' d='M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z' clip-rule='evenodd'/%3e%3c/svg%3e");
+      background-repeat: no-repeat;
+      background-position: center;
+      background-size: 12px;
+    }
+  }
+  
+  // 鍗曢€夋特殊样式
+  &.c-radio {
+    + .c-control-label::before {
+      border-radius: $border-radius-full;
+    }
+    
+    &:checked + .c-control-label::before {
+      background-color: $primary-color;
+      box-shadow: inset 0 0 0 4px $background-color;
+      box-shadow: inset 0 0 0 4px $background-color;
+    }
+  }
+  
+  // 绂佺敤鐘舵€?
+  &:disabled {
+    + .c-control-label {
+      
+      &::before {
+        background-color: $gray-100;
+      &::before {
+        border-color: $gray-300;
+        background-color: $gray-100;
+      }
+    }
+    
+    // 绂佺敤涓旈€変腑鐘舵€?
+    &:checked + .c-control-label::before {
+      border-color: $gray-400;
+      background-color: $gray-400;
+    }
+  }
+  
+  // 鐒︾偣鐘舵€?
+  &:focus + .c-control-label::before {
+    box-shadow: 0 0 0 3px rgba($focus-color, 0.2);
+  }
+}
+
+// 鎺у埗鏍囩鍖呰鍣?
+.c-control-label {
+  // 鍙互娣诲姞棰濆鐨勬牱寮?
+}
+
+// =============================================================================
+// 鏆楅粦主题閫傞厤
+// =============================================================================
+
+[data-theme="dark"] {
+  .c-input {
+    // 鏆楄壊主题基础样式
+    --input-background: var(--input-background);
+    --input-border-color: var(--input-border);
+    --input-color: var(--text-primary-color);
+    
+    // 鏆楄壊主题鐒︾偣样式
+    &:focus {
+      border-color: var(--input-focus-border);
+      box-shadow: 0 0 0 3px rgb(187 134 252 / 20%);
+    }
+    
+    // 鏆楄壊主题绂佺敤鐘舵€?
+    &:disabled {
+      background-color: var(--surface-color-hover);
+      color: var(--text-disabled-color);
+      
+      &:focus {
+        border-color: var(--input-border);
+        box-shadow: none;
+      }
+    }
+    
+    // 鏆楄壊主题鍙鐘舵€?
+  &[readonly] {
+    background-color: var(--surface-color-hover);
+    
+    &:focus {
+      box-shadow: none;
+    }
+  }
+    
+    // 鏆楄壊主题鍗犱綅绗?
+    &::placeholder {
+      color: var(--input-placeholder);
+    }
+  }
+  
+  // 杈撳叆妗嗙姸鎬佸彉浣撻€傞厤
+.c-input--error {
+  
+  &:focus {
+    border-color: var(--error-color);
+    box-shadow: 0 0 0 3px rgb(207 102 121 / 20%);
+  }
+}
+  
+.c-input--success {
+  
+  &:focus {
+    border-color: var(--success-color);
+    box-shadow: 0 0 0 3px rgb(76 175 80 / 20%);
+  }
+}
+  
+.c-input--warning {
+  
+  &:focus {
+    border-color: var(--warning-color);
+    box-shadow: 0 0 0 3px rgb(255 152 0 / 20%);
+  }
+}
+  
+  // 閫夋嫨妗嗘殫鑹蹭富棰橀€傞厤
+  .c-select {
+    // 鏆楄壊主题涓嬫媺绠ご
+    background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 20 20'%3e%3cpath stroke='%23e0e0e0' stroke-linecap='round' stroke-linejoin='round' stroke-width='1.5' d='m6 8 4 4 4-4'/%3e%3c/svg%3e");
+    
+    &:disabled {
+      background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 20 20'%3e%3cpath stroke='%236f6f6f' stroke-linecap='round' stroke-linejoin='round' stroke-width='1.5' d='m6 8 4 4 4-4'/%3e%3c/svg%3e");
+    }
+  }
+  
+  // 琛ㄥ崟缁勬殫鑹蹭富棰橀€傞厤
+  .c-form-group {
+    &__label {
+      color: var(--text-primary-color);
+      
+      &.is-required {
+        &::after {
+          color: var(--error-color);
+        }
+      }
+      
+      &.is-disabled {
+        color: var(--text-disabled-color);
+      }
+    }
+    
+    &__help {
+      color: var(--text-secondary-color);
+      
+      &--error {
+        color: var(--error-color);
+      }
+      
+      &--success {
+        color: var(--success-color);
+      }
+      
+      &--warning {
+        color: var(--warning-color);
+      }
+    }
+    
+    &__control {
+      .c-input-icon {
+        color: var(--input-placeholder);
+      }
+    }
+  }
+  
+  // 澶嶉€夋鍜屽崟閫夋鏆楄壊主题閫傞厤
+  .c-checkbox,
+  .c-radio {
+    + .c-control-label {
+      
+      &::before {
+        border: 2px solid var(--border-color);
+        background-color: var(--surface-color);
+        background-color: var(--surface-color);
+      }
+    }
+    
+    // 澶嶉€夋閫変腑鐘舵€?
+    &.c-checkbox {
+      &:checked + .c-control-label::before {
+        background-color: var(--primary-color);
+        background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 20 20' fill='black'%3e%3cpath fill-rule='evenodd' d='M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z' clip-rule='evenodd'/%3e%3c/svg%3e");
+        background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 20 20' fill='black'%3e%3cpath fill-rule='evenodd' d='M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z' clip-rule='evenodd'/%3e%3c/svg%3e");
+      }
+    }
+    
+    // 鍗曢€夋閫変腑鐘舵€?
+    &.c-radio {
+      &:checked + .c-control-label::before {
+        background-color: var(--primary-color);
+        box-shadow: inset 0 0 0 4px var(--surface-color);
+        box-shadow: inset 0 0 0 4px var(--surface-color);
+      }
+    }
+    
+    // 绂佺敤鐘舵€?
+    &:disabled {
+      + .c-control-label {
+        
+        &::before {
+          background-color: var(--surface-color-hover);
+          border-color: var(--border-color-light);
+          background-color: var(--surface-color-hover);
+        }
+      }
+      
+      &:checked + .c-control-label::before {
+        border-color: var(--border-color-strong);
+        background-color: var(--border-color-strong);
+      }
+    }
+    
+    // 鐒︾偣鐘舵€?
+    &:focus + .c-control-label::before {
+      box-shadow: 0 0 0 3px rgb(187 134 252 / 20%);
+    }
+  }
+  
+  // 寮€鍏崇粍浠舵殫鑹蹭富棰橀€傞厤
+  .c-switch {
+    .c-switch-slider {
+      background-color: var(--border-color-strong);
+      
+      &::before {
+        background-color: var(--surface-color);
+        box-shadow: 0 2px 4px rgb(0 0 0 / 30%);
+      }
+    }
+    
+    input:checked + .c-switch-slider {
+      background-color: var(--primary-color);
+    }
+    
+    input:focus + .c-switch-slider {
+      box-shadow: 0 0 0 3px rgb(187 134 252 / 20%);
+    }
+    
+    input:disabled + .c-switch-slider {
+      opacity: 0.5;
+      
+      &::before {
+        box-shadow: none;
+      }
+    }
+  }
+}
+
+// =============================================================================
+// 寮€鍏崇粍浠舵牱寮?
+// =============================================================================
+
+.c-switch {
+  position: relative;
+  display: inline-block;
+  width: 50px;
+  height: 24px;
+  
+  // 闅愯棌鍘熺敓鎺т欢
+  input {
+    width: 0;
+    height: 0;
+    opacity: 0;
+  }
+  
+  // 婊戝潡杞ㄩ亾
+  .c-switch-slider {
+    position: absolute;
+    border-radius: 24px;
+    background-color: $gray-300;
+    cursor: pointer;
+    transition: .3s;
+    inset: 0;
+    
+    // 婊戝潡
+    &::before {
+      content: "";
+      position: absolute;
+      bottom: 2px;
+      left: 2px{
+  position: absolute;
+  bottom: 2px;
+  left: 2px;
+  width: 20px;
+  height: 20px;
+  border-radius: 50%;
+  background-color: white;
+  box-shadow: 0 2px 4px rgb(0 0 0 / 20%);
+  content: "";
+  transition: .3s;
+}imary-color;
+    
+    &::before {
+      transform: translateX(26px);
+    }
+  }
+  
+  // 绂佺敤鐘舵€?
+  input:disabled + .c-switch-slider {
+    
+    &::before {
+      box-shadow: none;
+    &::before {
+      box-shadow: none;
+    }
+  }
+  
+  // 鐒︾偣鐘舵€?
+  input:focus + .c-switch-slider {
+    box-shadow: 0 0 0 3px rgba($focus-color, 0.2);
+  }
+  
+  // 灏哄变体
+  &--sm {
+    width: 40px;
+    height: 20px;
+    
+    .c-switch-slider::before {
+      width: 16px;
+      height: 16px;
+    }
+    
+    input:checked + .c-switch-slider::before {
+      transform: translateX(20px);
+    }
+  }
+  
+  &--lg {
+    width: 60px;
+    height: 28px;
+    
+    .c-switch-slider::before {
+      width: 24px;
+      height: 24px;
+    }
+    
+    input:checked + .c-switch-slider::before {
+      transform: translateX(32px);
+    }
+  }
+}

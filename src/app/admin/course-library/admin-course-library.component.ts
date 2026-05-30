@@ -1,187 +1,73 @@
+/**
+ * @deprecated 课件管理已解耦到 OpenMTSciEd 项目。此组件仅保留用于向后兼容路由引用。
+ * 请直接访问 OpenMTSciEd 项目进行课件库管理。
+ */
+
+import { Component } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { Component, inject, signal, OnInit, OnDestroy, ChangeDetectionStrategy } from '@angular/core';
 import { MatCardModule } from '@angular/material/card';
 import { MatButtonModule } from '@angular/material/button';
-import { MatIconModule } from '@angular/material/icon';
-import { MatTabsModule } from '@angular/material/tabs';
-import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
-import { MatInputModule } from '@angular/material/input';
-import { MatSelectModule } from '@angular/material/select';
-import { MatTableModule } from '@angular/material/table';
-import { MatSnackBar } from '@angular/material/snack-bar';
-import { MatDialog } from '@angular/material/dialog';
-import { Subject, takeUntil } from 'rxjs';
 
-import { UnifiedCourseService } from '../../core/services/unified-course.service';
-import { UnifiedCourseCardComponent } from '../../shared/components/unified-course-card/unified-course-card.component';
-import {
-  UnifiedCourse,
-  CourseFilter,
-  CourseStats
-} from '../../models/unified-course.models';
-
-/**
- * Admin课程库管理组件
- * 提供全局课程库的管理功能
- */
 @Component({
   selector: 'app-admin-course-library',
   standalone: true,
-  imports: [
-    CommonModule,
-    MatCardModule,
-    MatButtonModule,
-    MatIconModule,
-    MatTabsModule,
-    MatProgressSpinnerModule,
-    MatInputModule,
-    MatSelectModule,
-    MatTableModule,
-    UnifiedCourseCardComponent
-  ],
-  templateUrl: './admin-course-library.component.html',
-  styleUrls: ['./admin-course-library.component.scss'],
-  changeDetection: ChangeDetectionStrategy.OnPush
-})
-export class AdminCourseLibraryComponent implements OnInit, OnDestroy {
-  private courseService = inject(UnifiedCourseService);
-  private snackBar = inject(MatSnackBar);
-  private dialog = inject(MatDialog);
-
-  private destroy$ = new Subject<void>();
-
-  readonly loading = signal<boolean>(true);
-  readonly courseStats = signal<CourseStats | null>(null);
-  readonly selectedTab = signal<number>(0);
-  readonly searchQuery = signal<string>('');
-
-  // 数据流
-  readonly popularCourses$ = this.courseService.getPopularCourses(undefined, 12);
-  readonly newestCourses$ = this.courseService.getNewestCourses(12);
-  readonly allCourses$ = this.courseService.getCourses({}, 1, 20);
-
-  readonly displayedColumns = ['id', 'title', 'category', 'instructor', 'enrollment', 'rating', 'status', 'actions'];
-
-  readonly courseCategories = [
-    { value: 'chinese', label: '语文' },
-    { value: 'math', label: '数学' },
-    { value: 'english', label: '英语' },
-    { value: 'physics', label: '物理' },
-    { value: 'chemistry', label: '化学' },
-    { value: 'biology', label: '生物' }
-  ];
-
-  readonly courseStatuses = [
-    { value: 'draft', label: '草稿' },
-    { value: 'published', label: '已发布' },
-    { value: 'ongoing', label: '进行中' },
-    { value: 'completed', label: '已完成' },
-    { value: 'archived', label: '已归档' }
-  ];
-
-  ngOnInit(): void {
-    this.loadCourseStats();
-  }
-
-  ngOnDestroy(): void {
-    this.destroy$.next();
-    this.destroy$.complete();
-  }
-
-  loadCourseStats(): void {
-    this.loading.set(true);
-    
-    this.courseService.getCourseStatistics().pipe(
-      takeUntil(this.destroy$)
-    ).subscribe({
-      next: (stats: CourseStats) => {
-        this.courseStats.set(stats);
-        this.loading.set(false);
-      },
-      error: (error: Error) => {
-        console.error('[AdminCourseLibrary] 加载课程统计失败:', error);
-        this.snackBar.open('加载课程统计失败', '关闭', { duration: 3000 });
-        this.loading.set(false);
+  imports: [CommonModule, MatCardModule, MatButtonModule],
+  template: `
+    <div class="migration-notice">
+      <mat-card>
+        <mat-card-header>
+          <mat-card-title>功能已迁移</mat-card-title>
+          <mat-card-subtitle>课件库管理</mat-card-subtitle>
+        </mat-card-header>
+        <mat-card-content>
+          <p>课件库管理功能已迁移到独立的 <strong>OpenMTSciEd</strong> 课件管理系统。</p>
+          <p>请在 OpenMTSciEd 项目中进行课件的创建、编辑和管理操作。</p>
+          <div class="info-box">
+            <strong>迁移说明：</strong>
+            <ul>
+              <li>课件创建与管理 → OpenMTSciEd 课件管理系统</li>
+              <li>课件素材管理 → OpenMTSciEd 素材管理系统</li>
+              <li>本路由保留仅用于向后兼容，未来版本将移除</li>
+            </ul>
+          </div>
+        </mat-card-content>
+        <mat-card-actions>
+          <a mat-raised-button color="primary" href="/admin/materials" class="nav-link">
+            前往素材库
+          </a>
+        </mat-card-actions>
+      </mat-card>
+    </div>
+  `,
+  styles: [
+    `
+      .migration-notice {
+        max-width: 600px;
+        margin: 40px auto;
+        padding: 0 20px;
       }
-    });
-  }
-
-  onTabChange(index: number): void {
-    this.selectedTab.set(index);
-  }
-
-  onSearch(query: string): void {
-    this.searchQuery.set(query);
-    // 触发搜索
-    this.allCourses$ = this.courseService.getCourses(
-      { search: query },
-      1,
-      20
-    );
-  }
-
-  onRefresh(): void {
-    this.loadCourseStats();
-    this.snackBar.open('数据已刷新', '关闭', { duration: 2000 });
-  }
-
-  onCourseDetail(courseId: number): void {
-    console.log('查看课程详情:', courseId);
-    // 导航到课程详情页
-  }
-
-  onEditCourse(courseId: number): void {
-    console.log('编辑课程:', courseId);
-    // 打开编辑对话框
-  }
-
-  onDeleteCourse(courseId: number): void {
-    if (confirm('确定要删除此课程吗？')) {
-      this.courseService.deleteCourse(courseId).pipe(
-        takeUntil(this.destroy$)
-      ).subscribe({
-        next: () => {
-          this.snackBar.open('课程已删除', '关闭', { duration: 2000 });
-          this.loadCourseStats();
-        },
-        error: (error: Error) => {
-          console.error('[AdminCourseLibrary] 删除课程失败:', error);
-          this.snackBar.open('删除失败', '关闭', { duration: 3000 });
-        }
-      });
-    }
-  }
-
-  exportCourses(): void {
-    this.snackBar.open('导出课程数据功能开发中...', '关闭', { duration: 2000 });
-  }
-
-  formatFileSize(bytes: number): string {
-    if (bytes === 0) return '0 B';
-    const k = 1024;
-    const sizes = ['B', 'KB', 'MB', 'GB'];
-    const i = Math.floor(Math.log(bytes) / Math.log(k));
-    return Math.round((bytes / Math.pow(k, i)) * 100) / 100 + ' ' + sizes[i];
-  }
-
-  getCategoryLabel(category: string): string {
-    const cat = this.courseCategories.find(c => c.value === category);
-    return cat?.label || category;
-  }
-
-  getStatusLabel(status: string): string {
-    const st = this.courseStatuses.find(s => s.value === status);
-    return st?.label || status;
-  }
-
-  getStatusColor(status: string): string {
-    const colorMap: Record<string, string> = {
-      'draft': 'basic',
-      'published': 'primary',
-      'ongoing': 'accent',
-      'completed': 'warn',
-      'archived': 'basic'
-    };
-    return colorMap[status] || 'basic';
-  }
-}
+      .info-box {
+        background: #f5f5f5;
+        border-left: 4px solid #ff9800;
+        padding: 12px 16px;
+        margin: 16px 0;
+        border-radius: 4px;
+      }
+      .info-box ul {
+        margin: 8px 0 0;
+        padding-left: 20px;
+      }
+      .info-box li {
+        margin: 4px 0;
+        font-size: 14px;
+      }
+      mat-card-actions {
+        padding: 16px;
+      }
+      .nav-link {
+        text-decoration: none;
+      }
+    `,
+  ],
+})
+export class AdminCourseLibraryComponent {}

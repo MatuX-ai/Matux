@@ -1,0 +1,296 @@
+<!-- 用户详情页面 -->
+<div class="user-detail-container" *ngIf="userDetail$ | async as user">
+  <!-- 页面头部 -->
+  <div class="page-header">
+    <div class="header-left">
+      <button mat-icon-button (click)="goBack()" matTooltip="返回">
+        <mat-icon>arrow_back</mat-icon>
+      </button>
+      <div class="user-title">
+        <img [src]="user.avatar || 'https://api.dicebear.com/7.x/avataaars/svg?seed=' + user.id"
+             class="user-avatar-large"
+             alt="avatar">
+        <div class="user-info">
+          <h1>{{ user.realName || user.username }}</h1>
+          <div class="user-meta">
+            <span class="user-id">ID: {{ user.id }}</span>
+            <span class="status-badge" [class]="'status-' + user.status">
+              {{ getStatusLabel(user.status) }}
+            </span>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="header-actions">
+      <button mat-stroked-button (click)="editUser()">
+        <mat-icon>edit</mat-icon>
+        编辑
+      </button>
+      <button mat-stroked-button color="warn" (click)="deleteUser()">
+        <mat-icon>delete</mat-icon>
+        删除
+      </button>
+    </div>
+  </div>
+
+  <!-- 快捷操作 -->
+  <div class="quick-actions">
+    <button mat-stroked-button *ngIf="user.status !== 'active'" (click)="activateUser()">
+      <mat-icon>check_circle</mat-icon>
+      激活
+    </button>
+    <button mat-stroked-button *ngIf="user.status === 'active'" (click)="deactivateUser()">
+      <mat-icon>block</mat-icon>
+      停用
+    </button>
+    <button mat-stroked-button *ngIf="user.status !== 'suspended'" (click)="suspendUser()">
+      <mat-icon>pause_circle</mat-icon>
+      暂停
+    </button>
+  </div>
+
+  <!-- 标签页导航 -->
+  <mat-tab-group [(selectedIndex)]="activeTab" class="detail-tabs">
+    <!-- 基本信息 -->
+    <mat-tab label="基本信息">
+      <div class="tab-content">
+        <mat-card class="info-card">
+          <mat-card-header>
+            <mat-card-title>账户信息</mat-card-title>
+          </mat-card-header>
+          <mat-card-content>
+            <div class="info-grid">
+              <div class="info-item">
+                <span class="label">用户名</span>
+                <span class="value">{{ user.username }}</span>
+              </div>
+              <div class="info-item">
+                <span class="label">邮箱</span>
+                <span class="value">{{ user.email }}</span>
+              </div>
+              <div class="info-item">
+                <span class="label">手机号</span>
+                <span class="value">{{ user.phone || '-' }}</span>
+              </div>
+              <div class="info-item">
+                <span class="label">用户类型</span>
+                <span class="value">{{ user.userType }}</span>
+              </div>
+              <div class="info-item">
+                <span class="label">用户组</span>
+                <span class="value">{{ user.userTypeGroup }}</span>
+              </div>
+              <div class="info-item">
+                <span class="label">角色</span>
+                <span class="value">
+                  <mat-chip-listbox>
+                    <mat-chip *ngFor="let role of user.roles">{{ role }}</mat-chip>
+                  </mat-chip-listbox>
+                </span>
+              </div>
+              <div class="info-item">
+                <span class="label">注册时间</span>
+                <span class="value">{{ formatDate(user.createdAt) }}</span>
+              </div>
+              <div class="info-item">
+                <span class="label">最后更新</span>
+                <span class="value">{{ formatDate(user.updatedAt) }}</span>
+              </div>
+              <div class="info-item">
+                <span class="label">最后登录</span>
+                <span class="value">{{ formatDate(user.lastLoginAt) }}</span>
+              </div>
+              <div class="info-item">
+                <span class="label">登录次数</span>
+                <span class="value">{{ user.loginCount }}</span>
+              </div>
+            </div>
+          </mat-card-content>
+        </mat-card>
+
+        <!-- 机构信息 -->
+        <mat-card class="info-card" *ngIf="user.organization">
+          <mat-card-header>
+            <mat-card-title>所属机构</mat-card-title>
+          </mat-card-header>
+          <mat-card-content>
+            <div class="org-info">
+              <div class="org-icon">
+                <mat-icon>business</mat-icon>
+              </div>
+              <div class="org-details">
+                <h3>{{ user.organization.name }}</h3>
+                <p>类型: {{ user.organization.type }}</p>
+                <p>角色: {{ user.organization.role }}</p>
+                <p>加入时间: {{ formatDate(user.organization.joinedAt) }}</p>
+              </div>
+            </div>
+          </mat-card-content>
+        </mat-card>
+
+        <!-- 订阅信息 -->
+        <mat-card class="info-card" *ngIf="user.subscription">
+          <mat-card-header>
+            <mat-card-title>订阅信息</mat-card-title>
+          </mat-card-header>
+          <mat-card-content>
+            <div class="info-grid">
+              <div class="info-item">
+                <span class="label">套餐</span>
+                <span class="value">{{ user.subscription.planName }}</span>
+              </div>
+              <div class="info-item">
+                <span class="label">状态</span>
+                <span class="value">{{ user.subscription.status }}</span>
+              </div>
+              <div class="info-item">
+                <span class="label">开始日期</span>
+                <span class="value">{{ formatDate(user.subscription.startDate) }}</span>
+              </div>
+              <div class="info-item">
+                <span class="label">到期日期</span>
+                <span class="value">{{ formatDate(user.subscription.endDate) }}</span>
+              </div>
+            </div>
+            <div class="features-list" *ngIf="user.subscription.features.length">
+              <h4>功能权限</h4>
+              <mat-chip-listbox>
+                <mat-chip *ngFor="let feature of user.subscription.features">{{ feature }}</mat-chip>
+              </mat-chip-listbox>
+            </div>
+          </mat-card-content>
+        </mat-card>
+      </div>
+    </mat-tab>
+
+    <!-- 学习统计 -->
+    <mat-tab label="学习统计" *ngIf="user.learningStats">
+      <div class="tab-content">
+        <mat-card class="info-card">
+          <mat-card-header>
+            <mat-card-title>学习统计</mat-card-title>
+          </mat-card-header>
+          <mat-card-content>
+            <div class="stats-grid">
+              <div class="stat-item">
+                <mat-icon>school</mat-icon>
+                <div class="stat-content">
+                  <span class="stat-value">{{ user.learningStats.totalCourses }}</span>
+                  <span class="stat-label">总课程数</span>
+                </div>
+              </div>
+              <div class="stat-item">
+                <mat-icon>check_circle</mat-icon>
+                <div class="stat-content">
+                  <span class="stat-value">{{ user.learningStats.completedCourses }}</span>
+                  <span class="stat-label">已完成课程</span>
+                </div>
+              </div>
+              <div class="stat-item">
+                <mat-icon>schedule</mat-icon>
+                <div class="stat-content">
+                  <span class="stat-value">{{ user.learningStats.totalHours }}</span>
+                  <span class="stat-label">学习时长(小时)</span>
+                </div>
+              </div>
+              <div class="stat-item">
+                <mat-icon>grade</mat-icon>
+                <div class="stat-content">
+                  <span class="stat-value">{{ user.learningStats.avgScore | number:'1.1-1' }}</span>
+                  <span class="stat-label">平均成绩</span>
+                </div>
+              </div>
+            </div>
+            <div class="last-activity" *ngIf="user.learningStats.lastActivityAt">
+              <mat-icon>access_time</mat-icon>
+              最近活动: {{ formatDate(user.learningStats.lastActivityAt) }}
+            </div>
+          </mat-card-content>
+        </mat-card>
+      </div>
+    </mat-tab>
+
+    <!-- 权限信息 -->
+    <mat-tab label="权限信息" *ngIf="user.permissions?.length">
+      <div class="tab-content">
+        <mat-card class="info-card">
+          <mat-card-header>
+            <mat-card-title>用户权限</mat-card-title>
+          </mat-card-header>
+          <mat-card-content>
+            <div class="permissions-list">
+              <mat-chip-listbox>
+                <mat-chip *ngFor="let permission of user.permissions">
+                  <mat-icon>check</mat-icon>
+                  {{ permission }}
+                </mat-chip>
+              </mat-chip-listbox>
+            </div>
+          </mat-card-content>
+        </mat-card>
+      </div>
+    </mat-tab>
+
+    <!-- 设备信息 -->
+    <mat-tab label="设备信息" *ngIf="user.devices?.length">
+      <div class="tab-content">
+        <mat-card class="info-card">
+          <mat-card-header>
+            <mat-card-title>登录设备</mat-card-title>
+          </mat-card-header>
+          <mat-card-content>
+            <div class="devices-list">
+              <div class="device-item" *ngFor="let device of user.devices">
+                <mat-icon>{{ device.type === 'mobile' ? 'phone_android' : 'computer' }}</mat-icon>
+                <div class="device-info">
+                  <span class="device-type">{{ device.type }}</span>
+                  <span class="device-ip">IP: {{ device.ipAddress || '未知' }}</span>
+                  <span class="device-last-used">最后使用: {{ formatDate(device.lastUsed) }}</span>
+                </div>
+              </div>
+            </div>
+          </mat-card-content>
+        </mat-card>
+      </div>
+    </mat-tab>
+
+    <!-- 活动日志 -->
+    <mat-tab label="活动日志" *ngIf="user.recentActivities?.length">
+      <div class="tab-content">
+        <mat-card class="info-card">
+          <mat-card-header>
+            <mat-card-title>最近活动</mat-card-title>
+          </mat-card-header>
+          <mat-card-content>
+            <div class="activity-list">
+              <div class="activity-item" *ngFor="let activity of user.recentActivities">
+                <div class="activity-icon" [class]="'activity-' + activity.type">
+                  <mat-icon>{{ getActivityIcon(activity.type) }}</mat-icon>
+                </div>
+                <div class="activity-content">
+                  <span class="activity-description">{{ activity.description }}</span>
+                  <span class="activity-time">
+                    {{ formatDate(activity.timestamp) }}
+                    <span *ngIf="activity.ipAddress"> · IP: {{ activity.ipAddress }}</span>
+                  </span>
+                </div>
+              </div>
+            </div>
+          </mat-card-content>
+        </mat-card>
+      </div>
+    </mat-tab>
+  </mat-tab-group>
+
+  <!-- 加载状态 -->
+  <div class="loading-overlay" *ngIf="loading">
+    <mat-spinner diameter="40"></mat-spinner>
+  </div>
+</div>
+
+<!-- 错误状态 -->
+<div class="error-container" *ngIf="error && !(userDetail$ | async)">
+  <mat-icon>error_outline</mat-icon>
+  <h2>{{ error }}</h2>
+  <button mat-raised-button color="primary" (click)="goBack()">返回列表</button>
+</div>

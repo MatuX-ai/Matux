@@ -1,0 +1,57 @@
+/* To learn more about this file see: https://angular.io/config/tsconfig. */
+{
+  "extends": "./tsconfig.json",
+  "compilerOptions": {
+    "outDir": "./out-tsc/app",
+    "types": ["node"],
+    "moduleResolution": "bundler"
+  },
+  "files": [
+    "src/main.ts"
+  ],
+  "include": [
+    "src/**/*.d.ts",
+    "src/**/*.ts"
+  ],
+  "exclude": [
+    "src/app/admin/dashboard/dashboard.module.ts",
+    "src/app/shared/components/notification-center/**/*",
+    "src/app/models/**/*",
+    "src/app/offline-mode/**/*",
+    "src/app/education/management/students/**/*",
+    "src/app/education/management/scheduling/**/*",
+    "src/app/education/models/**/*",
+    "src/app/education/services/**/*",
+    "src/app/management/user-management/**/*",
+    "src/app/shared/components/arvr-preview/**/*",
+    "src/app/shared/components/collaborative-editor/**/*",
+    "src/app/shared/components/cta-button/**/*",
+    "src/app/shared/components/experiment-editor/**/*",
+    "src/app/shared/components/language-switcher/**/*",
+    "src/app/shared/components/loading/loading-spinner.component.ts",
+    "src/app/shared/components/mac/mac-button.component.ts",
+    "src/app/shared/services/icon-library.service.ts",
+    "src/app/services/user-management.service.ts",
+    "src/app/routes.const.ts",
+    "src/app/user/token-dashboard/index.ts",
+    "src/app/user/services/mock-parent-data.service.ts",
+    "src/design-tokens/**/*",
+    "src/assets/icons/icon-index.ts",
+    "src/assets/icons/icon.module.ts",
+    "src/assets/i18n/helpers.ts",
+    "src/assets/i18n/index.ts",
+    "src/assets/i18n/types.ts",
+    "src/environments/environment.prod.ts",
+    "src/app/features/achievement-integration/achievement-integration-routing.module.ts",
+    "src/app/features/achievement-integration/achievement-integration.module.ts",
+    "src/app/features/achievement-integration/components/achievement-display/**/*",
+    "src/app/features/achievement-integration/components/achievement-review/**/*",
+    "src/app/features/achievement-integration/examples/**/*",
+    "src/app/core/guards/error-boundary.guard.ts",
+    "src/app/core/utils/retry.utils.ts",
+    "src/app/education/education-routing.module.ts",
+    "src/app/education/education.module.ts",
+    "src/app/education/management/attendance/**/*",
+    "src/app/education/management/parents/**/*"
+  ]
+}

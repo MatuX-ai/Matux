@@ -1,0 +1,380 @@
+// Design Tokens - Layout System
+//
+// 鍏ㄥ眬布局容器系统锛屾彁渚涘搷搴斿紡布局解决方案
+
+// 导入 Design Tokens
+@import 'design-tokens/index';
+
+// =============================================================================
+// 基础容器绫?
+// =============================================================================
+
+/// 标准固定宽度容器
+.container {
+  @include container(false, $container-max-width);
+  
+  // 容器淇グ绫?
+  &--small {
+    @include container(false, 800px);
+  }
+  
+  &--large {
+    @include container(false, 1400px);
+  }
+  
+  &--fluid {
+    @include container(true);
+  }
+  
+  &--full {
+    @include container(true);
+
+    padding: 0;
+  }
+}
+
+/// 流体容器锛?00%宽度锛?
+.container-fluid {
+  @include container(true);
+}
+
+// =============================================================================
+// 网格系统
+// =============================================================================
+
+/// 网格容器
+.grid {
+  @include grid-container;
+  
+  // 网格淇グ绫?
+  &--gutter-sm {
+    margin: 0 (-$spacing-sm / 2);
+    
+    > .grid-col {
+      padding: 0 ($spacing-sm / 2);
+    }
+  }
+  
+  &--gutter-lg {
+    margin: 0 (-$spacing-lg / 2);
+    
+    > .grid-col {
+      padding: 0 ($spacing-lg / 2);
+    }
+  }
+  
+  &--align-start {
+    align-items: flex-start;
+  }
+  
+  &--align-center {
+    align-items: center;
+  }
+  
+  &--align-end {
+    align-items: flex-end;
+  }
+  
+  &--justify-start {
+    justify-content: flex-start;
+  }
+  
+  &--justify-center {
+    justify-content: center;
+  }
+  
+  &--justify-end {
+    justify-content: flex-end;
+  }
+  
+  &--justify-between {
+    justify-content: space-between;
+  }
+  
+  &--justify-around {
+    justify-content: space-around;
+  }
+}
+
+/// 网格鍒?
+.grid-col {
+  @include grid-column(12); // 默认鍗犳弧鏁磋
+  
+  // 响应式忓垪瀹?
+  &--1 { @include grid-column(1); }
+  &--2 { @include grid-column(2); }
+  &--3 { @include grid-column(3); }
+  &--4 { @include grid-column(4); }
+  &--5 { @include grid-column(5); }
+  &--6 { @include grid-column(6); }
+  &--7 { @include grid-column(7); }
+  &--8 { @include grid-column(8); }
+  &--9 { @include grid-column(9); }
+  &--10 { @include grid-column(10); }
+  &--11 { @include grid-column(11); }
+  &--12 { @include grid-column(12); }
+  
+  // 鍋忕Щ閲忕被
+  &--offset-1 { margin-left: grid-width(1); }
+  &--offset-2 { margin-left: grid-width(2); }
+  &--offset-3 { margin-left: grid-width(3); }
+  &--offset-4 { margin-left: grid-width(4); }
+  &--offset-5 { margin-left: grid-width(5); }
+  &--offset-6 { margin-left: grid-width(6); }
+  &--offset-7 { margin-left: grid-width(7); }
+  &--offset-8 { margin-left: grid-width(8); }
+  &--offset-9 { margin-left: grid-width(9); }
+  &--offset-10 { margin-left: grid-width(10); }
+  &--offset-11 { margin-left: grid-width(11); }
+}
+
+// =============================================================================
+// 响应式忓竷灞€绫?
+// =============================================================================
+
+/// 响应式忛殣钘?鏄剧ず
+.hidden {
+  &--mobile {
+    @include hidden-at(mobile);
+  }
+  
+  &--tablet {
+    @include hidden-at(tablet);
+  }
+  
+  &--desktop {
+    @include hidden-at(desktop);
+  }
+}
+
+.visible {
+  &--mobile {
+    @include visible-at(mobile);
+
+    display: none;
+  }
+  
+  &--tablet {
+    @include visible-at(tablet);
+
+    display: none;
+  }
+  
+  &--desktop {
+    @include visible-at(desktop);
+
+    display: none;
+  }
+}
+
+// =============================================================================
+// Flexbox 布局工具绫?
+// =============================================================================
+
+/// Flex 容器
+.flex {
+  display: flex;
+  
+  // 方向
+  &--row { flex-direction: row; }
+  &--row-reverse { flex-direction: row-reverse; }
+  &--column { flex-direction: column; }
+  &--column-reverse { flex-direction: column-reverse; }
+  
+  // 鎹㈣
+  &--wrap { flex-wrap: wrap; }
+  &--nowrap { flex-wrap: nowrap; }
+  &--wrap-reverse { flex-wrap: wrap-reverse; }
+  
+  // 对齐方式
+  &--items-start { align-items: flex-start; }
+  &--items-center { align-items: center; }
+  &--items-end { align-items: flex-end; }
+  &--items-baseline { align-items: baseline; }
+  &--items-stretch { align-items: stretch; }
+  
+  &--justify-start { justify-content: flex-start; }
+  &--justify-center { justify-content: center; }
+  &--justify-end { justify-content: flex-end; }
+  &--justify-between { justify-content: space-between; }
+  &--justify-around { justify-content: space-around; }
+  &--justify-evenly { justify-content: space-evenly; }
+  
+  // 鍐呭对齐
+  &--content-start { align-content: flex-start; }
+  &--content-center { align-content: center; }
+  &--content-end { align-content: flex-end; }
+  &--content-between { align-content: space-between; }
+  &--content-around { align-content: space-around; }
+  &--content-stretch { align-content: stretch; }
+}
+
+/// Flex 椤圭洰
+.flex-item {
+  // 鏀剁缉鍜屽闀?
+  &--grow { flex-grow: 1; }
+  &--no-grow { flex-grow: 0; }
+  &--shrink { flex-shrink: 1; }
+  &--no-shrink { flex-shrink: 0; }
+  
+  // 基础澶у皬
+  &--basis-auto { flex-basis: auto; }
+  &--basis-0 { flex-basis: 0; }
+  &--basis-full { flex-basis: 100%; }
+  
+  // 对齐
+  &--self-auto { align-self: auto; }
+  &--self-start { align-self: flex-start; }
+  &--self-center { align-self: center; }
+  &--self-end { align-self: flex-end; }
+  &--self-stretch { align-self: stretch; }
+  &--self-baseline { align-self: baseline; }
+}
+
+// =============================================================================
+// 间距工具绫?
+// =============================================================================
+
+/// 内边距濈被
+.p {
+  &--0 { padding: 0; }
+  &--1 { padding: $spacing-xs; }    // 4px
+  &--2 { padding: $spacing-sm; }    // 8px
+  &--3 { padding: $spacing-md; }    // 12px
+  &--4 { padding: $spacing-lg; }    // 16px
+  &--5 { padding: $spacing-xl; }    // 24px
+  &--6 { padding: $spacing-xxl; }   // 32px
+  
+  // 方向鎬у唴杈硅窛
+  &y--1 { padding-top: $spacing-xs; padding-bottom: $spacing-xs; }
+  &y--2 { padding-top: $spacing-sm; padding-bottom: $spacing-sm; }
+  &y--3 { padding-top: $spacing-md; padding-bottom: $spacing-md; }
+  &y--4 { padding-top: $spacing-lg; padding-bottom: $spacing-lg; }
+  &y--5 { padding-top: $spacing-xl; padding-bottom: $spacing-xl; }
+  &y--6 { padding-top: $spacing-xxl; padding-bottom: $spacing-xxl; }
+  
+  &x--1 { padding-right: $spacing-xs; padding-left: $spacing-xs; }
+  &x--2 { padding-right: $spacing-sm; padding-left: $spacing-sm; }
+  &x--3 { padding-right: $spacing-md; padding-left: $spacing-md; }
+  &x--4 { padding-right: $spacing-lg; padding-left: $spacing-lg; }
+  &x--5 { padding-right: $spacing-xl; padding-left: $spacing-xl; }
+  &x--6 { padding-right: $spacing-xxl; padding-left: $spacing-xxl; }
+}
+
+/// 澶栬竟璺濈被
+.m {
+  &--0 { margin: 0; }
+  &--1 { margin: $spacing-xs; }     // 4px
+  &--2 { margin: $spacing-sm; }     // 8px
+  &--3 { margin: $spacing-md; }     // 12px
+  &--4 { margin: $spacing-lg; }     // 16px
+  &--5 { margin: $spacing-xl; }     // 24px
+  &--6 { margin: $spacing-xxl; }    // 32px
+  &--auto { margin: auto; }
+  
+  // 方向鎬у杈硅窛
+  &y--1 { margin-top: $spacing-xs; margin-bottom: $spacing-xs; }
+  &y--2 { margin-top: $spacing-sm; margin-bottom: $spacing-sm; }
+  &y--3 { margin-top: $spacing-md; margin-bottom: $spacing-md; }
+  &y--4 { margin-top: $spacing-lg; margin-bottom: $spacing-lg; }
+  &y--5 { margin-top: $spacing-xl; margin-bottom: $spacing-xl; }
+  &y--6 { margin-top: $spacing-xxl; margin-bottom: $spacing-xxl; }
+  &y--auto { margin-top: auto; margin-bottom: auto; }
+  
+  &x--1 { margin-right: $spacing-xs; margin-left: $spacing-xs; }
+  &x--2 { margin-right: $spacing-sm; margin-left: $spacing-sm; }
+  &x--3 { margin-right: $spacing-md; margin-left: $spacing-md; }
+  &x--4 { margin-right: $spacing-lg; margin-left: $spacing-lg; }
+  &x--5 { margin-right: $spacing-xl; margin-left: $spacing-xl; }
+  &x--6 { margin-right: $spacing-xxl; margin-left: $spacing-xxl; }
+  &x--auto { margin-right: auto; margin-left: auto; }
+}
+
+// =============================================================================
+// 响应式忓鍣ㄥ彉浣?
+// =============================================================================
+
+/// 响应式忓鍣?
+@media (min-width: $breakpoint-tablet-min) {
+  .container\@tablet {
+    @include container(false, $container-max-width);
+  }
+  
+  .container-fluid\@tablet {
+    @include container(true);
+  }
+}
+
+@media (min-width: $breakpoint-desktop-min) {
+  .container\@desktop {
+    @include container(false, $container-max-width);
+  }
+  
+  .container-fluid\@desktop {
+    @include container(true);
+  }
+}
+
+// =============================================================================
+// 瀹炵敤布局绫?
+// =============================================================================
+
+/// 居中对齐
+.center {
+  text-align: center;
+  
+  &--block {
+    margin: 0 auto;
+  }
+  
+  &--flex {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+  }
+}
+
+/// 娓呴櫎娴姩
+.clearfix {
+  &::after {
+  display: table;
+  clear: both;
+  content: "";
+}
+}
+
+/// 鏂囨湰鎴柇
+.truncate {
+  overflow: hidden;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+}
+
+/// 澶氳鏂囨湰鎴柇
+.line-clamp {
+  &--2 {
+    displ{
+  display: -webkit-box;
+  overflow: hidden;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 2;
+} {
+    display: -webkit-box{
+  display: -webkit-box;
+  overflow: hidden;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 3;
+}: -webkit-box;
+    overflow{
+  display: -webkit-box;
+  overflow: hidden;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 4;
+}
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+  
+  &::-webkit-scrollbar {
+    display: none;
+  }
+}

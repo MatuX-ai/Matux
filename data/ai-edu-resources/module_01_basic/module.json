@@ -1,0 +1,13 @@
+{
+  "module_code": "basic_concepts_01",
+  "name": "AI 基本概念入门",
+  "description": "人工智能基础概念介绍，适合小学 1-6 年级学生",
+  "category": "basic_concepts",
+  "grade_ranges": [
+    {"min": 1, "max": 6}
+  ],
+  "expected_lessons": 3,
+  "expected_duration_minutes": 60,
+  "is_active": true,
+  "display_order": 1
+}

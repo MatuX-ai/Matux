@@ -1,0 +1,159 @@
+<div class="offline-dashboard">
+  <div class="dashboard-header">
+    <h1>
+      <mat-icon class="header-icon">offline_bolt</mat-icon>
+      离线学习模式
+    </h1>
+    <p class="subtitle">您正在离线模式下使用iMatuProject平台</p>
+  </div>
+
+  <!-- 网络状态卡片 -->
+  <mat-card class="status-card network-status">
+    <mat-card-header>
+      <mat-card-title>
+        <mat-icon
+          [style.color]="getNetworkQualityColor(networkStatus?.quality)"
+          matTooltip="{{getQualityDescription(networkStatus?.quality)}}">
+          {{getNetworkQualityIcon(networkStatus?.quality)}}
+        </mat-icon>
+        网络状态
+      </mat-card-title>
+      <button mat-icon-button (click)="refreshNetworkStatus()" matTooltip="刷新网络状态">
+        <mat-icon>refresh</mat-icon>
+      </button>
+    </mat-card-header>
+    <mat-card-content>
+      <div class="status-info">
+        <div class="status-item">
+          <span class="label">连接状态:</span>
+          <span class="value" [class.online]="networkStatus?.isOnline" [class.offline]="!networkStatus?.isOnline">
+            {{networkStatus?.isOnline ? '在线' : '离线'}}
+          </span>
+        </div>
+        <div class="status-item">
+          <span class="label">网络质量:</span>
+          <span class="value">{{getQualityDescription(networkStatus?.quality)}}</span>
+        </div>
+        <div class="status-item" *ngIf="networkStatus?.rtt">
+          <span class="label">网络延迟:</span>
+          <span class="value">{{networkStatus?.rtt || 0}} ms</span>
+        </div>
+        <div class="status-item" *ngIf="networkStatus?.downlink">
+          <span class="label">下行速度:</span>
+          <span class="value">{{networkStatus?.downlink || 0}} Mbps</span>
+        </div>
+      </div>
+    </mat-card-content>
+  </mat-card>
+
+  <!-- 存储统计卡片 -->
+  <mat-card class="status-card storage-stats" *ngIf="storageStats">
+    <mat-card-header>
+      <mat-card-title>
+        <mat-icon>storage</mat-icon>
+        本地存储
+      </mat-card-title>
+      <button mat-icon-button (click)="cleanupCache()" matTooltip="清理过期缓存">
+        <mat-icon>cleaning_services</mat-icon>
+      </button>
+    </mat-card-header>
+    <mat-card-content>
+      <div class="storage-info">
+        <div class="storage-summary">
+          <div class="size-info">
+            <span class="label">已使用空间:</span>
+            <span class="value">{{formatStorageSize(storageStats.totalSize)}}</span>
+          </div>
+          <div class="pending-info">
+            <span class="label">待同步操作:</span>
+            <span class="value badge" [class.warning]="storageStats.pendingOperations > 0">
+              {{storageStats.pendingOperations}}
+            </span>
+          </div>
+        </div>
+
+        <mat-divider></mat-divider>
+
+        <div class="item-counts">
+          <div class="count-item" *ngFor="let entry of storageStats.itemCounts | keyvalue">
+            <span class="item-label">{{getItemTypeName(entry.key)}}:</span>
+            <span class="item-count">{{entry.value}}</span>
+          </div>
+        </div>
+      </div>
+    </mat-card-content>
+  </mat-card>
+
+  <!-- 快捷操作区域 -->
+  <mat-grid-list cols="2" rowHeight="200px" gutterSize="16px">
+    <mat-grid-tile>
+      <mat-card class="quick-action-card">
+        <mat-card-content>
+          <mat-icon class="action-icon">assignment</mat-icon>
+          <h3>离线任务</h3>
+          <p>查看和管理已下载的学习任务</p>
+          <button mat-raised-button color="primary" routerLink="/offline-mode/tasks">
+            查看任务
+          </button>
+        </mat-card-content>
+      </mat-card>
+    </mat-grid-tile>
+
+    <mat-grid-tile>
+      <mat-card class="quick-action-card">
+        <mat-card-content>
+          <mat-icon class="action-icon">school</mat-icon>
+          <h3>离线课程</h3>
+          <p>浏览已缓存的课程内容</p>
+          <button mat-raised-button color="accent" routerLink="/offline-mode/courses">
+            浏览课程
+          </button>
+        </mat-card-content>
+      </mat-card>
+    </mat-grid-tile>
+
+    <mat-grid-tile>
+      <mat-card class="quick-action-card">
+        <mat-card-content>
+          <mat-icon class="action-icon">sync</mat-icon>
+          <h3>数据同步</h3>
+          <p>管理离线数据与云端的同步</p>
+          <button mat-raised-button color="warn" disabled>
+            同步管理
+          </button>
+        </mat-card-content>
+      </mat-card>
+    </mat-grid-tile>
+
+    <mat-grid-tile>
+      <mat-card class="quick-action-card">
+        <mat-card-content>
+          <mat-icon class="action-icon">settings</mat-icon>
+          <h3>离线设置</h3>
+          <p>配置离线模式相关选项</p>
+          <button mat-raised-button routerLink="/offline-mode/settings">
+            系统设置
+          </button>
+        </mat-card-content>
+      </mat-card>
+    </mat-grid-tile>
+  </mat-grid-list>
+
+  <!-- 离线提示信息 -->
+  <mat-card class="info-card">
+    <mat-card-header>
+      <mat-card-title>
+        <mat-icon>info</mat-icon>
+        离线使用提示
+      </mat-card-title>
+    </mat-card-header>
+    <mat-card-content>
+      <ul class="tips-list">
+        <li>您的操作将在网络恢复后自动同步到云端</li>
+        <li>部分功能在离线状态下可能受限</li>
+        <li>建议定期连接网络以保持数据同步</li>
+        <li>重要数据变更会在联网后立即上传</li>
+      </ul>
+    </mat-card-content>
+  </mat-card>
+</div>

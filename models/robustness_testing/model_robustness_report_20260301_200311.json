@@ -1,0 +1,90 @@
+{
+  "timestamp": "2026-03-01T20:03:11.369094",
+  "test_configuration": {
+    "sensor_noise": {
+      "description": "传感器噪声干扰测试",
+      "noise_levels": [
+        0.01,
+        0.05,
+        0.1,
+        0.15
+      ],
+      "test_iterations": 100
+    },
+    "lighting_conditions": {
+      "description": "光照条件变化测试",
+      "conditions": [
+        "bright",
+        "dim",
+        "dark",
+        "variable"
+      ],
+      "test_iterations": 50
+    },
+    "temperature_variations": {
+      "description": "温度变化影响测试",
+      "temperatures": [
+        -10,
+        0,
+        25,
+        40,
+        60
+      ],
+      "test_iterations": 30
+    },
+    "power_fluctuations": {
+      "description": "电源波动测试",
+      "voltage_ranges": [
+        4.5,
+        4.8,
+        5.0,
+        5.2,
+        5.5
+      ],
+      "test_iterations": 40
+    }
+  },
+  "results": {
+    "test_results": {
+      "sensor_noise": {
+        "scenario": "sensor_noise",
+        "description": "传感器噪声干扰测试",
+        "baseline_accuracy": 0.92,
+        "average_accuracy_under_test": 0.8395,
+        "accuracy_drop_percent": 8.8,
+        "test_iterations": 100,
+        "pass_criteria_met": "True"
+      },
+      "lighting_conditions": {
+        "scenario": "lighting_conditions",
+        "description": "光照条件变化测试",
+        "baseline_accuracy": 0.92,
+        "average_accuracy_under_test": 0.8694,
+        "accuracy_drop_percent": 5.5,
+        "test_iterations": 50,
+        "pass_criteria_met": "True"
+      },
+      "temperature_variations": {
+        "scenario": "temperature_variations",
+        "description": "温度变化影响测试",
+        "baseline_accuracy": 0.92,
+        "average_accuracy_under_test": 0.8574,
+        "accuracy_drop_percent": 6.8,
+        "test_iterations": 30,
+        "pass_criteria_met": "True"
+      },
+      "power_fluctuations": {
+        "scenario": "power_fluctuations",
+        "description": "电源波动测试",
+        "baseline_accuracy": 0.92,
+        "average_accuracy_under_test": 0.8501,
+        "accuracy_drop_percent": 7.6,
+        "test_iterations": 40,
+        "pass_criteria_met": "True"
+      }
+    },
+    "overall_robustness_score": 64.1,
+    "robustness_grade": "Poor",
+    "summary": "平均准确率下降 7.2%，鲁棒性评分为 64.1/100"
+  }
+}

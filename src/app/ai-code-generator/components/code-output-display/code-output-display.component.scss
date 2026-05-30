@@ -1,0 +1,103 @@
+@use '../../../../styles/design-tokens' as tokens;
+
+.code-output-container {
+  overflow: hidden;
+  border-radius: tokens.$border-radius-lg;
+  background: white;
+  box-shadow: 0 10px 30px rgb(0 0 0 / 20%);
+
+  .panel-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: tokens.$spacing-md tokens.$spacing-lg;
+    border-bottom: 1px solid tokens.$color-gray-200;
+    background: tokens.$color-gray-50;
+
+    h3 {
+      margin: 0;
+      color: tokens.$color-gray-800;
+      font-size: 1.25rem;
+    }
+
+    .code-actions {
+      display: flex;
+      gap: tokens.$spacing-sm;
+
+      .btn-icon {
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        width: 36px;
+        height: 36px;
+        border: none;
+        border-radius: tokens.$border-radius-md;
+        background: tokens.$color-gray-200;
+        font-size: 1.25rem;
+        cursor: pointer;
+        transition: all 0.2s ease;
+
+        &:hover {
+          background: tokens.$color-gray-300;
+          transform: translateY(-1px);
+        }
+      }
+    }
+  }
+
+  .code-display {
+    overflow-y: auto;
+    max-height: 500px;
+    padding: tokens.$spacing-lg;
+    background: tokens.$color-gray-900;
+
+    pre {
+      margin: 0;
+      color: tokens.$color-gray-100;
+      font-family: 'Fira Code', Monaco, Consolas, monospace;
+      font-size: 0.9rem;
+      line-height: 1.5;
+      white-space: pre-wrap;
+      overflow-wrap: break-word;
+    }
+  }
+
+  .placeholder,
+  .generating-placeholder {
+    padding: tokens.$spacing-xxl tokens.$spacing-lg;
+    color: tokens.$color-gray-500;
+    text-align: center;
+
+    .placeholder-content {
+      .placeholder-icon {
+        margin-bottom: tokens.$spacing-md;
+        font-size: 3rem;
+      }
+
+      h4 {
+        margin: 0 0 tokens.$spacing-sm;
+        color: tokens.$color-gray-600;
+      }
+
+      p {
+        margin: 0;
+        color: tokens.$color-gray-500;
+      }
+    }
+
+    .spinner-large {
+      width: 40px;
+      height: 40px;
+      margin: 0 auto tokens.$spacing-md;
+      border: 4px solid tokens.$color-gray-300;
+      border-top: 4px solid tokens.$color-primary;
+      border-radius: 50%;
+      animation: spin 1s linear infinite;
+    }
+  }
+}
+
+@keyframes spin {
+  0% { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
+}

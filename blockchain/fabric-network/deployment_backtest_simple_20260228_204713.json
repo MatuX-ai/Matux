@@ -1,0 +1,35 @@
+{
+  "timestamp": "2026-02-28T20:47:13.618616",
+  "tests": [
+    {
+      "test_name": "配置文件检查",
+      "passed": 3,
+      "total": 3,
+      "status": "PASS"
+    },
+    {
+      "test_name": "生成文件检查",
+      "passed": 5,
+      "total": 5,
+      "status": "PASS"
+    },
+    {
+      "test_name": "组织配置验证",
+      "passed": 3,
+      "total": 3,
+      "status": "PASS"
+    },
+    {
+      "test_name": "通道配置验证",
+      "passed": 2,
+      "total": 2,
+      "status": "PASS"
+    }
+  ],
+  "summary": {
+    "total_passed": 13,
+    "total_tests": 13,
+    "success_rate": 100.0,
+    "status": "PASS"
+  }
+}

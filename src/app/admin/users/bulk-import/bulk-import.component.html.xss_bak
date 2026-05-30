@@ -1,0 +1,282 @@
+<div class="bulk-import-container">
+  <!-- 页面标题 -->
+  <div class="page-header">
+    <h1>批量导入用户</h1>
+    <p>通过CSV或Excel文件批量导入用户信息</p>
+  </div>
+
+  <!-- 文件上传区域 -->
+  <mat-card class="upload-section">
+    <mat-card-header>
+      <mat-card-title>
+        <mat-icon>cloud_upload</mat-icon>
+        选择导入文件
+      </mat-card-title>
+    </mat-card-header>
+    
+    <mat-card-content>
+      <!-- 文件拖拽区域 -->
+      <div 
+        class="drop-zone"
+        [class.drag-over]="isDragOver"
+        (dragover)="onDragOver($event)"
+        (dragleave)="onDragLeave($event)"
+        (drop)="onDrop($event)"
+        (click)="fileInput.click()">
+        
+        <input 
+          #fileInput
+          type="file" 
+          accept=".csv,.xlsx,.xls"
+          (change)="onFileSelected($event)"
+          style="display: none;">
+        
+        <div class="drop-content">
+          <mat-icon class="upload-icon">cloud_upload</mat-icon>
+          <h3>{{ selectedFile ? selectedFile.name : '拖拽文件到这里或点击选择文件' }}</h3>
+          <p class="file-info">
+            支持 CSV 和 Excel 格式 (.csv, .xlsx, .xls) | 最大 10MB
+          </p>
+          <button mat-stroked-button color="primary" *ngIf="!selectedFile">
+            浏览文件
+          </button>
+          
+          <!-- 文件信息显示 -->
+          <div class="file-details" *ngIf="selectedFile">
+            <mat-chip-list>
+              <mat-chip color="primary" selected>
+                {{ (selectedFile.size / 1024).toFixed(1) }} KB
+              </mat-chip>
+              <mat-chip>
+                {{ selectedFile.type.split('/')[1]?.toUpperCase() }}
+              </mat-chip>
+            </mat-chip-list>
+          </div>
+        </div>
+      </div>
+    </mat-card-content>
+  </mat-card>
+
+  <!-- 导入配置 -->
+  <mat-card class="config-section" *ngIf="selectedFile">
+    <mat-card-header>
+      <mat-card-title>
+        <mat-icon>settings</mat-icon>
+        导入配置
+      </mat-card-title>
+    </mat-card-header>
+    
+    <mat-card-content>
+      <form [formGroup]="importForm">
+        <div class="config-grid">
+          <!-- 冲突处理策略 -->
+          <mat-form-field appearance="outline">
+            <mat-label>冲突处理策略</mat-label>
+            <mat-select formControlName="conflictResolution">
+              <mat-option 
+                *ngFor="let option of conflictResolutionOptions" 
+                [value]="option.value">
+                {{ option.label }}
+              </mat-option>
+            </mat-select>
+          </mat-form-field>
+
+          <!-- 密码生成选项 -->
+          <mat-checkbox 
+            formControlName="generatePassword"
+            color="primary">
+            自动生成随机密码
+          </mat-checkbox>
+        </div>
+
+        <!-- 字段映射说明 -->
+        <mat-expansion-panel class="field-mapping-help">
+          <mat-expansion-panel-header>
+            <mat-panel-title>
+              <mat-icon>help_outline</mat-icon>
+              字段映射说明
+            </mat-panel-title>
+          </mat-expansion-panel-header>
+          
+          <div class="mapping-info">
+            <table mat-table [dataSource]="fieldMappingData" class="mapping-table">
+              <ng-container matColumnDef="target">
+                <th mat-header-cell *matHeaderCellDef>目标字段</th>
+                <td mat-cell *matCellDef="let element">{{ element.target }}</td>
+              </ng-container>
+              
+              <ng-container matColumnDef="source">
+                <th mat-header-cell *matHeaderCellDef>可接受的源字段名</th>
+                <td mat-cell *matCellDef="let element">{{ element.source }}</td>
+              </ng-container>
+              
+              <tr mat-header-row *matHeaderRowDef="['target', 'source']"></tr>
+              <tr mat-row *matRowDef="let row; columns: ['target', 'source'];"></tr>
+            </table>
+          </div>
+        </mat-expansion-panel>
+      </form>
+    </mat-card-content>
+  </mat-card>
+
+  <!-- 操作按钮 -->
+  <div class="action-buttons" *ngIf="selectedFile">
+    <button 
+      mat-raised-button 
+      color="primary"
+      (click)="importUsers()"
+      [disabled]="isImporting || importForm.invalid"
+      class="import-button">
+      <mat-icon *ngIf="!isImporting">play_arrow</mat-icon>
+      <mat-spinner *ngIf="isImporting" diameter="20"></mat-spinner>
+      {{ isImporting ? '正在导入...' : '开始导入' }}
+    </button>
+    
+    <button 
+      mat-stroked-button 
+      (click)="downloadTemplate()">
+      <mat-icon>download</mat-icon>
+      下载模板
+    </button>
+    
+    <button 
+      mat-stroked-button 
+      (click)="cancelImport()">
+      取消
+    </button>
+  </div>
+
+  <!-- 导入进度 -->
+  <mat-card class="progress-section" *ngIf="isImporting">
+    <mat-card-content>
+      <div class="progress-info">
+        <span>导入进度: {{ importProgress }}%</span>
+        <mat-progress-bar 
+          mode="determinate" 
+          [value]="importProgress">
+        </mat-progress-bar>
+      </div>
+    </mat-card-content>
+  </mat-card>
+
+  <!-- 导入结果 -->
+  <mat-card class="results-section" *ngIf="importResults">
+    <mat-card-header>
+      <mat-card-title>
+        <mat-icon 
+          [color]="importResults.success_count > 0 ? 'primary' : 'warn'">
+          assignment_turned_in
+        </mat-icon>
+        导入结果
+      </mat-card-title>
+      <mat-card-subtitle>
+        {{ getImportSummary() }}
+      </mat-card-subtitle>
+    </mat-card-header>
+    
+    <mat-card-content>
+      <!-- 统计卡片 -->
+      <div class="stats-grid">
+        <mat-card class="stat-card success">
+          <mat-card-content>
+            <div class="stat-value">{{ importResults.success_count }}</div>
+            <div class="stat-label">成功导入</div>
+          </mat-card-content>
+        </mat-card>
+        
+        <mat-card class="stat-card error">
+          <mat-card-content>
+            <div class="stat-value">{{ importResults.failed_count }}</div>
+            <div class="stat-label">导入失败</div>
+          </mat-card-content>
+        </mat-card>
+        
+        <mat-card class="stat-card warning">
+          <mat-card-content>
+            <div class="stat-value">{{ importResults.conflicts_count }}</div>
+            <div class="stat-label">数据冲突</div>
+          </mat-card-content>
+        </mat-card>
+      </div>
+
+      <!-- 错误信息 -->
+      <div class="errors-section" *ngIf="importResults.errors?.length > 0">
+        <h3>错误信息</h3>
+        <mat-list>
+          <mat-list-item *ngFor="let error of importResults.errors">
+            <mat-icon matListItemIcon color="warn">error</mat-icon>
+            <div matListItemTitle>{{ error }}</div>
+          </mat-list-item>
+        </mat-list>
+      </div>
+
+      <!-- 冲突详情 -->
+      <div class="conflicts-section" *ngIf="importResults.conflicts && Object.keys(importResults.conflicts).length > 0">
+        <h3>冲突详情</h3>
+        <mat-accordion>
+          <mat-expansion-panel 
+            *ngFor="let conflictEntry of getConflictEntries()" 
+            [expanded]="false">
+            <mat-expansion-panel-header>
+              <mat-panel-title>
+                {{ getConflictTypeLabel(conflictEntry.key) }}
+                <mat-chip>{{ conflictEntry.value.length }}</mat-chip>
+              </mat-panel-title>
+            </mat-expansion-panel-header>
+            
+            <div class="conflict-table-container">
+              <table mat-table [dataSource]="conflictEntry.value" class="conflict-table">
+                <ng-container matColumnDef="row">
+                  <th mat-header-cell *matHeaderCellDef>行号</th>
+                  <td mat-cell *matCellDef="let element">{{ element.row }}</td>
+                </ng-container>
+                
+                <ng-container matColumnDef="value">
+                  <th mat-header-cell *matHeaderCellDef>值</th>
+                  <td mat-cell *matCellDef="let element">
+                    {{ element.username || element.email || element.value }}
+                  </td>
+                </ng-container>
+                
+                <ng-container matColumnDef="issue">
+                  <th mat-header-cell *matHeaderCellDef>问题</th>
+                  <td mat-cell *matCellDef="let element">
+                    {{ element.error || (element.existing ? '已存在' : '') }}
+                  </td>
+                </ng-container>
+                
+                <tr mat-header-row *matHeaderRowDef="['row', 'value', 'issue']"></tr>
+                <tr mat-row *matRowDef="let row; columns: ['row', 'value', 'issue'];"></tr>
+              </table>
+            </div>
+          </mat-expansion-panel>
+        </mat-accordion>
+      </div>
+
+      <!-- 成功导入的用户列表 -->
+      <div class="success-users-section" *ngIf="importResults.imported_users?.length > 0">
+        <h3>成功导入的用户</h3>
+        <div class="users-grid">
+          <mat-card 
+            *ngFor="let user of importResults.imported_users" 
+            class="user-card">
+            <mat-card-header>
+              <mat-card-title>{{ user.username }}</mat-card-title>
+              <mat-card-subtitle>{{ user.email }}</mat-card-subtitle>
+            </mat-card-header>
+            <mat-card-content>
+              <mat-chip-list>
+                <mat-chip color="primary" selected>
+                  {{ user.role || 'user' }}
+                </mat-chip>
+                <mat-chip>
+                  ID: {{ user.id }}
+                </mat-chip>
+              </mat-chip-list>
+            </mat-card-content>
+          </mat-card>
+        </div>
+      </div>
+    </mat-card-content>
+  </mat-card>
+</div>

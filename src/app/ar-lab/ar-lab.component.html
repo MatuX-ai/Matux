@@ -1,0 +1,195 @@
+<div class="ar-lab-container">
+  <!-- 顶部状态栏 -->
+  <div class="status-bar">
+    <div class="status-item">
+      <mat-icon [color]="isARSupported ? 'primary' : 'warn'">
+        {{ isARSupported ? 'check_circle' : 'error' }}
+      </mat-icon>
+      <span>AR支持: {{ arStatusMessage }}</span>
+    </div>
+
+    <div class="status-item">
+      <mat-icon [color]="hardwareConnected ? 'primary' : 'warn'">
+        {{ hardwareConnected ? 'usb' : 'usb_off' }}
+      </mat-icon>
+      <span>硬件: {{ connectionStatus }}</span>
+    </div>
+
+    <div class="status-item">
+      <mat-icon [color]="isExperimentRunning ? 'accent' : 'basic'">
+        {{ isExperimentRunning ? 'play_arrow' : 'stop' }}
+      </mat-icon>
+      <span>实验: {{ isExperimentRunning ? '运行中' : '已停止' }}</span>
+    </div>
+
+    <div class="spacer"></div>
+
+    <button mat-icon-button (click)="toggleFullscreen()" matTooltip="全屏模式 (Esc 退出)">
+      <mat-icon>{{ isFullscreen ? 'fullscreen_exit' : 'fullscreen' }}</mat-icon>
+    </button>
+
+    <button mat-icon-button (click)="resetARScene()" matTooltip="重置AR场景">
+      <mat-icon>refresh</mat-icon>
+    </button>
+  </div>
+
+  <!-- 主要内容区域 -->
+  <div class="main-content">
+    <!-- 左侧控制面板 -->
+    <div class="control-panel">
+      <mat-card>
+        <mat-card-header>
+          <mat-card-title>硬件控制</mat-card-title>
+        </mat-card-header>
+        <mat-card-content>
+          <div class="control-section">
+            <h3>设备连接</h3>
+            <button
+              mat-raised-button
+              color="primary"
+              (click)="searchHardwareDevices()"
+              [disabled]="isLoading">
+              <mat-icon>search</mat-icon>
+              搜索设备
+            </button>
+
+            <mat-form-field appearance="fill" class="port-selector">
+              <mat-label>选择串口</mat-label>
+              <mat-select [(value)]="selectedPort" [disabled]="!availablePorts.length || isLoading">
+                <mat-option
+                  *ngFor="let port of availablePorts"
+                  [value]="port">
+                  {{ port }}
+                </mat-option>
+              </mat-select>
+            </mat-form-field>
+
+            <div class="connection-buttons">
+              <button
+                mat-raised-button
+                color="primary"
+                (click)="connectHardware(selectedPort)"
+                [disabled]="!selectedPort || isLoading">
+                连接
+              </button>
+              <button
+                mat-raised-button
+                color="warn"
+                (click)="disconnectHardware()"
+                [disabled]="!hardwareConnected || isLoading">
+                断开
+              </button>
+            </div>
+          </div>
+
+          <div class="control-section">
+            <h3>AR控制</h3>
+            <mat-slide-toggle
+              [(ngModel)]="isTracking"
+              (change)="toggleARTracking()"
+              [disabled]="!isUnityLoaded">
+              启用AR跟踪
+            </mat-slide-toggle>
+
+            <button
+              mat-raised-button
+              color="primary"
+              (click)="startExperiment()"
+              [disabled]="!hardwareConnected || isExperimentRunning || isLoading">
+              <mat-icon>play_arrow</mat-icon>
+              开始实验
+            </button>
+
+            <button
+              mat-raised-button
+              color="warn"
+              (click)="stopExperiment()"
+              [disabled]="!isExperimentRunning">
+              <mat-icon>stop</mat-icon>
+              停止实验
+            </button>
+          </div>
+        </mat-card-content>
+      </mat-card>
+
+      <!-- 传感器数据面板 -->
+      <mat-card class="sensor-panel">
+        <mat-card-header>
+          <mat-card-title>传感器数据</mat-card-title>
+          <mat-card-subtitle>实时更新</mat-card-subtitle>
+        </mat-card-header>
+        <mat-card-content>
+          <div class="sensor-data">
+            <div class="sensor-item" *ngFor="let item of sensorData | keyvalue">
+              <span class="sensor-name">{{ item.key }}:</span>
+              <span class="sensor-value">{{ getSensorValue(item.key) | number:'1.2-2' }}</span>
+            </div>
+            <div class="last-update">
+              更新时间: {{ lastUpdateTime | date:'HH:mm:ss' }}
+            </div>
+          </div>
+        </mat-card-content>
+      </mat-card>
+    </div>
+
+    <!-- 中央Unity容器 -->
+    <div class="unity-wrapper">
+      <div class="unity-container" #unityContainer>
+        <!-- 加载状态 -->
+        <div *ngIf="isLoading" class="loading-overlay">
+          <mat-spinner></mat-spinner>
+          <p>正在加载AR实验室...</p>
+        </div>
+
+        <!-- 错误状态 -->
+        <div *ngIf="errorMessage && !isLoading" class="error-overlay">
+          <mat-icon color="warn">error</mat-icon>
+          <h2>加载失败</h2>
+          <p>{{ errorMessage }}</p>
+          <button mat-raised-button color="primary" (click)="loadUnityApplication()">
+            重试
+          </button>
+        </div>
+
+        <!-- Unity内容区域 -->
+        <div *ngIf="!isLoading && !errorMessage" class="unity-content">
+          <!-- Unity WebGL将在这里渲染 -->
+        </div>
+      </div>
+    </div>
+
+    <!-- 右侧信息面板 -->
+    <div class="info-panel">
+      <mat-card>
+        <mat-card-header>
+          <mat-card-title>实验信息</mat-card-title>
+        </mat-card-header>
+        <mat-card-content>
+          <div *ngIf="currentExperiment" class="experiment-info">
+            <p><strong>实验名称:</strong> {{ currentExperiment.name }}</p>
+            <p><strong>开始时间:</strong> {{ getExperimentStartTime() | date:'medium' }}</p>
+            <p><strong>状态:</strong> {{ currentExperiment.status }}</p>
+          </div>
+          <div *ngIf="!currentExperiment" class="no-experiment">
+            <p>暂无进行中的实验</p>
+          </div>
+        </mat-card-content>
+      </mat-card>
+
+      <mat-card>
+        <mat-card-header>
+          <mat-card-title>操作指南</mat-card-title>
+        </mat-card-header>
+        <mat-card-content>
+          <ol class="instructions">
+            <li>确保设备摄像头权限已开启</li>
+            <li>搜索并连接ESP32硬件设备</li>
+            <li>启用AR跟踪功能</li>
+            <li>点击"开始实验"按钮</li>
+            <li>按照AR指引进行硬件连接</li>
+          </ol>
+        </mat-card-content>
+      </mat-card>
+    </div>
+  </div>
+</div>

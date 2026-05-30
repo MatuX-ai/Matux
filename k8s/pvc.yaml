@@ -1,0 +1,157 @@
+# iMato Cloud - Kubernetes PVC（持久化卷声明）配置
+
+---
+# 上传文件存储
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: imato-uploads-pvc
+  namespace: imato-cloud
+  labels:
+    app: imato
+    component: uploads
+spec:
+  accessModes:
+    - ReadWriteMany  # 多节点可读写（需要 NFS 或云存储）
+  storageClassName: standard  # 使用默认 StorageClass
+  resources:
+    requests:
+      storage: 20Gi  # 申请 20GB 存储空间
+  volumeMode: Filesystem
+
+  # 如果使用特定 StorageClass（如 AWS EBS、GCP PD）
+  # storageClassName: gp2  # AWS EBS
+  # storageClassName: standard-ssd  # GCP SSD
+
+  # 选择器（可选，用于绑定特定 PV）
+  # selector:
+  #   matchLabels:
+  #     type: uploads
+
+---
+# PostgreSQL 数据持久化
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: postgres-data-pvc
+  namespace: imato-cloud
+  labels:
+    app: postgres
+spec:
+  accessModes:
+    - ReadWriteOnce  # 单节点可读写
+  storageClassName: standard
+  resources:
+    requests:
+      storage: 50Gi  # 数据库 50GB
+
+  # 性能要求高的场景使用 SSD
+  # storageClassName: premium-ssd
+
+---
+# Redis 数据持久化
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: redis-data-pvc
+  namespace: imato-cloud
+  labels:
+    app: redis
+spec:
+  accessModes:
+    - ReadWriteOnce
+  storageClassName: standard
+  resources:
+    requests:
+      storage: 10Gi  # Redis 持久化 10GB
+
+---
+# Prometheus 指标存储
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: prometheus-data-pvc
+  namespace: imato-cloud
+  labels:
+    app: prometheus
+spec:
+  accessModes:
+    - ReadWriteOnce
+  storageClassName: standard
+  resources:
+    requests:
+      storage: 100Gi  # Prometheus 长期存储需要较大空间
+
+---
+# Grafana 仪表盘和插件存储
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: grafana-data-pvc
+  namespace: imato-cloud
+  labels:
+    app: grafana
+spec:
+  accessModes:
+    - ReadWriteOnce
+  storageClassName: standard
+  resources:
+    requests:
+      storage: 10Gi
+
+---
+# 日志存储（可选，集中式日志收集）
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: logs-pvc
+  namespace: imato-cloud
+  labels:
+    app: logging
+spec:
+  accessModes:
+    - ReadWriteMany
+  storageClassName: standard
+  resources:
+    requests:
+      storage: 50Gi
+
+---
+# 备份存储（可选）
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: backups-pvc
+  namespace: imato-cloud
+  labels:
+    app: backups
+spec:
+  accessModes:
+    - ReadWriteMany
+  storageClassName: standard
+  resources:
+    requests:
+      storage: 100Gi
+
+---
+# 静态 PV 示例（如果集群没有动态供应）
+# apiVersion: v1
+# kind: PersistentVolume
+# metadata:
+#   name: imato-uploads-pv
+#   labels:
+#     type: uploads
+# spec:
+#   capacity:
+#     storage: 20Gi
+#   volumeMode: Filesystem
+#   accessModes:
+#     - ReadWriteMany
+#   persistentVolumeReclaimPolicy: Retain  # 保留策略
+#   storageClassName: manual
+#   nfs:
+#     path: /exports/uploads
+#     server: nfs-server.example.com
+#   mountOptions:
+#     - hard
+#     - nfsvers=4.1

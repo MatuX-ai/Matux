@@ -1,0 +1,139 @@
+// Design Tokens SCSS Index
+//
+// Design Token SCSS 系统入口文件
+// 缁熶竴瀵煎叆鎵€鏈?SCSS 设计变量
+
+// 瀵煎叆鎵€鏈夎璁″彉閲?
+@import 'colors';
+@import 'fonts';
+@import 'spacing';
+@import 'border-radius';
+@import 'shadows';
+@import 'layout';
+
+// 浣跨敤绀轰緥 Mixins
+/// 应用基础鍗＄墖样式
+/// @param {String} $padding-size - 内边距濆ぇ灏?
+/// @param {String} $border-radius - 圆角澶у皬
+/// @param {String} $shadow - 阴影澶у皬
+@mixin base-card($padding-size: md, $border-radius: md, $shadow: sm) {
+  @include padding($padding-size);
+  @include border-radius($border-radius);
+  @include shadow($shadow);
+
+  border: 1px solid $border-color;
+  background-color: $surface-color;
+}
+
+/// 应用基础鎸夐挳样式
+/// @param {String} $bg-color - 鑳屾櫙鑹?
+/// @param {String} $text-color - 鏂囧瓧鑹?
+/// @param {String} $hover-bg - 鎮仠鑳屾櫙鑹?
+@mixin base-button($bg-color: $primary-color, $text-color: $text-white-color, $hover-bg: $primary-color-dark) {
+  @include typography-button;
+  @include border-radius(button);
+  @include shadow(button);
+
+  border: none;
+  background-color: $bg-color;
+  color: $text-color;
+  cursor: pointer;
+  transition: all 0.2s ease-in-out;
+  
+  &:hover {
+    @include shadow(button-hover);
+
+    background-color: $hover-bg;
+  }
+  
+  &:focus {
+    @include state-shadow(focus);
+
+    outline: none;
+  }
+  
+  &:disabled {
+    @include shadow(none);
+
+    background-color: $gray-300;
+    color: $text-disabled-color;
+    cursor: not-allowed;
+  }
+}
+
+/// 应用基础杈撳叆妗嗘牱寮?
+@mixin base-input {
+  @include typography-body-medium;
+  @include border-radius(input);
+
+  padding: $spacing-sm $spacing-md;
+  border: 1px solid $border-color;
+  background-color: $background-color;
+  color: $text-primary-color;
+  transition: border-color 0.2s ease-in-out;
+  
+  &:focus {
+    @include state-shadow(focus);
+
+    border-color: $focus-color;
+    outline: none;
+  }
+  
+  &::placeholder {
+    color: $placeholder-color;
+  }
+  
+  &:disabled {
+    background-color: $gray-100;
+    color: $text-disabled-color;
+    cursor: not-allowed;
+  }
+}
+
+/// 应用响应式忓竷灞€容器
+/// @param {String} $breakpoint - 断点
+@mixin responsive-container($breakpoint: mobile) {
+  width: 100%;
+  margin: 0 auto;
+  
+  @if $breakpoint == mobile {
+    max-width: 100%;
+
+    @include responsive-padding(mobile, md);
+  } @else if $breakpoint == tablet {
+    max-width: 768px;
+
+    @include responsive-padding(tablet, lg);
+  } @else if $breakpoint == desktop {
+    max-width: 1200px;
+
+    @include responsive-padding(desktop, xl);
+  }
+}
+
+// 主题变量闆嗗悎
+/// 默认主题变量
+$theme-default: (
+  primary: $primary-color,
+  secondary: $secondary-color,
+  success: $success-color,
+  warning: $warning-color,
+  error: $error-color,
+  background: $background-color,
+  surface: $surface-color,
+  text-primary: $text-primary-color,
+  text-secondary: $text-secondary-color,
+);
+
+/// 鏆楄壊主题变量
+$theme-dark: (
+  primary: $primary-color-light,
+  secondary: $secondary-color-light,
+  success: $success-color,
+  warning: $warning-color,
+  error: $error-color,
+  background: $gray-900,
+  surface: $gray-800,
+  text-primary: $text-white-color,
+  text-secondary: $gray-300,
+);

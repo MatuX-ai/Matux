@@ -1,0 +1,39 @@
+{
+  "lesson_code": "bc_01_what_is_ai",
+  "title": "什么是人工智能？",
+  "subtitle": "认识 AI 的神奇世界",
+  "content_type": "theory",
+  "content_url": "",
+  "resources": [
+    {
+      "type": "video",
+      "url": "https://example.com/ai-intro-video.mp4",
+      "title": "AI 介绍视频",
+      "description": "5 分钟动画介绍什么是 AI"
+    },
+    {
+      "type": "document",
+      "url": "docs/ai_basics.pdf",
+      "title": "AI 基础知识手册",
+      "description": "PDF 文档，包含 AI 的基本概念"
+    }
+  ],
+  "learning_objectives": [
+    "理解人工智能的基本定义",
+    "了解 AI 在日常生活中的应用",
+    "激发对 AI 的兴趣"
+  ],
+  "knowledge_points": [
+    "人工智能的定义",
+    "AI 的应用场景",
+    "智能机器的特点"
+  ],
+  "estimated_duration_minutes": 20,
+  "has_quiz": true,
+  "quiz_passing_score": 60.0,
+  "has_practice": false,
+  "practice_type": null,
+  "base_points": 20,
+  "is_active": true,
+  "display_order": 1
+}

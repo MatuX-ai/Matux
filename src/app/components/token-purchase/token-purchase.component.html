@@ -1,0 +1,114 @@
+<div class="token-purchase-dialog">
+  <h2 mat-dialog-title>购买 Token</h2>
+
+  <div mat-dialog-content>
+    <!-- 套餐选择 -->
+    <div class="packages-container" *ngIf="!loading && packages.length > 0">
+      <div
+        class="package-card"
+        [class.selected]="selectedPackageId === pkg.id"
+        [class.popular]="pkg.isPopular"
+        (click)="selectPackage(pkg.id)"
+        *ngFor="let pkg of packages">
+
+        <!-- 热门标签 -->
+        <div class="popular-badge" *ngIf="pkg.isPopular">
+          <mat-icon>local_fire_department</mat-icon>
+          <span>热门</span>
+        </div>
+
+        <!-- 推荐标签 -->
+        <div class="recommended-badge" *ngIf="pkg.isRecommended">
+          <mat-icon>thumb_up</mat-icon>
+          <span>推荐</span>
+        </div>
+
+        <div class="package-header">
+          <h3 class="package-name">{{ pkg.name }}</h3>
+          <div class="package-price">
+            <span class="price-current">{{ formatPrice(pkg.priceCents) }}</span>
+            <span class="price-original" *ngIf="pkg.originalPriceCents && pkg.originalPriceCents > pkg.priceCents">
+              {{ formatPrice(pkg.originalPriceCents) }}
+            </span>
+            <span class="discount-tag" *ngIf="getDiscount(pkg)">
+              {{ getDiscount(pkg) }}折
+            </span>
+          </div>
+        </div>
+
+        <div class="package-body">
+          <div class="token-amount">
+            <mat-icon>account_balance_wallet</mat-icon>
+            <span class="amount">{{ pkg.tokenAmount | number }} Tokens</span>
+          </div>
+
+          <ul class="package-features" *ngIf="pkg.features">
+            <li *ngFor="let feature of pkg.features">
+              <mat-icon>check_circle</mat-icon>
+              <span>{{ feature }}</span>
+            </li>
+          </ul>
+        </div>
+
+        <div class="package-footer">
+          <mat-radio-button
+            [value]="pkg.id"
+            [checked]="selectedPackageId === pkg.id">
+          </mat-radio-button>
+        </div>
+      </div>
+    </div>
+
+    <!-- 加载状态 -->
+    <div class="loading-state" *ngIf="loading">
+      <mat-spinner diameter="40"></mat-spinner>
+      <p>正在加载套餐...</p>
+    </div>
+
+    <!-- 空状态 -->
+    <div class="empty-state" *ngIf="!loading && packages.length === 0">
+      <mat-icon>inventory_2</mat-icon>
+      <p>暂无可用套餐</p>
+    </div>
+
+    <!-- 支付方式选择 -->
+    <div class="payment-method-section" *ngIf="!loading && packages.length > 0">
+      <h4>选择支付方式</h4>
+      <div class="payment-methods">
+        <button
+          mat-button
+          [class.selected]="paymentMethod === 'alipay'"
+          (click)="paymentMethod = 'alipay'">
+          <img src="/assets/icons/alipay.svg" alt="支付宝" width="24">
+          支付宝
+        </button>
+        <button
+          mat-button
+          [class.selected]="paymentMethod === 'wechat'"
+          (click)="paymentMethod = 'wechat'">
+          <img src="/assets/icons/wechat-pay.svg" alt="微信支付" width="24">
+          微信支付
+        </button>
+        <button
+          mat-button
+          [class.selected]="paymentMethod === 'credit_card'"
+          (click)="paymentMethod = 'credit_card'">
+          <mat-icon>credit_card</mat-icon>
+          信用卡
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <div mat-dialog-actions align="end">
+    <button mat-button (click)="cancel()" [disabled]="loading">取消</button>
+    <button
+      mat-flat-button
+      color="primary"
+      (click)="purchase()"
+      [disabled]="loading || !selectedPackageId">
+      <mat-icon *ngIf="loading">hourglass_empty</mat-icon>
+      {{ loading ? '处理中...' : '立即购买' }}
+    </button>
+  </div>
+</div>

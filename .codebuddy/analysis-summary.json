@@ -1,0 +1,1 @@
+{"title":"修复Monaco编辑器错误和项目构建问题","features":["修复Monaco编辑器编译错误","安装缺失依赖包","修复类型定义问题","确保项目完全构建成功"],"tech":{"Web":{"arch":"angular","component":null}},"design":"不涉及UI设计修改","plan":{"检查Monaco编辑器相关的错误信息和依赖配置":"done","修复Monaco编辑器的模块导入和类型定义问题":"done","修复组件重复声明和模板语法错误":"done","修复模块导出和FormsModule导入问题":"done","优化样式文件大小":"done","修复课程播放器模板语法错误":"doing","验证项目构建成功":"holding"}}

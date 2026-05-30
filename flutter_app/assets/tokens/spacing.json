@@ -1,0 +1,16 @@
+{
+  "xxs": "0.125rem",
+  "xs": "0.25rem",
+  "sm": "0.5rem",
+  "md": "0.75rem",
+  "lg": "1rem",
+  "xl": "1.5rem",
+  "xxl": "2rem",
+  "xxxl": "2.5rem",
+  "xxxxl": "3rem",
+  "xxxxxl": "3.5rem",
+  "xxxxxxl": "4rem",
+  "huge": "5rem",
+  "giant": "6rem",
+  "massive": "8rem"
+}

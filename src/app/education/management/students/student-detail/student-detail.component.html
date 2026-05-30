@@ -1,0 +1,225 @@
+<div class="student-detail-container">
+  <!-- 顶部导航栏 -->
+  <div class="header-actions">
+    <button mat-button (click)="goBack()">
+      <mat-icon>arrow_back</mat-icon>
+      返回列表
+    </button>
+    <div class="action-buttons">
+      <button mat-raised-button color="accent" (click)="editStudent()">
+        <mat-icon>edit</mat-icon>
+        编辑
+      </button>
+    </div>
+  </div>
+
+  <!-- 加载状态 -->
+  <div *ngIf="loading" class="loading-container">
+    <mat-progress-bar mode="indeterminate"></mat-progress-bar>
+    <p>加载中...</p>
+  </div>
+
+  <!-- 错误提示 -->
+  <div *ngIf="error && !loading" class="error-message">
+    <mat-icon color="warn">error</mat-icon>
+    <span>{{ error }}</span>
+  </div>
+
+  <!-- 详情内容 -->
+  <div *ngIf="!loading && !error && student" class="detail-content">
+    <!-- 基本信息卡片 -->
+    <mat-card class="info-card">
+      <mat-card-header>
+        <div mat-card-avatar class="avatar-placeholder" *ngIf="!student.avatarUrl">
+          <mat-icon>person</mat-icon>
+        </div>
+        <img mat-card-avatar [src]="student.avatarUrl" [alt]="student.name" *ngIf="student.avatarUrl" />
+        <mat-card-title>{{ student.name }}</mat-card-title>
+        <mat-card-subtitle>
+          <mat-chip-set>
+            <mat-chip [color]="statusColors[student.status]">
+              {{ statusLabels[student.status] }}
+            </mat-chip>
+          </mat-chip-set>
+        </mat-card-subtitle>
+      </mat-card-header>
+
+      <mat-card-content>
+        <div class="info-grid">
+          <div class="info-item">
+            <div class="info-label">性别</div>
+            <div class="info-value">
+              <mat-icon *ngIf="student.gender === 'male'">male</mat-icon>
+              <mat-icon *ngIf="student.gender === 'female'">female</mat-icon>
+              {{ student.gender === 'male' ? '男' : '女' }}
+            </div>
+          </div>
+
+          <div class="info-item">
+            <div class="info-label">出生日期</div>
+            <div class="info-value">{{ student.birthDate || '-' }}</div>
+          </div>
+
+          <div class="info-item">
+            <div class="info-label">年级</div>
+            <div class="info-value">{{ student.grade || '-' }}</div>
+          </div>
+
+          <div class="info-item">
+            <div class="info-label">学校</div>
+            <div class="info-value">{{ student.school || '-' }}</div>
+          </div>
+
+          <div class="info-item">
+            <div class="info-label">班级</div>
+            <div class="info-value">{{ student.currentClassName || '-' }}</div>
+          </div>
+
+          <div class="info-item">
+            <div class="info-label">入学日期</div>
+            <div class="info-value">{{ student.enrollmentDate }}</div>
+          </div>
+        </div>
+      </mat-card-content>
+    </mat-card>
+
+    <!-- 联系方式卡片 -->
+    <mat-card class="info-card">
+      <mat-card-header>
+        <mat-card-title>联系方式</mat-card-title>
+      </mat-card-header>
+
+      <mat-card-content>
+        <div class="info-grid">
+          <div class="info-item">
+            <div class="info-label">手机号</div>
+            <div class="info-value">
+              <mat-icon>phone</mat-icon>
+              {{ student.phone || '-' }}
+            </div>
+          </div>
+
+          <div class="info-item">
+            <div class="info-label">邮箱</div>
+            <div class="info-value">
+              <mat-icon>email</mat-icon>
+              {{ student.email || '-' }}
+            </div>
+          </div>
+
+          <div class="info-item full-width">
+            <div class="info-label">地址</div>
+            <div class="info-value">
+              <mat-icon>location_on</mat-icon>
+              {{ student.address || '-' }}
+            </div>
+          </div>
+        </div>
+      </mat-card-content>
+    </mat-card>
+
+    <!-- 家长信息卡片 -->
+    <mat-card class="info-card">
+      <mat-card-header>
+        <mat-card-title>家长信息</mat-card-title>
+      </mat-card-header>
+
+      <mat-card-content>
+        <div *ngFor="let parent of student.parents; let i = index" class="parent-item">
+          <div class="parent-header">
+            <div class="parent-name">
+              <strong>{{ parent.name }}</strong>
+              <mat-chip-set>
+                <mat-chip color="primary">{{ parent.relationshipType }}</mat-chip>
+                <mat-chip *ngIf="parent.isPrimary" color="accent">主要联系人</mat-chip>
+              </mat-chip-set>
+            </div>
+          </div>
+
+          <div class="info-grid">
+            <div class="info-item">
+              <div class="info-label">手机号</div>
+              <div class="info-value">{{ parent.phone }}</div>
+            </div>
+
+            <div class="info-item">
+              <div class="info-label">邮箱</div>
+              <div class="info-value">{{ parent.email || '-' }}</div>
+            </div>
+
+            <div class="info-item">
+              <div class="info-label">微信</div>
+              <div class="info-value">{{ parent.wechat || '-' }}</div>
+            </div>
+
+            <div class="info-item">
+              <div class="info-label">QQ</div>
+              <div class="info-value">{{ parent.qq || '-' }}</div>
+            </div>
+          </div>
+
+          <mat-divider *ngIf="i < student.parents.length - 1" style="margin-top: 16px;"></mat-divider>
+        </div>
+      </mat-card-content>
+    </mat-card>
+
+    <!-- 课时信息卡片 -->
+    <mat-card class="info-card">
+      <mat-card-header>
+        <mat-card-title>课时信息</mat-card-title>
+      </mat-card-header>
+
+      <mat-card-content>
+        <div class="hours-stats">
+          <div class="stat-item">
+            <div class="stat-label">购买课时</div>
+            <div class="stat-value">{{ student.totalPurchasedHours }}</div>
+          </div>
+
+          <div class="stat-item">
+            <div class="stat-label">已消耗课时</div>
+            <div class="stat-value">{{ student.totalConsumedHours }}</div>
+          </div>
+
+          <div class="stat-item">
+            <div class="stat-label">剩余课时</div>
+            <div class="stat-value" [class.low-balance]="student.remainingHours < 20">
+              {{ student.remainingHours }}
+            </div>
+          </div>
+        </div>
+
+        <div class="usage-progress">
+          <div class="progress-label">课时使用率：{{ getUsageRate() }}%</div>
+          <mat-progress-bar
+            mode="determinate"
+            [value]="getUsageRate()"
+            [color]="getUsageRate() > 80 ? 'warn' : 'primary'"
+          ></mat-progress-bar>
+        </div>
+      </mat-card-content>
+    </mat-card>
+
+    <!-- 其他信息 -->
+    <mat-card class="info-card" *ngIf="student.notes || student.emergencyContact">
+      <mat-card-header>
+        <mat-card-title>其他信息</mat-card-title>
+      </mat-card-header>
+
+      <mat-card-content>
+        <div class="info-item" *ngIf="student.emergencyContact">
+          <div class="info-label">紧急联系人</div>
+          <div class="info-value">
+            <mat-icon>emergency</mat-icon>
+            {{ student.emergencyContact }} ({{ student.emergencyPhone || '-' }})
+          </div>
+        </div>
+
+        <div class="info-item" *ngIf="student.notes">
+          <div class="info-label">备注</div>
+          <div class="info-value notes">{{ student.notes }}</div>
+        </div>
+      </mat-card-content>
+    </mat-card>
+  </div>
+</div>

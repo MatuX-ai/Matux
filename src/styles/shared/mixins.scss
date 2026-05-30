@@ -1,0 +1,77 @@
+// src/styles/shared/mixins.scss
+
+// 导入设计令牌
+@use '../design-tokens' as tokens;
+
+// Flex 布局快捷混合
+@mixin flex-center {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+@mixin flex-between {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+@mixin flex-column {
+  display: flex;
+  flex-direction: column;
+}
+
+// 卡片悬浮效果
+@mixin card-hover {
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  &:hover {
+    transform: translateY(-2px);
+    box-shadow: tokens.$shadow-card-hover;
+  }
+}
+
+// 按钮交互效果
+@mixin button-interactive {
+  transition: all 0.2s ease;
+  &:hover {
+    transform: translateY(-1px);
+  }
+  &:active {
+    transform: translateY(0);
+  }
+}
+
+// 文本溢出省略号
+@mixin truncate {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+// 媒体查询快捷方式
+@mixin mobile {
+  @media (max-width: tokens.$breakpoint-mobile-max) {
+    @content;
+  }
+}
+@mixin tablet {
+  @media (max-width: tokens.$breakpoint-tablet-max) {
+    @content;
+  }
+}
+@mixin desktop {
+  @media (min-width: tokens.$breakpoint-desktop-min) {
+    @content;
+  }
+}
+
+// Status badge mixin for roadmap phases
+@mixin status-badge($bg-color, $text-color) {
+  background: $bg-color;
+  color: $text-color;
+  padding: 4px 12px;
+  border-radius: 12px;
+  font-size: 0.75rem;
+  font-weight: 600;
+  display: inline-block;
+}

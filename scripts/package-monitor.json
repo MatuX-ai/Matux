@@ -1,0 +1,28 @@
+{
+  "name": "imato-marketing-monitor",
+  "version": "1.0.0",
+  "description": "iMato营销页面自动化监控工具",
+  "main": "marketing-page-monitor.js",
+  "scripts": {
+    "monitor": "node marketing-page-monitor.js",
+    "monitor:visible": "node marketing-page-monitor.js --no-headless",
+    "monitor:mobile": "node marketing-page-monitor.js --mobile",
+    "monitor:all": "npm run monitor && npm run monitor:mobile",
+    "continuous": "node continuous-monitor.js",
+    "continuous:daemon": "node continuous-monitor.js --daemon",
+    "fix": "node marketing-page-fixes.js",
+    "postinstall": "npx playwright install",
+    "test": "echo \"No tests\" && exit 0"
+  },
+  "keywords": ["monitor", "playwright", "marketing", "testing", "automation"],
+  "author": "iMato Team",
+  "license": "GPL-3.0",
+  "dependencies": {
+    "playwright": "^1.40.0",
+    "nodemailer": "^6.9.7"
+  },
+  "devDependencies": {},
+  "engines": {
+    "node": ">=16.0.0"
+  }
+}

@@ -1,0 +1,80 @@
+{
+  "test_suite": "链码生命周期配置回测",
+  "start_time": "2026-02-28T21:19:59.126100",
+  "end_time": "2026-02-28T21:20:02.146264",
+  "duration_seconds": 3.020164,
+  "summary": {
+    "total_tests": 10,
+    "passed_tests": 0,
+    "failed_tests": 8,
+    "pass_rate": 0.0
+  },
+  "test_results": [
+    {
+      "test_name": "Docker服务状态检查",
+      "status": "FAIL",
+      "details": "Docker服务异常: ERROR: Error response from daemon: Docker Desktop is unable to start\nerrors pretty printing info",
+      "timestamp": "2026-02-28T21:20:00.206313"
+    },
+    {
+      "test_name": "Fabric网络容器状态",
+      "status": "FAIL",
+      "details": "无法获取容器列表: Error response from daemon: Docker Desktop is unable to start",
+      "timestamp": "2026-02-28T21:20:00.491334"
+    },
+    {
+      "test_name": "链码包创建",
+      "status": "FAIL",
+      "details": "链码包创建失败: Error response from daemon: Docker Desktop is unable to start",
+      "timestamp": "2026-02-28T21:20:01.029833"
+    },
+    {
+      "test_name": "链码安装到Peer节点 - Education Bureau",
+      "status": "FAIL",
+      "details": "链码安装失败: Error response from daemon: Docker Desktop is unable to start",
+      "timestamp": "2026-02-28T21:20:01.308851"
+    },
+    {
+      "test_name": "链码安装到Peer节点 - School",
+      "status": "FAIL",
+      "details": "链码安装失败: Error response from daemon: Docker Desktop is unable to start",
+      "timestamp": "2026-02-28T21:20:01.574663"
+    },
+    {
+      "test_name": "链码安装到Peer节点 - Enterprise",
+      "status": "FAIL",
+      "details": "链码安装失败: Error response from daemon: Docker Desktop is unable to start",
+      "timestamp": "2026-02-28T21:20:01.861479"
+    },
+    {
+      "test_name": "链码安装到Peer节点",
+      "status": "FAIL",
+      "details": "部分组织链码安装失败: 0/3 成功",
+      "timestamp": "2026-02-28T21:20:01.862102"
+    },
+    {
+      "test_name": "Package ID查询",
+      "status": "FAIL",
+      "details": "查询失败: Error response from daemon: Docker Desktop is unable to start",
+      "timestamp": "2026-02-28T21:20:02.144500"
+    },
+    {
+      "test_name": "链码批准",
+      "status": "SKIP",
+      "details": "由于Package ID获取失败，跳过批准测试",
+      "timestamp": "2026-02-28T21:20:02.145335"
+    },
+    {
+      "test_name": "提交准备状态检查",
+      "status": "SKIP",
+      "details": "由于Package ID获取失败，跳过提交准备检查",
+      "timestamp": "2026-02-28T21:20:02.145800"
+    }
+  ],
+  "configuration": {
+    "network_path": "g:\\iMato\\blockchain\\fabric-network",
+    "channel_name": "imatu-channel",
+    "chaincode_name": "integral_cc",
+    "chaincode_version": "1.0"
+  }
+}

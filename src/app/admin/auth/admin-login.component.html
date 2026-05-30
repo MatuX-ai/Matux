@@ -1,0 +1,72 @@
+<div class="admin-login-container">
+  <div class="login-card">
+    <div class="login-header">
+      <h1>管理后台登录</h1>
+      <p>请输入管理员账户信息</p>
+    </div>
+
+    <form [formGroup]="loginForm" (ngSubmit)="onSubmit()" class="login-form">
+      <mat-form-field appearance="outline" class="full-width">
+        <mat-label>用户名</mat-label>
+        <input matInput formControlName="username" autocomplete="username" />
+        <mat-icon matSuffix>person</mat-icon>
+        <mat-error
+          *ngIf="loginForm.get('username')?.invalid && loginForm.get('username')?.touched"
+        >
+          请输入用户名
+        </mat-error>
+        <!-- 测试账号标识 -->
+        <div *ngIf="loginForm.get('useTestAccount')?.value" class="test-account-indicator">
+          <mat-icon color="accent" style="font-size: 16px; width: 16px; height: 16px;">info</mat-icon>
+          <span>{{ TEST_ACCOUNT.label }}</span>
+        </div>
+      </mat-form-field>
+
+      <mat-form-field appearance="outline" class="full-width">
+        <mat-label>密码</mat-label>
+        <input
+          matInput
+          type="password"
+          formControlName="password"
+          autocomplete="current-password"
+        />
+        <mat-icon matSuffix>lock</mat-icon>
+        <mat-error
+          *ngIf="loginForm.get('password')?.invalid && loginForm.get('password')?.touched"
+        >
+          请输入密码
+        </mat-error>
+      </mat-form-field>
+
+      <div class="checkbox-group">
+        <mat-checkbox formControlName="useTestAccount" color="accent">
+          <strong>使用测试账号登录</strong>
+        </mat-checkbox>
+        <div class="test-account-hint" *ngIf="loginForm.get('useTestAccount')?.value">
+          <mat-icon style="font-size: 14px; width: 14px; height: 14px;">warning</mat-icon>
+          <span>仅用于开发测试环境，生产环境应禁用</span>
+        </div>
+      </div>
+
+      <div class="remember-me">
+        <mat-checkbox formControlName="rememberMe">记住我</mat-checkbox>
+      </div>
+
+      <button
+        mat-raised-button
+        color="primary"
+        type="submit"
+        class="login-button full-width"
+        [disabled]="loginForm.invalid || isLoading"
+      >
+        <mat-spinner *ngIf="isLoading" diameter="20"></mat-spinner>
+        <span *ngIf="!isLoading">登录</span>
+        <span *ngIf="isLoading">登录中...</span>
+      </button>
+    </form>
+
+    <div class="login-footer">
+      <p>© 2026 iMatuProject. 管理后台</p>
+    </div>
+  </div>
+</div>

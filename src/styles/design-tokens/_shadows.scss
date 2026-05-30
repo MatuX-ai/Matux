@@ -1,0 +1,265 @@
+// Design Tokens - Shadows
+//
+// 阴影设计变量系统锛屽畾涔変笉鍚屽眰绾х殑阴影效果
+// 鐢ㄤ簬钀ラ€犵晫闈㈠眰娆℃劅鍜屾繁搴︽晥鏋?
+
+// 基础阴影
+/// 鏃犻槾褰?
+$shadow-none: none !default;
+
+/// 鏋佽交寰姇褰?- 鐢ㄤ簬缁嗗井鐨勬偓娴晥鏋?
+$shadow-xs: 0 1px 2px 0 rgb(0 0 0 / 5%) !default;
+
+/// 灏忔姇褰?- 鐢ㄤ簬基础鍗＄墖鍜岀粍浠?
+$shadow-sm: 0 1px 3px 0 rgb(0 0 0 / 10%), 0 1px 2px 0 rgb(0 0 0 / 6%) !default;
+
+/// 涓瓑鎶曞奖 - 鐢ㄤ簬重要鍗＄墖鍜岄潰鏉?
+$shadow-md: 0 4px 6px -1px rgb(0 0 0 / 10%), 0 2px 4px -1px rgb(0 0 0 / 6%) !default;
+
+/// 澶ф姇褰?- 鐢ㄤ簬妯℃€佹鍜岄噸瑕佺粍浠?
+$shadow-lg: 0 10px 15px -3px rgb(0 0 0 / 10%), 0 4px 6px -2px rgb(0 0 0 / 5%) !default;
+
+/// 瓒呭ぇ鎶曞奖 - 鐢ㄤ簬绐佸嚭鏄剧ず鐨勯噸瑕佸厓绱?
+$shadow-xl: 0 20px 25px -5px rgb(0 0 0 / 10%), 0 10px 10px -5px rgb(0 0 0 / 4%) !default;
+
+// 组件鐗瑰畾阴影
+/// 鎸夐挳默认阴影
+$shadow-button: $shadow-sm !default;
+
+/// 鎸夐挳鎮仠阴影
+$shadow-button-hover: $shadow-md !default;
+
+/// 鍗＄墖默认阴影
+$shadow-card: $shadow-sm !default;
+
+/// 鍗＄墖鎮仠阴影
+$shadow-card-hover: $shadow-md !default;
+
+/// 妯℃€佹阴影
+$shadow-modal: $shadow-xl !default;
+
+/// 涓嬫媺鑿滃崟阴影
+$shadow-dropdown: $shadow-lg !default;
+
+/// 提示妗嗛槾褰?
+$shadow-tooltip: $shadow-sm !default;
+
+/// 瀵艰埅鏍忛槾褰?
+$shadow-navbar: $shadow-sm !default;
+
+// 鐘舵€侀槾褰?
+/// 鐒︾偣鐘舵€侀槾褰?
+$shadow-focus: 0 0 0 3px rgb(33 150 243 / 30%) !default;
+
+/// 错误鐘舵€侀槾褰?
+$shadow-error: 0 0 0 3px rgb(244 67 54 / 30%) !default;
+
+/// 成功鐘舵€侀槾褰?
+$shadow-success: 0 0 0 3px rgb(76 175 80 / 30%) !default;
+
+/// 璀﹀憡鐘舵€侀槾褰?
+$shadow-warning: 0 0 0 3px rgb(255 152 0 / 30%) !default;
+
+// 方向鎬ч槾褰?
+/// 鍚戜笅鎶曞奖 - 灏?
+$shadow-down-sm: 0 2px 4px 0 rgb(0 0 0 / 10%) !default;
+
+/// 鍚戜笅鎶曞奖 - 涓?
+$shadow-down-md: 0 4px 8px 0 rgb(0 0 0 / 12%) !default;
+
+/// 鍚戜笅鎶曞奖 - 澶?
+$shadow-down-lg: 0 8px 16px 0 rgb(0 0 0 / 16%) !default;
+
+/// 鍚戜笂鎶曞奖 - 灏?
+$shadow-up-sm: 0 -2px 4px 0 rgb(0 0 0 / 10%) !default;
+
+/// 鍚戜笂鎶曞奖 - 涓?
+$shadow-up-md: 0 -4px 8px 0 rgb(0 0 0 / 12%) !default;
+
+/// 鍚戜笂鎶曞奖 - 澶?
+$shadow-up-lg: 0 -8px 16px 0 rgb(0 0 0 / 16%) !default;
+
+/// 鍐呴槾褰?- 灏?
+$shadow-inner-sm: inset 0 2px 4px 0 rgb(0 0 0 / 6%) !default;
+
+/// 鍐呴槾褰?- 涓?
+$shadow-inner-md: inset 0 4px 8px 0 rgb(0 0 0 / 10%) !default;
+
+/// 鍐呴槾褰?- 澶?
+$shadow-inner-lg: inset 0 8px 16px 0 rgb(0 0 0 / 15%) !default;
+
+// 响应式忛槾褰?
+/// 移动端崱鐗囬槾褰?
+$shadow-mobile-card: $shadow-md !default;
+
+/// 移动端ā鎬佹阴影
+$shadow-mobile-modal: $shadow-xl !default;
+
+/// 移动端寜閽槾褰?
+$shadow-mobile-button: $shadow-sm !default;
+
+/// 桌面端崱鐗囬槾褰?
+$shadow-desktop-card: $shadow-sm !default;
+
+/// 桌面端ā鎬佹阴影
+$shadow-desktop-modal: $shadow-lg !default;
+
+/// 桌面端寜閽槾褰?
+$shadow-desktop-button: $shadow-xs !default;
+
+// 阴影 Mixins
+/// 应用基础阴影
+/// @param {String} $size - 阴影澶у皬 (none|xs|sm|md|lg|xl)
+@mixin shadow($size: sm) {
+  @if $size == none {
+    box-shadow: $shadow-none;
+  } @else if $size == xs {
+    box-shadow: $shadow-xs;
+  } @else if $size == sm {
+    box-shadow: $shadow-sm;
+  } @else if $size == md {
+    box-shadow: $shadow-md;
+  } @else if $size == lg {
+    box-shadow: $shadow-lg;
+  } @else if $size == xl {
+    box-shadow: $shadow-xl;
+  } @else {
+    box-shadow: $shadow-sm;
+  }
+}
+
+/// 应用组件鐗瑰畾阴影
+/// @param {String} $component - 组件绫诲瀷 (button|card|modal|dropdown|tooltip|navbar)
+@mixin component-shadow($component: card) {
+  @if $component == button {
+    box-shadow: $shadow-button;
+  } @else if $component == card {
+    box-shadow: $shadow-card;
+  } @else if $component == modal {
+    box-shadow: $shadow-modal;
+  } @else if $component == dropdown {
+    box-shadow: $shadow-dropdown;
+  } @else if $component == tooltip {
+    box-shadow: $shadow-tooltip;
+  } @else if $component == navbar {
+    box-shadow: $shadow-navbar;
+  } @else {
+    box-shadow: $shadow-card;
+  }
+}
+
+/// 应用鐘舵€侀槾褰?
+/// @param {String} $state - 鐘舵€佺被鍨?(focus|error|success|warning)
+@mixin state-shadow($state) {
+  @if $state == focus {
+    box-shadow: $shadow-focus;
+  } @else if $state == error {
+    box-shadow: $shadow-error;
+  } @else if $state == success {
+    box-shadow: $shadow-success;
+  } @else if $state == warning {
+    box-shadow: $shadow-warning;
+  }
+}
+
+/// 应用方向鎬ч槾褰?
+/// @param {String} $direction - 方向 (down|up|inner)
+/// @param {String} $size - 澶у皬 (sm|md|lg)
+@mixin directional-shadow($direction, $size: md) {
+  @if $direction == down {
+    @if $size == sm {
+      box-shadow: $shadow-down-sm;
+    } @else if $size == md {
+      box-shadow: $shadow-down-md;
+    } @else if $size == lg {
+      box-shadow: $shadow-down-lg;
+    }
+  } @else if $direction == up {
+    @if $size == sm {
+      box-shadow: $shadow-up-sm;
+    } @else if $size == md {
+      box-shadow: $shadow-up-md;
+    } @else if $size == lg {
+      box-shadow: $shadow-up-lg;
+    }
+  } @else if $direction == inner {
+    @if $size == sm {
+      box-shadow: $shadow-inner-sm;
+    } @else if $size == md {
+      box-shadow: $shadow-inner-md;
+    } @else if $size == lg {
+      box-shadow: $shadow-inner-lg;
+    }
+  }
+}
+
+/// 响应式忛槾褰?
+/// @param {String} $breakpoint - 断点 (mobile|desktop)
+/// @param {String} $component - 组件绫诲瀷
+@mixin responsive-shadow($breakpoint: mobile, $component: card) {
+  @if $breakpoint == mobile {
+    @if $component == card {
+      box-shadow: $shadow-mobile-card;
+    } @else if $component == modal {
+      box-shadow: $shadow-mobile-modal;
+    } @else if $component == button {
+      box-shadow: $shadow-mobile-button;
+    }
+  } @else if $breakpoint == desktop {
+    @if $component == card {
+      box-shadow: $shadow-desktop-card;
+    } @else if $component == modal {
+      box-shadow: $shadow-desktop-modal;
+    } @else if $component == button {
+      box-shadow: $shadow-desktop-button;
+    }
+  }
+}
+
+// 阴影工具函数
+/// 鑾峰彇阴影鍊?
+/// @param {String} $size - 阴影标识 (none|xs|sm|md|lg|xl)
+/// @return {String} 瀵瑰簲鐨勯槾褰卞€?
+@function get-shadow($size) {
+  @if $size == none {
+    @return $shadow-none;
+  } @else if $size == xs {
+    @return $shadow-xs;
+  } @else if $size == sm {
+    @return $shadow-sm;
+  } @else if $size == md {
+    @return $shadow-md;
+  } @else if $size == lg {
+    @return $shadow-lg;
+  } @else if $size == xl {
+    @return $shadow-xl;
+  } @else {
+    @return $shadow-sm;
+  }
+}
+
+/// 创建自定义夐槾褰?
+/// @param {String} $offset-x - 水平鍋忕Щ
+/// @param {String} $offset-y - 垂直鍋忕Щ
+/// @param {String} $blur-radius - 模糊鍗婂緞
+/// @param {String} $spread-radius - 鎵╂暎鍗婂緞
+/// @param {String} $color - 阴影颜色
+/// @return {String} 鐢熸垚鐨勯槾褰卞€?
+@function create-shadow($offset-x, $offset-y, $blur-radius, $spread-radius, $color) {
+  @return "#{$offset-x} #{$offset-y} #{$blur-radius} #{$spread-radius} #{$color}";
+}
+
+/// 澶氬眰阴影缁勫悎
+/// @param {ArgList} $shadows - 阴影鍒楄〃
+/// @return {String} 缁勫悎鍚庣殑阴影鍊?
+@function multiple-shadows($shadows...) {
+  @return join($shadows, comma);
+}
+
+/// 应用阴影鍒伴€夋嫨鍣?
+/// @param {String} $selector - CSS 閫夋嫨鍣?
+/// @param {String} $shadow - 阴影鍊?
+/// @return {String} 鐢熸垚鐨?CSS 规则
+@function apply-shadow($selector, $shadow: sm) {
+  @return "#{$selector} { box-shadow: #{get-shadow($shadow)}; }";
+}

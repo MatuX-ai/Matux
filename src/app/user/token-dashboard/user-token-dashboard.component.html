@@ -1,0 +1,105 @@
+<!-- 加载状态 -->
+<div class="user-token-dashboard" *ngIf="loading && !userBalance">
+  <div class="loading-container">
+    <mat-spinner diameter="48"></mat-spinner>
+    <p>正在加载 Token 数据...</p>
+  </div>
+</div>
+
+<!-- 错误状态 -->
+<div class="user-token-dashboard" *ngIf="error && !userBalance">
+  <div class="error-container">
+    <mat-icon color="warn">error_outline</mat-icon>
+    <h3>加载失败</h3>
+    <p>{{ error }}</p>
+    <button mat-raised-button color="primary" (click)="loadBalance()">
+      <mat-icon>refresh</mat-icon>
+      重新加载
+    </button>
+  </div>
+</div>
+
+<!-- 主内容 -->
+<div class="user-token-dashboard" *ngIf="!loading || userBalance">
+  <!-- 页面头部 -->
+  <div class="dashboard-header">
+    <div class="header-content">
+      <h1>我的 Token</h1>
+      <p>管理您的 Token 余额和消费记录</p>
+    </div>
+    <div class="header-actions">
+      <button mat-stroked-button (click)="refreshData()" [disabled]="loading">
+        <mat-icon>refresh</mat-icon>
+        刷新
+      </button>
+      <button mat-flat-button color="primary" (click)="openPurchaseDialog()" [disabled]="loading">
+        <mat-icon>add_shopping_cart</mat-icon>
+        购买 Token
+      </button>
+    </div>
+  </div>
+
+  <!-- 余额卡片 -->
+  <div class="balance-card" *ngIf="userBalance">
+    <div class="balance-icon">
+      <mat-icon>account_balance_wallet</mat-icon>
+    </div>
+    <div class="balance-info">
+      <div class="balance-label">可用 Token</div>
+      <div class="balance-value">{{ userBalance.availableBalance | number }}</div>
+    </div>
+    <div class="balance-stats">
+      <div class="stat-item">
+        <span class="stat-label">累计充值</span>
+        <span class="stat-value">{{ userBalance.totalPurchased | number }}</span>
+      </div>
+      <div class="stat-item">
+        <span class="stat-label">已消费</span>
+        <span class="stat-value">{{ userBalance.totalConsumed | number }}</span>
+      </div>
+      <div class="stat-item">
+        <span class="stat-label">冻结余额</span>
+        <span class="stat-value">{{ userBalance.frozenBalance | number }}</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- 快捷操作 -->
+  <div class="quick-actions">
+    <div class="action-button" (click)="openPurchaseDialog()">
+      <mat-icon>shopping_cart</mat-icon>
+      <span>购买 Token</span>
+    </div>
+    <div class="action-button" routerLink="/user/reports">
+      <mat-icon>assessment</mat-icon>
+      <span>消费报告</span>
+    </div>
+    <div class="action-button" routerLink="/user/courses">
+      <mat-icon>school</mat-icon>
+      <span>我的课程</span>
+    </div>
+  </div>
+
+  <!-- Token 套餐 -->
+  <div class="package-section">
+    <h2 class="section-title">选择 Token 套餐</h2>
+    <p class="section-subtitle">灵活多样的套餐，满足不同使用需求</p>
+    
+    <div class="package-grid">
+      <div class="package-card" *ngFor="let pkg of packages">
+        <div class="package-header">
+          <span class="package-name">{{ pkg.name }}</span>
+          <span class="package-badge" *ngIf="pkg.isPopular">热门</span>
+        </div>
+        <div class="package-price">
+          <span class="currency">¥</span>
+          <span class="amount">{{ pkg.price }}</span>
+        </div>
+        <div class="package-tokens">{{ pkg.tokens }} Tokens</div>
+        <button mat-flat-button color="primary" class="package-buy-btn" (click)="selectPackage(pkg)">
+          立即购买
+        </button>
+      </div>
+    </div>
+  </div>
+</div>

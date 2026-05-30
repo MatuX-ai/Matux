@@ -1,0 +1,410 @@
+/* 学习来源管理组件样式 */
+
+.learning-source-manager {
+  width: 100%;
+  padding: 20px;
+  background: #fff;
+  border-radius: 8px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+}
+
+/* 头部 */
+.manager-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 20px;
+
+  .title {
+    margin: 0;
+    font-size: 18px;
+    font-weight: 600;
+    color: #212121;
+  }
+
+  .header-actions {
+    display: flex;
+    gap: 12px;
+  }
+}
+
+/* 按钮样式 */
+.refresh-btn,
+.create-btn {
+  padding: 8px 16px;
+  border: none;
+  border-radius: 6px;
+  font-size: 14px;
+  cursor: pointer;
+  transition: all 0.2s;
+
+  &:hover {
+    transform: translateY(-1px);
+  }
+}
+
+.refresh-btn {
+  background: #f5f5f5;
+  color: #666;
+
+  &:hover {
+    background: #e0e0e0;
+  }
+}
+
+.create-btn {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  background: #1976d2;
+  color: #fff;
+
+  &:hover {
+    background: #1565c0;
+  }
+
+  span {
+    font-size: 16px;
+    font-weight: bold;
+  }
+}
+
+/* 统计卡片 */
+.stats-cards {
+  display: flex;
+  gap: 16px;
+  margin-bottom: 20px;
+}
+
+.stat-card {
+  flex: 1;
+  padding: 16px;
+  background: #f5f5f5;
+  border-radius: 8px;
+  text-align: center;
+
+  .stat-value {
+    font-size: 24px;
+    font-weight: 600;
+    color: #1976d2;
+  }
+
+  .primary-name {
+    font-size: 16px;
+    color: #ff9800;
+  }
+
+  .stat-label {
+    font-size: 12px;
+    color: #757575;
+    margin-top: 4px;
+  }
+}
+
+/* 加载状态 */
+.loading-state {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 12px;
+  padding: 40px;
+  color: #666;
+
+  .spinner {
+    width: 24px;
+    height: 24px;
+    border: 3px solid #e0e0e0;
+    border-top-color: #1976d2;
+    border-radius: 50%;
+    animation: spin 0.8s linear infinite;
+  }
+}
+
+@keyframes spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+/* 表格样式 */
+.source-table {
+  width: 100%;
+  border-collapse: collapse;
+
+  th,
+  td {
+    padding: 12px;
+    text-align: left;
+    border-bottom: 1px solid #eee;
+  }
+
+  th {
+    font-size: 12px;
+    font-weight: 600;
+    color: #757575;
+    text-transform: uppercase;
+    background: #fafafa;
+  }
+
+  tr:hover {
+    background: #f5f5f5;
+  }
+
+  tr.primary {
+    background: #fff8e1;
+  }
+
+  .name-cell {
+    font-weight: 500;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+
+  .primary-badge {
+    padding: 2px 6px;
+    background: #ff9800;
+    color: #fff;
+    font-size: 10px;
+    border-radius: 10px;
+  }
+
+  .type-badge {
+    padding: 4px 8px;
+    background: #e3f2fd;
+    color: #1976d2;
+    font-size: 12px;
+    border-radius: 4px;
+  }
+
+  .status-badge {
+    padding: 2px 8px;
+    font-size: 11px;
+    font-weight: 500;
+    border-radius: 4px;
+    text-transform: capitalize;
+
+    &.status-active {
+      background: #e8f5e9;
+      color: #2e7d32;
+    }
+
+    &.status-pending {
+      background: #fff3e0;
+      color: #ef6c00;
+    }
+
+    &.status-inactive {
+      background: #f5f5f5;
+      color: #9e9e9e;
+    }
+  }
+
+  .date-cell {
+    font-size: 13px;
+    color: #666;
+  }
+
+  .actions-cell {
+    display: flex;
+    gap: 8px;
+  }
+
+  .action-btn {
+    width: 28px;
+    height: 28px;
+    border: none;
+    border-radius: 4px;
+    background: #f5f5f5;
+    color: #666;
+    cursor: pointer;
+    transition: all 0.2s;
+
+    &:hover {
+      background: #e0e0e0;
+    }
+
+    &.delete:hover {
+      background: #ffebee;
+      color: #f44336;
+    }
+  }
+}
+
+/* 空状态 */
+.empty-state {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 60px 24px;
+  text-align: center;
+
+  .empty-icon {
+    font-size: 64px;
+    margin-bottom: 16px;
+  }
+
+  p {
+    margin: 0 0 20px;
+    font-size: 16px;
+    color: #666;
+  }
+}
+
+/* 模态框 */
+.modal-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(0, 0, 0, 0.5);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1000;
+}
+
+.modal-content {
+  width: 90%;
+  max-width: 500px;
+  background: #fff;
+  border-radius: 12px;
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.2);
+  max-height: 90vh;
+  overflow-y: auto;
+}
+
+.modal-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 16px 20px;
+  border-bottom: 1px solid #eee;
+
+  h4 {
+    margin: 0;
+    font-size: 18px;
+    font-weight: 600;
+  }
+
+  .close-btn {
+    width: 32px;
+    height: 32px;
+    border: none;
+    background: none;
+    font-size: 18px;
+    color: #999;
+    cursor: pointer;
+    border-radius: 4px;
+
+    &:hover {
+      background: #f5f5f5;
+      color: #666;
+    }
+  }
+}
+
+.modal-body {
+  padding: 20px;
+}
+
+.form-group {
+  margin-bottom: 16px;
+
+  label {
+    display: block;
+    margin-bottom: 6px;
+    font-size: 14px;
+    font-weight: 500;
+    color: #333;
+  }
+
+  &.checkbox-group label {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    cursor: pointer;
+  }
+}
+
+.form-row {
+  display: flex;
+  gap: 16px;
+
+  .form-group {
+    flex: 1;
+  }
+}
+
+.form-control {
+  width: 100%;
+  padding: 10px 12px;
+  border: 1px solid #ddd;
+  border-radius: 6px;
+  font-size: 14px;
+  transition: border-color 0.2s;
+
+  &:focus {
+    outline: none;
+    border-color: #1976d2;
+  }
+
+  &::placeholder {
+    color: #999;
+  }
+}
+
+textarea.form-control {
+  resize: vertical;
+}
+
+.modal-footer {
+  display: flex;
+  justify-content: flex-end;
+  gap: 12px;
+  padding: 16px 20px;
+  border-top: 1px solid #eee;
+}
+
+.cancel-btn,
+.save-btn {
+  padding: 10px 20px;
+  border: none;
+  border-radius: 6px;
+  font-size: 14px;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.cancel-btn {
+  background: #f5f5f5;
+  color: #666;
+
+  &:hover {
+    background: #e0e0e0;
+  }
+}
+
+.save-btn {
+  background: #1976d2;
+  color: #fff;
+
+  &:hover:not(:disabled) {
+    background: #1565c0;
+  }
+
+  &:disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
+  }
+}
+
+.error-message {
+  margin: 0 20px 20px;
+  padding: 12px;
+  background: #ffebee;
+  color: #c62828;
+  border-radius: 6px;
+  font-size: 14px;
+}

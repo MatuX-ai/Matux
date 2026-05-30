@@ -1,0 +1,12 @@
+/**
+ * Mac 风格共享样式库
+ * Central export for all Mac-style shared components
+ */
+
+// 主题变量 (必须在最前面)
+@forward '../mac-theme';
+
+// 组件样式
+@forward 'mac-navbar';
+@forward 'mac-footer';
+@forward 'mac-styles';

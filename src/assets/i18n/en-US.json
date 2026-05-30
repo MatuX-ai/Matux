@@ -1,0 +1,91 @@
+{
+  "common": {
+    "loading": "Loading...",
+    "error": "Error",
+    "success": "Success",
+    "cancel": "Cancel",
+    "confirm": "Confirm",
+    "save": "Save",
+    "delete": "Delete",
+    "edit": "Edit",
+    "search": "Search",
+    "filter": "Filter",
+    "refresh": "Refresh"
+  },
+  "nav": {
+    "home": "Home",
+    "features": "Features",
+    "pricing": "Pricing",
+    "about": "About",
+    "contact": "Contact",
+    "admin": "Admin",
+    "dashboard": "Dashboard",
+    "aiEdu": "AI Education",
+    "arLab": "AR Lab"
+  },
+  "home": {
+    "title": "MatuX - Welcome to the World of Robots!",
+    "subtitle": "Explore the infinite possibilities of AI education and AR technology",
+    "heroTitle": "Start Your Smart Learning Journey",
+    "heroSubtitle": "Experience immersive learning with cutting-edge AI and AR technology",
+    "getStarted": "Get Started",
+    "learnMore": "Learn More"
+  },
+  "pricing": {
+    "title": "Choose Your Plan",
+    "subtitle": "Flexible pricing options for every need",
+    "free": {
+      "name": "Free",
+      "price": "$0",
+      "features": [
+        "Basic course access",
+        "Community support",
+        "Limited storage"
+      ]
+    },
+    "pro": {
+      "name": "Pro",
+      "price": "$15/month",
+      "features": [
+        "All courses access",
+        "Priority support",
+        "Unlimited storage",
+        "Offline learning"
+      ]
+    },
+    "enterprise": {
+      "name": "Enterprise",
+      "price": "Custom",
+      "features": [
+        "All Pro features",
+        "Custom courses",
+        "Dedicated support",
+        "Analytics reports"
+      ]
+    }
+  },
+  "contact": {
+    "title": "Contact Us",
+    "subtitle": "Have questions? Get in touch with us anytime",
+    "name": "Name",
+    "email": "Email",
+    "message": "Message",
+    "send": "Send"
+  },
+  "about": {
+    "title": "About Us",
+    "subtitle": "Learn about MatuX's mission and vision",
+    "mission": "Make learning more fun and efficient through AI and AR technology",
+    "vision": "Become the world's leading AI education platform"
+  },
+  "pwa": {
+    "installPrompt": "Install to Desktop",
+    "notNow": "Not Now",
+    "installing": "Installing...",
+    "installed": "Installed Successfully!",
+    "offline": "You are offline. Some features may not be available.",
+    "reconnected": "You are back online",
+    "updateAvailable": "New version available. Click to update.",
+    "update": "Update"
+  }
+}

@@ -1,0 +1,17 @@
+{
+  "none": "0px",
+  "xs": "0.125rem",
+  "sm": "0.25rem",
+  "md": "0.5rem",
+  "lg": "0.75rem",
+  "xl": "1rem",
+  "full": "9999px",
+  "button": "0.25rem",
+  "input": "0.25rem",
+  "card": "0.5rem",
+  "modal": "0.75rem",
+  "badge": "9999px",
+  "avatar": "9999px",
+  "dropdown": "0.5rem",
+  "tooltip": "0.25rem"
+}

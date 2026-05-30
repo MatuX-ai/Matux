@@ -1,0 +1,19 @@
+// Transition Tokens
+// 定义动画过渡效果
+
+$transition-duration-fast: 0.15s;
+$transition-duration-normal: 0.3s;
+$transition-duration-slow: 0.5s;
+
+$transition-timing-default: ease;
+$transition-timing-enter: ease-out;
+$transition-timing-leave: ease-in;
+$transition-timing-bounce: cubic-bezier(0.68, -0.55, 0.265, 1.55);
+
+$transition-property-default: all;
+
+// 常用过渡效果
+$transition-fast: $transition-duration-fast $transition-timing-default;
+$transition-base: $transition-duration-normal $transition-timing-default; // 别名
+$transition-normal: $transition-duration-normal $transition-timing-default;
+$transition-slow: $transition-duration-slow $transition-timing-default;

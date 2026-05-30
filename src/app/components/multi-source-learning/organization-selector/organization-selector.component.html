@@ -1,0 +1,81 @@
+<!-- 组织选择器组件模板 -->
+<div class="organization-selector">
+  <!-- 加载状态 -->
+  <div *ngIf="loading" class="loading-state">
+    <span class="spinner"></span>
+    <span>加载中...</span>
+  </div>
+
+  <!-- 错误状态 -->
+  <div *ngIf="error" class="error-state">
+    <span class="error-icon">!</span>
+    <span>{{ error }}</span>
+    <button class="retry-btn" (click)="refresh()">重试</button>
+  </div>
+
+  <!-- 组织/来源列表 -->
+  <div *ngIf="!loading && !error" class="org-list">
+    <!-- 用户组织关联 -->
+    <div class="org-section" *ngIf="userOrganizations.length > 0">
+      <h4 class="section-title">我的组织</h4>
+      <div class="org-cards">
+        <div
+          *ngFor="let org of userOrganizations"
+          class="org-card"
+          [class.selected]="selectedOrg?.id === org.id"
+          [class.primary]="org.is_primary"
+          (click)="selectOrganization(org)"
+        >
+          <div class="org-badge" *ngIf="org.is_primary">主</div>
+          <div class="org-name">{{ org.class_name || '未命名组织' }}</div>
+          <div class="org-meta">
+            <span class="org-role">{{ roleLabels[org.role] || org.role }}</span>
+            <span class="org-type">{{ getTypeLabel(org.learning_source_type) }}</span>
+          </div>
+          <div class="org-status" [class]="'status-' + org.status">
+            {{ org.status }}
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- 学习来源 -->
+    <div class="org-section" *ngIf="learningSources.length > 0">
+      <h4 class="section-title">学习来源</h4>
+      <div class="org-cards">
+        <div
+          *ngFor="let source of learningSources"
+          class="org-card source-card"
+          [class.selected]="selectedSource?.id === source.id"
+          [class.primary]="source.is_primary"
+          (click)="selectLearningSource(source)"
+        >
+          <div class="org-badge" *ngIf="source.is_primary">主</div>
+          <div class="org-name">{{ source.name }}</div>
+          <div class="org-meta">
+            <span class="org-type-label">{{ sourceTypeLabels[source.source_type] }}</span>
+            <span class="org-role">{{ source.role }}</span>
+          </div>
+          <div class="org-status" [class]="'status-' + source.status">
+            {{ source.status }}
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- 空状态 -->
+    <div *ngIf="userOrganizations.length === 0 && learningSources.length === 0" class="empty-state">
+      <div class="empty-icon">📚</div>
+      <p>暂无学习来源</p>
+      <p class="empty-hint">点击下方按钮添加您的第一个学习来源</p>
+    </div>
+
+    <!-- 创建按钮 -->
+    <div *ngIf="showCreateButton" class="create-section">
+      <button class="create-btn" (click)="onCreateNew()">
+        <span class="plus-icon">+</span>
+        添加学习来源
+      </button>
+    </div>
+  </div>
+</div>

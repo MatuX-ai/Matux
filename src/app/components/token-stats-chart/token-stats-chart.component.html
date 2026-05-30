@@ -1,0 +1,35 @@
+<div class="token-stats-chart">
+  <div class="header">
+    <h3>消费趋势</h3>
+    <div class="actions">
+      <button mat-button (click)="toggleChartType()">
+        <mat-icon>{{ chartType === 'line' ? 'bar_chart' : 'show_chart' }}</mat-icon>
+        {{ chartType === 'line' ? '柱状图' : '折线图' }}
+      </button>
+      <button mat-icon-button (click)="refresh()" [disabled]="loading" matTooltip="刷新">
+        <mat-icon>refresh</mat-icon>
+      </button>
+    </div>
+  </div>
+
+  <!-- 错误提示 -->
+  <div class="error-message" *ngIf="error">
+    <mat-icon>error_outline</mat-icon>
+    <span>{{ error }}</span>
+  </div>
+
+  <!-- 加载状态 -->
+  <div class="loading-state" *ngIf="loading">
+    <mat-spinner diameter="40"></mat-spinner>
+    <p>正在加载数据...</p>
+  </div>
+
+  <!-- 图表容器 -->
+  <div #chart class="chart-container" *ngIf="!loading && !error"></div>
+
+  <!-- 空状态 -->
+  <div class="empty-state" *ngIf="!loading && !error && statsData.length === 0">
+    <mat-icon>insights</mat-icon>
+    <p>暂无统计数据</p>
+  </div>
+</div>

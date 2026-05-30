@@ -1,0 +1,361 @@
+// =============================================================================
+// 鏆楅粦主题瀹氫箟文件
+// 鎻愪緵瀹屾暣鐨勬殫鑹叉ā寮廋SS变量鍜屾牱寮忚鐩?
+// =============================================================================
+
+// 鏆楅粦主题CSS变量瀹氫箟
+[data-theme="dark"],
+.theme-dark {
+  // 基础鑳屾櫙鍜岃〃闈㈤鑹?
+  --background-color: #121212;          // 涓昏儗鏅壊
+  --surface-color: #1e1e1e;             // 表面/鍗＄墖鑳屾櫙鑹?
+  --surface-color-hover: #2d2d2d;       // 鎮仠鐘舵€佽〃闈㈣壊
+
+  // 鏂囨湰颜色
+  --text-primary-color: #fff;        // 涓昏鏂囨湰颜色
+  --text-secondary-color: #b3b3b3;      // 娆¤鏂囨湰颜色
+  --text-disabled-color: #6f6f6f;       // 绂佺敤鏂囨湰颜色
+  --text-on-primary: #fff;           // 涓昏壊涓婄殑鏂囨湰
+  --text-on-secondary: #fff;         // 娆¤壊涓婄殑鏂囨湰
+
+  // 杈规鍜屽垎闅旂嚎
+  --border-color: #333;              // 鏅€氳竟妗嗚壊
+  --border-color-light: #2d2d2d;        // 娴呰竟妗嗚壊
+  --border-color-strong: #444;       // 寮鸿皟杈规鑹?
+
+  // 鍝佺墝鑹插僵 (淇濇寔涓庝寒鑹蹭富棰樹竴鑷寸殑鍝佺墝璇嗗埆)
+  --primary-color: #3d5a80;             // 涓诲搧鐗岃壊 - 钘忛潚鑹叉祬鑹插彉浣?
+  --primary-color-light: #627d9e;       // 涓昏壊娴呰壊变体
+  --primary-color-dark: #1e3a5f;        // 涓昏壊娣辫壊变体
+  --on-primary-color: #fff;          // 涓昏壊涓婄殑鏂囧瓧
+  --secondary-color: #e8c547;           // 娆¤鍝佺墝鑹? - 閲戣壊
+  --secondary-color-light: #f0d978;     // 娆¤壊娴呰壊变体
+  --secondary-color-dark: #c9a930;      // 娆¤壊娣辫壊变体
+  --on-secondary-color: #000;        // 娆¤壊涓婄殑鏂囧瓧
+
+  // 鐘舵€侀鑹?
+  --success-color: #4caf50;             // 成功鐘舵€佽壊
+  --success-color-light: #81c784;       // 成功鑹叉祬鑹插彉浣?
+  --success-color-dark: #388e3c;        // 成功鑹叉繁鑹插彉浣?
+  --on-success-color: #fff;          // 成功鑹蹭笂鐨勬枃瀛?
+  --warning-color: #ff9800;             // 璀﹀憡鐘舵€佽壊
+  --warning-color-light: #ffb74d;       // 璀﹀憡鑹叉祬鑹插彉浣?
+  --warning-color-dark: #f57c00;        // 璀﹀憡鑹叉繁鑹插彉浣?
+  --on-warning-color: #000;          // 璀﹀憡鑹蹭笂鐨勬枃瀛?
+  --error-color: #cf6679;               // 错误鐘舵€佽壊 (Material Dark)
+  --error-color-light: #ef9a9a;         // 错误鑹叉祬鑹插彉浣?
+  --error-color-dark: #b00020;          // 错误鑹叉繁鑹插彉浣?
+  --on-error-color: #fff;            // 错误鑹蹭笂鐨勬枃瀛?
+  --info-color: #2196f3;                // 淇℃伅鐘舵€佽壊
+  --info-color-light: #64b5f6;          // 淇℃伅鑹叉祬鑹插彉浣?
+  --info-color-dark: #1976d2;           // 淇℃伅鑹叉繁鑹插彉浣?
+  --on-info-color: #fff;             // 淇℃伅鑹蹭笂鐨勬枃瀛?
+
+  // 鐏板害系统
+  --gray-50: #2d2d2d;
+  --gray-100: #333;
+  --gray-200: #444;
+  --gray-300: #555;
+  --gray-400: #666;
+  --gray-500: #777;
+  --gray-600: #888;
+  --gray-700: #999;
+  --gray-800: #aaa;
+  --gray-900: #bbb;
+
+  // 浜や簰鐘舵€侀鑹?
+  --hover-color: rgb(255 255 255 / 8%);     // 鎮仠鑳屾櫙鑹?
+  --focus-color: rgb(61 90 128 / 40%);      // 鐒︾偣鐜鑹? - 钘忛潚鑹?
+  --active-color: rgb(255 255 255 / 12%);    // 婵€娲荤姸鎬佽壊
+  --selected-color: rgb(61 90 128 / 25%);  // 閫変腑鐘舵€佽壊 - 钘忛潚鑹？
+
+  // 阴影效果 (閫傚簲鏆楄壊鑳屾櫙)
+  --shadow-sm: 0 1px 2px rgb(0 0 0 / 30%);
+  --shadow-md: 0 4px 6px rgb(0 0 0 / 30%);
+  --shadow-lg: 0 10px 15px rgb(0 0 0 / 30%);
+  --shadow-xl: 0 20px 25px rgb(0 0 0 / 30%);
+  --shadow-inner: inset 0 2px 4px rgb(0 0 0 / 30%);
+
+  // 特殊组件颜色
+  --divider-color: rgb(255 255 255 / 12%);   // 鍒嗛殧绾块鑹?
+  --backdrop-color: rgb(0 0 0 / 50%);         // 鑳屾櫙骞曞竷鑹?
+  --scrim-color: rgb(0 0 0 / 60%);            // 閬僵灞傞鑹?
+
+  // 杈撳叆妗嗙浉鍏?
+  --input-background: #2d2d2d;                  // 杈撳叆妗嗚儗鏅?
+  --input-border: #444;                      // 杈撳叆妗嗚竟妗?
+  --input-placeholder: #757575;                 // 鍗犱綅绗﹂鑹?
+  --input-focus-border: #3d5a80;                // 鐒︾偣杈规鑹？ - 钘忛潚鑹？
+
+  // 婊氬姩鏉￠鑹?
+  --scrollbar-thumb: #424242;
+  --scrollbar-track: #1e1e1e;
+  --scrollbar-thumb-hover: #616161;
+
+  // 浠ｇ爜鍜岃娉曢珮浜?
+  --code-background: #2d2d2d;
+  --code-text: #f8f8f2;
+  --code-comment: #75715e;
+  --code-keyword: #f92672;
+  --code-string: #a6e22e;
+  --code-number: #ae81ff;
+  --code-variable: #f8f8f2;
+
+  // 鍥炬爣颜色
+  --icon-color: #e0e0e0;                        // 鏅€氬浘鏍囪壊
+  --icon-color-disabled: #6f6f6f;               // 绂佺敤鍥炬爣鑹?
+  --icon-color-primary: #3d5a80;                // 涓昏壊鍥炬爣 - 钘忛潚鑹？
+  --icon-color-success: #4caf50;                // 成功鍥炬爣鑹?
+  --icon-color-warning: #ff9800;                // 璀﹀憡鍥炬爣鑹?
+  --icon-color-error: #cf6679;                  // 错误鍥炬爣鑹?
+
+  // 鍔犺浇鍜岄鏋跺睆
+  --skeleton-base: #2d2d2d;
+  --skeleton-highlight: #3d3d3d;
+  --loading-spinner: #3d5a80;
+
+  // 鍗＄墖鍜屽鍣?
+  --card-background: #1e1e1e;
+  --card-border: #333;
+  --dialog-background: #2d2d2d;
+  --tooltip-background: #424242;
+  --tooltip-text: #fff;
+
+  // 琛ㄦ牸相关
+  --table-header: #2d2d2d;
+  --table-row-even: #1e1e1e;
+  --table-row-odd: #252525;
+  --table-border: #333;
+
+  // 瀵艰埅鍜岃彍鍗?
+  --navbar-background: #1e1e1e;
+  --sidebar-background: #121212;
+  --menu-item-hover: rgb(255 255 255 / 8%);
+  --menu-item-active: rgb(61 90 128 / 25%);
+
+  // 閫氱煡鍜屾彁绀?
+  --toast-background: #2d2d2d;
+  --alert-background: #3d3d3d;
+  --badge-background: #424242;
+
+  // 杩涘害鍜屾粦鍧?
+  --progress-track: #333;
+  --progress-fill: #3d5a80;
+  --slider-track: #333;
+  --slider-thumb: #3d5a80;
+
+  // 时间杞村拰姝ラ
+  --timeline-node: #424242;
+  --timeline-line: #333;
+  --step-incomplete: #424242;
+  --step-complete: #4caf50;
+  --step-active: #3d5a80;
+}
+
+// =============================================================================
+// 鏆楅粦主题鍏ㄥ眬样式瑕嗙洊
+// =============================================================================
+
+[data-theme="dark"],
+.theme-dark {
+  // 鍏ㄥ眬鑳屾櫙鍜屾枃鏈?
+  body {
+    background-color: var(--background-color);
+    color: var(--text-primary-color);
+  }
+
+  // 閾炬帴样式
+  a {
+    color: var(--primary-color);
+
+    &:hover {
+      color: var(--primary-color-light);
+    }
+
+    &:visited {
+      color: var(--secondary-color);
+    }
+  }
+
+  // 婊氬姩鏉℃牱寮?
+  ::-webkit-scrollbar {
+    width: 8px;
+    height: 8px;
+  }
+
+  ::-webkit-scrollbar-track {
+    background: var(--scrollbar-track);
+  }
+
+  ::-webkit-scrollbar-thumb {
+    border-radius: 4px;
+    background: var(--scrollbar-thumb);
+
+    &:hover {
+      background: var(--scrollbar-thumb-hover);
+    }
+  }
+
+  // 閫変腑鏂囨湰样式
+  ::selection {
+    background: var(--primary-color);
+    color: var(--on-primary-color);
+  }
+
+  ::selection {
+    background: var(--primary-color);
+    color: var(--on-primary-color);
+  }
+
+  // 杈撳叆妗嗗崰浣嶇
+  ::placeholder {
+    color: var(--input-placeholder);
+    opacity: 1;
+  }
+
+  :input-placeholder {
+    color: var(--input-placeholder);
+  }
+
+  ::input-placeholder {
+    color: var(--input-placeholder);
+  }
+}
+
+// =============================================================================
+// Material Design 鏆楄壊主题閫傞厤
+// =============================================================================
+
+[data-theme="dark"] {
+  // Material鎸夐挳閫傞厤
+  .mat-mdc-button,
+  .mat-mdc-raised-button,
+  .mat-mdc-outlined-button,
+  .mat-mdc-flat-button {
+    --mdc-theme-primary: var(--primary-color);
+    --mdc-theme-on-primary: var(--on-primary-color);
+    --mdc-theme-secondary: var(--secondary-color);
+    --mdc-theme-on-secondary: var(--on-secondary-color);
+  }
+
+  // Material鍗＄墖閫傞厤
+  .mat-mdc-card {
+    --mdc-theme-surface: var(--surface-color);
+    --mdc-theme-on-surface: var(--text-primary-color);
+
+    background-color: var(--surface-color);
+    color: var(--text-primary-color);
+  }
+
+  // Material杈撳叆妗嗛€傞厤
+  .mat-mdc-form-field {
+    --mdc-theme-primary: var(--primary-color);
+
+    .mat-mdc-text-field-wrapper {
+      background-color: var(--input-background);
+    }
+
+    .mat-mdc-form-field-focus-overlay {
+      background-color: var(--hover-color);
+    }
+  }
+
+  // Material工具鏍?
+  .mat-toolbar {
+    --mdc-theme-primary: var(--primary-color);
+    --mdc-theme-on-primary: var(--on-primary-color);
+  }
+
+  // Material閫夐」鍗?
+  .mat-mdc-tab-group {
+    --mdc-theme-primary: var(--primary-color);
+    --mdc-theme-on-primary: var(--on-primary-color);
+  }
+}
+
+// =============================================================================
+// 濯掍綋鏌ヨ - 系统鏆楄壊妯″紡鍋忓ソ
+// =============================================================================
+
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme]) {
+    // 褰撴湭鎵嬪姩设置主题涓旂郴缁熷亸濂芥殫鑹叉椂锛屽簲鐢ㄦ殫鑹蹭富棰?
+    // 鏆傛椂娉ㄩ噴鎺夛紝閬垮厤鏈畾涔塵ixin错误
+    // @include dark-theme-variables();
+  }
+}
+
+// =============================================================================
+// 鍔ㄧ敾鍜岃繃娓℃晥鏋?
+// =============================================================================
+
+[data-theme="dark"] {
+  // 骞虫粦鐨勪富棰樺垏鎹㈣繃娓?
+  *,
+  *::before,
+  *::after {
+    transition-timing-function: ease-in-out;
+    transition-duration: 0.2s;
+    transition-property: background-color, border-color, color, fill, stroke;
+  }
+
+  // 鍑忓皯鍔ㄧ敾鍋忓ソ鐨勭敤鎴?
+  @media (prefers-reduced-motion: reduce) {
+    *,
+    *::before,
+    *::after {
+      transition: none;
+      animation-duration: 0.01ms;
+    }
+  }
+}
+
+// =============================================================================
+// 鎵撳嵃样式閫傞厤
+// =============================================================================
+
+@media print {
+  [data-theme="dark"] {
+    // 鎵撳嵃鏃跺己鍒朵娇鐢ㄤ寒鑹叉ā寮忎互渚挎洿濂介槄璇?
+    --background-color: #fff;
+    --text-primary-color: #000;
+    --surface-color: #fff;
+
+    body {
+      background-color: #fff;
+      color: #000;
+    }
+  }
+}
+
+// =============================================================================
+// Mixin for easy dark theme variable application
+// =============================================================================
+
+@mixin dark-theme-variables() {
+  // 基础颜色
+  --background-color: #121212;
+  --surface-color: #1e1e1e;
+  --text-primary-color: #fff;
+  --text-secondary-color: #b3b3b3;
+  --border-color: #333;
+
+  // 鍝佺墝鑹？
+  --primary-color: #3d5a80;
+  --secondary-color: #e8c547;
+  --error-color: #cf6679;
+
+  // 鐘舵€佽壊
+  --success-color: #4caf50;
+  --warning-color: #ff9800;
+  --info-color: #1e3a5f;
+}
+
+// 浣跨敤绀轰緥锛?
+// .my-component {
+//   // 浜壊主题样式
+//
+//   [data-theme="dark"] & {
+//     // 鏆楄壊主题瑕嗙洊样式
+//   }
+// }

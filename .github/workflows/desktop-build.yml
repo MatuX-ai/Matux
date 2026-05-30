@@ -1,0 +1,220 @@
+name: MatuX Desktop Build & Release
+
+# MatuX 桌面端 CI/CD 流水线
+# - 构建 Angular 前端
+# - 打包 Electron 应用
+# - 生成 NSIS 安装包和便携版
+# - 发布到 GitHub Releases
+
+on:
+  push:
+    branches: [main, release/*]
+    tags: ['v*']
+  pull_request:
+    branches: [main]
+  workflow_dispatch:
+    inputs:
+      release_type:
+        description: '发布类型'
+        required: true
+        default: 'draft'
+        type: choice
+        options:
+          - draft
+          - prerelease
+          - release
+
+env:
+  NODE_VERSION: '20'
+  PYTHON_VERSION: '3.11'
+  ELECTRON_CACHE: ${{ github.workspace }}/.electron-cache
+
+jobs:
+  # ==================== 代码检查 ====================
+  lint:
+    name: 代码质量检查
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: 'npm'
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: TypeScript 类型检查
+        run: npx tsc --noEmit
+
+      - name: ESLint
+        run: npm run lint:ts-check
+
+      - name: SCSS Lint
+        run: npm run lint:scss-check
+        continue-on-error: true
+
+  # ==================== 前端构建 ====================
+  build-frontend:
+    name: 构建 Angular 前端
+    runs-on: ubuntu-latest
+    needs: lint
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: 'npm'
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Build Angular (Production)
+        run: npm run build:prod
+
+      - name: Upload frontend artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: angular-dist
+          path: dist/imatuproject/
+          retention-days: 7
+
+  # ==================== Windows 打包 ====================
+  build-windows:
+    name: 打包 Windows 安装包
+    runs-on: windows-latest
+    needs: build-frontend
+    strategy:
+      matrix:
+        arch: [x64]
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: 'npm'
+
+      - name: Download frontend artifact
+        uses: actions/download-artifact@v4
+        with:
+          name: angular-dist
+          path: dist/imatuproject/
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Install Electron dependencies
+        working-directory: electron
+        run: npm ci
+
+      - name: Build Electron (NSIS Installer)
+        working-directory: electron
+        run: npm run build
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          ELECTRON_CACHE: ${{ env.ELECTRON_CACHE }}
+
+      - name: Build Electron (Portable)
+        working-directory: electron
+        run: npm run build:portable
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          ELECTRON_CACHE: ${{ env.ELECTRON_CACHE }}
+
+      - name: Upload installer artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: imato-windows-installer-${{ matrix.arch }}
+          path: electron/dist/*.exe
+          retention-days: 7
+
+      - name: Upload portable artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: imato-windows-portable-${{ matrix.arch }}
+          path: electron/dist/*Portable*.exe
+          retention-days: 7
+
+  # ==================== 发布 ====================
+  release:
+    name: 发布到 GitHub Releases
+    runs-on: ubuntu-latest
+    if: startsWith(github.ref, 'refs/tags/v')
+    needs: [build-windows]
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Download all artifacts
+        uses: actions/download-artifact@v4
+        with:
+          path: release-assets/
+
+      - name: Generate Release Notes
+        id: release_notes
+        run: |
+          echo "## MatuX Desktop v${GITHUB_REF#refs/tags/v}" > release-notes.md
+          echo "" >> release-notes.md
+          echo "### 安装说明" >> release-notes.md
+          echo "- 下载 \`iMato-*-Setup.exe\` 双击安装" >> release-notes.md
+          echo "- 或下载 \`iMato-*-Portable.exe\` 免安装运行" >> release-notes.md
+          echo "" >> release-notes.md
+          echo "### 系统要求" >> release-notes.md
+          echo "- Windows 10 1809+ / Windows 11" >> release-notes.md
+          echo "- Python 3.9+ (首次启动自动检测)" >> release-notes.md
+          echo "- 4GB RAM, 2GB 磁盘空间" >> release-notes.md
+
+      - name: Create GitHub Release
+        uses: softprops/action-gh-release@v1
+        with:
+          name: "MatuX Desktop v${{ github.ref_name }}"
+          body_path: release-notes.md
+          draft: ${{ github.event.inputs.release_type == 'draft' || true }}
+          prerelease: ${{ github.event.inputs.release_type == 'prerelease' || false }}
+          files: |
+            release-assets/**/*.exe
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+  # ==================== 手动触发发布 ====================
+  manual-release:
+    name: 手动发布
+    runs-on: ubuntu-latest
+    if: github.event_name == 'workflow_dispatch'
+    needs: [build-windows]
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Download all artifacts
+        uses: actions/download-artifact@v4
+        with:
+          path: release-assets/
+
+      - name: Generate version tag
+        id: version
+        run: |
+          VERSION=$(node -p "require('./electron/package.json').version")
+          echo "version=v${VERSION}" >> $GITHUB_OUTPUT
+          echo "BUILD_DATE=$(date +%Y%m%d)" >> $GITHUB_OUTPUT
+
+      - name: Create Manual Release
+        uses: softprops/action-gh-release@v1
+        with:
+          tag_name: ${{ steps.version.outputs.version }}-${{ steps.version.outputs.BUILD_DATE }}
+          name: "MatuX Desktop ${{ steps.version.outputs.version }} (手动构建)"
+          body: "手动触发的构建版本\n\n构建日期: ${{ steps.version.outputs.BUILD_DATE }}"
+          draft: ${{ github.event.inputs.release_type == 'draft' }}
+          prerelease: ${{ github.event.inputs.release_type != 'release' }}
+          files: |
+            release-assets/**/*.exe
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}

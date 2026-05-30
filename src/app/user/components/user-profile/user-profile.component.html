@@ -1,0 +1,273 @@
+<div class="profile-container">
+  <!-- 加载状态 -->
+  <div class="loading-container" *ngIf="loading && !userProfile">
+    <mat-spinner diameter="50"></mat-spinner>
+    <p>正在加载个人资料...</p>
+  </div>
+
+  <!-- 错误信息 -->
+  <div class="error-container" *ngIf="error && !loading">
+    <mat-icon class="error-icon">error_outline</mat-icon>
+    <p class="error-message">{{ error }}</p>
+    <button mat-raised-button color="primary" (click)="loadUserProfile()">
+      <mat-icon>refresh</mat-icon>
+      重新加载
+    </button>
+  </div>
+
+  <!-- 个人资料内容 -->
+  <div class="profile-content" *ngIf="!loading || userProfile">
+    <!-- 顶部操作栏 -->
+    <div class="profile-header">
+      <h2>个人资料</h2>
+      <div class="header-actions" *ngIf="userProfile && !isEditing">
+        <button mat-raised-button color="primary" (click)="enterEditMode()">
+          <mat-icon>edit</mat-icon>
+          编辑资料
+        </button>
+      </div>
+    </div>
+
+    <mat-divider></mat-divider>
+
+    <!-- 基本信息卡片 -->
+    <mat-card class="profile-card">
+      <mat-card-header>
+        <div mat-card-avatar class="avatar-container">
+          <img *ngIf="userProfile?.avatar" [src]="userProfile?.avatar || ''" alt="用户头像" class="avatar-image" />
+          <mat-icon *ngIf="!userProfile?.avatar" class="avatar-icon">person</mat-icon>
+        </div>
+        <mat-card-title>{{ userProfile?.username || '用户名' }}</mat-card-title>
+        <mat-card-subtitle>{{ getUserTypeLabel() }}</mat-card-subtitle>
+      </mat-card-header>
+
+      <mat-card-content>
+        <!-- 查看模式 -->
+        <div class="profile-fields" *ngIf="!isEditing">
+          <div class="field-row">
+            <span class="field-label">用户名：</span>
+            <span class="field-value">{{ userProfile?.username || '-' }}</span>
+          </div>
+
+          <div class="field-row">
+            <span class="field-label">邮箱：</span>
+            <span class="field-value">{{ userProfile?.email || '-' }}</span>
+          </div>
+
+          <div class="field-row">
+            <span class="field-label">真实姓名：</span>
+            <span class="field-value">{{ userProfile?.realName || '-' }}</span>
+          </div>
+
+          <div class="field-row">
+            <span class="field-label">手机号：</span>
+            <span class="field-value">{{ userProfile?.phone || '-' }}</span>
+          </div>
+
+          <div class="field-row">
+            <span class="field-label">注册时间：</span>
+            <span class="field-value">{{ userProfile?.createdAt | date:'yyyy-MM-dd HH:mm' }}</span>
+          </div>
+
+          <div class="field-row" *ngIf="userProfile?.updatedAt">
+            <span class="field-label">最后更新：</span>
+            <span class="field-value">{{ (userProfile?.updatedAt || '') | date:'yyyy-MM-dd HH:mm' }}</span>
+          </div>
+        </div>
+
+        <!-- 编辑模式 -->
+        <div class="profile-form" *ngIf="isEditing">
+          <form #profileForm="ngForm">
+            <!-- 错误信息 -->
+            <div class="form-error" *ngIf="error">
+              <mat-icon>error</mat-icon>
+              <span>{{ error }}</span>
+            </div>
+
+            <!-- 头像上传 -->
+            <div class="avatar-upload">
+              <div class="avatar-preview">
+                <img *ngIf="formData.avatar" [src]="formData.avatar" alt="预览头像" />
+                <mat-icon *ngIf="!formData.avatar">person</mat-icon>
+              </div>
+              <input type="file" #fileInput accept="image/*" (change)="uploadAvatar($event)" hidden />
+              <button mat-stroked-button type="button" (click)="fileInput.click()" [disabled]="saving">
+                <mat-icon>upload</mat-icon>
+                上传头像
+              </button>
+            </div>
+
+            <!-- 用户名 -->
+            <mat-form-field appearance="outline" class="full-width">
+              <mat-label>用户名</mat-label>
+              <input
+                matInput
+                [(ngModel)]="formData.username"
+                name="username"
+                required
+                placeholder="请输入用户名"
+              />
+              <mat-icon matSuffix>person</mat-icon>
+              <mat-hint>用户名用于登录和显示</mat-hint>
+            </mat-form-field>
+
+            <!-- 真实姓名 -->
+            <mat-form-field appearance="outline" class="full-width">
+              <mat-label>真实姓名</mat-label>
+              <input
+                matInput
+                [(ngModel)]="formData.realName"
+                name="realName"
+                placeholder="请输入真实姓名"
+              />
+              <mat-icon matSuffix>badge</mat-icon>
+              <mat-hint>请填写真实姓名，便于教师和管理员识别</mat-hint>
+            </mat-form-field>
+
+            <!-- 手机号 -->
+            <mat-form-field appearance="outline" class="full-width">
+              <mat-label>手机号</mat-label>
+              <input
+                matInput
+                [(ngModel)]="formData.phone"
+                name="phone"
+                placeholder="请输入手机号"
+                type="tel"
+              />
+              <mat-icon matSuffix>phone</mat-icon>
+              <mat-hint>手机号可用于接收通知和找回密码</mat-hint>
+            </mat-form-field>
+          </form>
+        </div>
+      </mat-card-content>
+
+      <mat-card-actions *ngIf="isEditing" class="card-actions">
+        <button mat-raised-button color="primary" (click)="saveProfile()" [disabled]="saving">
+          <mat-spinner diameter="20" *ngIf="saving"></mat-spinner>
+          <span *ngIf="!saving">保存</span>
+        </button>
+        <button mat-stroked-button (click)="cancelEdit()" [disabled]="saving">
+          取消
+        </button>
+      </mat-card-actions>
+    </mat-card>
+
+    <!-- 安全设置卡片 -->
+    <mat-card class="security-card">
+      <mat-card-header>
+        <mat-card-title>
+          <mat-icon>security</mat-icon>
+          安全设置
+        </mat-card-title>
+      </mat-card-header>
+
+      <mat-card-content>
+        <div class="security-item">
+          <div class="item-info">
+            <span class="item-title">登录密码</span>
+            <span class="item-desc">定期更换密码有助于保护账户安全</span>
+          </div>
+          <button mat-raised-button color="primary" (click)="changePassword()">
+            修改密码
+          </button>
+        </div>
+
+        <mat-divider></mat-divider>
+
+        <div class="security-item">
+          <div class="item-info">
+            <span class="item-title">两步验证</span>
+            <span class="item-desc">增强账户安全性，建议开启</span>
+          </div>
+          <button mat-stroked-button disabled>
+            即将开放
+          </button>
+        </div>
+      </mat-card-content>
+    </mat-card>
+
+    <!-- 偏好设置卡片 -->
+    <mat-card class="preferences-card">
+      <mat-card-header>
+        <mat-card-title>
+          <mat-icon>settings</mat-icon>
+          偏好设置
+        </mat-card-title>
+      </mat-card-header>
+
+      <mat-card-content>
+        <!-- 主题设置 -->
+        <div class="preference-item">
+          <span class="item-label">主题模式</span>
+          <mat-button-toggle-group [(ngModel)]="userPreferences.theme" name="theme">
+            <mat-button-toggle value="light">浅色</mat-button-toggle>
+            <mat-button-toggle value="dark">深色</mat-button-toggle>
+            <mat-button-toggle value="auto">自动</mat-button-toggle>
+          </mat-button-toggle-group>
+        </div>
+
+        <mat-divider></mat-divider>
+
+        <!-- 语言设置 -->
+        <div class="preference-item">
+          <span class="item-label">语言</span>
+          <mat-button-toggle-group [(ngModel)]="userPreferences.language" name="language">
+            <mat-button-toggle value="zh-CN">中文</mat-button-toggle>
+            <mat-button-toggle value="en-US" disabled>English</mat-button-toggle>
+          </mat-button-toggle-group>
+        </div>
+
+        <mat-divider></mat-divider>
+
+        <!-- 通知设置 -->
+        <div class="preference-section">
+          <h4>通知设置</h4>
+
+          <div class="preference-item">
+            <mat-checkbox [(ngModel)]="emailNotify" name="emailNotify">
+              邮件通知
+            </mat-checkbox>
+          </div>
+
+          <div class="preference-item">
+            <mat-checkbox [(ngModel)]="smsNotify" name="smsNotify" disabled>
+              短信通知（即将开放）
+            </mat-checkbox>
+          </div>
+
+          <div class="preference-item">
+            <mat-checkbox [(ngModel)]="pushNotify" name="pushNotify">
+              推送通知
+            </mat-checkbox>
+          </div>
+        </div>
+
+        <mat-divider></mat-divider>
+
+        <!-- 隐私设置 -->
+        <div class="preference-section">
+          <h4>隐私设置</h4>
+
+          <div class="preference-item">
+            <mat-checkbox [(ngModel)]="showEmail" name="showEmail">
+              公开邮箱地址
+            </mat-checkbox>
+          </div>
+
+          <div class="preference-item">
+            <mat-checkbox [(ngModel)]="showPhone" name="showPhone">
+              公开手机号
+            </mat-checkbox>
+          </div>
+        </div>
+      </mat-card-content>
+
+      <mat-card-actions class="card-actions">
+        <button mat-raised-button color="primary" (click)="savePreferences()" [disabled]="saving">
+          <mat-spinner diameter="20" *ngIf="saving"></mat-spinner>
+          <span *ngIf="!saving">保存设置</span>
+        </button>
+      </mat-card-actions>
+    </mat-card>
+  </div>
+</div>

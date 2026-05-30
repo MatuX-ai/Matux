@@ -1,0 +1,172 @@
+<div class="offline-task-list">
+  <div class="page-header">
+    <h1>
+      <mat-icon>assignment</mat-icon>
+      离线任务管理
+    </h1>
+    <p>管理您在离线状态下可以执行的学习任务</p>
+  </div>
+
+  <mat-card class="task-stats-card">
+    <mat-card-content>
+      <div class="stats-container">
+        <div class="stat-item">
+          <div class="stat-number">{{tasks.length}}</div>
+          <div class="stat-label">总任务数</div>
+        </div>
+        <div class="stat-item">
+          <div class="stat-number">{{todoCount}}</div>
+          <div class="stat-label">待办任务</div>
+        </div>
+        <div class="stat-item">
+          <div class="stat-number">{{inProgressCount}}</div>
+          <div class="stat-label">进行中</div>
+        </div>
+        <div class="stat-item">
+          <div class="stat-number">{{completedCount}}</div>
+          <div class="stat-label">已完成</div>
+        </div>
+      </div>
+    </mat-card-content>
+  </mat-card>
+
+  <mat-card class="task-list-card">
+    <mat-card-header>
+      <mat-card-title>
+        <mat-icon>list</mat-icon>
+        任务列表
+      </mat-card-title>
+      <mat-card-subtitle>
+        共 {{tasks.length}} 个任务
+      </mat-card-subtitle>
+    </mat-card-header>
+
+    <mat-card-content>
+      <div class="loading-container" *ngIf="isLoading">
+        <mat-progress-bar mode="indeterminate"></mat-progress-bar>
+        <p>正在加载任务数据...</p>
+      </div>
+
+      <div class="empty-state" *ngIf="!isLoading && tasks.length === 0">
+        <mat-icon>assignment_turned_in</mat-icon>
+        <h3>暂无任务</h3>
+        <p>您还没有任何离线任务，网络恢复后会自动同步云端任务。</p>
+      </div>
+
+      <table mat-table [dataSource]="tasks" class="task-table" *ngIf="!isLoading && tasks.length > 0">
+        <!-- 标题列 -->
+        <ng-container matColumnDef="title">
+          <th mat-header-cell *matHeaderCellDef>任务标题</th>
+          <td mat-cell *matCellDef="let task">
+            <div class="task-title">
+              <span class="title-text">{{task.title}}</span>
+              <mat-icon
+                class="urgent-icon"
+                *ngIf="isTaskUrgent(task)"
+                matTooltip="紧急任务"
+                color="warn">
+                warning
+              </mat-icon>
+            </div>
+            <div class="task-description">{{task.description}}</div>
+            <div class="task-tags">
+              <mat-chip *ngFor="let tag of task.tags" size="small">
+                {{tag}}
+              </mat-chip>
+            </div>
+          </td>
+        </ng-container>
+
+        <!-- 类型列 -->
+        <ng-container matColumnDef="type">
+          <th mat-header-cell *matHeaderCellDef>类型</th>
+          <td mat-cell *matCellDef="let task">
+            <mat-chip size="small">
+              {{task.type}}
+            </mat-chip>
+          </td>
+        </ng-container>
+
+        <!-- 优先级列 -->
+        <ng-container matColumnDef="priority">
+          <th mat-header-cell *matHeaderCellDef>优先级</th>
+          <td mat-cell *matCellDef="let task">
+            <mat-chip size="small">
+              {{getPriorityText(task.priority)}}
+            </mat-chip>
+          </td>
+        </ng-container>
+
+        <!-- 状态列 -->
+        <ng-container matColumnDef="status">
+          <th mat-header-cell *matHeaderCellDef>状态</th>
+          <td mat-cell *matCellDef="let task">
+            <mat-chip size="small">
+              {{getStatusText(task.status)}}
+            </mat-chip>
+          </td>
+        </ng-container>
+
+        <!-- 截止日期列 -->
+        <ng-container matColumnDef="dueDate">
+          <th mat-header-cell *matHeaderCellDef>截止时间</th>
+          <td mat-cell *matCellDef="let task" [class.urgent]="isTaskUrgent(task)">
+            {{formatDate(task.dueDate)}}
+          </td>
+        </ng-container>
+
+        <!-- 操作列 -->
+        <ng-container matColumnDef="actions">
+          <th mat-header-cell *matHeaderCellDef>操作</th>
+          <td mat-cell *matCellDef="let task">
+            <div class="action-buttons">
+              <button
+                mat-icon-button
+                color="primary"
+                (click)="viewTaskDetails(task)"
+                matTooltip="查看详情">
+                <mat-icon>visibility</mat-icon>
+              </button>
+              <button
+                mat-icon-button
+                color="accent"
+                (click)="startTask(task)"
+                matTooltip="开始任务"
+                *ngIf="task.status === 'todo'">
+                <mat-icon>play_arrow</mat-icon>
+              </button>
+              <button
+                mat-icon-button
+                color="primary"
+                (click)="completeTask(task)"
+                matTooltip="标记完成"
+                *ngIf="task.status !== 'completed'">
+                <mat-icon>check</mat-icon>
+              </button>
+            </div>
+          </td>
+        </ng-container>
+
+        <tr mat-header-row *matHeaderRowDef="displayedColumns"></tr>
+        <tr mat-row *matRowDef="let row; columns: displayedColumns;"></tr>
+      </table>
+    </mat-card-content>
+  </mat-card>
+
+  <mat-card class="offline-info-card">
+    <mat-card-header>
+      <mat-card-title>
+        <mat-icon>info</mat-icon>
+        离线任务说明
+      </mat-card-title>
+    </mat-card-header>
+    <mat-card-content>
+      <ul class="info-list">
+        <li>这些任务是在您有网络连接时下载的，可以在离线状态下完成</li>
+        <li>任务状态的更改将在网络恢复后自动同步到云端</li>
+        <li>紧急任务会以特殊标识显示，请优先处理</li>
+        <li>您可以随时开始、暂停或完成任务，所有操作都会被记录</li>
+      </ul>
+    </mat-card-content>
+  </mat-card>
+</div>

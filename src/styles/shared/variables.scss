@@ -1,0 +1,127 @@
+// 共享设计变量和混合宏
+// 用于减少组件样式文件大小
+
+// 颜色系统
+$primary-gradient: linear-gradient(135deg, #abf1d1 0%, #08f0a3 100%);
+$success-gradient: linear-gradient(135deg, #4caf50, #8bc34a);
+$warning-gradient: linear-gradient(135deg, #ff9800, #ffc107);
+$info-gradient: linear-gradient(135deg, #14b8a6, #0d9488); // 藏青色渐变，用于信息提示
+
+// 状态颜色
+$status-completed: #4caf50;
+$status-in-progress: #ff9800;
+$status-planned: #02554e;
+$status-error: #f44336;
+
+// 文本颜色
+$text-primary: #1a1a1a;
+$text-secondary: #666;
+$text-disabled: #999;
+
+// 间距系统 - 使用与设计令牌一致的命名
+$spacing-xs: 0.25rem;   // 4px
+$spacing-sm: 0.5rem;    // 8px
+$spacing-md: 0.75rem;   // 12px
+$spacing-lg: 1rem;      // 16px
+$spacing-xl: 1.5rem;    // 24px
+$spacing-xxl: 2rem;     // 32px
+
+// 额外间距（用于 design-tokens 兼容）
+$spacing-6: $spacing-lg;
+$spacing-8: $spacing-xxl;
+
+// 边框圆角
+$border-radius-sm: 0.25rem;  // 4px
+$border-radius-md: 0.5rem;   // 8px
+$border-radius-lg: 0.75rem;  // 12px
+$border-radius-xl: 1rem;     // 16px
+
+// 阴影
+$shadow-sm: 0 1px 3px 0 rgb(0 0 0 / 10%), 0 1px 2px 0 rgb(0 0 0 / 6%);
+$shadow-md: 0 4px 6px -1px rgb(0 0 0 / 10%), 0 2px 4px -1px rgb(0 0 0 / 6%);
+$shadow-lg: 0 10px 15px -3px rgb(0 0 0 / 10%), 0 4px 6px -2px rgb(0 0 0 / 5%);
+$shadow-card-hover: $shadow-lg; // 给 card-hover mixin 用
+
+// 渐变背景
+$gradient-primary: $primary-gradient;
+$gradient-success: $success-gradient;
+$gradient-warning: $warning-gradient;
+$gradient-info: $info-gradient;
+
+// Marketing 页面需要的渐变
+$gradient-background: linear-gradient(180deg, #f8fcfa 0%, #ffffff 100%);
+$gradient-hero: linear-gradient(135deg, #06857a 0%, #1eaf83 50%, #1e8a47 100%);
+$gradient-feature: linear-gradient(135deg, #8bea66 0%, #4ba259 100%);
+$gradient-surface: linear-gradient(135deg, #f8f9fa 0%, #ffffff 100%);
+$gradient-cta: linear-gradient(135deg, #53f9a6 0%, #1db91d 100%);
+
+// 颜色别名
+$color-white: #ffffff;
+
+// 间距扩展
+$spacing-24: 6rem; // 96px
+
+// 过渡动画
+$transition-normal: 0.3s ease;
+
+// 阴影扩展
+$shadow-card-hover: $shadow-lg;
+
+// 响应式断点
+$breakpoint-mobile-max: 767px;
+$breakpoint-tablet-max: 1023px;
+$breakpoint-desktop-min: 1024px;
+$breakpoint-wide-min: 1440px;
+
+// 字体权重（与 tokens.scss 保持一致）
+$font-weight-light: 300;
+$font-weight-regular: 400;
+$font-weight-medium: 500;
+$font-weight-semibold: 600;
+$font-weight-bold: 700;
+
+// 颜色别名（与 tokens.scss 保持一致）
+$color-danger: #ef4444;
+$color-success: #10b981;
+$color-warning: #f59e0b;
+
+// Gray 颜色系统
+$color-gray-50: #f8fafc;
+$color-gray-100: #f1f5f9;
+$color-gray-200: #e2e8f0;
+$color-gray-300: #cbd5e1;
+$color-gray-400: #94a3b8;
+$color-gray-500: #64748b;
+$color-gray-600: #475569;
+$color-gray-700: #334155;
+$color-gray-800: #1e293b;
+$color-gray-900: #0f172a;
+
+// 图标颜色
+$color-icon-color: #648b6e;
+
+// 主要颜色系统
+$color-primary: #21f39c;
+$color-primary-light: #64f6be;
+$color-primary-dark: #19d2aa;
+
+// Info 颜色（用于学习路径等）- 藏青色系
+$color-info: #14b8a6;      // 标准藏青，用于信息元素
+$color-info-light: #5eead4; // 浅藏青，用于悬停和背景
+$color-info-dark: #0d9488;  // 深藏青，用于强调
+
+// Cyan/Teal 藏青色系 (品牌主色)
+$color-cyan-50: #f0fdf9;   // 最浅藏青，用于背景
+$color-cyan-100: #ccfbf1;  // 浅色藏青，用于悬停背景
+$color-cyan-200: #99f6e4;  // 浅藏青，用于边框和装饰
+$color-cyan-300: #5eead4;  // 中浅藏青，用于次要文本
+$color-cyan-400: #2dd4bf;  // 中藏青，用于图标和强调
+$color-cyan-500: #14b8a6;  // 标准藏青，用于主要按钮
+$color-cyan-600: #0d9488;  // 深藏青，用于悬停状态
+$color-cyan-700: #0f766e;  // 较深藏青，用于重要元素
+$color-cyan-800: #115e59;  // 深藏青，用于强调文本
+$color-cyan-900: #134e4a;  // 最深藏青，用于标题和重点
+
+// 基础颜色
+$color-white: #ffffff;
+$color-black: #000000;

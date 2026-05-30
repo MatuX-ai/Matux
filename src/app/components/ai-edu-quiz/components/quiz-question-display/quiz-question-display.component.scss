@@ -1,0 +1,130 @@
+// 导入共享样式变量和混合宏
+@use 'src/styles/shared/variables' as *;
+@use 'src/styles/shared/mixins' as *;
+@use 'src/styles/shared/buttons';
+
+.question-card {
+  background: white;
+  border-radius: 12px;
+  padding: 30px;
+  margin-bottom: 25px;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
+}
+
+.question-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 20px;
+}
+
+.question-type-badge {
+  padding: 6px 16px;
+  border-radius: 20px;
+  font-size: 13px;
+  font-weight: bold;
+  color: white;
+
+  &.type-choice { background: #2196f3; }
+  &.type-fill { background: #ff9800; }
+  &.type-code { background: #4caf50; }
+  &.type-matching { background: #9c27b0; }
+}
+
+.question-points {
+  font-weight: 600;
+  color: #666;
+}
+
+.question-content {
+  margin: 0 0 24px 0;
+  font-size: 1.1em;
+  line-height: 1.6;
+  color: #333;
+}
+
+.answer-section {
+  .choice-option {
+    display: flex;
+    align-items: center;
+    padding: 15px 20px;
+    margin-bottom: 12px;
+    border: 2px solid #e0e0e0;
+    border-radius: 10px;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    gap: 12px;
+
+    &:hover:not(.selected):not(.correct):not(.incorrect) {
+      border-color: #667eea;
+      background: #f0f4ff;
+      transform: translateX(5px);
+    }
+
+    &.selected {
+      border-color: #667eea;
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      color: white;
+    }
+
+    &.correct {
+      border-color: #4caf50;
+      background: #e8f5e9;
+      cursor: default;
+    }
+
+    &.incorrect {
+      border-color: #f44336;
+      background: #ffebee;
+      cursor: default;
+    }
+
+    .option-label {
+      background: white;
+      width: 32px;
+      height: 32px;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-weight: bold;
+      flex-shrink: 0;
+    }
+
+    .option-content {
+      flex: 1;
+    }
+  }
+
+  .fill-input {
+    width: 100%;
+    padding: 15px;
+    border: 2px solid #e0e0e0;
+    border-radius: 8px;
+    font-size: 16px;
+    transition: border-color 0.3s;
+
+    &:focus {
+      outline: none;
+      border-color: #667eea;
+    }
+  }
+
+  .code-editor {
+    height: 300px;
+    border: 2px solid #e0e0e0;
+    border-radius: 8px;
+    overflow: hidden;
+    margin-bottom: 16px;
+  }
+
+  .run-code-btn {
+    @extend .btn-warning;
+    @extend .btn-icon;
+
+    &:disabled {
+      opacity: 0.5;
+      cursor: not-allowed;
+    }
+  }
+}

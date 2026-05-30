@@ -1,0 +1,25 @@
+# 企业API网关生产环境依赖
+fastapi==0.104.1
+uvicorn[standard]==0.24.0
+pydantic==2.5.0
+pydantic-settings==2.0.3
+python-dotenv==1.0.0
+python-jose[cryptography]==3.3.0
+passlib[bcrypt]==1.7.4
+sqlalchemy==2.0.23
+asyncpg==0.28.0
+psycopg2-binary==2.9.7
+redis==5.0.1
+alembic==1.12.1
+python-multipart==0.0.6
+httpx==0.25.2
+gunicorn==21.2.0
+
+# 监控和日志
+prometheus-client==0.17.1
+structlog==23.1.0
+
+# 测试依赖
+pytest==7.4.3
+pytest-asyncio==0.21.1
+httpx==0.25.2

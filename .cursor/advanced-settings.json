@@ -1,0 +1,75 @@
+{
+  "cursor.workspace.advanced": {
+    "projectType": "fullstack",
+    "frontendFramework": "angular",
+    "backendFramework": "fastapi",
+    "database": "postgresql",
+    "deployment": "docker",
+    "testingFrameworks": ["jest", "pytest"],
+    "lintingTools": ["eslint", "flake8", "stylelint"],
+    "ciCd": "github-actions"
+  },
+  "cursor.ai.advanced": {
+    "contextWindow": 8192,
+    "codeCompletion": {
+      "enabled": true,
+      "delay": 300,
+      "triggerCharacters": [".", "/", "@"],
+      "maxSuggestions": 5
+    },
+    "chat": {
+      "enabled": true,
+      "historyEnabled": true,
+      "maxHistoryMessages": 50
+    },
+    "refactoring": {
+      "extractMethod": true,
+      "renameVariables": true,
+      "optimizeImports": true,
+      "fixCodeIssues": true
+    }
+  },
+  "cursor.projectStructure": {
+    "srcDirectories": ["src", "backend", "frontend"],
+    "testDirectories": ["__tests__", "tests", "spec"],
+    "configFiles": [".cursor/", ".vscode/", ".github/"],
+    "ignorePatterns": [
+      "node_modules/",
+      "__pycache__/",
+      "*.log",
+      ".git/",
+      "dist/",
+      "build/"
+    ]
+  },
+  "cursor.integration": {
+    "git": {
+      "enabled": true,
+      "autoCommit": false,
+      "commitMessageTemplate": "feat: {message}"
+    },
+    "terminal": {
+      "shell": "powershell",
+      "profiles": {
+        "default": {
+          "command": "pwsh",
+          "args": ["-NoLogo"]
+        },
+        "python": {
+          "command": ".venv/Scripts/python.exe",
+          "args": []
+        }
+      }
+    },
+    "debugging": {
+      "python": {
+        "enabled": true,
+        "configuration": "Python: Current File"
+      },
+      "typescript": {
+        "enabled": true,
+        "configuration": "Angular: Launch Chrome"
+      }
+    }
+  }
+}

@@ -1,0 +1,32 @@
+<div class="achievement-progress">
+  <div *ngIf="loading" class="loading">
+    <mat-progress-spinner mode="indeterminate"></mat-progress-spinner>
+  </div>
+
+  <div *ngIf="progress" class="progress-content">
+    <!-- 进度条 -->
+    <mat-progress-bar
+      mode="determinate"
+      [value]="progress.completionPercentage"
+    ></mat-progress-bar>
+
+    <div class="percentage">
+      {{ progress.completionPercentage.toFixed(1) }}%
+    </div>
+
+    <!-- 里程碑 -->
+    <div *ngIf="displayMode === 'full'" class="milestones">
+      <h4>学习里程碑</h4>
+      <div *ngFor="let milestone of progress.milestones" class="milestone">
+        <div class="milestone-title">{{ milestone.name }}</div>
+        <div class="milestone-status" [class.completed]="milestone.achievedAt">
+          {{ milestone.achievedAt ? '✅ 已完成' : '⏳ 未完成' }}
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div *ngIf="!loading && !progress" class="no-progress">
+    暂无进度数据
+  </div>
+</div>

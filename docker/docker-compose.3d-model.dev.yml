@@ -1,0 +1,227 @@
+# 3D 模型库开发环境 Docker Compose 配置
+#
+# 用途：提供一致的开发环境，包含所有必需依赖
+# 使用方法:
+#   docker-compose -f docker-compose.3d-model.dev.yml up -d
+#   docker-compose -f docker-compose.3d-model.dev.yml exec dev bash
+#
+
+version: '3.8'
+
+services:
+  # ===========================================================================
+  # 开发环境服务
+  # ===========================================================================
+  dev:
+    image: mcr.microsoft.com/devcontainers/typescript-node:1-20-bullseye
+    container_name: imato-3d-model-dev
+
+    working_dir: /workspace
+
+    volumes:
+      # 挂载项目目录
+      - g:/iMato:/workspace:cached
+
+      # 挂载 Blender 配置 (可选)
+      # - ~/.blender:/root/.config/blender:cached
+
+    environment:
+      # 环境变量配置
+      - NODE_ENV=development
+      - PYTHONUNBUFFERED=1
+      - MODEL_LIBRARY_PATH=/workspace/models/electronic_components_lod
+      - MODEL_INDEX_URL=/workspace/src/assets/models/kicad_model_index.json
+      - VIRCADIA_SERVER_URL=http://localhost:9000
+      - LOG_LEVEL=debug
+
+    ports:
+      # Angular 开发服务器
+      - "4200:4200"
+
+      # Vite 开发服务器 (如果使用)
+      - "5173:5173"
+
+      # Python HTTP 服务器 (备用)
+      - "8000:8000"
+
+    command: >
+      bash -c "
+        # 安装系统依赖
+        apt-get update && apt-get install -y \
+          python3 \
+          python3-pip \
+          git \
+          curl \
+          wget \
+        ; rm -rf /var/lib/apt/lists/*
+
+        # 安装 Python 依赖
+        pip3 install requests black flake8 mypy pytest
+
+        # 安装 Node.js 全局包
+        npm install -g @angular/cli
+
+        # 安装项目依赖
+        cd /workspace
+        npm install three @types/three
+
+        # 保持容器运行
+        tail -f /dev/null
+      "
+
+    networks:
+      - imato-network
+
+    labels:
+      - "com.imato.project=3d-model-library"
+      - "com.imato.environment=development"
+
+  # ===========================================================================
+  # Blender 转换服务 (独立容器)
+  # ===========================================================================
+  blender-converter:
+    image: linuxserver/blender:latest
+    container_name: imato-blender-converter
+
+    working_dir: /converter
+
+    volumes:
+      # 挂载模型目录
+      - g:/iMato/models:/workspace/models:cached
+      - g:/iMato/data:/workspace/data:cached
+      - g:/iMato/scripts:/workspace/scripts:cached
+      - g:/iMato/logs:/workspace/logs:cached
+
+    environment:
+      - PUID=1000
+      - PGID=1000
+      - TZ=Asia/Shanghai
+
+    entrypoint: /bin/bash
+
+    stdin_open: true
+    tty: true
+
+    networks:
+      - imato-network
+
+    labels:
+      - "com.imato.service=blender-converter"
+
+  # ===========================================================================
+  # Python 工具服务 (爬虫、转换等)
+  # ===========================================================================
+  python-tools:
+    build:
+      context: g:/iMato
+      dockerfile: Dockerfile.3d-model-python
+    container_name: imato-python-tools
+
+    working_dir: /workspace
+
+    volumes:
+      - g:/iMato:/workspace:cached
+      - g:/iMato/models:/workspace/models:cached
+      - g:/iMato/data:/workspace/data:cached
+      - g:/iMato/logs:/workspace/logs:cached
+
+    environment:
+      - PYTHONUNBUFFERED=1
+      - MODEL_LIBRARY_PATH=/workspace/models
+      - LOG_LEVEL=info
+
+    networks:
+      - imato-network
+
+    labels:
+      - "com.imato.service=python-tools"
+
+  # ===========================================================================
+  # Vircadia 服务器 (本地测试用)
+  # ===========================================================================
+  vircadia-server:
+    image: vircadia/vircadia-server:latest
+    container_name: imato-vircadia-server
+
+    ports:
+      - "9000:9000"  # API 服务器
+      - "9001:9001"  # WebSocket
+      - "9002:9002"  # 文件服务器
+
+    environment:
+      - VIRCADIA_CONFIG=/etc/vircadia/config.json
+      - VIRCADIA_DATA=/vircadia-data
+
+    volumes:
+      - vircadia-data:/vircadia-data
+      - ./config/vircadia:/etc/vircadia:ro
+
+    networks:
+      - imato-network
+
+    labels:
+      - "com.imato.service=vircadia"
+
+  # ===========================================================================
+  # Redis 缓存 (性能优化)
+  # ===========================================================================
+  redis:
+    image: redis:7-alpine
+    container_name: imato-redis
+
+    ports:
+      - "6379:6379"
+
+    volumes:
+      - redis-data:/data
+
+    command: redis-server --appendonly yes
+
+    networks:
+      - imato-network
+
+    labels:
+      - "com.imato.service=cache"
+
+# =============================================================================
+# 网络配置
+# =============================================================================
+networks:
+  imato-network:
+    driver: bridge
+    ipam:
+      config:
+        - subnet: 172.28.0.0/16
+
+# =============================================================================
+# 数据卷配置
+# =============================================================================
+volumes:
+  vircadia-data:
+    driver: local
+  redis-data:
+    driver: local
+
+# =============================================================================
+# 使用示例
+# =============================================================================
+#
+# 启动所有服务:
+#   docker-compose -f docker-compose.3d-model.dev.yml up -d
+#
+# 进入开发容器:
+#   docker-compose -f docker-compose.3d-model.dev.yml exec dev bash
+#
+# 查看日志:
+#   docker-compose -f docker-compose.3d-model.dev.yml logs -f
+#
+# 运行爬虫:
+#   docker-compose -f docker-compose.3d-model.dev.yml exec python-tools python scripts/kicad_model_scraper.py
+#
+# 停止所有服务:
+#   docker-compose -f docker-compose.3d-model.dev.yml down
+#
+# 清理数据卷:
+#   docker-compose -f docker-compose.3d-model.dev.yml down -v
+#
+# =============================================================================

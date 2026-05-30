@@ -1,0 +1,39 @@
+{
+  "lesson_code": "bc_02_ai_vs_human",
+  "title": "AI 与人类的区别",
+  "subtitle": "机器能像人一样思考吗？",
+  "content_type": "hybrid",
+  "content_url": "",
+  "resources": [
+    {
+      "type": "code",
+      "url": "python/simple_chatbot.py",
+      "title": "简单聊天机器人",
+      "description": "Python 代码示例，展示简单的对话 AI"
+    },
+    {
+      "type": "html",
+      "url": "interactive/ai_comparison.html",
+      "title": "AI vs 人类能力对比互动页面",
+      "description": "HTML 互动页面，体验 AI 和人类的不同"
+    }
+  ],
+  "learning_objectives": [
+    "理解 AI 与人类智能的差异",
+    "认识 AI 的优势和局限性",
+    "培养批判性思维"
+  ],
+  "knowledge_points": [
+    "人类智能的特点",
+    "人工智能的能力范围",
+    "机器学习的基本原理"
+  ],
+  "estimated_duration_minutes": 25,
+  "has_quiz": true,
+  "quiz_passing_score": 70.0,
+  "has_practice": true,
+  "practice_type": "python",
+  "base_points": 25,
+  "is_active": true,
+  "display_order": 2
+}

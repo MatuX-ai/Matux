@@ -1,0 +1,318 @@
+@import 'src/styles/design-tokens';
+
+$spacing-xl: $spacing-12 !default;
+
+.user-token-dashboard {
+  padding: $spacing-xl;
+  max-width: 1200px;
+  margin: 0 auto;
+}
+
+// 加载和错误状态
+.loading-container, .error-container {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 80px 20px;
+  text-align: center;
+
+  mat-icon {
+    font-size: 64px;
+    width: 64px;
+    height: 64px;
+    margin-bottom: 24px;
+  }
+
+  p {
+    margin: 16px 0;
+    color: #666;
+    font-size: 18px;
+  }
+}
+
+.error-container {
+  background: #ffebee;
+  border-radius: 12px;
+  border-left: 4px solid #f44336;
+  margin: 40px 0;
+}
+
+// 页面头部
+.dashboard-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 40px;
+  padding-bottom: 24px;
+  border-bottom: 2px solid #f0f0f0;
+
+  .header-content {
+    h1 {
+      margin: 0 0 8px 0;
+      font-size: 32px;
+      font-weight: 600;
+      color: #333;
+    }
+
+    p {
+      margin: 0;
+      color: #666;
+      font-size: 16px;
+    }
+  }
+
+  .header-actions {
+    display: flex;
+    gap: 12px;
+
+    button {
+      padding: 8px 20px;
+      border-radius: 8px;
+      font-weight: 500;
+      
+      mat-icon {
+        margin-right: 6px;
+        font-size: 18px;
+      }
+    }
+  }
+}
+
+// 余额卡片
+.balance-card {
+  display: flex;
+  align-items: center;
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  border-radius: 16px;
+  padding: 32px 40px;
+  color: white;
+  margin-bottom: 32px;
+  box-shadow: 0 8px 24px rgba(102, 126, 234, 0.3);
+
+  .balance-icon {
+    width: 80px;
+    height: 80px;
+    background: rgba(255, 255, 255, 0.2);
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin-right: 32px;
+
+    mat-icon {
+      font-size: 40px;
+      width: 40px;
+      height: 40px;
+    }
+  }
+
+  .balance-info {
+    flex: 1;
+
+    .balance-label {
+      font-size: 16px;
+      opacity: 0.9;
+      margin-bottom: 8px;
+    }
+
+    .balance-value {
+      font-size: 48px;
+      font-weight: 700;
+    }
+  }
+
+  .balance-stats {
+    display: flex;
+    gap: 40px;
+
+    .stat-item {
+      text-align: center;
+
+      .stat-label {
+        display: block;
+        font-size: 14px;
+        opacity: 0.8;
+        margin-bottom: 4px;
+      }
+
+      .stat-value {
+        font-size: 20px;
+        font-weight: 600;
+      }
+    }
+  }
+}
+
+// 快捷操作
+.quick-actions {
+  display: flex;
+  gap: 16px;
+  margin-bottom: 48px;
+
+  .action-button {
+    flex: 1;
+    padding: 24px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 10px;
+    border-radius: 16px;
+    background: #fff;
+    border: 2px solid #e8e8e8;
+    transition: all 0.3s ease;
+    cursor: pointer;
+
+    mat-icon {
+      font-size: 28px;
+      width: 28px;
+      height: 28px;
+      color: #667eea;
+    }
+
+    span {
+      font-size: 14px;
+      font-weight: 500;
+      color: #444;
+    }
+
+    &:hover {
+      border-color: #667eea;
+      background: #f8f9ff;
+      box-shadow: 0 8px 24px rgba(102, 126, 234, 0.15);
+      transform: translateY(-2px);
+    }
+  }
+}
+
+// 套餐区域
+.package-section {
+  .section-title {
+    font-size: 28px;
+    font-weight: 600;
+    color: #333;
+    text-align: center;
+    margin: 0 0 12px 0;
+  }
+
+  .section-subtitle {
+    font-size: 16px;
+    color: #666;
+    text-align: center;
+    margin: 0 0 32px 0;
+  }
+
+  .package-grid {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 24px;
+
+    @media (max-width: 1024px) {
+      grid-template-columns: repeat(2, 1fr);
+    }
+
+    @media (max-width: 600px) {
+      grid-template-columns: 1fr;
+    }
+  }
+
+  .package-card {
+    background: #fff;
+    border: 2px solid #e0e0e0;
+    border-radius: 16px;
+    padding: 24px;
+    text-align: center;
+    transition: all 0.3s ease;
+
+    &:hover {
+      transform: translateY(-4px);
+      box-shadow: 0 8px 24px rgba(0, 0, 0, 0.12);
+    }
+
+    .package-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 16px;
+
+      .package-name {
+        font-size: 18px;
+        font-weight: 600;
+        color: #333;
+      }
+
+      .package-badge {
+        background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+        color: white;
+        padding: 4px 12px;
+        border-radius: 12px;
+        font-size: 12px;
+        font-weight: 600;
+      }
+    }
+
+    .package-price {
+      margin-bottom: 8px;
+
+      .currency {
+        font-size: 18px;
+        color: #666;
+      }
+
+      .amount {
+        font-size: 36px;
+        font-weight: 700;
+        color: #333;
+      }
+    }
+
+    .package-tokens {
+      font-size: 16px;
+      color: #667eea;
+      margin-bottom: 20px;
+    }
+
+    .package-buy-btn {
+      width: 100%;
+      padding: 14px;
+      font-size: 15px;
+      font-weight: 600;
+      border-radius: 10px;
+    }
+  }
+}
+
+// 响应式
+@media (max-width: 768px) {
+  .user-token-dashboard {
+    padding: 20px;
+  }
+
+  .dashboard-header {
+    flex-direction: column;
+    gap: 20px;
+    align-items: flex-start;
+  }
+
+  .balance-card {
+    flex-direction: column;
+    text-align: center;
+    padding: 24px;
+
+    .balance-icon {
+      margin-right: 0;
+      margin-bottom: 16px;
+    }
+
+    .balance-stats {
+      flex-wrap: wrap;
+      justify-content: center;
+      gap: 24px;
+    }
+  }
+
+  .quick-actions {
+    flex-direction: column;
+  }
+}

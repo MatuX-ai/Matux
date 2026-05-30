@@ -1,0 +1,752 @@
+// Design Tokens - Components System
+//
+// 閫氱敤组件样式系统锛屽熀浜?Design Tokens 鏋勫缓鍙鐢ㄧ殑基础组件
+
+// 瀵煎叆 Design Tokens
+@import 'design-tokens/index';
+
+// =============================================================================
+// 鎸夐挳组件系统
+// =============================================================================
+
+/// 基础鎸夐挳样式
+.btn {
+  @include typography-button;
+  @include border-radius(button);
+  @include shadow(button);
+
+  position: relative;
+  
+  // 基础布局
+  display: inline-flex;
+  justify-content: center;
+  align-items: center;
+  min-height: 40px;
+  
+  // 基础灏哄
+  padding: $spacing-sm $spacing-lg;
+  
+  // 基础样式
+  border: none;
+  background: none;
+  color: $text-primary-color;
+  text-decoration: none;
+  cursor: pointer;
+  user-select: none;
+  transition: all 0.2s ease-in-out;
+  
+  // 鐒︾偣鐘舵€?
+  &:focus {
+    @include state-shadow(focus);
+
+    outline: none;
+  }
+  
+  // 绂佺敤鐘舵€?
+  &:disabled {
+    @include shadow(none);
+
+    background-color: $gray-300;
+    color: $text-disabled-color;
+    cursor: not-allowed;
+    transform: none;
+  }
+  
+  // 鍔犺浇鐘舵€?
+  &.loading {
+    opacity: 0.7;
+    pointer-events: none;
+    
+    &::after {
+      width: 16px;
+      height: 16px;
+      margin-left: $spacing-xs;
+      border: 2px solid transparent;
+      border-top-color: currentcolor;
+      border-radius: 50%;
+      content: "";
+      animation: spin 1s linear infinite;
+    }
+  }
+  
+  // 鎸夐挳灏哄变体
+  &--small {
+    min-height: 32px;
+    padding: $spacing-xs $spacing-md;
+    font-size: $font-size-body-small;
+  }
+  
+  &--large {
+    min-height: 48px;
+    padding: $spacing-md $spacing-xl;
+    font-size: $font-size-body-large;
+  }
+  
+  // 鎸夐挳褰㈢姸变体
+  &--pill {
+    @include border-radius(full);
+
+    padding-right: $spacing-xl;
+    padding-left: $spacing-xl;
+  }
+  
+  &--square {
+    @include border-radius(none);
+  }
+  
+  // 鎸夐挳样式变体
+  &--block {
+    display: flex;
+    width: 100%;
+  }
+  
+  &--icon {
+    min-width: 40px;
+    min-height: 40px;
+    padding: $spacing-sm;
+    
+    &.btn--small {
+      min-width: 32px;
+      min-height: 32px;
+      padding: $spacing-xs;
+    }
+    
+    &.btn--large {
+      min-width: 48px;
+      min-height: 48px;
+      padding: $spacing-md;
+    }
+  }
+}
+
+/// 涓昏鎸夐挳
+.btn--primary {
+  background-color: $primary-color;
+  color: $text-white-color;
+  
+  &:hover:not(:disabled) {
+    @include shadow(button-hover);
+
+    background-color: $primary-color-dark;
+    transform: translateY(-1px);
+  }
+  
+  &:active:not(:disabled) {
+    transform: translateY(0);
+  }
+  
+  // 杞粨样式
+  &.btn--outline {
+    border: 2px solid $primary-color;
+    background-color: transparent;
+    color: $primary-color;
+    
+    &:hover:not(:disabled) {
+      background-color: $primary-color;
+      color: $text-white-color;
+    }
+  }
+  
+  // 鏂囨湰样式
+  &.btn--text {
+    background-color: transparent;
+    color: $primary-color;
+    
+    &:hover:not(:disabled) {
+      background-color: rgba($primary-color, 0.1);
+    }
+  }
+}
+
+/// 娆¤鎸夐挳
+.btn--secondary {
+  background-color: $secondary-color;
+  color: $text-white-color;
+  
+  &:hover:not(:disabled) {
+    @include shadow(button-hover);
+
+    background-color: $secondary-color-dark;
+    transform: translateY(-1px);
+  }
+  
+  &:active:not(:disabled) {
+    transform: translateY(0);
+  }
+  
+  // 杞粨样式
+  &.btn--outline {
+    border: 2px solid $secondary-color;
+    background-color: transparent;
+    color: $secondary-color;
+    
+    &:hover:not(:disabled) {
+      background-color: $secondary-color;
+      color: $text-white-color;
+    }
+  }
+  
+  // 鏂囨湰样式
+  &.btn--text {
+    background-color: transparent;
+    color: $secondary-color;
+    
+    &:hover:not(:disabled) {
+      background-color: rgba($secondary-color, 0.1);
+    }
+  }
+}
+
+/// 成功鎸夐挳
+.btn--success {
+  background-color: $success-color;
+  color: $text-white-color;
+  
+  &:hover:not(:disabled) {
+    @include shadow(button-hover);
+
+    background-color: darken($success-color, 10%);
+    transform: translateY(-1px);
+  }
+  
+  // 瀵瑰簲鐨勮疆寤撳拰鏂囨湰样式...
+  &.btn--outline {
+    border: 2px solid $success-color;
+    background-color: transparent;
+    color: $success-color;
+    
+    &:hover:not(:disabled) {
+      background-color: $success-color;
+      color: $text-white-color;
+    }
+  }
+  
+  &.btn--text {
+    background-color: transparent;
+    color: $success-color;
+    
+    &:hover:not(:disabled) {
+      background-color: rgba($success-color, 0.1);
+    }
+  }
+}
+
+/// 璀﹀憡鎸夐挳
+.btn--warning {
+  background-color: $warning-color;
+  color: $text-white-color;
+  
+  &:hover:not(:disabled) {
+    @include shadow(button-hover);
+
+    background-color: darken($warning-color, 10%);
+    transform: translateY(-1px);
+  }
+  
+  // 瀵瑰簲鐨勮疆寤撳拰鏂囨湰样式...
+  &.btn--outline {
+    border: 2px solid $warning-color;
+    background-color: transparent;
+    color: $warning-color;
+    
+    &:hover:not(:disabled) {
+      background-color: $warning-color;
+      color: $text-white-color;
+    }
+  }
+  
+  &.btn--text {
+    background-color: transparent;
+    color: $warning-color;
+    
+    &:hover:not(:disabled) {
+      background-color: rgba($warning-color, 0.1);
+    }
+  }
+}
+
+/// 错误鎸夐挳
+.btn--error {
+  background-color: $error-color;
+  color: $text-white-color;
+  
+  &:hover:not(:disabled) {
+    @include shadow(button-hover);
+
+    background-color: darken($error-color, 10%);
+    transform: translateY(-1px);
+  }
+  
+  // 瀵瑰簲鐨勮疆寤撳拰鏂囨湰样式...
+  &.btn--outline {
+    border: 2px solid $error-color;
+    background-color: transparent;
+    color: $error-color;
+    
+    &:hover:not(:disabled) {
+      background-color: $error-color;
+      color: $text-white-color;
+    }
+  }
+  
+  &.btn--text {
+    background-color: transparent;
+    color: $error-color;
+    
+    &:hover:not(:disabled) {
+      background-color: rgba($error-color, 0.1);
+    }
+  }
+}
+
+// =============================================================================
+// 杈撳叆妗嗙粍浠剁郴缁?
+// =============================================================================
+
+/// 基础杈撳叆妗嗘牱寮?
+.input {
+  @include typography-body-medium;
+  @include border-radius(input);
+  
+  // 基础样式
+  width: 100%;
+  padding: $spacing-sm $spacing-md;
+  border: 2px solid $border-color;
+  background-color: $background-color;
+  color: $text-primary-color;
+  
+  // 浜や簰鐘舵€?
+  transition: all 0.2s ease-in-out;
+  
+  &:focus {
+    @include state-shadow(focus);
+
+    border-color: $focus-color;
+    outline: none;
+  }
+  
+  &:disabled {
+    border-color: $gray-300;
+    background-color: $gray-100;
+    color: $text-disabled-color;
+    cursor: not-allowed;
+  }
+  
+  &::placeholder {
+    color: $placeholder-color;
+    font-weight: $font-weight-regular;
+  }
+  
+  // 杈撳叆妗嗗昂瀵?
+  &--small {
+    min-height: 32px;
+    padding: $spacing-xs $spacing-sm;
+    font-size: $font-size-body-small;
+  }
+  
+  &--large {
+    min-height: 48px;
+    padding: $spacing-md $spacing-lg;
+    font-size: $font-size-body-large;
+  }
+  
+  // 杈撳叆妗嗙姸鎬?
+  &--success {
+    border-color: $success-color;
+    
+    &:focus {
+      @include state-shadow(success);
+
+      border-color: $success-color;
+    }
+  }
+  
+  &--error {
+    border-color: $error-color;
+    
+    &:focus {
+      @include state-shadow(error);
+
+      border-color: $error-color;
+    }
+  }
+  
+  &--warning {
+    border-color: $warning-color;
+    
+    &:focus {
+      @include state-shadow(warning);
+
+      border-color: $warning-color;
+    }
+  }
+}
+
+/// 鏂囨湰鍩?
+.textarea {
+  @extend .input;
+
+  min-height: 100px;
+  resize: vertical;
+  
+  &--small {
+    @extend .input--small;
+
+    min-height: 80px;
+  }
+  
+  &--large {
+    @extend .input--large;
+
+    min-height: 140px;
+  }
+}
+
+/// 閫夋嫨妗?
+.select {
+  @extend .input;
+
+  padding-right: 2.5rem;
+  background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 20 20'%3e%3cpath stroke='%236b7280' stroke-linecap='round' stroke-linejoin='round' stroke-width='1.5' d='m6 8 4 4 4-4'/%3e%3c/svg%3e");
+  background-repeat: no-repeat;
+  background-position: right 0.5rem center;
+  background-size: 1.5em 1.5em;
+  appearance: none;
+}
+
+// =============================================================================
+// 鍗＄墖组件系统
+// =============================================================================
+
+/// 基础鍗＄墖样式
+.card {
+  @include border-radius(card);
+  @include shadow(card);
+
+  overflow: hidden;
+  border: 1px solid $divider-color;
+  
+  // 基础样式
+  background-color: $surface-color;
+  
+  // 浜や簰鐘舵€?
+  transition: all 0.2s ease-in-out;
+  
+  &:hover {
+    @include shadow(card-hover);
+
+    transform: translateY(-2px);
+  }
+  
+  // 鍗＄墖瀛愮粍浠?
+  &__header {
+    padding: $spacing-lg;
+    border-bottom: 1px solid $divider-color;
+    
+    &--compact {
+      padding: $spacing-md;
+    }
+  }
+  
+  &__body {
+    padding: $spacing-lg;
+    
+    &--compact {
+      padding: $spacing-md;
+    }
+  }
+  
+  &__footer {
+    padding: $spacing-lg;
+    border-top: 1px solid $divider-color;
+    background-color: $gray-50;
+    
+    &--compact {
+      padding: $spacing-md;
+    }
+  }
+  
+  // 鍗＄墖变体
+  &--flat {
+    @include shadow(none);
+
+    border: 1px solid $divider-color;
+  }
+  
+  &--raised {
+    @include shadow(lg);
+  }
+  
+  &--outlined {
+    @include shadow(none);
+
+    border: 2px solid $border-color;
+    background-color: transparent;
+  }
+  
+  &--compact {
+    .card__header,
+    .card__body,
+    .card__footer {
+      padding: $spacing-md;
+    }
+  }
+}
+
+// =============================================================================
+// 琛ㄥ崟缁勭郴缁?
+// =============================================================================
+
+/// 琛ㄥ崟缁?
+.form-group {
+  margin-bottom: $spacing-lg;
+  
+  &--compact {
+    margin-bottom: $spacing-md;
+  }
+  
+  // 琛ㄥ崟鏍囩
+  &__label {
+    @include typography-body-medium;
+
+    display: block;
+    margin-bottom: $spacing-xs;
+    color: $text-primary-color;
+    font-weight: $font-weight-medium;
+    
+    &--required {
+      &::after {
+        color: $error-color;
+        content: " *";
+      }
+    }
+  }
+  
+  // 琛ㄥ崟甯姪鏂囨湰
+  &__help {
+    @include typography-body-small;
+
+    display: block;
+    margin-top: $spacing-xs;
+    color: $text-secondary-color;
+    
+    &--success {
+      color: $success-color;
+    }
+    
+    &--error {
+      color: $error-color;
+    }
+    
+    &--warning {
+      color: $warning-color;
+    }
+  }
+  
+  // 琛ㄥ崟鎺т欢容器
+  &__control {
+    position: relative;
+    
+    // 鍓嶇紑/鍚庣紑鍥炬爣
+    .form-icon {
+      position: absolute;
+      top: 50%;
+      color: $placeholder-color;
+      transform: translateY(-50%);
+      
+      &--prefix {
+        left: $spacing-md;
+      }
+      
+      &--suffix {
+        right: $spacing-md;
+      }
+    }
+    
+    .input,
+    .textarea,
+    .select {
+      &.has-prefix {
+        padding-left: $spacing-xl;
+      }
+      
+      &.has-suffix {
+        padding-right: $spacing-xl;
+      }
+    }
+  }
+}
+
+// =============================================================================
+// 鍔犺浇鎸囩ず鍣?
+// =============================================================================
+
+/// 鏃嬭浆鍔ㄧ敾
+@keyframes spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+/// 鍔犺浇 spinner
+.spinner {
+  display: inline-block;
+  width: 20px;
+  height: 20px;
+  border: 2px solid $gray-300;
+  border-top-color: $primary-color;
+  border-radius: 50%;
+  animation: spin 1s linear infinite;
+  
+  &--small {
+    width: 16px;
+    height: 16px;
+    border-width: 2px;
+  }
+  
+  &--large {
+    width: 32px;
+    height: 32px;
+    border-width: 3px;
+  }
+  
+  &--primary {
+    border-top-color: $primary-color;
+  }
+  
+  &--secondary {
+    border-top-color: $secondary-color;
+  }
+  
+  &--success {
+    border-top-color: $success-color;
+  }
+  
+  &--warning {
+    border-top-color: $warning-color;
+  }
+  
+  &--error {
+    border-top-color: $error-color;
+  }
+}
+
+// =============================================================================
+// 寰界珷组件
+// =============================================================================
+
+/// 基础寰界珷样式
+.badge {
+  @include typography-caption;
+  @include border-radius(badge);
+  
+  display: inline-flex;
+  justify-content: center;
+  align-items: center;
+  min-width: 20px;
+  min-height: 20px;
+  padding: $spacing-xs $spacing-sm;
+  font-weight: $font-weight-bold;
+  letter-spacing: 0.5px;
+  text-transform: uppercase;
+  
+  // 寰界珷变体
+  &--primary {
+    background-color: $primary-color;
+    color: $text-white-color;
+  }
+  
+  &--secondary {
+    background-color: $secondary-color;
+    color: $text-white-color;
+  }
+  
+  &--success {
+    background-color: $success-color;
+    color: $text-white-color;
+  }
+  
+  &--warning {
+    background-color: $warning-color;
+    color: $text-white-color;
+  }
+  
+  &--error {
+    background-color: $error-color;
+    color: $text-white-color;
+  }
+  
+  &--info {
+    background-color: $info-color;
+    color: $text-white-color;
+  }
+  
+  // 寰界珷灏哄
+  &--small {
+    min-width: 16px;
+    min-height: 16px;
+    padding: 2px $spacing-xs;
+    font-size: 0.6rem;
+  }
+  
+  &--large {
+    min-width: 24px;
+    min-height: 24px;
+    padding: $spacing-sm $spacing-md;
+    font-size: 0.7rem;
+  }
+}
+
+// =============================================================================
+// 鍒嗛殧绾?
+// =============================================================================
+
+/// 水平鍒嗛殧绾?
+.divider {
+  height: 1px;
+  margin: $spacing-lg 0;
+  border: 0;
+  background-color: $divider-color;
+  
+  &--vertical {
+    width: 1px;
+    height: auto;
+    margin: 0 $spacing-lg;
+  }
+  
+  &--dashed {
+    background-image: linear-gradient(to right, $divider-color 50%, transparent 50%);
+    background-repeat: repeat-x;
+    background-size: 4px 1px;
+  }
+  
+  &--spaced {
+    margin: $spacing-xl 0;
+  }
+}
+
+// =============================================================================
+// 工具绫?
+// =============================================================================
+
+/// 鏄剧ず闅愯棌工具
+.sr-only {
+  position: absolute;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  width: 1px;
+  height: 1px;
+  margin: -1px;
+  padding: 0;
+  border: 0;
+  white-space: nowrap;
+}
+
+/// 娓呴櫎娴姩
+.clearfix {
+  &::after {
+    display: table;
+    clear: both;
+    content: "";
+  }
+}

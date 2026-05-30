@@ -1,0 +1,23 @@
+{
+  "metadata": {
+    "model_id": "model_20260301_200104_191f4732",
+    "filename": "optimized_model_combined_optimization.tflite",
+    "file_size": 88,
+    "checksum": "49ae710810dc7a0fa691a85ae461b182495f9a8209193199aec3dd9dd3f2ac59",
+    "checksum_algorithm": "sha256",
+    "timestamp": "2026-03-01T20:01:04.228661",
+    "target_device": "ESP32-HW-001",
+    "version": "1.0.0",
+    "model_type": "tensorflow_lite"
+  },
+  "binary_data": "IyBTaW11bGF0ZWQgb3B0aW1pemVkIG1vZGVsOiBjb21iaW5lZF9vcHRpbWl6YXRpb24NCiMgU2l6ZTogOTkuOUtCDQojIEFjY3VyYWN5OiA5Mi4wMCUNCg==",
+  "chunks": [
+    {
+      "index": 0,
+      "data": "IyBTaW11bGF0ZWQgb3B0aW1pemVkIG1vZGVsOiBjb21iaW5lZF9vcHRpbWl6YXRpb24NCiMgU2l6ZTogOTkuOUtCDQojIEFjY3VyYWN5OiA5Mi4wMCUNCg==",
+      "size": 88,
+      "is_last": true
+    }
+  ],
+  "package_id": "4d7c7160980b3633"
+}

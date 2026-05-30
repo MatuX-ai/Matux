@@ -1,0 +1,132 @@
+{
+  "timestamp": "2026-03-01T19:59:26.054837",
+  "target_requirements": {
+    "max_size_kb": 250,
+    "min_accuracy": 0.85
+  },
+  "optimization_steps": [
+    {
+      "step": "baseline",
+      "model_size_kb": 285.3,
+      "accuracy": 0.94,
+      "meets_requirements": false
+    },
+    {
+      "step": "post_training_quantization",
+      "model_size_kb": 213.97500000000002,
+      "accuracy": 0.9249999999999999,
+      "meets_requirements": true,
+      "details": {
+        "step": "post_training_quantization",
+        "original_size_kb": 285.3,
+        "size_kb": 213.97500000000002,
+        "accuracy": 0.9249999999999999,
+        "latency_ms": 17.5,
+        "compression_ratio": 1.3333333333333333,
+        "technique": "INT8 Quantization"
+      }
+    },
+    {
+      "step": "structured_pruning",
+      "model_size_kb": 171.18,
+      "accuracy": 0.9149999999999999,
+      "meets_requirements": true,
+      "details": {
+        "step": "structured_pruning",
+        "original_size_kb": 285.3,
+        "size_kb": 171.18,
+        "accuracy": 0.9149999999999999,
+        "sparsity_ratio": 0.65,
+        "fine_tune_epochs": 10,
+        "technique": "Magnitude-based Pruning"
+      }
+    },
+    {
+      "step": "knowledge_distillation",
+      "model_size_kb": 128.38500000000002,
+      "accuracy": 0.9099999999999999,
+      "meets_requirements": true,
+      "details": {
+        "step": "knowledge_distillation",
+        "original_size_kb": 285.3,
+        "size_kb": 128.38500000000002,
+        "accuracy": 0.9099999999999999,
+        "compression_ratio": 2.2222222222222223,
+        "temperature": 3.0,
+        "technique": "Soft-label Distillation"
+      }
+    },
+    {
+      "step": "combined_optimization",
+      "model_size_kb": 99.855,
+      "accuracy": 0.9199999999999999,
+      "meets_requirements": true,
+      "details": {
+        "step": "combined_optimization",
+        "original_size_kb": 285.3,
+        "size_kb": 99.855,
+        "accuracy": 0.9199999999999999,
+        "compression_ratio": 2.857142857142857,
+        "techniques_used": [
+          "Structured Pruning",
+          "Post-training Quantization"
+        ]
+      }
+    }
+  ],
+  "all_steps_meet_requirements": false,
+  "steps_meeting_requirements": [
+    {
+      "step": "post_training_quantization",
+      "size_kb": 213.97500000000002,
+      "accuracy": 0.9249999999999999,
+      "meets_size_requirement": true,
+      "meets_accuracy_requirement": true,
+      "meets_all_requirements": true
+    },
+    {
+      "step": "structured_pruning",
+      "size_kb": 171.18,
+      "accuracy": 0.9149999999999999,
+      "meets_size_requirement": true,
+      "meets_accuracy_requirement": true,
+      "meets_all_requirements": true
+    },
+    {
+      "step": "knowledge_distillation",
+      "size_kb": 128.38500000000002,
+      "accuracy": 0.9099999999999999,
+      "meets_size_requirement": true,
+      "meets_accuracy_requirement": true,
+      "meets_all_requirements": true
+    },
+    {
+      "step": "combined_optimization",
+      "size_kb": 99.855,
+      "accuracy": 0.9199999999999999,
+      "meets_size_requirement": true,
+      "meets_accuracy_requirement": true,
+      "meets_all_requirements": true
+    }
+  ],
+  "steps_not_meeting_requirements": [
+    {
+      "step": "baseline",
+      "size_kb": 285.3,
+      "accuracy": 0.94,
+      "meets_size_requirement": false,
+      "meets_accuracy_requirement": true,
+      "meets_all_requirements": false
+    }
+  ],
+  "best_model": {
+    "step": "combined_optimization",
+    "size_kb": 99.855,
+    "accuracy": 0.9199999999999999,
+    "meets_size_requirement": true,
+    "meets_accuracy_requirement": true,
+    "meets_all_requirements": true
+  },
+  "optimization_success": true,
+  "best_model_path": "models\\optimized_hardware_classifier\\optimized_model_combined_optimization.tflite"
+}

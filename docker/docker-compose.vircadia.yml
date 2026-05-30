@@ -1,0 +1,138 @@
+# Vircadia Metaverse Server - Docker Compose Configuration
+# Version: 1.0
+# Last Updated: 2026-03-03
+# Description: Local development and demonstration environment for Vircadia integration
+
+version: '3.8'
+
+services:
+  # Vircadia Metaverse Server (Core)
+  metaverse-server:
+    image: vircadia/metaverse-server:latest
+    container_name: imato-vircadia-server
+    ports:
+      - "9000:9000"  # Main API port
+      - "9001:9001"  # WebSocket port
+    environment:
+      # Database configuration
+      - DB_HOST=postgres-vircadia
+      - DB_PORT=5432
+      - DB_NAME=vircadia
+      - DB_USER=vircadia
+      - DB_PASSWORD=${VIRCADIA_DB_PASSWORD:-vircadia_secret_2026}
+
+      # Redis configuration
+      - REDIS_HOST=redis-vircadia
+      - REDIS_PORT=6379
+
+      # Server configuration
+      - SERVER_NAME=iMatu Virtual Campus
+      - SERVER_URL=http://localhost:9000
+      - ALLOWED_ORIGINS=http://localhost:8080,http://localhost:4200
+
+      # Authentication
+      - API_KEY=${VIRCADIA_API_KEY:-dev_api_key_change_in_production}
+      - JWT_SECRET=${VIRCADIA_JWT_SECRET:-jwt_secret_change_in_production}
+
+      # Logging
+      - LOG_LEVEL=info
+      - LOG_FILE=/var/log/vircadia/server.log
+    volumes:
+      - vircadia_server_logs:/var/log/vircadia
+      - vircadia_server_config:/etc/vircadia
+    depends_on:
+      postgres-vircadia:
+        condition: service_healthy
+      redis-vircadia:
+        condition: service_healthy
+    restart: unless-stopped
+    networks:
+      - vircadia-network
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:9000/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 40s
+
+  # Vircadia Interface (Web Client - Aether)
+  interface:
+    image: vircadia/interface:latest
+    container_name: imato-vircadia-interface
+    ports:
+      - "8080:8080"  # Web client port
+    environment:
+      # Backend server URL
+      - METERVERSE_SERVER_URL=http://metaverse-server:9000
+
+      # UI configuration
+      - UI_TITLE=iMatu Virtual Campus
+      - UI_LOGO_URL=/assets/logo.png
+      - DEFAULT_SCENE=welcome-center
+
+      # Features
+      - ENABLE_AVATAR_CUSTOMIZATION=true
+      - ENABLE_VOICE_CHAT=true
+      - ENABLE_MULTIPLAYER=true
+    depends_on:
+      - metaverse-server
+    restart: unless-stopped
+    networks:
+      - vircadia-network
+
+  # PostgreSQL Database for Vircadia
+  postgres-vircadia:
+    image: postgres:14-alpine
+    container_name: imato-vircadia-postgres
+    environment:
+      - POSTGRES_DB=vircadia
+      - POSTGRES_USER=vircadia
+      - POSTGRES_PASSWORD=${VIRCADIA_DB_PASSWORD:-vircadia_secret_2026}
+    ports:
+      - "5433:5432"  # Use different host port to avoid conflict with main DB
+    volumes:
+      - vircadia_postgres_data:/var/lib/postgresql/data
+      - ./scripts/init_vircadia_db.sql:/docker-entrypoint-initdb.d/01-init.sql
+    networks:
+      - vircadia-network
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U vircadia"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    restart: unless-stopped
+
+  # Redis Cache for Vircadia
+  redis-vircadia:
+    image: redis:7-alpine
+    container_name: imato-vircadia-redis
+    ports:
+      - "6380:6379"  # Use different host port to avoid conflict with main Redis
+    volumes:
+      - vircadia_redis_data:/data
+    command: redis-server --appendonly yes
+    networks:
+      - vircadia-network
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 10s
+      timeout: 3s
+      retries: 3
+    restart: unless-stopped
+
+volumes:
+  vircadia_postgres_data:
+    driver: local
+  vircadia_redis_data:
+    driver: local
+  vircadia_server_logs:
+    driver: local
+  vircadia_server_config:
+    driver: local
+
+networks:
+  vircadia-network:
+    driver: bridge
+    ipam:
+      config:
+        - subnet: 172.28.0.0/16

@@ -2,15 +2,15 @@
 // 颜色系统 - Mac 风格 (Apple-inspired)
 // ============================================
 
-// 品牌色 - Apple Colors
-$color-primary: #007AFF !default;          // Apple Blue - 主品牌色，用于按钮和链接
-$color-primary-hover: #0056CC !default;    // 悬停状态
-$color-primary-active: #004499 !default;   // 激活状态
+// 品牌色 - 星空蓝 (Starry Blue)
+$color-primary: #0B1426 !default;          // 深蓝（夜空）- 主品牌色
+$color-primary-hover: #1E3A8A !default;    // 中蓝（星云）- 悬停状态
+$color-primary-active: #3B82F6 !default;   // 亮蓝（星光）- 激活状态
 
-$color-success: #34C759 !default;          // Green - 成功/确认
-$color-warning: #FF9500 !default;          // Orange - 警告/注意
-$color-error: #FF3B30 !default;            // Red - 错误/危险
-$color-info: #007AFF !default;             // Blue - 信息提示
+$color-success: #34C759 !default;          // Green - 成功/确认 (Apple 绿)
+$color-warning: #FF9500 !default;          // Orange - 警告/注意 (Apple 橙)
+$color-error: #FF3B30 !default;            // Red - 错误/危险 (Apple 红)
+$color-info: #667eea !default;             // 信息提示 (Mac 渐变紫)
 
 // 中性色 - Gray Scale
 $color-black: #1D1D1F !default;            // 最深色
@@ -53,7 +53,7 @@ $border-color-dark: $color-gray-300 !default;
   --color-warning: #{$color-warning};
   --color-error: #{$color-error};
   --color-info: #{$color-info};
-  
+
   --color-black: #{$color-black};
   --color-gray-50: #{$color-gray-50};
   --color-gray-100: #{$color-gray-100};

@@ -1,0 +1,253 @@
+<div class="license-management-container">
+  <!-- 标题区域 -->
+  <div class="header-section">
+    <h1>许可证管理系统</h1>
+    <p>管理组织和许可证的创建、验证、撤销等操作</p>
+  </div>
+
+  <!-- 统计信息卡片 -->
+  <div class="stats-section">
+    <mat-card class="stat-card">
+      <mat-card-header>
+        <mat-card-title>总许可证数</mat-card-title>
+      </mat-card-header>
+      <mat-card-content>
+        <div class="stat-number">{{ licenses.length }}</div>
+      </mat-card-content>
+    </mat-card>
+
+    <mat-card class="stat-card">
+      <mat-card-header>
+        <mat-card-title>活跃许可证</mat-card-title>
+      </mat-card-header>
+      <mat-card-content>
+        <div class="stat-number">{{ licenses.filter(l => l.status === 'active').length }}</div>
+      </mat-card-content>
+    </mat-card>
+
+    <mat-card class="stat-card">
+      <mat-card-header>
+        <mat-card-title>组织数量</mat-card-title>
+      </mat-card-header>
+      <mat-card-content>
+        <div class="stat-number">{{ organizations.length }}</div>
+      </mat-card-content>
+    </mat-card>
+  </div>
+
+  <!-- 主要内容区域 -->
+  <div class="main-content">
+    <!-- 左侧：组织管理 -->
+    <mat-card class="section-card">
+      <mat-card-header>
+        <mat-card-title>组织管理</mat-card-title>
+      </mat-card-header>
+      <mat-card-content>
+        <!-- 创建组织表单 -->
+        <form [formGroup]="orgForm" class="form-section">
+          <h3>创建新组织</h3>
+          
+          <mat-form-field appearance="outline" class="form-field">
+            <mat-label>组织名称</mat-label>
+            <input matInput formControlName="name" required>
+            <mat-error *ngIf="orgForm.get('name')?.hasError('required')">
+              组织名称不能为空
+            </mat-error>
+            <mat-error *ngIf="orgForm.get('name')?.hasError('minlength')">
+              组织名称至少2个字符
+            </mat-error>
+          </mat-form-field>
+
+          <mat-form-field appearance="outline" class="form-field">
+            <mat-label>联系邮箱</mat-label>
+            <input matInput formControlName="contact_email" type="email" required>
+            <mat-error *ngIf="orgForm.get('contact_email')?.hasError('required')">
+              邮箱不能为空
+            </mat-error>
+            <mat-error *ngIf="orgForm.get('contact_email')?.hasError('email')">
+              请输入有效的邮箱地址
+            </mat-error>
+          </mat-form-field>
+
+          <mat-form-field appearance="outline" class="form-field">
+            <mat-label>联系电话</mat-label>
+            <input matInput formControlName="phone">
+          </mat-form-field>
+
+          <mat-form-field appearance="outline" class="form-field">
+            <mat-label>地址</mat-label>
+            <textarea matInput formControlName="address" rows="2"></textarea>
+          </mat-form-field>
+
+          <mat-form-field appearance="outline" class="form-field">
+            <mat-label>网站</mat-label>
+            <input matInput formControlName="website" type="url">
+          </mat-form-field>
+
+          <mat-form-field appearance="outline" class="form-field">
+            <mat-label>最大用户数</mat-label>
+            <input matInput formControlName="max_users" type="number" min="1" max="100000">
+            <mat-error *ngIf="orgForm.get('max_users')?.hasError('min')">
+              用户数必须大于0
+            </mat-error>
+          </mat-form-field>
+
+          <button mat-raised-button color="primary" 
+                  (click)="createOrganization()" 
+                  [disabled]="!isFormValid(orgForm) || isCreatingOrg"
+                  class="submit-button">
+            <mat-icon *ngIf="isCreatingOrg">hourglass_empty</mat-icon>
+            <mat-icon *ngIf="!isCreatingOrg">add</mat-icon>
+            {{ isCreatingOrg ? '创建中...' : '创建组织' }}
+          </button>
+        </form>
+
+        <!-- 组织列表 -->
+        <div class="list-section">
+          <h3>组织列表</h3>
+          <div class="organization-list">
+            <mat-list *ngIf="organizations.length > 0">
+              <mat-list-item *ngFor="let org of organizations" 
+                           (click)="selectOrganization(org)"
+                           [class.selected]="selectedOrganization?.id === org.id"
+                           class="organization-item">
+                <div matListItemTitle>{{ org.name }}</div>
+                <div matListItemLine>{{ org.contact_email }}</div>
+                <div matListItemLine>
+                  <span class="badge" [class.active]="org.is_active">
+                    {{ org.is_active ? '活跃' : '禁用' }}
+                  </span>
+                  <span class="user-count">{{ org.current_users }}/{{ org.max_users }} 用户</span>
+                </div>
+              </mat-list-item>
+            </mat-list>
+            <div *ngIf="organizations.length === 0" class="empty-state">
+              <mat-icon>business</mat-icon>
+              <p>暂无组织</p>
+            </div>
+          </div>
+        </div>
+      </mat-card-content>
+    </mat-card>
+
+    <!-- 右侧：许可证管理 -->
+    <mat-card class="section-card">
+      <mat-card-header>
+        <mat-card-title>许可证管理</mat-card-title>
+      </mat-card-header>
+      <mat-card-content>
+        <!-- 生成许可证表单 -->
+        <form [formGroup]="licenseForm" class="form-section" *ngIf="selectedOrganization">
+          <h3>为 "{{ selectedOrganization.name }}" 生成许可证</h3>
+          
+          <mat-form-field appearance="outline" class="form-field">
+            <mat-label>许可证类型</mat-label>
+            <mat-select formControlName="license_type">
+              <mat-option value="trial">试用版</mat-option>
+              <mat-option value="commercial">商业版</mat-option>
+              <mat-option value="education">教育版</mat-option>
+              <mat-option value="enterprise">企业版</mat-option>
+            </mat-select>
+          </mat-form-field>
+
+          <mat-form-field appearance="outline" class="form-field">
+            <mat-label>有效期（天）</mat-label>
+            <input matInput formControlName="duration_days" type="number" min="1" max="3650">
+          </mat-form-field>
+
+          <mat-form-field appearance="outline" class="form-field">
+            <mat-label>最大用户数</mat-label>
+            <input matInput formControlName="max_users" type="number" min="1" max="100000">
+          </mat-form-field>
+
+          <mat-form-field appearance="outline" class="form-field">
+            <mat-label>最大设备数</mat-label>
+            <input matInput formControlName="max_devices" type="number" min="1" max="100000">
+          </mat-form-field>
+
+          <mat-form-field appearance="outline" class="form-field">
+            <mat-label>备注</mat-label>
+            <textarea matInput formControlName="notes" rows="2"></textarea>
+          </mat-form-field>
+
+          <button mat-raised-button color="accent" 
+                  (click)="generateLicense()" 
+                  [disabled]="!isFormValid(licenseForm) || isGeneratingLicense"
+                  class="submit-button">
+            <mat-icon *ngIf="isGeneratingLicense">hourglass_empty</mat-icon>
+            <mat-icon *ngIf="!isGeneratingLicense">vpn_key</mat-icon>
+            {{ isGeneratingLicense ? '生成中...' : '生成许可证' }}
+          </button>
+        </form>
+
+        <div *ngIf="!selectedOrganization" class="select-org-prompt">
+          <mat-icon>arrow_back</mat-icon>
+          <p>请先选择一个组织</p>
+        </div>
+
+        <!-- 许可证列表 -->
+        <div class="list-section">
+          <h3>许可证列表</h3>
+          <div class="license-list">
+            <mat-list *ngIf="licenses.length > 0">
+              <mat-list-item *ngFor="let license of licenses" class="license-item">
+                <div class="license-header">
+                  <div matListItemTitle class="license-key">{{ license.license_key }}</div>
+                  <div matListItemLine>
+                    <span class="status-badge" [class]="getStatusClass(license.status)">
+                      {{ license.status }}
+                    </span>
+                    <span class="license-type">{{ license.license_type }}</span>
+                  </div>
+                </div>
+                
+                <div class="license-details">
+                  <div class="detail-row">
+                    <span class="label">过期时间:</span>
+                    <span class="value">{{ formatDate(license.expires_at) }}</span>
+                  </div>
+                  <div class="detail-row">
+                    <span class="label">用户数:</span>
+                    <span class="value">{{ license.current_users }}/{{ license.max_users }}</span>
+                  </div>
+                  <div class="detail-row" *ngIf="license.days_until_expiry !== undefined">
+                    <span class="label">剩余天数:</span>
+                    <span class="value" [class.expiring-soon]="license.days_until_expiry < 30">
+                      {{ license.days_until_expiry }} 天
+                    </span>
+                  </div>
+                </div>
+
+                <div class="license-actions">
+                  <button mat-icon-button 
+                          (click)="validateLicense(license.license_key)"
+                          matTooltip="验证许可证">
+                    <mat-icon>verified</mat-icon>
+                  </button>
+                  
+                  <button mat-icon-button 
+                          *ngIf="license.status !== 'revoked'"
+                          (click)="revokeLicense(license.license_key)"
+                          color="warn"
+                          matTooltip="撤销许可证">
+                    <mat-icon>block</mat-icon>
+                  </button>
+                </div>
+              </mat-list-item>
+            </mat-list>
+            <div *ngIf="licenses.length === 0" class="empty-state">
+              <mat-icon>vpn_key</mat-icon>
+              <p>暂无许可证</p>
+            </div>
+          </div>
+        </div>
+      </mat-card-content>
+    </mat-card>
+  </div>
+
+  <!-- 加载指示器 -->
+  <div class="loading-overlay" *ngIf="isLoading">
+    <mat-spinner></mat-spinner>
+    <p>加载中...</p>
+  </div>
+</div>

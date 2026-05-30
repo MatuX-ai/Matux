@@ -1,0 +1,40 @@
+{
+  "lesson_code": "dp_02_iot_connectivity",
+  "title": "物联网连接技术",
+  "subtitle": "设备如何连接到互联网",
+  "content_type": "theory",
+  "content_url": "",
+  "resources": [
+    {
+      "type": "video",
+      "url": "https://example.com/iot-connection.mp4",
+      "title": "物联网连接方式",
+      "description": "WiFi、蓝牙、LoRa 等连接技术介绍"
+    },
+    {
+      "type": "document",
+      "url": "docs/iot_protocols.pdf",
+      "title": "物联网通信协议",
+      "description": "MQTT、CoAP 等协议详解"
+    }
+  ],
+  "learning_objectives": [
+    "理解物联网的基本架构",
+    "掌握常见的无线通信技术",
+    "了解不同通信协议的适用场景"
+  ],
+  "knowledge_points": [
+    "WiFi 连接配置",
+    "蓝牙 BLE 基础",
+    "MQTT 发布订阅模式",
+    "HTTP REST API"
+  ],
+  "estimated_duration_minutes": 20,
+  "has_quiz": true,
+  "quiz_passing_score": 65.0,
+  "has_practice": false,
+  "practice_type": null,
+  "base_points": 20,
+  "is_active": true,
+  "display_order": 2
+}

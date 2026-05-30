@@ -1,0 +1,314 @@
+@use '../../../styles/design-tokens' as tokens;
+
+// 用户列表组件样式
+
+.user-list-container {
+  padding: tokens.$spacing-lg;
+  background-color: tokens.$color-neutral-100;
+  min-height: calc(100vh - 64px);
+}
+
+// 页面头部
+.page-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: tokens.$spacing-lg;
+
+  .header-title {
+    display: flex;
+    align-items: baseline;
+    gap: tokens.$spacing-md;
+
+    h1 {
+      margin: 0;
+      font-size: tokens.$font-size-xl;
+      font-weight: 600;
+      color: tokens.$color-neutral-900;
+    }
+
+    .user-count {
+      font-size: tokens.$font-size-sm;
+      color: tokens.$color-neutral-600;
+    }
+  }
+
+  .header-actions {
+    display: flex;
+    gap: tokens.$spacing-md;
+  }
+}
+
+// 统计卡片
+.stats-cards {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: tokens.$spacing-md;
+  margin-bottom: tokens.$spacing-lg;
+
+  .stat-card {
+    display: flex;
+    align-items: center;
+    padding: tokens.$spacing-lg;
+    background: white;
+    border-radius: tokens.$radius-lg;
+    box-shadow: tokens.$shadow-md;
+
+    .stat-icon {
+      width: 48px;
+      height: 48px;
+      border-radius: tokens.$radius-lg;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      margin-right: tokens.$spacing-md;
+
+      mat-icon {
+        font-size: tokens.$font-size-xl;
+        width: tokens.$font-size-xl;
+        height: tokens.$font-size-xl;
+        color: white;
+      }
+
+      &.users { background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); }
+      &.active { background: linear-gradient(135deg, #11998e 0%, #38ef7d 100%); }
+      &.today { background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%); }
+      &.week { background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%); }
+    }
+
+    .stat-content {
+      display: flex;
+      flex-direction: column;
+
+      .stat-value {
+        font-size: tokens.$font-size-3xl;
+        font-weight: 700;
+        color: tokens.$color-neutral-900;
+        line-height: 1.2;
+      }
+
+      .stat-label {
+        font-size: tokens.$font-size-xs + 2;
+        color: tokens.$color-neutral-500;
+        margin-top: tokens.$spacing-xs;
+      }
+    }
+  }
+}
+
+// 筛选卡片
+.filter-card {
+  margin-bottom: tokens.$spacing-lg;
+  padding: tokens.$spacing-lg;
+  border-radius: tokens.$radius-lg;
+
+  .filter-form {
+    .filter-row {
+      display: flex;
+      flex-wrap: wrap;
+      gap: tokens.$spacing-md;
+      align-items: center;
+
+      mat-form-field {
+        flex: 1;
+        min-width: 150px;
+
+        &.search-field {
+          flex: 2;
+          min-width: 250px;
+        }
+      }
+
+      .filter-actions {
+        display: flex;
+        gap: tokens.$spacing-sm;
+        margin-left: auto;
+      }
+    }
+  }
+}
+
+// 表格卡片
+.table-card {
+  position: relative;
+  padding: 0;
+  border-radius: tokens.$radius-lg;
+  overflow: hidden;
+
+  .loading-overlay {
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: rgba(255, 255, 255, 0.8);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 10;
+  }
+
+  .error-message {
+    display: flex;
+    align-items: center;
+    gap: tokens.$spacing-sm;
+    padding: tokens.$spacing-md;
+    background: tokens.$color-error-light;
+    color: tokens.$color-error;
+
+    mat-icon {
+      color: tokens.$color-error;
+    }
+
+    button {
+      margin-left: auto;
+    }
+  }
+
+  .table-toolbar {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: tokens.$spacing-sm tokens.$spacing-md;
+    border-bottom: 1px solid tokens.$color-neutral-200;
+
+    .selection-info {
+      font-size: tokens.$font-size-sm;
+      color: tokens.$color-neutral-600;
+
+      button {
+        margin-left: tokens.$spacing-xs;
+      }
+    }
+  }
+
+  .user-table {
+    width: 100%;
+
+    .user-avatar {
+      width: 40px;
+      height: 40px;
+      border-radius: tokens.$radius-full;
+      object-fit: cover;
+    }
+
+    .username-cell {
+      display: flex;
+      flex-direction: column;
+
+      .username {
+        font-weight: 500;
+        color: tokens.$color-neutral-900;
+      }
+
+      .user-id {
+        font-size: tokens.$font-size-xs;
+        color: tokens.$color-neutral-500;
+      }
+    }
+
+    .status-badge {
+      display: inline-block;
+      padding: tokens.$spacing-xs tokens.$spacing-md;
+      border-radius: tokens.$radius-sm;
+      font-size: tokens.$font-size-xs;
+      font-weight: 500;
+
+      &.status-active {
+        background: tokens.$color-success-light;
+        color: tokens.$color-success-dark;
+      }
+
+      &.status-inactive {
+        background: tokens.$color-neutral-100;
+        color: tokens.$color-neutral-600;
+      }
+
+      &.status-suspended {
+        background: tokens.$color-error-light;
+        color: tokens.$color-error-dark;
+      }
+
+      &.status-pending {
+        background: tokens.$color-warning-light;
+        color: tokens.$color-warning-dark;
+      }
+    }
+
+    .user-row {
+      cursor: pointer;
+      transition: background-color tokens.$transition-fast;
+
+      &:hover {
+        background-color: tokens.$color-neutral-100;
+      }
+    }
+
+    .no-data {
+      text-align: center;
+      padding: tokens.$spacing-3xl !important;
+
+      .no-data-content {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        color: tokens.$color-neutral-500;
+
+        mat-icon {
+          font-size: tokens.$font-size-3xl;
+          width: tokens.$font-size-3xl;
+          height: tokens.$font-size-3xl;
+          margin-bottom: tokens.$spacing-md;
+        }
+
+        p {
+          margin: 0;
+          font-size: tokens.$font-size-sm;
+        }
+      }
+    }
+  }
+
+  mat-paginator {
+    border-top: 1px solid tokens.$color-neutral-200;
+  }
+}
+
+// 响应式设计
+@media (max-width: tokens.$breakpoint-tablet-max) {
+  .stats-cards {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+
+@media (max-width: tokens.$breakpoint-mobile-max) {
+  .page-header {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: tokens.$spacing-lg;
+
+    .header-actions {
+      width: 100%;
+      justify-content: flex-end;
+    }
+  }
+
+  .stats-cards {
+    grid-template-columns: 1fr;
+  }
+
+  .filter-card .filter-form .filter-row {
+    mat-form-field {
+      min-width: 100%;
+
+      &.search-field {
+        min-width: 100%;
+      }
+    }
+
+    .filter-actions {
+      width: 100%;
+      justify-content: flex-end;
+    }
+  }
+}

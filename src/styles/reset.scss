@@ -1,0 +1,314 @@
+// Design Tokens - Reset Styles
+//
+// 自定义夋祻瑙堝櫒閲嶇疆样式
+// 鍩轰簬鐜颁唬娴忚鍣ㄦ渶浣冲疄璺碉紝娓呴櫎默认样式骞跺缓绔嬬粺涓€基础
+
+// 导入 Design Tokens
+@import 'design-tokens/index';
+
+// =============================================================================
+// 鐩掓ā鍨嬮噸缃?
+// =============================================================================
+
+// 缁熶竴浣跨敤 border-box 鐩掓ā鍨?
+*, 
+*::before, 
+*::after {
+  box-sizing: border-box;
+}
+
+// =============================================================================
+// 基础鎺掔増閲嶇疆
+// =============================================================================
+
+// HTML 鏍瑰厓绱犺缃?
+html {
+  // 闃叉 iOS Safari 缂╂斁
+  // 基础字体澶у皬
+  font-size: 16px;
+  // 绂佺敤移动端偣鍑婚珮浜?
+  // 骞虫粦字体娓叉煋
+  // 琛岄珮鍩哄噯
+  line-height: 1.5;
+  // 骞虫粦字体娓叉煋
+  -webkit-font-smoothing: antialiased;
+  // 琛岄珮鍩哄噯
+  line-height: 1.5;
+}
+
+// Body 基础样式
+body {
+  // 娓呴櫎默认 margin 鍜?p{
+  padding: 0;
+  background-color: $background-color;
+  font-weight: $font-weight-regular;
+  user-select: none;
+  // 闃叉鏂囨湰閫夋嫨鏃剁殑默认琛屼负
+  -webkit-touch-callout: none;
+  // 婊氬姩琛屼负浼樺寲
+  scroll-behavior: smooth;
+  // 娓呴櫎默认 margin 鍜?padding
+  margin: 0;
+  // 颜色设置锛堜娇鐢?Design Tokens锛?
+  color: $text-primary-color;
+  // 字体设置锛堜娇鐢?Design Tokens锛?
+  font-family: $font-family-system;
+}=============================================================
+// 璇箟鍖栧厓绱犻噸缃?
+// =============================================================================
+
+// 标题鍏冪礌閲嶇疆
+h1, h2, h3, h4, h5, h6 {
+  margin: 0;
+  padding: 0;
+  font-weight: in{
+  margin: 0;
+  padding: 0;
+  font-size: inherit;
+  font-weight: inherit;
+}
+
+// 鍒楄〃鍏冪礌閲嶇疆
+ul, ol {
+  margin: 0;
+  padding: 0;
+  padding: 0;
+}
+
+li {
+  margin: 0;
+  padding: 0;
+}
+
+// 寮曠敤鍏冪礌閲嶇疆
+blockquote {
+  margin: 0;
+  padding: 0;
+}
+
+// 浠ｇ爜鍏冪礌閲嶇疆
+code, kbd, pre, samp {
+  font-size: inherit;
+  font-family: $font-family-{
+  font-family: $font-family-mono;
+  font-size: inherit;
+}==============================
+// 琛ㄥ崟鍏冪礌閲嶇疆
+// =============================================================================
+
+// 基础琛ㄥ崟鍏冪礌閲嶇疆
+input, 
+button, 
+textarea, 
+select {
+  // 閲嶇疆鍐呭杈硅窛
+  margin: 0;
+  padding: 0;
+  
+  // 娓呴櫎榛榹
+  padding: 0;
+  background: none;
+  color: inherit;
+  // 缁ф壙鐖跺厓绱犲瓧浣撴牱寮?
+  font: inherit;
+  // 娓呴櫎默认杈规鍜岃儗鏅?
+  border: none;
+  // 缁熶竴鍏夋爣样式
+  cursor: inherit;
+  // 閲嶇疆杞粨
+  outline: none;
+  // 閲嶇疆鍐呭杈硅窛
+  margin: 0;
+},
+input[type="password"],
+input[type="search"],
+input[type="tel"],
+input[type="url"],
+textarea {
+  // 鎭㈠鏂囨湰閫夋嫨能力
+  user-select: text;
+  
+  // 移动端紭鍖?
+  appearance: none;
+}
+
+// 鎸夐挳特殊澶勭悊
+button {
+  padding: 0;
+  border: none;
+
+  // 閲嶇疆默认鎸夐挳样式
+  background: none;
+  
+  // 纭繚鎸夐挳鍙偣鍑?
+  cursor: pointer;
+  
+  // 閲嶇疆WebKit娴忚鍣ㄧ殑默认样式
+  appearance: none;
+  
+  // 閲嶇疆WebKit娴忚鍣ㄧ殑默认内边距?
+  &::-moz-focus-inner {
+    padding: 0;
+    border: 0;
+  }
+}
+
+// 閫夋嫨妗嗙壒娈婂鐞?
+select {
+  // 淇濇寔閫夋嫨妗嗙殑基本功能
+  appearance: none;
+  
+  // 娣诲姞自定义夌澶寸殑鍗犱綅绗?
+  &::-ms-expand {
+    display: none;
+  }
+}
+
+// =============================================================================
+// 濯掍綋鍏冪礌閲嶇疆
+// =============================================================================
+
+// 鍥剧墖閲嶇疆
+img {
+  // 绉婚櫎搴曢儴绌虹櫧闂撮殭
+  display: block;
+
+  // 闃叉鍥剧墖瓒呭嚭容器
+  max-width: 100%;
+  heig{
+  height: auto;
+  // 闃叉鍥剧墖瓒呭嚭容器
+  max-width: 100%;
+  // 绉婚櫎搴曢儴绌虹櫧闂撮殭
+  display: block;
+  // 閲嶇疆默认杈规
+  border: 0;
+} height: auto;
+}
+
+// 响应式忓獟浣撳厓{
+  // 纭繚 SVG 正确鏄剧ず
+  display: block;
+  // 纭繚 SVG 正确鏄剧ず
+  display: block;
+}n: middle;
+}
+
+// =============================================================================
+// 琛ㄦ牸鍏冪礌閲嶇疆
+// =============================================================================
+
+table {
+  // 閲嶇疆默认间距
+  border-spacing: 0;
+
+  // 鍚堝苟琛ㄦ牸杈规
+  border-collapse: collapse;
+}
+
+td,
+th{
+  // 鍚堝苟琛ㄦ牸杈规
+  // 閲嶇疆默认间距
+}================={
+  // 鏂囨湰对齐
+  // 閲嶇疆默认 padding
+  padding: 0;
+}=============================================================================
+
+// 閾炬帴閲嶇疆
+a {
+
+  // 娓呴櫎默认颜色鍜屼笅鍒掔嚎
+  color: inherit;
+  
+  // 绉婚櫎鐐瑰嚮鏃剁殑默认楂樹寒
+  
+  // 閲嶇疆outline浣嗕繚鎸侀敭鐩樺鑸?
+  &:focus {
+  // 绉婚櫎鐐瑰嚮鏃剁殑默认楂樹寒
+  -webkit-tap-highlight-color: transparent;
+  
+  // 閲嶇疆outline浣嗕繚鎸侀敭鐩樺鑸?
+  &:focus {
+    outline: 2px solid $focus-color;
+    outline-offset: 2px;
+  }
+}
+
+// =============================================================================
+// 鍏朵粬鍏冪礌閲嶇疆
+// =============================================================================
+
+// HR 鍏冪礌閲嶇疆
+hr {
+  // 閲嶇疆默认样式
+  margin: 0;
+  padding: 0;
+  border: 0;
+  border-top: 1px solid $divider-color;
+}
+
+//{
+  padding: 0;
+  border: 0;
+  border-top: 1px solid $divider-color;
+  // 閲嶇疆默认样式
+  margin: 0;
+}argin: 0;
+  padding: 0;
+  border: 0;
+}
+
+// =============================================================================
+// 婊氬姩鏉℃牱寮忥紙WebKit娴忚鍣級
+// =============================================================================
+
+// 自定义夋粴鍔ㄦ潯样式
+::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+
+::-webkit-scrollbar-track {
+  background: $gray-100;
+}
+
+::-webkit-scrollbar-thumb {
+  border-radius: 4px;
+  background: $gray-400;
+  
+  &:hover {
+    background: $gray-500;
+  }
+}
+
+// =============================================================================
+// 鎵撳嵃样式浼樺寲
+// =============================================================================
+
+@media print {
+  // 闅愯棌涓嶅繀瑕佺殑鎵撳嵃鍏冪礌
+  *,
+  *::before,
+  *::after {
+    background: transparent;
+    box-shadow: none;
+    text-shadow: none;
+    color: #000;
+  }
+  
+  // {
+  background: transparent;
+  box-shadow: none;
+  color: #000;
+  text-shadow: none;
+} h3 {
+    orphans: 3;
+    widows: 3;
+  }
+  
+  h1, h2, h3 {
+    break-after: avoid;
+  }
+}

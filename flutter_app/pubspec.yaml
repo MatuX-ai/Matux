@@ -1,0 +1,72 @@
+name: imatuproject_flutter
+description: iMatuProject Flutter Application with Design System Integration
+publish_to: 'none'
+version: 1.0.0+1
+
+environment:
+  sdk: '>=3.5.0 <4.0.0'
+  flutter: '>=3.24.0'
+
+dependencies:
+  flutter:
+    sdk: flutter
+  cupertino_icons: ^1.0.2
+
+  # 状态管理
+  provider: ^6.1.1
+
+  # 网络请求
+  dio: ^5.4.0
+  http: ^0.13.6
+
+  # 本地存储
+  hive: ^2.2.3
+  hive_flutter: ^1.1.0
+  shared_preferences: ^2.2.2
+  path_provider: ^2.1.1
+
+  # 实时通信
+  web_socket_channel: ^2.4.0
+
+  # AR 相关依赖（未来功能）
+  arcore_flutter_plugin: ^0.1.0
+  arkit_plugin: ^1.0.2
+  vector_math: ^2.1.4
+
+  # USB/串口通信支持（未来功能）
+  usb_serial: ^0.4.0
+  web: ^1.0.0
+  flutter_libserialport: ^0.6.0
+
+  # 图表库
+  charts_flutter: ^0.12.0
+
+  # 工具库
+  intl: ^0.17.0
+  uuid: ^4.3.3
+
+dev_dependencies:
+  flutter_test:
+    sdk: flutter
+  flutter_lints: ^2.0.0
+
+  # 代码生成
+  build_runner: ^2.4.6
+  hive_generator: ^2.0.1
+
+  # 测试依赖
+  mockito: ^5.4.2
+
+flutter:
+  uses-material-design: true
+
+  assets:
+    - assets/tokens/
+
+  # 字体配置（如果需要自定义字体）
+  # fonts:
+  #   - family: CustomFont
+  #     fonts:
+  #       - asset: fonts/CustomFont-Regular.ttf
+  #       - asset: fonts/CustomFont-Bold.ttf
+  #         weight: 700

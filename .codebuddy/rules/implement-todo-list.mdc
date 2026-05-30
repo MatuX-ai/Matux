@@ -1,0 +1,86 @@
+---
+description: 
+alwaysApply: true
+enabled: true
+updatedAt: 2026-03-18T10:10:00.965Z
+provider: 
+---
+
+# 多角色仪表板开发实施规则
+
+## 项目背景
+基于iMato多来源学习系统架构，为教师、机构管理员、学校管理员和教育局四个角色创建或增强仪表板。
+
+## 实施阶段
+
+### Phase 1: 教师Dashboard增强 (高优先级)
+**目标**: 将现有mock数据替换为真实数据，集成MultiSourceLearningService
+
+任务清单:
+1. 在teacher-dashboard.component.ts中注入MultiSourceLearningService
+2. 实现跨机构教学进度展示模块，调用getUserLearningSources()
+3. 实现学生学情总览模块，展示各机构学生学习进度
+4. 创建TeacherService，封装教师相关API调用
+5. 抽取并创建共享仪表板组件(stats-card, progress-chart)
+
+**技术要点**:
+- 复用LearningSourceProgressComponent展示教学来源
+- 确保所有数据流使用Observable和async管道
+- 保持组件SCSS文件在4KB以内
+
+### Phase 2: 机构管理员Dashboard扩展 (中优先级)
+**目标**: 基于现有OrganizationDashboardComponent添加教育场景专属模块
+
+任务清单:
+6. 添加机构概览模块(学生数、教师数、活跃课程数)
+7. 添加课程运营模块(课程列表、报名统计)
+8. 添加教师管理模块(教师列表、课时统计)
+9. 添加学员管理模块(学员列表、学习进度)
+10. 创建OrgAdminService，整合相关API
+
+**技术要点**:
+- 扩展现有organization-dashboard.component.ts
+- 复用Phase 1创建的共享组件
+- 调用后端educational_institution_routes.py接口
+
+### Phase 3: 学校管理员Dashboard新建 (中优先级)
+**目标**: 新建学校场景专属Dashboard组件
+
+任务清单:
+11. 新建年级/班级管理模块(班级列表、学生分配)
+12. 新建校本课程管理模块(区分school_curriculum和school_interest)
+13. 新建教师工作量统计模块(课时统计、跨班级授课)
+14. 新建学生成长档案模块(跨学期学习轨迹)
+15. 创建SchoolAdminService
+
+**技术要点**:
+- 在src/app/user/school-admin/新建独立组件
+- 复用MultiSourceLearningService获取跨机构数据
+- 实现学校特有的数据展示逻辑
+
+### Phase 4: 教育局Dashboard新建 (低优先级)
+**目标**: 新建区域级数据汇总与监管Dashboard
+
+任务清单:
+16. 新建区域数据概览模块(学校数量、学生总数)
+17. 新建学校数据对比模块(教学成果、师资对比)
+18. 新建教学质量监控模块(课程合格率、成绩分布)
+19. 新建资源调配建议模块(AI辅助建议)
+20. 创建EducationBureauService
+
+**技术要点**:
+- 新建独立组件education-bureau-dashboard
+- 需要后端提供跨机构聚合API
+- 实现数据导出功能(Excel报表)
+
+## 质量控制
+- 每个Phase完成后进行TypeScript编译检查
+- 确保SCSS文件符合4KB预算规范
+- 所有新代码遵循smart/dumb组件架构
+- 禁止使用any类型，保持类型安全
+
+## 交付标准
+- 所有Dashboard能够正确显示跨机构数据
+- 响应式设计，适配不同屏幕尺寸
+- 加载状态处理和错误边界
+- 单元测试覆盖率达到80%以上

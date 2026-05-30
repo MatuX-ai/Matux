@@ -1,0 +1,347 @@
+# Docker Compose 生产环境配置
+# iMato Cloud 云托管版本 - 完整服务编排
+# 用法：docker-compose -f docker-compose.cloud.yml up -d
+
+version: '3.8'
+
+services:
+  # ============================================
+  # Nginx 反向代理和负载均衡
+  # ============================================
+  nginx-proxy:
+    image: nginx:alpine
+    container_name: imato-nginx
+    ports:
+      - "80:80"
+      - "443:443"
+    volumes:
+      - ./docker/nginx-proxy.conf:/etc/nginx/nginx.conf:ro
+      - ./logs/nginx:/var/log/nginx
+      - nginx-cache:/var/cache/nginx
+    depends_on:
+      - frontend
+      - backend
+    networks:
+      - imato-network
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "nginx", "-t"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+    deploy:
+      resources:
+        limits:
+          cpus: '0.5'
+          memory: 128M
+
+  # ============================================
+  # 前端静态文件服务
+  # ============================================
+  frontend:
+    build:
+      context: .
+      dockerfile: Dockerfile.cloud
+      target: frontend-builder
+    container_name: imato-frontend-build
+    volumes:
+      - frontend-dist:/app/frontend/dist/browser
+    command: echo "Frontend build complete"
+    networks:
+      - imato-network
+
+  # ============================================
+  # FastAPI 后端应用服务（多副本）
+  # ============================================
+  backend:
+    build:
+      context: .
+      dockerfile: Dockerfile.cloud
+    image: imato-cloud:latest
+    container_name: imato-backend
+    environment:
+      APP_ENV: production
+      LOG_LEVEL: info
+      DATABASE_URL: postgresql://imato:${POSTGRES_PASSWORD:-imato_password_123}@db:5432/imato_cloud
+      REDIS_URL: redis://:${REDIS_PASSWORD:-imato_redis_password_123}@redis:6379/0
+      SECRET_KEY: ${SECRET_KEY:-your-secret-key-change-in-production}
+      JWT_ALGORITHM: HS256
+      ACCESS_TOKEN_EXPIRE_MINUTES: 30
+      TOKEN_BONUS_ENABLED: "true"
+      AI_FALLBACK_ENABLED: "true"
+    volumes:
+      - ./logs/backend:/var/log/backend
+      - ./data/uploads:/app/backend/uploads
+    depends_on:
+      db:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    networks:
+      - imato-network
+      - db-network
+      - cache-network
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8000/health"]
+      interval: 30s
+      timeout: 30s
+      retries: 3
+      start_period: 40s
+    restart: unless-stopped
+    deploy:
+      replicas: 2
+      resources:
+        limits:
+          cpus: '1.0'
+          memory: 512M
+        reservations:
+          cpus: '0.5'
+          memory: 256M
+      update_config:
+        parallelism: 1
+        delay: 10s
+        order: start-first
+
+  # ============================================
+  # PostgreSQL 数据库（主从复制准备）
+  # ============================================
+  db:
+    image: postgres:15-alpine
+    container_name: imato-db
+    environment:
+      POSTGRES_USER: imato
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-imato_password_123}
+      POSTGRES_DB: imato_cloud
+      POSTGRES_INITDB_ARGS: "--encoding=UTF-8 --lc-collate=C --lc-ctype=C"
+      PGDATA: /var/lib/postgresql/data/pgdata
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+      - ./backups/db:/backups
+      - ./docker/init-scripts:/docker-entrypoint-initdb.d:ro
+    ports:
+      - "${DB_EXTERNAL_PORT:-5432}:5432"
+    networks:
+      - db-network
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U imato -d imato_cloud"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 10s
+    restart: unless-stopped
+    deploy:
+      resources:
+        limits:
+          cpus: '2.0'
+          memory: 1G
+        reservations:
+          cpus: '1.0'
+          memory: 512M
+
+  # ============================================
+  # Redis 缓存和消息队列
+  # ============================================
+  redis:
+    image: redis:7-alpine
+    container_name: imato-redis
+    command: >
+      redis-server
+      --requirepass ${REDIS_PASSWORD:-imato_redis_password_123}
+      --appendonly yes
+      --maxmemory 256mb
+      --maxmemory-policy allkeys-lru
+    volumes:
+      - redis_data:/data
+      - ./backups/redis:/backups
+    ports:
+      - "${REDIS_EXTERNAL_PORT:-6379}:6379"
+    networks:
+      - cache-network
+    healthcheck:
+      test: ["CMD", "redis-cli", "-a", "${REDIS_PASSWORD:-imato_redis_password_123}", "ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    restart: unless-stopped
+    deploy:
+      resources:
+        limits:
+          cpus: '0.5'
+          memory: 256M
+
+  # ============================================
+  # Celery Worker（异步任务处理）
+  # ============================================
+  celery-worker:
+    build:
+      context: .
+      dockerfile: Dockerfile.cloud
+    image: imato-cloud:latest
+    container_name: imato-celery-worker
+    command: >
+      sh -c "cd /app/backend &&
+             celery -A app.celery_app worker
+             --loglevel=info
+             --concurrency=4
+             --pool=eventlet"
+    environment:
+      DATABASE_URL: postgresql://imato:${POSTGRES_PASSWORD:-imato_password_123}@db:5432/imato_cloud
+      REDIS_URL: redis://:${REDIS_PASSWORD:-imato_redis_password_123}@redis:6379/0
+      APP_ENV: production
+    volumes:
+      - ./logs/celery:/var/log/celery
+      - ./data/uploads:/app/backend/uploads
+    depends_on:
+      - db
+      - redis
+    networks:
+      - imato-network
+      - db-network
+      - cache-network
+    restart: unless-stopped
+    deploy:
+      replicas: 2
+      resources:
+        limits:
+          cpus: '1.0'
+          memory: 512M
+
+  # ============================================
+  # Celery Beat（定时任务调度器）
+  # ============================================
+  celery-beat:
+    build:
+      context: .
+      dockerfile: Dockerfile.cloud
+    image: imato-cloud:latest
+    container_name: imato-celery-beat
+    command: >
+      sh -c "cd /app/backend &&
+             celery -A app.celery_app beat
+             --loglevel=info"
+    environment:
+      DATABASE_URL: postgresql://imato:${POSTGRES_PASSWORD:-imato_password_123}@db:5432/imato_cloud
+      REDIS_URL: redis://:${REDIS_PASSWORD:-imato_redis_password_123}@redis:6379/0
+      APP_ENV: production
+    volumes:
+      - ./logs/celery-beat:/var/log/celery-beat
+    depends_on:
+      - db
+      - redis
+    networks:
+      - imato-network
+      - db-network
+      - cache-network
+    restart: unless-stopped
+    deploy:
+      resources:
+        limits:
+          cpus: '0.5'
+          memory: 256M
+
+  # ============================================
+  # Prometheus 监控数据抓取
+  # ============================================
+  prometheus:
+    image: prom/prometheus:latest
+    container_name: imato-prometheus
+    volumes:
+      - ./docker/prometheus.yml:/etc/prometheus/prometheus.yml:ro
+      - prometheus_data:/prometheus
+    command:
+      - '--config.file=/etc/prometheus/prometheus.yml'
+      - '--storage.tsdb.path=/prometheus'
+      - '--web.console.libraries=/usr/share/prometheus/console_libraries'
+      - '--web.console.templates=/usr/share/prometheus/consoles'
+      - '--web.enable-lifecycle'
+    ports:
+      - "9090:9090"
+    networks:
+      - monitoring-network
+    restart: unless-stopped
+    deploy:
+      resources:
+        limits:
+          cpus: '0.5'
+          memory: 512M
+
+  # ============================================
+  # Grafana 可视化仪表盘
+  # ============================================
+  grafana:
+    image: grafana/grafana:latest
+    container_name: imato-grafana
+    environment:
+      GF_SECURITY_ADMIN_USER: ${GRAFANA_ADMIN_USER:-admin}
+      GF_SECURITY_ADMIN_PASSWORD: ${GRAFANA_ADMIN_PASSWORD:-admin123}
+      GF_USERS_ALLOW_SIGN_UP: "false"
+      GF_SERVER_ROOT_URL: "http://localhost:3000"
+    volumes:
+      - grafana_data:/var/lib/grafana
+      - ./docker/grafana/provisioning:/etc/grafana/provisioning:ro
+      - ./docker/grafana/dashboards:/var/lib/grafana/dashboards:ro
+    ports:
+      - "3000:3000"
+    depends_on:
+      - prometheus
+    networks:
+      - monitoring-network
+    restart: unless-stopped
+    deploy:
+      resources:
+        limits:
+          cpus: '0.5'
+          memory: 256M
+
+volumes:
+  # 持久化数据卷
+  postgres_data:
+    driver: local
+    name: imato_postgres_data
+  redis_data:
+    driver: local
+    name: imato_redis_data
+  frontend-dist:
+    driver: local
+    name: imato_frontend_dist
+  nginx-cache:
+    driver: local
+    name: imato_nginx_cache
+  prometheus_data:
+    driver: local
+    name: imato_prometheus_data
+  grafana_data:
+    driver: local
+    name: imato_grafana_data
+
+networks:
+  # 网络隔离设计
+  imato-network:
+    driver: bridge
+    name: imato_main
+    ipam:
+      config:
+        - subnet: 172.28.0.0/16
+  db-network:
+    driver: bridge
+    name: imato_db
+    internal: true
+    ipam:
+      config:
+        - subnet: 172.29.0.0/16
+  cache-network:
+    driver: bridge
+    name: imato_cache
+    internal: true
+    ipam:
+      config:
+        - subnet: 172.30.0.0/16
+  monitoring-network:
+    driver: bridge
+    name: imato_monitoring
+    ipam:
+      config:
+        - subnet: 172.31.0.0/16
+
+# 全局配置
+# 注意：日志配置已在各个服务中通过 volumes 单独配置

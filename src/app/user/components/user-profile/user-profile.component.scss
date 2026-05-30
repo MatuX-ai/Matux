@@ -1,0 +1,340 @@
+/**
+ * 用户个人资料组件样式
+ */
+
+.profile-container {
+  padding: 24px;
+  max-width: 1200px;
+  margin: 0 auto;
+}
+
+// 加载状态
+.loading-container {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 48px;
+
+  p {
+    margin-top: 16px;
+    color: var(--mat-text-secondary);
+  }
+}
+
+// 错误信息
+.error-container {
+  text-align: center;
+  padding: 48px;
+
+  .error-icon {
+    font-size: 48px;
+    width: 48px;
+    height: 48px;
+    color: var(--mat-error-color);
+    margin-bottom: 16px;
+  }
+
+  .error-message {
+    margin-bottom: 24px;
+    color: var(--mat-text-primary);
+    font-size: 16px;
+  }
+}
+
+// 内容区域
+.profile-content {
+  .profile-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 16px;
+
+    h2 {
+      margin: 0;
+      font-size: 24px;
+      font-weight: 500;
+      color: var(--mat-text-primary);
+    }
+
+    .header-actions {
+      display: flex;
+      gap: 12px;
+    }
+  }
+
+  mat-divider {
+    margin-bottom: 24px;
+  }
+}
+
+// 卡片样式
+mat-card {
+  margin-bottom: 24px;
+  border-radius: 12px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+  transition: box-shadow 0.3s ease;
+
+  &:hover {
+    box-shadow: 0 4px 16px rgba(0, 0, 0, 0.12);
+  }
+}
+
+// 头像容器
+.avatar-container {
+  width: 48px;
+  height: 48px;
+  border-radius: 50%;
+  background: linear-gradient(135deg, var(--mat-primary-color) 0%, var(--mat-accent-color) 100%);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  overflow: hidden;
+
+  .avatar-image {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+  }
+
+  .avatar-icon {
+    font-size: 24px;
+    width: 24px;
+    height: 24px;
+    color: white;
+  }
+}
+
+// 字段展示
+.profile-fields {
+  .field-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 12px 0;
+    border-bottom: 1px solid var(--mat-divider-color);
+
+    &:last-child {
+      border-bottom: none;
+    }
+
+    .field-label {
+      font-weight: 500;
+      color: var(--mat-text-primary);
+      min-width: 100px;
+    }
+
+    .field-value {
+      color: var(--mat-text-secondary);
+      text-align: right;
+      flex: 1;
+    }
+  }
+}
+
+// 表单样式
+.profile-form {
+  padding: 16px 0;
+
+  .form-error {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    color: var(--mat-error-color);
+    margin-bottom: 16px;
+    padding: 12px;
+    background-color: rgba(var(--mat-error-rgb), 0.1);
+    border-radius: 8px;
+
+    mat-icon {
+      font-size: 20px;
+      width: 20px;
+      height: 20px;
+    }
+  }
+}
+
+// 头像上传
+.avatar-upload {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 16px;
+  margin-bottom: 24px;
+
+  .avatar-preview {
+    width: 80px;
+    height: 80px;
+    border-radius: 50%;
+    background: linear-gradient(135deg, var(--mat-primary-color) 0%, var(--mat-accent-color) 100%);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    overflow: hidden;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+
+    img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+    }
+
+    mat-icon {
+      font-size: 40px;
+      width: 40px;
+      height: 40px;
+      color: white;
+    }
+  }
+}
+
+// 全宽输入框
+.full-width {
+  width: 100%;
+  margin-bottom: 16px;
+}
+
+// 卡片操作
+.card-actions {
+  display: flex;
+  gap: 12px;
+  padding: 16px;
+
+  button {
+    min-width: 100px;
+  }
+
+  mat-spinner {
+    margin-right: 8px;
+  }
+}
+
+// 安全设置
+.security-card {
+  mat-card-content {
+    padding: 16px 0;
+  }
+}
+
+.security-item {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 16px;
+
+  .item-info {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+
+    .item-title {
+      font-weight: 500;
+      color: var(--mat-text-primary);
+    }
+
+    .item-desc {
+      font-size: 14px;
+      color: var(--mat-text-secondary);
+    }
+  }
+
+  button {
+    min-width: 100px;
+  }
+}
+
+// 偏好设置
+.preferences-card {
+  mat-card-content {
+    padding: 16px 0;
+  }
+}
+
+.preference-section {
+  padding: 16px;
+
+  h4 {
+    margin: 0 0 16px 0;
+    font-size: 16px;
+    font-weight: 500;
+    color: var(--mat-text-primary);
+  }
+}
+
+.preference-item {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 12px 0;
+
+  .item-label {
+    font-weight: 500;
+    color: var(--mat-text-primary);
+  }
+
+  mat-checkbox {
+    margin: 8px 0;
+  }
+}
+
+// 响应式设计
+@media (max-width: 768px) {
+  .profile-container {
+    padding: 16px;
+  }
+
+  .profile-header {
+    flex-direction: column;
+    align-items: flex-start !important;
+    gap: 16px;
+
+    h2 {
+      font-size: 20px;
+    }
+
+    .header-actions {
+      width: 100%;
+
+      button {
+        width: 100%;
+      }
+    }
+  }
+
+  .field-row {
+    flex-direction: column !important;
+    align-items: flex-start !important;
+    gap: 8px;
+
+    .field-label {
+      min-width: auto !important;
+    }
+
+    .field-value {
+      text-align: left !important;
+    }
+  }
+
+  .security-item {
+    flex-direction: column !important;
+    align-items: flex-start !important;
+    gap: 16px;
+
+    button {
+      width: 100%;
+    }
+  }
+
+  .preference-item {
+    flex-direction: column !important;
+    align-items: flex-start !important;
+    gap: 12px;
+  }
+}
+
+// 深色模式适配
+@media (prefers-color-scheme: dark) {
+  .profile-container {
+    background-color: var(--mat-background-color);
+  }
+}

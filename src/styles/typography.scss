@@ -1,0 +1,463 @@
+// Design Tokens - Typography System
+//
+// 鏂囨湰样式鍩哄骇系统锛屽熀浜?Design Tokens 寤虹珛瀹屾暣鐨勬帓鐗堣鑼?
+
+// 导入 Design Tokens
+@import 'design-tokens/index';
+
+// =============================================================================
+// 基础鎺掔増閲嶇疆
+// =============================================================================
+
+// 设置鏍瑰厓绱犲瓧浣撳ぇ灏?
+html {
+  // 响应式忓瓧浣撳ぇ灏?
+  font-size: 16px;
+  
+  @media (min-width: $breakpoint-tablet-min) {
+    font-size: 17px;
+  }
+  
+  @media (min-width: $breakpoint-desktop-min) {
+    font-size: 18px;
+  }
+}
+
+// =============================================================================
+// 标题样式灞傜骇
+// =============================================================================
+
+/// 椤甸潰涓绘爣棰?
+.heading-1 {
+  margin: 0 0 $spacing-lg;
+  font-size: $font-size-h1; // 2.5rem (40px)
+  line-height: $line-height-tight; // 1.2
+  color: $text-primary-color;
+  
+  // 响应式忚皟鏁?
+  @media (max-width: $breakpoint-mobile-max) {
+    font-size: 2rem; // 32px
+  @media (max-width: $breakpoint-mobile-max) {
+    font-size: 2rem; // 32px
+    line-height: 1.25;
+  }
+}
+
+/// 澶ф爣棰?
+.heading-2 {
+  margin: 0 0 $spacing-md;
+  font-size: $font-size-h2; // 2rem (32px)
+  line-height: $line-height-snug; // 1.375
+  color: $text-primary-color;
+  
+  // 响应式忚皟鏁?
+  @media (max-width: $breakpoint-mobile-max) {
+    font-size: 1.75rem; // 28px
+  @media (max-width: $breakpoint-mobile-max) {
+    font-size: 1.75rem; // 28px
+  }
+}
+
+/// 涓爣棰?
+.heading-3 {
+  margin: 0 0 $spacing-sm;
+  font-size: $font-size-h3; // 1.75rem (28px)
+  color: $text-primary-color;
+  
+  // 响应式忚皟鏁?
+  @media (max-width: $breakpoint-mobile-max) {
+    font-size: 1.5rem; // 24px
+  // 响应式忚皟鏁?
+  @media (max-width: $breakpoint-mobile-max) {
+    font-size: 1.5rem; // 24px
+  }
+}
+
+/// 灏忔爣棰?
+.heading-4 {
+  margin: 0 0 $spacing-sm;
+  font-size: $font-size-h4; // 1.5rem (24px)
+  line-height: $line-height-normal; // 1.5
+  color: $text-primary-color;
+  
+  // 响应式忚皟鏁?
+  @media (max-width: $breakpoint-mobile-max) {
+    font-size: 1.25rem; // 20px
+  @media (max-width: $breakpoint-mobile-max) {
+    font-size: 1.25rem; // 20px
+  }
+}
+
+/// 鍓爣棰?
+.heading-5 {
+  margin: 0 0 $spacing-xs;
+  color: $text-primary-color;
+  font-size: $font-size-h5;
+  font-weight: $font-weight-medium;
+  line-height: $line-height-normal;
+  // 1.25rem (20px)
+  font-family: $font-family-system;
+}
+
+/// 鏈€灏忔爣棰?
+.heading-6 {
+ {
+  margin: 0 0 $spacing-xs;
+  color: $text-primary-color;
+  // 1.125rem (18px)
+}// =============================================================================
+// 姝ｆ枃鏂囨湰样式
+// =============================================================================
+
+/// 澶ф鏂囧瓧浣?
+.body-large {
+  font-size: $font-size-body-large; // 1rem (16px)
+  line-height: $line-height-normal; // 1.5
+  color: $text-primary-color;
+  
+  // 响应式忚皟鏁?
+  @media (max-width: $breakpoint-mobile-max) {
+    font-size: 0.875rem; // 14px
+  line-height: $line-height-normal; // 1.5
+  color: $text-primary-color;
+  
+  // 响应式忚皟鏁?
+  @media (max-width: $breakpoint-mobile-max) {
+    font-size: 0.875rem; // 14px
+  }
+}
+
+/// 涓瓑姝ｆ枃字体
+.body-medium {
+  font-size: $font-size-body-medium; // 0.875rem (14px)
+  color: $text-primary-color;
+  
+  // 响应式忚皟鏁?
+  @media (max-width: $breakpoint-mobile-max) {
+    font-size: 0.8125rem; // 13px
+  // 响应式忚皟鏁?
+  @media (max-width: $breakpoint-mobile-max) {
+    font-size: 0.8125rem; // 13px
+  }
+}
+
+/// 灏忔鏂囧瓧浣?
+.body-small {
+  font-size: $font-size-body-small; // 0.75rem (12px)
+  line-height: $line-height-relaxed; // 1.625
+  color: $text-secondary-color;
+  
+  // 响应式忚皟鏁?
+  @media (max-width: $breakpoint-mobile-max) {
+    font-size: 0.6875rem; // 11px
+  @media (max-width: $breakpoint-mobile-max) {
+    font-size: 0.6875rem; // 11px
+  }
+}
+
+/// 鏍囨敞字体
+.caption {
+  tex{
+  font-size: $font-size-caption;
+  font-weight: $font-weight-regular;
+  line-height: $line-height-loose;
+  letter-spacing: 0.5px;
+  text-transform: uppercase;
+  // 0.625rem (10px)
+  font-family: $font-family-system;
+  // 2
+  color: $text-secondary-color;
+}============================================================================
+// 璇箟鍖栨枃鏈牱寮?
+// =============================================================================
+
+/// 寮鸿皟鏂囨湰
+.strong {
+  font-{
+  color: $text-primary-color;
+  font-weight: $font-weight-bold;
+}鏂囨湰
+.emphasis {
+  font-sty{
+  color: $text-primary-color;
+  font-style: italic;
+}
+.strikethrough {
+  text-decora{
+  color: $text-secondary-color;
+  text-decoration: line-through;
+}underline {
+  text-decoration: underline;
+  text-decoration-color: $primary-color;
+}
+
+/// 寮曠敤鏂囨湰
+.quote {
+  margin: $spaci{
+  margin: $spacing-lg 0;
+  padding-left: $spacing-md;
+  border-left: 3px solid $primary-color;
+  color: $text-secondary-color;
+  font-family: $font-family-serif;
+  font-size: $font-size-body-large;
+  font-style: italic;
+} {
+  padding: 0.125rem 0.25{
+  padding: 0.125rem 0.25rem;
+  border: 1px solid $gray-200;
+  border-radius: $border-radius-xs;
+  background-color: $gray-100;
+  color: $error-color;
+  font-family: $font-family-mono;
+  font-size: 0.875em;
+}verflow-x: auto;
+  padding: {
+  overflow-x: auto;
+  padding: $spacing-md;
+  border: 1px solid $gray-200;
+  border-radius: $border-radius-sm;
+  background-color: $gray-50;
+  color: $text-primary-color;
+  font-family: $font-family-mono;
+  font-size: $font-size-body-medium;
+  line-height: $line-height-relaxed;
+  tab-size: 2;
+}=================================================
+// 閾炬帴样式
+// =============================================================================
+
+/// 基础閾炬帴样式
+.link {
+  border-bottom: 1px solid transparent;
+  transition: all 0.2s ease-in-out;
+  text-decoration: none;
+  color: $link-color;
+  
+  &:hover {
+    border-bottom-color: $link-hover-color;
+    color: $link-hover-color;
+  }
+  
+  &:focus {
+    outline: 2px solid $focus-color;
+    outline-offset: 2px;
+  }
+  
+  &:active {
+    color: $primary-color-dark;
+  }
+  
+  // 閾炬帴变体
+  &--primary {
+    color: $primary-color;
+    
+    &:hover {
+      color: $primary-color-dark;
+    }
+  }
+  
+  &--secondary {
+    color: $secondary-color;
+    
+    &:hover {
+      color: $secondary-color-dark;
+    }
+  }
+  
+  &--success {
+    color: $success-color;
+    
+    &:hover {
+      color: darken($success-color, 10%);
+    }
+  }
+  
+  &--warning {
+    color: $warning-color;
+    
+    &:hover {
+      color: darken($warning-color, 10%);
+    }
+  }
+  
+  &--error {
+    color: $error-color;
+    
+    &:hover {
+      color: darken($error-color, 10%);
+    }
+  }
+}
+
+// =============================================================================
+// 鍒楄〃样式
+// =============================================================================
+
+/// 鏃犲簭鍒楄〃
+.list-unordered {
+  
+  li {
+    position: relative;
+    
+    &::before {
+      position: absolu{
+  position: absolute;
+  
+  li {
+    position: relative;
+    
+    &::before {
+      position: absolute;
+   {
+  position: absolute;
+}sm;
+  }{
+}===========================================================================
+// 响应式忔枃鏈伐鍏风被
+// =============================================================================
+
+/// 响应式忔枃鏈ぇ灏?
+.text {
+  &--responsive {
+    // 移动端娇鐢ㄨ緝灏忓瓧浣?
+    @media (max-width: $breakpoint-mobile-max) {
+    counter-increment: list-counter;
+    
+    &::before {
+      content: counter(list-counter) ".";
+      position: absolute;
+   {
+  position: absolute;
+  left: 0;
+  color: $primary-color;
+  font-weight: bold;
+  content: counter(list-counter) ".";
+}sm;
+    font-weight: $font-weight-bold;
+    color: $text-primary-color;
+  }{
+  margin-top: $spacing-sm;
+  color: $text-primary-color;
+  font-weight: $font-weight-bold;
+}===========================================================================
+// 响应式忔枃鏈伐鍏风被
+// =============================================================================
+
+/// 响应式忔枃鏈ぇ灏?
+.text {
+  &--responsive {
+    // 移动端娇鐢ㄨ緝灏忓瓧浣?
+    @media (max-width: $breakpoint-mobile-max) {
+      font-size: 0.875em;
+    }
+    
+    @media (min-width: $breakpoint-desktop-min) {
+      font-size: 1.125em;
+    }
+  }
+  
+  // 鏂囨湰对齐
+  &--left { text-align: left; }
+  &--center { text-align: center; }
+  &--right { text-align: right; }
+  &--justify { text-align: justify; }
+  
+  // 鏂囨湰鍙樻崲
+  &--uppercase { text-transform: uppercase; }
+  &--lowercase { text-transform: lowercase; }
+  &--capitalize { text-transform: capitalize; }
+  
+  // 鏂囨湰瑁呴グ
+  &--no-underline {
+    text-decoration: none;
+  }
+  
+  // 鏂囨湰婧㈠嚭澶勭悊
+  &--truncate {
+    overflow: hidden;
+    white-space: nowrap;
+    text-overflow: ellipsis;
+  }
+  
+  &--wrap {
+    word-break: break-word;
+    overflow-wrap: break-word;
+  }
+  
+  &--nowrap {
+    white-space: nowrap;
+  }
+}
+
+// =============================================================================
+// 鏂囨湰颜色工具绫?
+// =============================================================================
+
+/// 鏂囨湰颜色变体
+.text-color {
+  &--primary { color: $text-primary-color; }
+  &--secondary { color: $text-secondary-color; }
+  &--disabled { color: $text-disabled-color; }
+  &--white { color: $text-white-color; }
+  &--black { color: $black-color; }
+  
+  // 鐘舵€侀鑹?
+  &--success { color: $success-color; }
+  &--warning { color: $warning-color; }
+  &--error { color: $error-color; }
+  &--info { color: $info-color; }
+  
+  // 鍝佺墝颜色
+  &--brand { color: $brand-color; }
+  &--primary-brand { color: $primary-color; }
+  &--secondary-brand { color: $secondary-color; }
+  
+  // 鐏板害颜色
+  @for $i from 50 through 900 {
+    @if $i % 100 == 0 {
+      &--gray-#{$i} { color: get-gray-color($i); }
+    }
+  }
+}
+
+// =============================================================================
+// 琛岄珮工具绫?
+// =============================================================================
+
+/// 琛岄珮变体
+.line-height {
+  &--tight { line-height: $line-height-tight; }     // 1.2
+  &--snug { line-height: $line-height-snug; }       // 1.375
+  &--normal { line-height: $line-height-normal; }   // 1.5
+  &--relaxed { line-height: $line-height-relaxed; } // 1.625
+  &--loose { line-height: $line-height-loose; }     // 2
+}
+
+// =============================================================================
+// 字重工具绫?
+// =============================================================================
+
+/// 字重变体
+.font-weight {
+  &--thin { font-weight: $font-weight-thin; }         // 100
+  &--extra-light { font-weight: $font-weight-extra-light; } // 200
+  &--light { font-weight: $font-weight-light; }       // 300
+  &--regular { font-weight: $font-weight-regular; }   // 400
+  &--medium { font-weight: $font-weight-medium; }     // 500
+  &--semi-bold { font-weight: $font-weight-semi-bold; } // 600
+  &--bold { font-weight: $font-weight-bold; }         // 700
+  &--extra-bold { font-weight: $font-weight-extra-bold; } // 800
+  &--black { font-weight: $font-weight-black; }       // 900
+}
+
+// =============================================================================
+// 字体鏃忓伐鍏风被
+// =============================================================================
+
+/// 字体鏃忓彉浣?
+.font-family {
+  &--sans { font-family: $font-family-sans; }
+  &--serif { font-family: $font-family-serif; }
+  &--mono { font-family: $font-family-mono; }
+  &--system { font-family: $font-family-system; }
+}

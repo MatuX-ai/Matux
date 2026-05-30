@@ -1,0 +1,159 @@
+<h2 mat-dialog-title>
+  <mat-icon>person</mat-icon>
+  孩子详情
+</h2>
+
+<mat-dialog-content>
+  <div *ngIf="isLoading" class="loading-container">
+    <mat-spinner diameter="30"></mat-spinner>
+    <p>加载中...</p>
+  </div>
+
+  <div *ngIf="!isLoading" class="dialog-content">
+    <!-- 头部信息 -->
+    <div class="child-header">
+      <div class="avatar-section">
+        <img [src]="child.avatarUrl || '/assets/images/default-avatar.png'" [alt]="child.nickname">
+      </div>
+      <div class="info-section">
+        <h3 class="name">{{ child.nickname }}</h3>
+        <p class="grade">{{ child.grade || '年级未知' }}</p>
+        <div class="tags" *ngIf="child.tags && child.tags.length > 0">
+          <mat-chip-listbox>
+            <mat-chip-option *ngFor="let tag of child.tags" [selected]="true">
+              {{ tag }}
+            </mat-chip-option>
+          </mat-chip-listbox>
+        </div>
+      </div>
+    </div>
+
+    <mat-divider></mat-divider>
+
+    <!-- 详细信息标签页 -->
+    <mat-tab-group [(selectedIndex)]="selectedTab" class="detail-tabs">
+      <!-- 基本信息 -->
+      <mat-tab label="基本信息">
+        <div class="tab-content basic-info">
+          <div class="info-item" *ngIf="child.realName">
+            <mat-icon>badge</mat-icon>
+            <div class="info-content">
+              <span class="label">真实姓名</span>
+              <span class="value">{{ child.realName }}</span>
+            </div>
+          </div>
+          <div class="info-item" *ngIf="child.school">
+            <mat-icon>school</mat-icon>
+            <div class="info-content">
+              <span class="label">学校</span>
+              <span class="value">{{ child.school }}</span>
+            </div>
+          </div>
+          <div class="info-item" *ngIf="child.phoneNumber">
+            <mat-icon>phone</mat-icon>
+            <div class="info-content">
+              <span class="label">联系电话</span>
+              <span class="value">{{ child.phoneNumber }}</span>
+            </div>
+          </div>
+          <div class="info-item" *ngIf="child.email">
+            <mat-icon>email</mat-icon>
+            <div class="info-content">
+              <span class="label">邮箱</span>
+              <span class="value">{{ child.email }}</span>
+            </div>
+          </div>
+          <div class="info-item" *ngIf="child.bindTime">
+            <mat-icon>link</mat-icon>
+            <div class="info-content">
+              <span class="label">绑定时间</span>
+              <span class="value">{{ child.bindTime | date:'yyyy-MM-dd HH:mm' }}</span>
+            </div>
+          </div>
+          <div class="info-item" *ngIf="child.lastActiveTime">
+            <mat-icon>access_time</mat-icon>
+            <div class="info-content">
+              <span class="label">最近活跃</span>
+              <span class="value">{{ child.lastActiveTime | date:'yyyy-MM-dd HH:mm' }}</span>
+            </div>
+          </div>
+        </div>
+      </mat-tab>
+
+      <!-- 学习统计 -->
+      <mat-tab label="学习统计">
+        <div class="tab-content learning-stats">
+          <div class="stats-grid">
+            <mat-card class="stat-card" *ngIf="child.totalStudyTime">
+              <mat-icon>schedule</mat-icon>
+              <div class="stat-content">
+                <span class="stat-value">{{ child.totalStudyTime }}</span>
+                <span class="stat-label">总学习时长</span>
+              </div>
+            </mat-card>
+            <mat-card class="stat-card" *ngIf="child.completedCourses">
+              <mat-icon>check_circle</mat-icon>
+              <div class="stat-content">
+                <span class="stat-value">{{ child.completedCourses }}</span>
+                <span class="stat-label">完成课程</span>
+              </div>
+            </mat-card>
+            <mat-card class="stat-card" *ngIf="child.averageScore">
+              <mat-icon>grade</mat-icon>
+              <div class="stat-content">
+                <span class="stat-value">{{ child.averageScore }}</span>
+                <span class="stat-label">平均分数</span>
+              </div>
+            </mat-card>
+            <mat-card class="stat-card" *ngIf="child.learningStreak">
+              <mat-icon>local_fire_department</mat-icon>
+              <div class="stat-content">
+                <span class="stat-value">{{ child.learningStreak }}</span>
+                <span class="stat-label">连续学习天数</span>
+              </div>
+            </mat-card>
+          </div>
+
+          <div class="no-data" *ngIf="!child.totalStudyTime && !child.completedCourses && !child.averageScore">
+            <mat-icon>bar_chart</mat-icon>
+            <p>暂无学习数据</p>
+          </div>
+        </div>
+      </mat-tab>
+
+      <!-- 学习来源 -->
+      <mat-tab label="学习来源">
+        <div class="tab-content learning-sources">
+          <div class="source-item" *ngIf="child.learningSources && child.learningSources.length > 0">
+            <div class="source-header">
+              <mat-icon class="source-icon">location_city</mat-icon>
+              <span class="source-name">{{ child.learningSources[0].name }}</span>
+              <mat-chip-option [color]="'primary'" [selected]="true">
+                {{ child.learningSources[0].type }}
+              </mat-chip-option>
+            </div>
+            <div class="source-progress">
+              <div class="progress-bar">
+                <div class="progress-fill" [style.width.%]="child.learningSources[0].progress"></div>
+              </div>
+              <span class="progress-text">{{ child.learningSources[0].progress }}% 完成</span>
+            </div>
+          </div>
+
+          <div class="no-data" *ngIf="!child.learningSources || child.learningSources.length === 0">
+            <mat-icon>school</mat-icon>
+            <p>暂无学习来源</p>
+          </div>
+        </div>
+      </mat-tab>
+    </mat-tab-group>
+  </div>
+</mat-dialog-content>
+
+<mat-dialog-actions align="end">
+  <button mat-button (click)="close()">关闭</button>
+  <button mat-raised-button color="primary" (click)="viewLearningReports()">
+    <mat-icon>trending_up</mat-icon>
+    查看学习报告
+  </button>
+</mat-dialog-actions>

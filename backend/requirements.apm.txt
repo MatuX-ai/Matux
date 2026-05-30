@@ -1,0 +1,8 @@
+# APM监控依赖
+apache-skywalking-apm-toolkit==0.1.0
+opentelemetry-instrumentation-fastapi==0.42b0
+opentelemetry-instrumentation-sqlalchemy==0.42b0
+opentelemetry-instrumentation-redis==0.42b0
+opentelemetry-instrumentation-httpx==0.42b0
+opentelemetry-exporter-prometheus==0.42b0
+prometheus-client==0.17.1

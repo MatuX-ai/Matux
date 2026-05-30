@@ -1,4 +1,4 @@
-# iMatu 平台网站地图
+# MatuX 平台网站地图
 
 ## 🌐 前端页面结构
 
@@ -6,19 +6,60 @@
 
 ```
 /
-├── /dashboard              # 仪表板首页
+├── /auth                   # 认证相关页面
+│   ├── /auth/login         # 登录页
+│   ├── /auth/register      # 注册页
+│   └── /auth/forgot-password # 忘记密码
+├── /dashboard              # 仪表板首页 (根据用户角色动态展示)
 │   └── SimpleDashboardModule
-├── /admin                  # 管理后台
+├── /admin                  # 管理后台 (系统管理员)
 │   ├── /admin/dashboard    # 管理仪表板
 │   ├── /admin/users        # 用户管理
 │   ├── /admin/organizations # 组织管理
 │   ├── /admin/licenses     # 许可证管理
 │   ├── /admin/payments     # 支付管理
 │   └── /admin/auth         # 认证管理
-└── /auth                   # 认证相关页面
-    ├── /auth/login         # 登录页
-    ├── /auth/register      # 注册页
-    └── /auth/forgot-password # 忘记密码
+├── /teacher                # 教师角色Dashboard (新增: 2026-03-21)
+│   ├── /teacher/dashboard  # 教师仪表板
+│   │   ├── teaching-progress # 跨机构教学进度
+│   │   ├── student-overview # 学生学情总览
+│   │   └── resource-manager # 教学资源管理
+│   └── /teacher/courses    # 教师课程管理
+│       ├── /teacher/courses/my-courses # 我的课程
+│       └── /teacher/courses/assignments # 作业管理
+├── /org-admin              # 机构管理员Dashboard (新增: 2026-03-20)
+│   ├── /org-admin/dashboard # 机构仪表板
+│   │   ├── org-overview     # 机构概览
+│   │   ├── course-operation # 课程运营统计
+│   │   ├── teacher-management # 教师管理
+│   │   └── student-management # 学员管理
+│   └── /org-admin/courses   # 机构课程库
+│       ├── /org-admin/courses/all # 所有课程
+│       └── /org-admin/courses/enrollment # 报名统计
+├── /school-admin           # 学校管理员Dashboard (新增: 2026-03-21)
+│   ├── /school-admin/dashboard # 学校仪表板
+│   │   ├── grade-class-management # 年级班级管理
+│   │   ├── school-curriculum # 校本课程管理
+│   │   ├── teacher-workload  # 教师工作量统计
+│   │   └── student-growth    # 学生成长档案
+│   └── /school-admin/reports # 学校报表
+│       ├── /school-admin/reports/attendance # 出勤统计
+│       └── /school-admin/reports/achievements # 成绩报告
+├── /education-bureau       # 教育局Dashboard (新增: 2026-03-21)
+│   ├── /education-bureau/dashboard # 教育局仪表板
+│   │   ├── regional-overview # 区域数据概览
+│   │   ├── school-comparison # 学校对比分析
+│   │   ├── quality-monitoring # 教学质量监控
+│   │   └── resource-suggestions # AI资源调配建议
+│   └── /education-bureau/reports # 区域报表
+│       ├── /education-bureau/reports/export # 数据导出
+│       └── /education-bureau/reports/trends # 趋势分析
+└── /courses                # 统一课程库 (新增: 2026-03-21)
+    ├── /courses/library    # 课程库浏览
+    ├── /courses/detail/{id} # 课程详情
+    ├── /courses/create     # 创建课程
+    ├── /courses/edit/{id}  # 编辑课程
+    └── /courses/enrollment # 课程报名管理
 ```
 
 ### 独立演示页面 (docs/)
@@ -140,6 +181,73 @@ POST   /educational-institutions # 创建机构
 GET    /educational-institutions/{id} # 机构详情
 PUT    /educational-institutions/{id} # 更新机构
 DELETE /educational-institutions/{id} # 删除机构
+```
+
+### 多角色Dashboard API (新增: 2026-03-22)
+
+#### 教师Dashboard API (/api/v1/teacher)
+```
+GET    /teacher/dashboard              # 教师仪表板数据
+GET    /teacher/students-progress      # 学生学情总览
+GET    /teacher/cross-institution-progress # 跨机构教学进度
+POST   /teacher/resources/upload       # 教学资源上传
+GET    /teacher/assignments            # 作业列表
+POST   /teacher/assignments            # 创建作业
+PUT    /teacher/assignments/{id}       # 批改作业
+```
+
+#### 机构管理员Dashboard API (/api/v1/org-admin)
+```
+GET    /org-admin/dashboard/{org_id}   # 机构仪表板数据
+GET    /org-admin/overview/{org_id}    # 机构概览统计
+GET    /org-admin/courses/{org_id}     # 机构课程运营统计
+GET    /org-admin/teachers/{org_id}    # 机构教师管理
+GET    /org-admin/students/{org_id}    # 机构学员管理
+POST   /org-admin/courses              # 创建机构课程
+PUT    /org-admin/courses/{course_id}  # 更新机构课程
+DELETE /org-admin/courses/{course_id}  # 删除机构课程
+```
+
+#### 学校管理员Dashboard API (/api/v1/school-admin)
+```
+GET    /school-admin/dashboard/{school_id} # 学校仪表板数据
+GET    /school-admin/grade-classes/{school_id} # 年级班级管理
+GET    /school-admin/curriculum/{school_id} # 校本课程管理
+GET    /school-admin/teacher-workload/{school_id} # 教师工作量统计
+GET    /school-admin/student-growth/{school_id} # 学生成长档案
+POST   /school-admin/grade-classes      # 创建年级班级
+PUT    /school-admin/grade-classes/{class_id} # 更新班级信息
+POST   /school-admin/courses            # 创建校本课程
+```
+
+#### 教育局Dashboard API (/api/v1/education-bureau)
+```
+GET    /education-bureau/dashboard/{region_id} # 教育局仪表板数据
+GET    /education-bureau/regional-overview/{region_id} # 区域数据概览
+GET    /education-bureau/school-comparison/{region_id} # 学校对比分析
+GET    /education-bureau/quality-metrics/{region_id} # 教学质量监控
+GET    /education-bureau/score-distributions/{region_id} # 成绩分布统计
+POST   /education-bureau/resource-recommendations # AI资源调配建议
+GET    /education-bureau/reports/export/{format} # 数据导出(Excel/PDF/CSV)
+```
+
+#### 统一课程库API (/api/v1/courses) (新增: 2026-03-21)
+```
+GET    /courses                        # 课程列表(支持多场景筛选)
+POST   /courses                        # 创建课程
+GET    /courses/{course_id}            # 课程详情
+PUT    /courses/{course_id}            # 更新课程
+DELETE /courses/{course_id}            # 删除课程
+GET    /courses/{course_id}/chapters   # 课程章节列表
+POST   /courses/{course_id}/chapters   # 添加章节
+GET    /courses/{course_id}/lessons    # 课程课时列表
+POST   /courses/{course_id}/lessons    # 添加课时
+POST   /courses/enrollment             # 课程报名
+GET    /courses/{course_id}/enrollment # 课程报名统计
+POST   /courses/{course_id}/progress   # 更新学习进度
+GET    /courses/{course_id}/progress   # 学习进度统计
+GET    /courses/search                 # 课程搜索(支持多条件)
+GET    /courses/statistics             # 课程统计分析
 ```
 
 ## 📊 系统监控端点

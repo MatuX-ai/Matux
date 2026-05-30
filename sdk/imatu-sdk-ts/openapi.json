@@ -1,0 +1,66 @@
+{
+  "openapi": "3.1.0",
+  "info": {
+    "title": "iMatu API",
+    "version": "1.0.0",
+    "description": "## iMatu 教育平台API\n                \n完整的 API 文档，包含所有后端服务的接口定义。\n\n### 主要功能模块\n- **认证授权**: 用户登录、注册、OAuth2 认证\n- **AI 服务**: 代码生成、创意引擎、学习行为分析\n- **课程管理**: 课程创建、版本控制、协作编辑\n- **硬件集成**: 设备认证、传感器数据、AR/VR\n- **支付订阅**: 积分系统、订阅管理、区块链网关\n\n### 认证方式\n使用 JWT Bearer Token:\n```\nAuthorization: Bearer <your_access_token>\n```\n                ",
+    "contact": {
+      "name": "iMatuProject Team",
+      "email": "support@imatuproject.com",
+      "url": "https://imatuproject.com"
+    },
+    "license": {
+      "name": "MIT",
+      "url": "https://opensource.org/licenses/MIT"
+    }
+  },
+  "paths": {},
+  "servers": [
+    {
+      "url": "http://localhost:8000",
+      "description": "开发环境"
+    },
+    {
+      "url": "https://test-api.imatuproject.com",
+      "description": "测试环境"
+    },
+    {
+      "url": "https://api.imatuproject.com",
+      "description": "生产环境"
+    }
+  ],
+  "tags": [
+    {
+      "name": "认证",
+      "description": "用户认证和授权相关接口"
+    },
+    {
+      "name": "AI 服务",
+      "description": "AI 代码生成和智能服务接口"
+    },
+    {
+      "name": "用户管理",
+      "description": "用户相关操作接口"
+    },
+    {
+      "name": "课程管理",
+      "description": "课程相关操作接口"
+    },
+    {
+      "name": "硬件认证",
+      "description": "硬件设备认证和管理"
+    },
+    {
+      "name": "许可证管理",
+      "description": "许可证生成和验证"
+    },
+    {
+      "name": "推荐系统",
+      "description": "个性化推荐服务"
+    },
+    {
+      "name": "支付系统",
+      "description": "支付和订阅管理"
+    }
+  ]
+}

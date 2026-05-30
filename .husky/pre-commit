@@ -1,0 +1,16 @@
+#!/bin/sh
+. "$(dirname "$0")/_/husky.sh"
+
+# pre-commit hook - 在提交前自动格式化代码
+echo "🔍 运行代码质量检查..."
+
+# 运行lint-staged进行增量检查
+npx lint-staged
+
+# 如果lint-staged失败，则阻止提交
+if [ $? -ne 0 ]; then
+    echo "❌ 代码质量检查失败，请修复后再提交"
+    exit 1
+fi
+
+echo "✅ 代码质量检查通过"

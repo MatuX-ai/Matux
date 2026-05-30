@@ -1,0 +1,163 @@
+# iMato Cloud - Kubernetes Service 配置
+
+---
+# Backend 服务（ClusterIP - 内部访问）
+apiVersion: v1
+kind: Service
+metadata:
+  name: imato-backend
+  namespace: imato-cloud
+  labels:
+    app: imato-backend
+  annotations:
+    prometheus.io/scrape: "true"
+    prometheus.io/port: "8000"
+spec:
+  type: ClusterIP
+  selector:
+    app: imato-backend
+  ports:
+    - name: http
+      port: 8000
+      targetPort: 8000
+      protocol: TCP
+  sessionAffinity: ClientIP  # 会话保持
+  sessionAffinityConfig:
+    clientIP:
+      timeoutSeconds: 10800  # 3 小时会话保持
+
+---
+# Frontend 服务（ClusterIP - 通过 Ingress 暴露）
+apiVersion: v1
+kind: Service
+metadata:
+  name: imato-frontend
+  namespace: imato-cloud
+  labels:
+    app: imato-frontend
+spec:
+  type: ClusterIP
+  selector:
+    app: imato-frontend
+  ports:
+    - name: http
+      port: 80
+      targetPort: 80
+      protocol: TCP
+
+---
+# PostgreSQL 数据库服务（ClusterIP - 内网访问）
+apiVersion: v1
+kind: Service
+metadata:
+  name: imato-postgres
+  namespace: imato-cloud
+  labels:
+    app: postgres
+spec:
+  type: ClusterIP
+  selector:
+    app: postgres
+  ports:
+    - name: postgres
+      port: 5432
+      targetPort: 5432
+      protocol: TCP
+  clusterIP: None  # Headless Service（用于 StatefulSet）
+
+---
+# Redis 缓存服务（ClusterIP - 内网访问）
+apiVersion: v1
+kind: Service
+metadata:
+  name: imato-redis
+  namespace: imato-cloud
+  labels:
+    app: redis
+spec:
+  type: ClusterIP
+  selector:
+    app: redis
+  ports:
+    - name: redis
+      port: 6379
+      targetPort: 6379
+      protocol: TCP
+
+---
+# Nginx Ingress 服务（LoadBalancer - 对外暴露）
+apiVersion: v1
+kind: Service
+metadata:
+  name: imato-ingress-nginx
+  namespace: imato-cloud
+  labels:
+    app.kubernetes.io/component: controller
+  annotations:
+    service.beta.kubernetes.io/aws-load-balancer-type: "nlb"  # AWS NLB
+    # service.beta.kubernetes.io/azure-load-balancer-internal: "false"  # Azure 公网 LB
+    # service.beta.kubernetes.io/gcp-load-balancer-type: "HTTP"  # GCP HTTP LB
+spec:
+  type: LoadBalancer
+  selector:
+    app.kubernetes.io/component: controller
+  ports:
+    - name: http
+      port: 80
+      targetPort: 80
+      protocol: TCP
+    - name: https
+      port: 443
+      targetPort: 443
+      protocol: TCP
+  externalTrafficPolicy: Local  # 保留客户端 IP
+  loadBalancerSourceRanges: []  # 限制源 IP 范围（可选）
+
+---
+# Prometheus Service（ClusterIP）
+apiVersion: v1
+kind: Service
+metadata:
+  name: imato-prometheus
+  namespace: imato-cloud
+  labels:
+    app: prometheus
+spec:
+  type: ClusterIP
+  selector:
+    app: prometheus
+  ports:
+    - name: http
+      port: 9090
+      targetPort: 9090
+      protocol: TCP
+
+---
+# Grafana Service（ClusterIP）
+apiVersion: v1
+kind: Service
+metadata:
+  name: imato-grafana
+  namespace: imato-cloud
+  labels:
+    app: grafana
+spec:
+  type: ClusterIP
+  selector:
+    app: grafana
+  ports:
+    - name: http
+      port: 3000
+      targetPort: 3000
+      protocol: TCP
+
+---
+# ExternalName Service（如果需要连接外部数据库）
+# apiVersion: v1
+# kind: Service
+# metadata:
+#   name: external-postgres
+#   namespace: imato-cloud
+# spec:
+#   type: ExternalName
+#   externalName: rds.amazonaws.com  # 外部数据库地址

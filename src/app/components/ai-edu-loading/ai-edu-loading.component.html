@@ -1,0 +1,49 @@
+<!-- 全屏加载遮罩 -->
+<div class="loading-overlay" *ngIf="overlay" [class.transparent]="transparent">
+  <div class="loading-content">
+    <!-- 旋转加载器 -->
+    <div class="spinner-container" *ngIf="type === 'spinner'">
+      <div class="spinner"></div>
+    </div>
+
+    <!-- 脉冲加载器 -->
+    <div class="pulse-container" *ngIf="type === 'pulse'">
+      <div class="pulse"></div>
+    </div>
+
+    <!-- 骨架屏 -->
+    <div class="skeleton-container" *ngIf="type === 'skeleton'">
+      <div
+        class="skeleton-line"
+        *ngFor="let line of skeletonLines; trackBy: trackByIndex"
+      ></div>
+    </div>
+
+    <!-- 进度条 -->
+    <div class="progress-container" *ngIf="type === 'progress' && progress !== null">
+      <div class="progress-bar">
+        <div class="progress-fill" [style.width.%]="progress"></div>
+      </div>
+      <div class="progress-text">{{ progress }}%</div>
+    </div>
+
+    <!-- 自定义内容 -->
+    <ng-content></ng-content>
+
+    <!-- 加载文本 -->
+    <p class="loading-text" *ngIf="message">{{ message }}</p>
+
+    <!-- 子文本 -->
+    <p class="loading-subtext" *ngIf="subMessage">{{ subMessage }}</p>
+  </div>
+</div>
+
+<!-- 内联加载 (非遮罩) -->
+<div class="loading-inline" *ngIf="!overlay">
+  <div class="spinner spinner-sm" *ngIf="type === 'spinner'"></div>
+  <div class="pulse pulse-sm" *ngIf="type === 'pulse'"></div>
+  <div class="skeleton-container" *ngIf="type === 'skeleton'">
+    <div class="skeleton-line" *ngFor="let line of skeletonLines; trackBy: trackByIndex"></div>
+  </div>
+  <span class="loading-text" *ngIf="message">{{ message }}</span>
+</div>

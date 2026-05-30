@@ -1,0 +1,223 @@
+<div class="module-list-container">
+  <!-- 页面标题 -->
+  <div class="page-header">
+    <div class="header-content">
+      <h2>
+        <mat-icon>list</mat-icon>
+        数据模块管理
+      </h2>
+      <p class="subtitle">管理所有已注册的数据库模块</p>
+    </div>
+    <div class="header-actions">
+      <button mat-icon-button (click)="refreshModules()" matTooltip="刷新列表" [disabled]="loading">
+        <mat-icon>{{ loading ? 'sync' : 'refresh' }}</mat-icon>
+      </button>
+      <button mat-raised-button color="primary" (click)="clearFilters()" [disabled]="loading">
+        <mat-icon>clear_all</mat-icon>
+        清除筛选
+      </button>
+    </div>
+  </div>
+
+  <!-- 筛选栏 -->
+  <mat-card class="filters-card">
+    <mat-card-content>
+      <form [formGroup]="filterForm" class="filters-form">
+        <div class="filters-row">
+          <mat-form-field appearance="outline" class="search-field">
+            <mat-label>搜索模块</mat-label>
+            <input 
+              matInput 
+              formControlName="search" 
+              placeholder="输入模块名称、表名或描述..."
+              autocomplete="off">
+            <mat-icon matSuffix>search</mat-icon>
+          </mat-form-field>
+
+          <mat-form-field appearance="outline">
+            <mat-label>分类</mat-label>
+            <mat-select formControlName="category">
+              <mat-option value="all">所有分类</mat-option>
+              <mat-option *ngFor="let category of categories" [value]="category">
+                {{ category | titlecase }}
+              </mat-option>
+            </mat-select>
+          </mat-form-field>
+
+          <mat-form-field appearance="outline">
+            <mat-label>状态</mat-label>
+            <mat-select formControlName="status">
+              <mat-option value="all">所有状态</mat-option>
+              <mat-option value="active">活跃</mat-option>
+              <mat-option value="inactive">停用</mat-option>
+            </mat-select>
+          </mat-form-field>
+        </div>
+      </form>
+    </mat-card-content>
+  </mat-card>
+
+  <!-- 加载状态 -->
+  <div *ngIf="loading && dataSource.data.length === 0" class="loading-container">
+    <mat-progress-bar mode="indeterminate"></mat-progress-bar>
+    <p>正在加载模块列表...</p>
+  </div>
+
+  <!-- 错误状态 -->
+  <div *ngIf="error" class="error-container">
+    <mat-card class="error-card">
+      <mat-card-content>
+        <div class="error-content">
+          <mat-icon color="warn">error</mat-icon>
+          <div class="error-text">
+            <h3>加载失败</h3>
+            <p>{{ error }}</p>
+          </div>
+        </div>
+        <button mat-raised-button color="primary" (click)="refreshModules()">
+          <mat-icon>refresh</mat-icon>
+          重试
+        </button>
+      </mat-card-content>
+    </mat-card>
+  </div>
+
+  <!-- 模块列表 -->
+  <div *ngIf="!loading || dataSource.data.length > 0" class="table-container">
+    <!-- 结果统计 -->
+    <div class="results-info" *ngIf="!loading">
+      <span class="results-count">
+        显示 {{ dataSource.filteredData.length }} 个模块（共 {{ dataSource.data.length }} 个）
+      </span>
+    </div>
+
+    <!-- 数据表格 -->
+    <mat-card>
+      <div class="table-wrapper">
+        <table mat-table [dataSource]="dataSource" matSort>
+          <!-- 模块名称列 -->
+          <ng-container matColumnDef="name">
+            <th mat-header-cell *matHeaderCellDef mat-sort-header> 模块名称 </th>
+            <td mat-cell *matCellDef="let module">
+              <div class="module-name">
+                <strong>{{ module.name }}</strong>
+                <span class="module-class" *ngIf="module.class_name">
+                  {{ module.class_name }}
+                </span>
+              </div>
+            </td>
+          </ng-container>
+
+          <!-- 表名列 -->
+          <ng-container matColumnDef="table_name">
+            <th mat-header-cell *matHeaderCellDef mat-sort-header> 数据库表 </th>
+            <td mat-cell *matCellDef="let module">
+              <code class="table-name">{{ module.table_name }}</code>
+            </td>
+          </ng-container>
+
+          <!-- 分类列 -->
+          <ng-container matColumnDef="category">
+            <th mat-header-cell *matHeaderCellDef mat-sort-header> 分类 </th>
+            <td mat-cell *matCellDef="let module">
+              <mat-chip 
+                [class]="'category-' + getCategoryColor(module.category)"
+                selected="true"
+                matTooltip="分类: {{ module.category }}">
+                {{ module.category | titlecase }}
+              </mat-chip>
+            </td>
+          </ng-container>
+
+          <!-- 版本列 -->
+          <ng-container matColumnDef="version">
+            <th mat-header-cell *matHeaderCellDef mat-sort-header> 版本 </th>
+            <td mat-cell *matCellDef="let module">
+              <span class="version-badge">{{ module.version }}</span>
+            </td>
+          </ng-container>
+
+          <!-- 状态列 -->
+          <ng-container matColumnDef="status">
+            <th mat-header-cell *matHeaderCellDef mat-sort-header> 状态 </th>
+            <td mat-cell *matCellDef="let module">
+              <div class="status-cell">
+                <mat-chip 
+                  [color]="getStatusColor(module.is_active)" 
+                  selected="true"
+                  class="status-chip">
+                  <mat-icon>{{ module.is_active ? 'check_circle' : 'cancel' }}</mat-icon>
+                  {{ getStatusText(module.is_active) }}
+                </mat-chip>
+                <span class="instance-status" *ngIf="module.has_instance">
+                  <mat-icon matTooltip="实例已创建" class="tiny-icon">widgets</mat-icon>
+                </span>
+                <span class="init-status" *ngIf="module.is_initialized">
+                  <mat-icon matTooltip="已初始化" class="tiny-icon">play_arrow</mat-icon>
+                </span>
+              </div>
+            </td>
+          </ng-container>
+
+          <!-- 操作列 -->
+          <ng-container matColumnDef="actions">
+            <th mat-header-cell *matHeaderCellDef> 操作 </th>
+            <td mat-cell *matCellDef="let module">
+              <div class="action-buttons">
+                <button 
+                  mat-icon-button 
+                  matTooltip="查看详情"
+                  (click)="viewModuleDetails(module)">
+                  <mat-icon>visibility</mat-icon>
+                </button>
+                
+                <button 
+                  mat-icon-button 
+                  [color]="module.is_active ? 'warn' : 'primary'"
+                  [matTooltip]="module.is_active ? '停用模块' : '激活模块'"
+                  (click)="toggleModuleStatus(module)">
+                  <mat-icon>{{ module.is_active ? 'toggle_on' : 'toggle_off' }}</mat-icon>
+                </button>
+                
+                <button 
+                  mat-icon-button 
+                  matTooltip="更多操作"
+                  [matMenuTriggerFor]="actionMenu">
+                  <mat-icon>more_vert</mat-icon>
+                </button>
+                
+                <mat-menu #actionMenu="matMenu">
+                  <button mat-menu-item (click)="viewModuleDetails(module)">
+                    <mat-icon>info</mat-icon>
+                    <span>详细信息</span>
+                  </button>
+                  <button mat-menu-item (click)="toggleModuleStatus(module)">
+                    <mat-icon>{{ module.is_active ? 'visibility_off' : 'visibility' }}</mat-icon>
+                    <span>{{ module.is_active ? '停用' : '激活' }}</span>
+                  </button>
+                </mat-menu>
+              </div>
+            </td>
+          </ng-container>
+
+          <tr mat-header-row *matHeaderRowDef="displayedColumns"></tr>
+          <tr mat-row *matRowDef="let row; columns: displayedColumns;"></tr>
+        </table>
+      </div>
+
+      <!-- 空状态 -->
+      <div *ngIf="dataSource.filteredData.length === 0 && !loading" class="empty-state">
+        <mat-icon>inbox</mat-icon>
+        <h3>暂无数据</h3>
+        <p>没有找到符合条件的模块</p>
+      </div>
+    </mat-card>
+
+    <!-- 分页器 -->
+    <mat-paginator 
+      [pageSizeOptions]="[10, 25, 50, 100]" 
+      showFirstLastButtons
+      aria-label="选择页面大小">
+    </mat-paginator>
+  </div>
+</div>

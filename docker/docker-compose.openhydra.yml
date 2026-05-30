@@ -1,0 +1,109 @@
+version: '3.8'
+
+# OpenHydra + XEdu 集成测试环境
+# 用于阶段一的能力评估与试点
+
+services:
+  # OpenHydra 核心服务 (简化版用于测试)
+  openhydra-server:
+    image: openhydra/server:latest
+    container_name: openhydra-test
+    ports:
+      - "8080:8080"  # Web 控制台
+      - "8765:8765"  # API 网关
+    environment:
+      - OPENHYDRA_ADMIN_PASSWORD=admin123
+      - OPENHYDRA_JUPYTERHUB_URL=http://jupyterhub:8000
+      - OPENHYDRA_KUBECONFIG=/etc/kubernetes/config
+      - OPENHYDRA_GPU_ENABLED=false  # 测试环境暂不启用 GPU
+      - TZ=Asia/Shanghai
+    volumes:
+      - ./openhydra-data:/var/lib/openhydra
+      - ./configs/openhydra.conf:/etc/openhydra/config.conf
+    networks:
+      - openhydra-network
+    depends_on:
+      - postgres-openhydra
+      - jupyterhub
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8080/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+
+  # JupyterHub - 学生实训环境
+  jupyterhub:
+    image: jupyterhub/jupyterhub:latest
+    container_name: jupyterhub-test
+    ports:
+      - "8000:8000"
+    environment:
+      - JUPYTERHUB_AUTHENTICATOR=dummy
+      - JUPYTERHUB_SPAWNER=dockerspawner
+      - JUPYTERHUB_USER=xedudemo
+      - JUPYTERHUB_PASSWORD=demo123
+      - DOCKER_NETWORK_NAME=openhydra-network
+      - OPENHYDRA_INTEGRATION=true
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock
+      - ./jupyterhub_config.py:/srv/jupyterhub/jupyterhub_config.py
+    networks:
+      - openhydra-network
+    depends_on:
+      - postgres-openhydra
+    restart: unless-stopped
+
+  # XEdu Jupyter 镜像 - 预装 XEdu 工具链
+  xedu-notebook:
+    build:
+      context: ./docker/xedu-notebook
+      dockerfile: Dockerfile
+    image: xedu/notebook:latest
+    # 不直接启动，由 JupyterHub 动态生成用户容器
+    networks:
+      - openhydra-network
+
+  # PostgreSQL - OpenHydra 元数据存储
+  postgres-openhydra:
+    image: postgres:15-alpine
+    container_name: openhydra-db
+    environment:
+      - POSTGRES_DB=openhydra
+      - POSTGRES_USER=openhydra
+      - POSTGRES_PASSWORD=openhydra123
+    ports:
+      - "5433:5432"
+    volumes:
+      - openhydra_db_data:/var/lib/postgresql/data
+      - ./scripts/init_openhydra_db.sql:/docker-entrypoint-initdb.d/init.sql
+    networks:
+      - openhydra-network
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U openhydra"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  # Redis - 缓存和会话管理
+  redis-openhydra:
+    image: redis:7-alpine
+    container_name: openhydra-redis
+    ports:
+      - "6380:6379"
+    volumes:
+      - openhydra_redis_data:/data
+    networks:
+      - openhydra-network
+    restart: unless-stopped
+    command: redis-server --appendonly yes
+
+volumes:
+  openhydra-data:
+  openhydra_db_data:
+  openhydra_redis_data:
+
+networks:
+  openhydra-network:
+    driver: bridge

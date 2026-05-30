@@ -1,0 +1,396 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AI-Edu-for-Kids 前后端联调测试</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            padding: 20px;
+            min-height: 100vh;
+        }
+        
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+        
+        h1 {
+            color: white;
+            text-align: center;
+            margin-bottom: 30px;
+            font-size: 2.5em;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.3);
+        }
+        
+        .test-section {
+            background: white;
+            border-radius: 12px;
+            padding: 25px;
+            margin-bottom: 20px;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+        }
+        
+        .section-title {
+            color: #333;
+            font-size: 1.5em;
+            margin-bottom: 15px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        
+        .status {
+            display: inline-block;
+            padding: 5px 15px;
+            border-radius: 20px;
+            font-size: 0.9em;
+            font-weight: bold;
+        }
+        
+        .status.success {
+            background: #4caf50;
+            color: white;
+        }
+        
+        .status.error {
+            background: #f44336;
+            color: white;
+        }
+        
+        .status.loading {
+            background: #ff9800;
+            color: white;
+            animation: pulse 1s infinite;
+        }
+        
+        @keyframes pulse {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.6; }
+        }
+        
+        .data-display {
+            background: #f5f5f5;
+            border-radius: 8px;
+            padding: 15px;
+            margin-top: 15px;
+            font-family: 'Courier New', monospace;
+            font-size: 0.9em;
+            max-height: 400px;
+            overflow-y: auto;
+        }
+        
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 15px;
+            margin-top: 15px;
+        }
+        
+        .stat-card {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 20px;
+            border-radius: 8px;
+            text-align: center;
+        }
+        
+        .stat-value {
+            font-size: 2em;
+            font-weight: bold;
+            margin-bottom: 5px;
+        }
+        
+        .stat-label {
+            font-size: 0.9em;
+            opacity: 0.9;
+        }
+        
+        button {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            padding: 12px 25px;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 1em;
+            transition: transform 0.2s;
+            margin: 5px;
+        }
+        
+        button:hover {
+            transform: translateY(-2px);
+        }
+        
+        button:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+        
+        .error-message {
+            background: #ffebee;
+            color: #c62828;
+            padding: 15px;
+            border-radius: 6px;
+            margin-top: 10px;
+            border-left: 4px solid #c62828;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🎓 AI-Edu-for-Kids 前后端联调测试</h1>
+        
+        <!-- 服务健康检查 -->
+        <div class="test-section">
+            <div class="section-title">
+                🔍 后端服务状态
+                <span id="health-status" class="status loading">检测中...</span>
+            </div>
+            <button onclick="checkHealth()">重新检测</button>
+            <div id="health-result" class="data-display" style="display: none;"></div>
+        </div>
+        
+        <!-- 课程模块测试 -->
+        <div class="test-section">
+            <div class="section-title">
+                📚 课程模块 API
+                <span id="modules-status" class="status">等待测试</span>
+            </div>
+            <button onclick="loadModules()">加载课程模块</button>
+            <div id="modules-result" class="data-display" style="display: none;"></div>
+        </div>
+        
+        <!-- 课时列表测试 -->
+        <div class="test-section">
+            <div class="section-title">
+                📖 课时列表 API
+                <span id="lessons-status" class="status">等待测试</span>
+            </div>
+            <div id="module-selector" style="margin: 10px 0;"></div>
+            <button onclick="loadLessons()" id="btn-lessons" disabled>加载课时列表</button>
+            <div id="lessons-result" class="data-display" style="display: none;"></div>
+        </div>
+        
+        <!-- 学习统计测试 -->
+        <div class="test-section">
+            <div class="section-title">
+                📊 学习统计 API
+                <span id="stats-status" class="status">等待测试</span>
+            </div>
+            <button onclick="loadStatistics()">加载统计数据</button>
+            <div id="stats-result" class="data-display" style="display: none;"></div>
+            <div id="stats-cards" class="stats-grid" style="display: none;"></div>
+        </div>
+        
+        <!-- 学习进度测试 -->
+        <div class="test-section">
+            <div class="section-title">
+                ⏳ 学习进度 API
+                <span id="progress-status" class="status">等待测试</span>
+            </div>
+            <button onclick="updateProgress()">更新学习进度</button>
+            <button onclick="getProgress()">查询进度</button>
+            <div id="progress-result" class="data-display" style="display: none;"></div>
+        </div>
+    </div>
+
+    <script>
+        const API_BASE = 'http://localhost:8000/api/v1/org/1/ai-edu';
+        let selectedModuleId = null;
+
+        // 工具函数
+        function showResult(elementId, data, show = true) {
+            const element = document.getElementById(elementId);
+            element.textContent = JSON.stringify(data, null, 2);
+            element.style.display = show ? 'block' : 'none';
+        }
+
+        function setStatus(elementId, status, text) {
+            const element = document.getElementById(elementId);
+            element.className = `status ${status}`;
+            element.textContent = text;
+        }
+
+        async function apiCall(endpoint, method = 'GET', data = null) {
+            const options = {
+                method,
+                headers: {
+                    'Content-Type': 'application/json'
+                }
+            };
+            
+            if (data) {
+                options.body = JSON.stringify(data);
+            }
+            
+            const response = await fetch(`${API_BASE}${endpoint}`, options);
+            
+            if (!response.ok) {
+                throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+            }
+            
+            return await response.json();
+        }
+
+        // 1. 健康检查
+        async function checkHealth() {
+            try {
+                setStatus('health-status', 'loading', '检测中...');
+                const response = await fetch('http://localhost:8000/health');
+                
+                if (response.ok) {
+                    const data = await response.json();
+                    setStatus('health-status', 'success', '✅ 运行正常');
+                    showResult('health-result', data);
+                } else {
+                    throw new Error('服务响应异常');
+                }
+            } catch (error) {
+                setStatus('health-status', 'error', '❌ 连接失败');
+                showResult('health-result', { error: error.message });
+            }
+        }
+
+        // 2. 加载课程模块
+        async function loadModules() {
+            try {
+                setStatus('modules-status', 'loading', '加载中...');
+                const data = await apiCall('/modules');
+                
+                setStatus('modules-status', 'success', `✅ 成功 (${data.count}个模块)`);
+                showResult('modules-result', data);
+                
+                // 填充模块选择器
+                const selector = document.getElementById('module-selector');
+                if (data.data && data.data.length > 0) {
+                    selector.innerHTML = `
+                        <label>选择模块：
+                            <select id="module-select" onchange="selectedModuleId = this.value">
+                                ${data.data.map(m => `<option value="${m.id}">${m.name}</option>`).join('')}
+                            </select>
+                        </label>
+                    `;
+                    selectedModuleId = data.data[0].id;
+                    document.getElementById('btn-lessons').disabled = false;
+                }
+            } catch (error) {
+                setStatus('modules-status', 'error', '❌ 加载失败');
+                showResult('modules-result', { error: error.message });
+            }
+        }
+
+        // 3. 加载课时列表
+        async function loadLessons() {
+            if (!selectedModuleId) {
+                alert('请先选择一个模块');
+                return;
+            }
+            
+            try {
+                setStatus('lessons-status', 'loading', '加载中...');
+                const data = await apiCall(`/modules/${selectedModuleId}/lessons`);
+                
+                setStatus('lessons-status', 'success', `✅ 成功 (${data.count}个课时)`);
+                showResult('lessons-result', data);
+            } catch (error) {
+                setStatus('lessons-status', 'error', '❌ 加载失败');
+                showResult('lessons-result', { error: error.message });
+            }
+        }
+
+        // 4. 加载统计数据
+        async function loadStatistics() {
+            try {
+                setStatus('stats-status', 'loading', '加载中...');
+                const data = await apiCall('/progress/statistics?user_id=1');
+                
+                setStatus('stats-status', 'success', '✅ 成功');
+                showResult('stats-result', data);
+                
+                // 显示统计卡片
+                const cardsContainer = document.getElementById('stats-cards');
+                if (data.data) {
+                    const stats = data.data;
+                    cardsContainer.innerHTML = `
+                        <div class="stat-card">
+                            <div class="stat-value">${stats.total_courses || 0}</div>
+                            <div class="stat-label">📚 总课程</div>
+                        </div>
+                        <div class="stat-card">
+                            <div class="stat-value">${stats.completed_courses || 0}</div>
+                            <div class="stat-label">✅ 已完成</div>
+                        </div>
+                        <div class="stat-card">
+                            <div class="stat-value">${stats.in_progress_courses || 0}</div>
+                            <div class="stat-label">⏳ 进行中</div>
+                        </div>
+                        <div class="stat-card">
+                            <div class="stat-value">${stats.completion_rate || 0}%</div>
+                            <div class="stat-label">🎯 完成率</div>
+                        </div>
+                        <div class="stat-card">
+                            <div class="stat-value">${stats.total_time_hours || 0}</div>
+                            <div class="stat-label">⏱️ 时长 (h)</div>
+                        </div>
+                        <div class="stat-card">
+                            <div class="stat-value">${stats.total_points || 0}</div>
+                            <div class="stat-label">🏆 总积分</div>
+                        </div>
+                    `;
+                    cardsContainer.style.display = 'grid';
+                }
+            } catch (error) {
+                setStatus('stats-status', 'error', '❌ 加载失败');
+                showResult('stats-result', { error: error.message });
+            }
+        }
+
+        // 5. 更新学习进度
+        async function updateProgress() {
+            try {
+                setStatus('progress-status', 'loading', '更新中...');
+                const data = await apiCall('/progress', 'POST', {
+                    lesson_id: 1,
+                    progress_percentage: 50,
+                    time_spent_seconds: 600,
+                    status: 'in_progress'
+                }, true);
+                
+                setStatus('progress-status', 'success', '✅ 更新成功');
+                showResult('progress-result', data);
+            } catch (error) {
+                setStatus('progress-status', 'error', '❌ 更新失败');
+                showResult('progress-result', { error: error.message });
+            }
+        }
+
+        // 6. 查询学习进度
+        async function getProgress() {
+            try {
+                setStatus('progress-status', 'loading', '查询中...');
+                const data = await apiCall('/progress?user_id=1&lesson_id=1');
+                
+                setStatus('progress-status', 'success', '✅ 查询成功');
+                showResult('progress-result', data);
+            } catch (error) {
+                setStatus('progress-status', 'error', '❌ 查询失败');
+                showResult('progress-result', { error: error.message });
+            }
+        }
+
+        // 页面加载时自动检测健康状态
+        window.onload = () => {
+            checkHealth();
+        };
+    </script>
+</body>
+</html>

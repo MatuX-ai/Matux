@@ -1,0 +1,437 @@
+// MatuX Design Tokens - Mac 风格主题 (Mac/Apple Style)
+// V0.dev 风格设计 - AI 教育平台专用主题
+
+// =============================================================================
+// 品牌色彩系统 - Brand Color System
+// =============================================================================
+
+// 主色调 - Mac 渐变紫色系 (Purple Gradient Primary)
+$color-primary: #667eea;           // 渐变紫起始色 - Primary Purple
+$color-primary-light: #764ba2;     // 渐变紫结束色 - Secondary Purple
+$color-primary-dark: #5a67d8;      // 深紫色 - Dark Purple
+$color-primary-50: #f5f3ff;        // 极浅紫白 - Lightest Purple
+$color-primary-100: #ede9fe;       // 浅紫白 - Very Light Purple
+$color-primary-200: #ddd6fe;       // 浅紫 - Light Purple
+$color-primary-300: #c4b5fd;       // 柔紫 - Soft Purple
+$color-primary-400: #a78bfa;       // 亮紫 - Bright Purple
+$color-primary-500: #8b5cf6;       // 标准紫 - Standard Purple
+$color-primary-600: #7c3aed;       // 钴紫 - Cobalt Purple
+$color-primary-700: #6d28d9;       // 宝紫 - Royal Purple
+$color-primary-800: #5b21b6;       // 深紫 - Deep Purple
+$color-primary-900: #4c1d9f;       // 紫罗兰 - Violet
+$color-primary-950: #2e1065;       // 深夜紫 - Midnight Purple
+
+// 辅助色 - 靛紫色系 (Indigo Accent)
+$color-secondary: #4f46e5;         // 靛蓝 - Indigo
+$color-secondary-light: #818cf8;   // 浅靛蓝 - Light Indigo
+$color-secondary-dark: #3730a3;    // 深靛蓝 - Dark Indigo
+$color-secondary-50: #eef2ff;
+$color-secondary-100: #e0e7ff;
+$color-secondary-200: #c7d2fe;
+$color-secondary-300: #a5b4fc;
+$color-secondary-400: #818cf8;
+$color-secondary-500: #6366f1;
+$color-secondary-600: #4f46e5;
+$color-secondary-700: #4338ca;
+$color-secondary-800: #3730a3;
+$color-secondary-900: #312e81;
+
+// 功能色 - Functional Colors
+$color-success: #10b981;           // 翡翠绿 - Emerald Green
+$color-success-light: #34d399;
+$color-success-dark: #059669;
+
+$color-warning: #f59e0b;           // 琥珀黄 - Amber
+$color-warning-light: #fbbf24;
+$color-warning-dark: #d97706;
+
+$color-error: #ef4444;             // 珊瑚红 - Coral Red
+$color-error-light: #f87171;
+$color-error-dark: #dc2626;
+
+$color-info: #667eea;              // Mac 渐变紫 - Purple
+$color-info-light: #38bdf8;
+$color-info-dark: #0284c7;
+
+// =============================================================================
+// 中性色系统 - Neutral Color System (蓝灰调)
+// =============================================================================
+
+$color-gray-50: #f8fafc;           // 极浅灰蓝 - Ghost White
+$color-gray-100: #f1f5f9;          // 浅灰蓝 - Pale Blue Gray
+$color-gray-200: #e2e8f0;          // 灰蓝 - Blue Gray
+$color-gray-300: #cbd5e1;          // 中灰蓝 - Medium Blue Gray
+$color-gray-400: #94a3b8;          // 深灰蓝 - Dark Blue Gray
+$color-gray-500: #64748b;          // 石板灰 - Slate Gray
+$color-gray-600: #475569;          // 深石板 - Dark Slate
+$color-gray-700: #334155;          // 深蓝灰 - Deep Blue Gray
+$color-gray-800: #1e293b;          // 藏青灰 - Navy Gray
+$color-gray-900: #0f172a;          // 深夜空蓝 - Midnight Sky
+$color-gray-950: #020617;          // 极夜黑 - Ultra Dark
+
+// color-neutral 别名（与 color-gray 相同，提供兼容性）
+$color-neutral-50: $color-gray-50;
+$color-neutral-100: $color-gray-100;
+$color-neutral-200: $color-gray-200;
+$color-neutral-300: $color-gray-300;
+$color-neutral-400: $color-gray-400;
+$color-neutral-500: $color-gray-500;
+$color-neutral-600: $color-gray-600;
+$color-neutral-700: $color-gray-700;
+$color-neutral-800: $color-gray-800;
+$color-neutral-900: $color-gray-900;
+$color-neutral-950: $color-gray-950;
+
+$color-black: #000000;
+$color-white: #ffffff;
+$color-text-white: #ffffff;       // 反色文本 - 用于深色背景上的白色文本
+
+// =============================================================================
+// 语义化颜色 - Semantic Colors
+// =============================================================================
+
+$color-background: #f8fafc;        // 页面背景
+$color-surface: #ffffff;           // 卡片表面
+$color-surface-elevated: #ffffff;  // 悬浮表面
+$color-divider: #e2e8f0;           // 分割线
+$color-hover: rgba(30, 58, 138, 0.04);      // 悬停状态
+$color-selected: #dbeafe;          // 选中状态
+$color-focus: rgba(59, 89, 152, 0.4);       // 焦点状态
+$color-disabled: #cbd5e1;          // 禁用状态
+
+$color-brand: #667eea;             // 品牌色（Mac 渐变紫）
+$link-color: #667eea;              // 链接色
+$link-hover-color: #764ba2;        // 链接悬停
+$color-border: #e2e8f0;            // 边框色
+$color-placeholder: #94a3b8;       // 占位符
+$color-text-primary: #0f172a;      // 主文本
+$color-text-secondary: #475569;    // 次要文本
+$color-text-disabled: #94a3b8;     // 禁用文本
+$color-text-inverse: #ffffff;      // 反色文本
+$color-text-on-primary: #ffffff;   // 主色上文本
+$color-text-on-secondary: #ffffff; // 辅色上文本
+
+// =============================================================================
+// 阴影系统 - Shadow System (V0.dev 风格)
+// =============================================================================
+
+$shadow-xs: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
+$shadow-sm: 0 1px 3px 0 rgba(0, 0, 0, 0.1), 0 1px 2px 0 rgba(0, 0, 0, 0.06);
+$shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+$shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+$shadow-xl: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
+$shadow-2xl: 0 25px 50px -12px rgba(0, 0, 0, 0.25);
+
+// 特定场景阴影
+$shadow-button: $shadow-sm;
+$shadow-button-hover: $shadow-md;
+$shadow-card: $shadow-sm;
+$shadow-card-hover: $shadow-lg;
+$shadow-modal: $shadow-2xl;
+$shadow-dropdown: $shadow-lg;
+$shadow-tooltip: $shadow-md;
+$shadow-focus-ring: 0 0 0 3px rgba(59, 89, 152, 0.4);
+$shadow-inner: inset 0 2px 4px 0 rgba(0, 0, 0, 0.06);
+
+// =============================================================================
+// 圆角系统 - Border Radius System
+// =============================================================================
+
+$border-radius-none: 0;
+$border-radius-xs: 0.125rem;    // 2px
+$border-radius-sm: 0.25rem;     // 4px
+$border-radius-md: 0.375rem;    // 6px
+$border-radius-lg: 0.5rem;      // 8px
+$border-radius-xl: 0.75rem;     // 12px
+$border-radius-2xl: 1rem;       // 16px
+$border-radius-3xl: 1.5rem;     // 24px
+$border-radius-full: 9999px;
+
+// 组件圆角
+$border-radius-button: 0.5rem;
+$border-radius-input: 0.5rem;
+$border-radius-card: 0.75rem;
+$border-radius-badge: 9999px;
+$border-radius-avatar: 9999px;
+
+// =============================================================================
+// 间距系统 - Spacing System (基于 4px 网格)
+// =============================================================================
+
+$spacing-0: 0;
+$spacing-px: 1px;
+$spacing-half: 0.125rem;  // 2px
+$spacing-1: 0.25rem;      // 4px
+$spacing-one-and-half: 0.375rem; // 6px
+$spacing-2: 0.5rem;       // 8px
+$spacing-two-and-half: 0.625rem; // 10px
+$spacing-3: 0.75rem;      // 12px
+$spacing-three-and-half: 0.875rem; // 14px
+$spacing-4: 1rem;         // 16px
+$spacing-5: 1.25rem;      // 20px
+$spacing-6: 1.5rem;       // 24px
+$spacing-7: 1.75rem;      // 28px
+$spacing-8: 2rem;         // 32px
+$spacing-9: 2.25rem;      // 36px
+$spacing-10: 2.5rem;      // 40px
+$spacing-11: 2.75rem;     // 44px
+$spacing-12: 3rem;        // 48px
+$spacing-14: 3.5rem;      // 56px
+$spacing-16: 4rem;        // 64px
+$spacing-20: 5rem;        // 80px
+$spacing-24: 6rem;        // 96px
+
+// 语义化间距
+$spacing-xs: $spacing-2;
+$spacing-sm: $spacing-3;
+$spacing-md: $spacing-4;
+$spacing-lg: $spacing-6;
+$spacing-xl: $spacing-8;
+$spacing-xxl: $spacing-12;
+
+// =============================================================================
+// 字体系统 - Typography System
+// =============================================================================
+
+// 字体系列
+$font-family-sans: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+$font-family-mono: 'Fira Code', 'Courier New', monospace;
+$font-family-system: $font-family-sans;
+
+// 字体大小
+$font-size-xs: 0.75rem;     // 12px
+$font-size-sm: 0.875rem;    // 14px
+$font-size-base: 1rem;      // 16px
+$font-size-lg: 1.125rem;    // 18px
+$font-size-xl: 1.25rem;     // 20px
+$font-size-2xl: 1.5rem;     // 24px
+$font-size-3xl: 1.875rem;   // 30px
+$font-size-4xl: 2.25rem;    // 36px
+$font-size-5xl: 3rem;       // 48px
+$font-size-6xl: 3.75rem;    // 60px
+$font-size-7xl: 4.5rem;     // 72px
+$font-size-8xl: 6rem;       // 96px
+
+// 行高
+$line-height-none: 1;
+$line-height-tight: 1.25;
+$line-height-snug: 1.375;
+$line-height-normal: 1.5;
+$line-height-relaxed: 1.625;
+$line-height-loose: 2;
+
+// 字重
+$font-weight-thin: 100;
+$font-weight-extra-light: 200;
+$font-weight-light: 300;
+$font-weight-normal: 400;
+$font-weight-medium: 500;
+$font-weight-semi-bold: 600;
+$font-weight-bold: 700;
+$font-weight-extra-bold: 800;
+$font-weight-black: 900;
+
+// =============================================================================
+// 动画系统 - Animation System
+// =============================================================================
+
+$transition-duration-fast: 100ms;
+$transition-duration-normal: 200ms;
+$transition-duration-slow: 300ms;
+$transition-duration-slower: 500ms;
+
+$transition-timing-default: cubic-bezier(0.4, 0, 0.2, 1);
+$transition-timing-in: cubic-bezier(0.4, 0, 1, 1);
+$transition-timing-out: cubic-bezier(0, 0, 0.2, 1);
+$transition-timing-bounce: cubic-bezier(0.34, 1.56, 0.64, 1);
+
+$transition-fast: $transition-duration-fast $transition-timing-default;
+$transition-normal: $transition-duration-normal $transition-timing-default;
+$transition-slow: $transition-duration-slow $transition-timing-default;
+
+// 常用动画
+$animation-fade-in: fadeIn 0.3s ease-in-out;
+$animation-scale-in: scaleIn 0.2s ease-out;
+
+@keyframes fadeIn {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+@keyframes scaleIn {
+  from { transform: scale(0.95); opacity: 0; }
+  to { transform: scale(1); opacity: 1; }
+}
+
+// =============================================================================
+// 响应式断点 - Responsive Breakpoints
+// =============================================================================
+
+$breakpoint-sm: 640px;    // 手机横屏
+$breakpoint-md: 768px;    // 平板
+$breakpoint-lg: 1024px;   // 小屏笔记本
+$breakpoint-xl: 1280px;   // 桌面
+$breakpoint-2xl: 1536px;  // 大屏桌面
+
+// =============================================================================
+// Z-index 层级系统
+// =============================================================================
+
+$z-index-hide: -1;
+$z-index-base: 0;
+$z-index-dropdown: 1000;
+$z-index-sticky: 1020;
+$z-index-fixed: 1030;
+$z-index-modal-backdrop: 1040;
+$z-index-modal: 1050;
+$z-index-popover: 1060;
+$z-index-tooltip: 1070;
+$z-index-toast: 1080;
+
+// =============================================================================
+// 主题配置 - Theme Configuration for Angular Material
+// =============================================================================
+
+// 主色板 - Primary Palette
+$primary-palette: (
+  50: $color-primary-50,
+  100: $color-primary-100,
+  200: $color-primary-200,
+  300: $color-primary-300,
+  400: $color-primary-400,
+  500: $color-primary-500,
+  600: $color-primary-600,
+  700: $color-primary-700,
+  800: $color-primary-800,
+  900: $color-primary-900,
+  A100: $color-primary-200,
+  A200: $color-primary-400,
+  A400: $color-primary-600,
+  A700: $color-primary-800,
+  contrast: (
+    50: $color-text-primary,
+    100: $color-text-primary,
+    200: $color-text-primary,
+    300: $color-text-primary,
+    400: $color-text-primary,
+    500: $color-text-white,
+    600: $color-text-white,
+    700: $color-text-white,
+    800: $color-text-white,
+    900: $color-text-white,
+    A100: $color-text-primary,
+    A200: $color-text-white,
+    A400: $color-text-white,
+    A700: $color-text-white,
+  )
+);
+
+// 辅助色板 - Accent Palette
+$accent-palette: (
+  50: $color-secondary-50,
+  100: $color-secondary-100,
+  200: $color-secondary-200,
+  300: $color-secondary-300,
+  400: $color-secondary-400,
+  500: $color-secondary-500,
+  600: $color-secondary-600,
+  700: $color-secondary-700,
+  800: $color-secondary-800,
+  900: $color-secondary-900,
+  A100: $color-secondary-200,
+  A200: $color-secondary-400,
+  A400: $color-secondary-600,
+  A700: $color-secondary-800,
+  contrast: (
+    50: $color-text-primary,
+    100: $color-text-primary,
+    200: $color-text-primary,
+    300: $color-text-primary,
+    400: $color-text-primary,
+    500: $color-text-white,
+    600: $color-text-white,
+    700: $color-text-white,
+    800: $color-text-white,
+    900: $color-text-white,
+    A100: $color-text-primary,
+    A200: $color-text-white,
+    A400: $color-text-white,
+    A700: $color-text-white,
+  )
+);
+
+// 警告色板 - Warn Palette
+$warn-palette: (
+  50: #fef2f2,
+  100: #fee2e2,
+  200: #fecaca,
+  300: #fca5a5,
+  400: #f87171,
+  500: #ef4444,
+  600: #dc2626,
+  700: #b91c1c,
+  800: #991b1b,
+  900: #7f1d1d,
+  A100: #fee2e2,
+  A200: #fca5a5,
+  A400: #ef4444,
+  A700: #b91c1c,
+  contrast: (
+    50: $color-text-primary,
+    100: $color-text-primary,
+    200: $color-text-primary,
+    300: $color-text-primary,
+    400: $color-text-primary,
+    500: $color-text-white,
+    600: $color-text-white,
+    700: $color-text-white,
+    800: $color-text-white,
+    900: $color-text-white,
+    A100: $color-text-primary,
+    A200: $color-text-primary,
+    A400: $color-text-white,
+    A700: $color-text-white,
+  )
+);
+
+// =============================================================================
+// 兼容性别名 - Compatibility Aliases
+// =============================================================================
+
+// radius 别名（border-radius 的简写）
+$radius-none: $border-radius-none;
+$radius-xs: $border-radius-xs;
+$radius-sm: $border-radius-sm;
+$radius-md: $border-radius-md;
+$radius-lg: $border-radius-lg;
+$radius-xl: $border-radius-xl;
+$radius-2xl: $border-radius-2xl;
+$radius-3xl: $border-radius-3xl;
+$radius-full: $border-radius-full;
+
+// font-size 补充变量
+$font-size-caption: $font-size-xs;      // 说明文字大小
+$font-size-body: $font-size-base;       // 正文字体大小
+$font-size-subtitle: $font-size-lg;     // 副标题大小
+$font-size-title: $font-size-2xl;       // 标题大小
+$font-size-headline: $font-size-3xl;    // 大标题大小
+$font-size-display: $font-size-4xl;     // 展示文字大小
+
+// h1-h6 字体大小别名（Material Design 风格）
+$font-size-h1: $font-size-6xl;          // 96px
+$font-size-h2: $font-size-5xl;          // 60px
+$font-size-h3: $font-size-4xl;          // 48px
+$font-size-h4: $font-size-3xl;          // 34px
+$font-size-h5: $font-size-xl;           // 24px
+$font-size-h6: $font-size-lg;           // 20px
+
+// 品牌色别名
+$color-brand-primary: $color-primary;
+$color-brand-primary-50: $color-primary-50;
+$color-brand-primary-100: $color-primary-100;
+$color-brand-primary-200: $color-primary-200;
+$color-brand-primary-light: $color-primary-100;  // 浅色变体，用于背景
+$color-brand-primary-dark: $color-primary-dark;
+$color-brand-secondary: $color-secondary;
+$color-brand-secondary-light: $color-secondary-light;
+$color-brand-secondary-dark: $color-secondary-dark;

@@ -1,10 +1,16 @@
-import { Component, OnInit, OnDestroy, ViewChild, ElementRef } from '@angular/core';
+import { CommonModule, DecimalPipe, NgClass } from '@angular/common';
 import { HttpClient } from '@angular/common/http';
-import { ActivatedRoute, Router } from '@angular/router';
-import { MatSnackBar } from '@angular/material/snack-bar';
+import { Component, ElementRef, OnDestroy, OnInit, ViewChild } from '@angular/core';
+import { FormsModule } from '@angular/forms';
+import { MatButtonModule } from '@angular/material/button';
+import { MatCardModule } from '@angular/material/card';
 import { MatDialog } from '@angular/material/dialog';
+import { MatIconModule } from '@angular/material/icon';
+import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
+import { MatSlideToggleModule } from '@angular/material/slide-toggle';
+import { MatSnackBar } from '@angular/material/snack-bar';
+import { ActivatedRoute, Router } from '@angular/router';
 import { Subject } from 'rxjs';
-import { takeUntil } from 'rxjs/operators';
 
 interface CircuitElement {
   element_id: string;
@@ -33,7 +39,7 @@ interface DeviceState {
   current: number;
   temperature: number;
   is_connected: boolean;
-  custom_properties?: any;
+  custom_properties?: Record<string, unknown>;
   timestamp: string;
 }
 
@@ -45,10 +51,48 @@ interface SessionInfo {
   is_active: boolean;
 }
 
+// Unity WebGL 类型定义
+interface UnityInstanceType {
+  SendMessage(objectName: string, methodName: string, value?: string): void;
+  Quit(): void;
+}
+
+interface UnityConfigType {
+  dataUrl: string;
+  frameworkUrl: string;
+  codeUrl: string;
+  streamingAssetsUrl: string;
+  companyName: string;
+  productName: string;
+  productVersion: string;
+  showBanner: boolean;
+}
+
+interface WindowWithUnity extends Window {
+  createUnityInstance?: (
+    canvas: HTMLCanvasElement,
+    config: UnityConfigType,
+    onProgress?: (progress: number) => void
+  ) => Promise<UnityInstanceType>;
+  sendToUnity?: (objectName: string, methodName: string, value: string) => void;
+  receiveFromUnity?: (message: string) => void;
+}
+
 @Component({
   selector: 'app-digital-twin-lab',
   templateUrl: './digital-twin-lab.component.html',
-  styleUrls: ['./digital-twin-lab.component.scss']
+  styleUrls: ['./digital-twin-lab.component.scss'],
+  imports: [
+    MatIconModule,
+    MatCardModule,
+    MatSlideToggleModule,
+    MatButtonModule,
+    MatProgressSpinnerModule,
+    FormsModule,
+    CommonModule,
+    DecimalPipe,
+    NgClass,
+  ],
 })
 export class DigitalTwinLabComponent implements OnInit, OnDestroy {
   @ViewChild('unityContainer') unityContainer!: ElementRef;
@@ -58,8 +102,8 @@ export class DigitalTwinLabComponent implements OnInit, OnDestroy {
   isLoading = true;
   errorMessage = '';
 
-  // Unity WebGL相关
-  unityInstance: any = null;
+  // Unity WebGL 相关
+  unityInstance: UnityInstanceType | null = null;
   isUnityLoaded = false;
 
   // 网络状态
@@ -73,6 +117,7 @@ export class DigitalTwinLabComponent implements OnInit, OnDestroy {
   // 控制面板状态
   isSimulationRunning = false;
   isDeviceSyncEnabled = true;
+  isFullscreen = false;
 
   private destroy$ = new Subject<void>();
   private webSocket!: WebSocket;
@@ -87,7 +132,7 @@ export class DigitalTwinLabComponent implements OnInit, OnDestroy {
   ) {}
 
   ngOnInit(): void {
-    this.sessionId = this.route.snapshot.paramMap.get('id') || '';
+    this.sessionId = this.route.snapshot.paramMap.get('id') ?? '';
     this.loadSession();
     this.initializeWebSocket();
   }
@@ -98,8 +143,13 @@ export class DigitalTwinLabComponent implements OnInit, OnDestroy {
     this.cleanupConnections();
   }
 
+  loadSessionPublic(): void {
+    this.loadSession();
+  }
+
   private loadSession(): void {
-    this.http.get<SessionInfo>(`${this.baseUrl}/digital-twin/sessions/${this.sessionId}`)
+    this.http
+      .get<SessionInfo>(`${this.baseUrl}/digital-twin/sessions/${this.sessionId}`)
       .subscribe({
         next: (session) => {
           this.sessionInfo = session;
@@ -107,11 +157,11 @@ export class DigitalTwinLabComponent implements OnInit, OnDestroy {
           this.loadUnityContent();
           this.snackBar.open('数字孪生实验室已加载', '关闭', { duration: 2000 });
         },
-        error: (error) => {
+        error: (_error) => {
           this.errorMessage = '加载会话失败';
           this.isLoading = false;
           this.snackBar.open('会话加载失败', '关闭', { duration: 3000 });
-        }
+        },
       });
   }
 
@@ -129,75 +179,89 @@ export class DigitalTwinLabComponent implements OnInit, OnDestroy {
   }
 
   private initializeUnityPlayer(): void {
-    // Unity WebGL初始化配置
-    const unityConfig = {
-      dataUrl: "/digital-twin/builds/lab/Build/lab.data",
-      frameworkUrl: "/digital-twin/builds/lab/Build/lab.framework.js",
-      codeUrl: "/digital-twin/builds/lab/Build/lab.wasm",
-      streamingAssetsUrl: "StreamingAssets",
-      companyName: "iMatu",
-      productName: "Digital Twin Lab",
-      productVersion: "1.0",
+    // Unity WebGL 初始化配置
+    const unityConfig: UnityConfigType = {
+      dataUrl: '/digital-twin/builds/lab/Build/lab.data',
+      frameworkUrl: '/digital-twin/builds/lab/Build/lab.framework.js',
+      codeUrl: '/digital-twin/builds/lab/Build/lab.wasm',
+      streamingAssetsUrl: 'StreamingAssets',
+      companyName: 'iMatu',
+      productName: 'Digital Twin Lab',
+      productVersion: '1.0',
       showBanner: false,
     };
 
-    // 创建Unity实例
-    if ((window as any).createUnityInstance) {
-      (window as any).createUnityInstance(
-        this.unityContainer.nativeElement,
-        unityConfig,
-        (progress: number) => {
-          // 加载进度回调
-          console.log(`Unity加载进度: ${(progress * 100).toFixed(2)}%`);
-        }
-      ).then((instance: any) => {
-        this.unityInstance = instance;
-        this.isUnityLoaded = true;
-        this.setupUnityCommunication();
-        this.snackBar.open('Unity实验室已就绪', '关闭', { duration: 2000 });
-      }).catch((error: any) => {
-        console.error('Unity实例创建失败:', error);
-        this.snackBar.open('Unity启动失败', '关闭', { duration: 3000 });
-      });
+    // 创建 Unity 实例
+    const win = window as WindowWithUnity;
+    if (win.createUnityInstance) {
+      win
+        .createUnityInstance(
+          this.unityContainer.nativeElement as HTMLCanvasElement,
+          unityConfig,
+          (_progress: number) => {
+            // 开发环境下记录 Unity 加载进度
+            if (typeof ngDevMode === 'undefined' || ngDevMode) {
+              // 开发模式日志已禁用
+            }
+          }
+        )
+        .then((instance: UnityInstanceType) => {
+          this.unityInstance = instance;
+          this.isUnityLoaded = true;
+          this.setupUnityCommunication();
+          this.snackBar.open('Unity 实验室已就绪', '关闭', { duration: 2000 });
+        })
+        .catch((_error: unknown) => {
+          this.snackBar.open('Unity 启动失败', '关闭', { duration: 3000 });
+        });
     }
   }
 
   private setupUnityCommunication(): void {
-    // 设置与Unity的双向通信
-    (window as any).sendToUnity = (objectName: string, methodName: string, value: string) => {
-      if (this.unityInstance) {
-        this.unityInstance.SendMessage(objectName, methodName, value);
-      }
+    // 设置与 Unity 的双向通信
+    const win = window as WindowWithUnity;
+
+    win.sendToUnity = (objectName: string, methodName: string, value: string) => {
+      this.unityInstance?.SendMessage(objectName, methodName, value);
     };
 
-    // 接收来自Unity的消息
-    (window as any).receiveFromUnity = (message: string) => {
+    // 接收来自 Unity 的消息
+    win.receiveFromUnity = (message: string) => {
       this.handleUnityMessage(message);
     };
   }
 
   private handleUnityMessage(message: string): void {
     try {
-      const data = JSON.parse(message);
+      const data = JSON.parse(message) as {
+        type: string;
+        state?: CircuitState | DeviceState;
+        action?: string;
+      };
 
       switch (data.type) {
         case 'circuit_state_update':
-          this.sendCircuitStateToBackend(data.state);
+          if (data.state) {
+            this.sendCircuitStateToBackend(data.state as CircuitState);
+          }
           break;
 
         case 'device_state_update':
-          this.sendDeviceStateToBackend(data.state);
+          if (data.state) {
+            this.sendDeviceStateToBackend(data.state as DeviceState);
+          }
           break;
 
         case 'simulation_control':
-          this.handleSimulationControl(data.action);
+          if (data.action) {
+            this.handleSimulationControl(data.action);
+          }
           break;
 
         default:
-          console.log('未知的Unity消息类型:', data.type);
       }
-    } catch (error) {
-      console.error('解析Unity消息失败:', error);
+    } catch (_error) {
+      // 错误已静默处理
     }
   }
 
@@ -213,7 +277,6 @@ export class DigitalTwinLabComponent implements OnInit, OnDestroy {
         this.resetCircuit();
         break;
       default:
-        console.log('未知的仿真控制动作:', action);
     }
   }
 
@@ -225,43 +288,50 @@ export class DigitalTwinLabComponent implements OnInit, OnDestroy {
 
       this.webSocket.onopen = () => {
         this.isConnected = true;
-        console.log('WebSocket连接已建立');
+
         this.snackBar.open('实时连接已建立', '关闭', { duration: 2000 });
       };
 
-      this.webSocket.onmessage = (event) => {
+      this.webSocket.onmessage = (event: MessageEvent<string>) => {
         this.handleWebSocketMessage(event.data);
       };
 
       this.webSocket.onclose = () => {
         this.isConnected = false;
-        console.log('WebSocket连接已关闭');
+
         // 尝试重连
         setTimeout(() => this.initializeWebSocket(), 5000);
       };
 
-      this.webSocket.onerror = (error) => {
-        console.error('WebSocket错误:', error);
+      this.webSocket.onerror = (_error) => {
         this.snackBar.open('连接出现错误', '关闭', { duration: 3000 });
       };
-
-    } catch (error) {
-      console.error('WebSocket初始化失败:', error);
+    } catch (_error) {
       this.snackBar.open('无法建立实时连接', '关闭', { duration: 3000 });
     }
   }
 
   private handleWebSocketMessage(data: string): void {
     try {
-      const message = JSON.parse(data);
+      // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
+      const message = JSON.parse(data) as {
+        type: string;
+        state?: CircuitState | DeviceState;
+        device_id?: string;
+        message?: string;
+      };
 
       switch (message.type) {
         case 'circuit_state_broadcast':
-          this.updateCircuitState(message.state);
+          if (message.state) {
+            this.updateCircuitState(message.state as CircuitState);
+          }
           break;
 
         case 'device_state_broadcast':
-          this.updateDeviceState(message.device_id, message.state);
+          if (message.device_id && message.state) {
+            this.updateDeviceState(message.device_id, message.state as DeviceState);
+          }
           break;
 
         case 'sync_response':
@@ -269,50 +339,52 @@ export class DigitalTwinLabComponent implements OnInit, OnDestroy {
           break;
 
         case 'error':
-          this.snackBar.open(`错误: ${message.message}`, '关闭', { duration: 3000 });
+          if (message.message) {
+            this.snackBar.open(`错误：${message.message}`, '关闭', { duration: 3000 });
+          }
           break;
 
         default:
-          console.log('未知的WebSocket消息类型:', message.type);
       }
-    } catch (error) {
-      console.error('解析WebSocket消息失败:', error);
+    } catch (_error) {
+      // 错误已静默处理
     }
   }
 
   private updateCircuitState(state: CircuitState): void {
     this.circuitState = state;
 
-    // 同步到Unity
+    // 同步到 Unity
     if (this.isUnityLoaded) {
-      (window as any).sendToUnity('CircuitManager', 'UpdateCircuitState', JSON.stringify(state));
+      const win = window as WindowWithUnity;
+      win.sendToUnity?.('CircuitManager', 'UpdateCircuitState', JSON.stringify(state));
     }
 
     // 更新UI显示
     this.participantCount = state.elements?.length || 0;
-
-    console.log('电路状态已更新:', state);
   }
 
   private updateDeviceState(deviceId: string, state: DeviceState): void {
     this.deviceStates.set(deviceId, state);
 
-    // 同步到Unity
+    // 同步到 Unity
     if (this.isUnityLoaded) {
       const message = { deviceId, state };
-      (window as any).sendToUnity('DeviceManager', 'UpdateDeviceState', JSON.stringify(message));
+      const win = window as WindowWithUnity;
+      win.sendToUnity?.('DeviceManager', 'UpdateDeviceState', JSON.stringify(message));
     }
-
-    console.log(`设备状态更新: ${deviceId}`, state);
   }
 
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   private handleSyncResponse(message: any): void {
-    if (message.circuit_state) {
-      this.updateCircuitState(message.circuit_state);
+    const typedMessage = message as { circuit_state?: CircuitState; device_states?: DeviceState[] };
+
+    if (typedMessage.circuit_state) {
+      this.updateCircuitState(typedMessage.circuit_state);
     }
 
-    if (message.device_states) {
-      message.device_states.forEach((deviceState: DeviceState) => {
+    if (typedMessage.device_states) {
+      typedMessage.device_states.forEach((deviceState: DeviceState) => {
         this.deviceStates.set(deviceState.device_id, deviceState);
       });
     }
@@ -327,8 +399,8 @@ export class DigitalTwinLabComponent implements OnInit, OnDestroy {
     const message = {
       type: 'circuit_state_update',
       session_id: this.sessionId,
-      state: state,
-      sender: 'frontend'
+      state,
+      sender: 'frontend',
     };
 
     this.webSocket.send(JSON.stringify(message));
@@ -341,7 +413,7 @@ export class DigitalTwinLabComponent implements OnInit, OnDestroy {
     const message = {
       type: 'device_state_update',
       session_id: this.sessionId,
-      state: state
+      state,
     };
 
     this.webSocket.send(JSON.stringify(message));
@@ -352,7 +424,8 @@ export class DigitalTwinLabComponent implements OnInit, OnDestroy {
     this.isSimulationRunning = !this.isSimulationRunning;
 
     if (this.isUnityLoaded) {
-      (window as any).sendToUnity(
+      const win = window as WindowWithUnity;
+      win.sendToUnity?.(
         'SimulationController',
         'ToggleSimulation',
         this.isSimulationRunning.toString()
@@ -368,11 +441,8 @@ export class DigitalTwinLabComponent implements OnInit, OnDestroy {
     this.isDeviceSyncEnabled = !this.isDeviceSyncEnabled;
 
     if (this.isUnityLoaded) {
-      (window as any).sendToUnity(
-        'IoTManager',
-        'ToggleDeviceSync',
-        this.isDeviceSyncEnabled.toString()
-      );
+      const win = window as WindowWithUnity;
+      win.sendToUnity?.('IoTManager', 'ToggleDeviceSync', this.isDeviceSyncEnabled.toString());
     }
 
     const status = this.isDeviceSyncEnabled ? '启用' : '禁用';
@@ -382,7 +452,8 @@ export class DigitalTwinLabComponent implements OnInit, OnDestroy {
   // 重置电路
   resetCircuit(): void {
     if (this.isUnityLoaded) {
-      (window as any).sendToUnity('CircuitManager', 'ResetCircuit', '');
+      const win = window as WindowWithUnity;
+      win.sendToUnity?.('CircuitManager', 'ResetCircuit', '');
       this.snackBar.open('电路已重置', '关闭', { duration: 2000 });
     }
   }
@@ -390,42 +461,47 @@ export class DigitalTwinLabComponent implements OnInit, OnDestroy {
   // 添加元件
   addElement(elementType: string): void {
     if (this.isUnityLoaded) {
-      (window as any).sendToUnity('CircuitManager', 'AddElement', elementType);
+      const win = window as WindowWithUnity;
+      win.sendToUnity?.('CircuitManager', 'AddElement', elementType);
       this.snackBar.open(`已添加${elementType}元件`, '关闭', { duration: 2000 });
     }
   }
 
   // 获取会话信息
   getSessionDetails(): void {
-    this.http.get<any>(`${this.baseUrl}/digital-twin/sessions/${this.sessionId}/participants`)
+    this.http
+      .get<{
+        participant_count: number;
+      }>(`${this.baseUrl}/digital-twin/sessions/${this.sessionId}/participants`)
       .subscribe({
         next: (data) => {
           this.participantCount = data.participant_count;
           // 显示详细信息对话框
           this.showSessionDialog(data);
         },
-        error: (error) => {
-          console.error('获取会话详情失败:', error);
-        }
+        error: (_error) => {
+          // 静默处理错误
+        },
       });
   }
 
-  private showSessionDialog(data: any): void {
-    // 这里可以创建一个Material Dialog组件显示会话详情
-    console.log('会话详情:', data);
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  private showSessionDialog(_data: any): void {
+    // 这里可以创建一个 Material Dialog 组件显示会话详情
   }
 
   // 返回主页
   goBack(): void {
-    this.router.navigate(['/dashboard']);
+    void this.router.navigate(['/dashboard']);
   }
 
   // 全屏切换
   toggleFullscreen(): void {
     if (!document.fullscreenElement) {
+      // eslint-disable-next-line @typescript-eslint/no-unsafe-call, @typescript-eslint/no-unsafe-member-access
       this.unityContainer.nativeElement.requestFullscreen();
     } else {
-      document.exitFullscreen();
+      void document.exitFullscreen();
     }
   }
 
@@ -435,7 +511,7 @@ export class DigitalTwinLabComponent implements OnInit, OnDestroy {
 
     let sum = 0;
     let count = 0;
-    this.deviceStates.forEach(state => {
+    this.deviceStates.forEach((state) => {
       if (state.is_connected) {
         sum += state.voltage;
         count++;

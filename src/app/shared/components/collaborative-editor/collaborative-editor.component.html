@@ -11,20 +11,20 @@
         {{ getConnectedUsersCount() }} 人在线
       </span>
     </div>
-    
+
     <div class="toolbar-right">
-      <button mat-button (click)="toggleCommentsPanel()" 
+      <button mat-button (click)="toggleCommentsPanel()"
               [color]="showCommentsPanel ? 'primary' : ''">
         <mat-icon>comment</mat-icon>
         评论 ({{ comments.length }})
       </button>
-      
-      <button mat-button (click)="toggleSuggestionsPanel()" 
+
+      <button mat-button (click)="toggleSuggestionsPanel()"
               [color]="showSuggestionsPanel ? 'primary' : ''">
         <mat-icon>rate_review</mat-icon>
         建议 ({{ suggestions.length }})
       </button>
-      
+
       <button mat-button [disabled]="isLoading || isSaving">
         <mat-icon>save</mat-icon>
         保存
@@ -38,7 +38,7 @@
     <div class="editor-area">
       <div class="editor-wrapper">
         <!-- 这里将集成Quill或其他富文本编辑器 -->
-        <textarea 
+        <textarea
           #editorTextarea
           class="editor-textarea"
           [(ngModel)]="editorContent"
@@ -48,29 +48,29 @@
           placeholder="开始编辑文档内容..."
           [disabled]="isLoading">
         </textarea>
-        
+
         <!-- 用户光标指示器 -->
         <div class="cursor-overlay" *ngIf="activeUsers.length > 0">
-          <div *ngFor="let user of activeUsers" 
+          <div *ngFor="let user of activeUsers"
                class="remote-cursor"
                [style.left.px]="calculateCursorPosition(user.cursorPosition)">
             <div class="cursor-tooltip">{{ user.userName }}</div>
           </div>
         </div>
       </div>
-      
+
       <!-- 操作状态 -->
       <div class="editor-status">
         <div class="status-item" *ngIf="isLoading">
           <mat-spinner diameter="20"></mat-spinner>
           <span>加载中...</span>
         </div>
-        
+
         <div class="status-item" *ngIf="isSaving">
           <mat-spinner diameter="20"></mat-spinner>
           <span>保存中...</span>
         </div>
-        
+
         <div class="status-item version-info" *ngIf="documentInfo">
           <mat-icon>history</mat-icon>
           <span>版本 {{ documentInfo.version_number }}</span>
@@ -86,46 +86,46 @@
           <mat-icon>close</mat-icon>
         </button>
       </div>
-      
+
       <div class="panel-content">
         <div class="add-comment-form" *ngIf="documentInfo?.allow_comments">
           <mat-form-field appearance="outline" class="full-width">
             <mat-label>添加评论</mat-label>
             <textarea matInput #commentInput rows="3" placeholder="输入您的评论..."></textarea>
           </mat-form-field>
-          
+
           <div class="comment-actions">
-            <button mat-button color="primary" 
+            <button mat-button color="primary"
                     (click)="addComment(0, 0, commentInput.value); commentInput.value=''">
               添加评论
             </button>
           </div>
         </div>
-        
+
         <div class="comments-list">
-          <div *ngFor="let comment of comments" class="comment-item" 
+          <div *ngFor="let comment of comments" class="comment-item"
                [class.resolved]="comment.is_resolved">
             <div class="comment-header">
               <div class="comment-author">{{ comment.user_name }}</div>
               <div class="comment-date">{{ comment.created_at | date:'short' }}</div>
             </div>
-            
+
             <div class="comment-content">
               {{ comment.content }}
             </div>
-            
+
             <div class="comment-meta">
               <span class="comment-type" [class]="comment.comment_type">
                 {{ getCommentTypeLabel(comment.comment_type) }}
               </span>
-              
-              <button mat-button *ngIf="!comment.is_resolved" 
+
+              <button mat-button *ngIf="!comment.is_resolved"
                       (click)="resolveComment(comment.id)" size="small">
                 标记为已解决
               </button>
             </div>
           </div>
-          
+
           <div *ngIf="comments.length === 0" class="empty-state">
             <mat-icon>comment</mat-icon>
             <p>暂无评论</p>
@@ -142,76 +142,76 @@
           <mat-icon>close</mat-icon>
         </button>
       </div>
-      
+
       <div class="panel-content">
         <div class="add-suggestion-form" *ngIf="documentInfo?.allow_suggestions">
           <mat-form-field appearance="outline" class="full-width">
             <mat-label>原内容</mat-label>
             <input matInput #originalInput placeholder="选择要替换的文本">
           </mat-form-field>
-          
+
           <mat-form-field appearance="outline" class="full-width">
             <mat-label>建议内容</mat-label>
             <input matInput #suggestedInput placeholder="输入建议的文本">
           </mat-form-field>
-          
+
           <mat-form-field appearance="outline" class="full-width">
             <mat-label>建议理由</mat-label>
             <textarea matInput #reasonInput rows="2" placeholder="为什么建议这样修改？"></textarea>
           </mat-form-field>
-          
+
           <div class="suggestion-actions">
-            <button mat-button color="primary" 
-                    (click)="addSuggestion(0, 0, suggestedInput.value, reasonInput.value); 
+            <button mat-button color="primary"
+                    (click)="addSuggestion(0, 0, suggestedInput.value, reasonInput.value);
                             originalInput.value=''; suggestedInput.value=''; reasonInput.value=''">
               添加建议
             </button>
           </div>
         </div>
-        
+
         <div class="suggestions-list">
-          <div *ngFor="let suggestion of suggestions" class="suggestion-item" 
+          <div *ngFor="let suggestion of suggestions" class="suggestion-item"
                [class]="suggestion.status">
             <div class="suggestion-header">
               <div class="suggestion-author">{{ suggestion.user_name }}</div>
               <div class="suggestion-date">{{ suggestion.created_at | date:'short' }}</div>
             </div>
-            
+
             <div class="suggestion-content">
               <div class="original-content">
                 <strong>原文:</strong>
                 <span>{{ suggestion.original_content }}</span>
               </div>
-              
+
               <div class="suggested-content">
                 <strong>建议:</strong>
                 <span>{{ suggestion.suggested_content }}</span>
               </div>
-              
+
               <div *ngIf="suggestion.suggestion_reason" class="suggestion-reason">
                 <strong>理由:</strong>
                 <span>{{ suggestion.suggestion_reason }}</span>
               </div>
             </div>
-            
+
             <div class="suggestion-actions" *ngIf="suggestion.status === 'pending'">
-              <button mat-button color="primary" 
+              <button mat-button color="primary"
                       (click)="reviewSuggestion(suggestion.id, 'accepted')">
                 接受
               </button>
-              <button mat-button color="warn" 
+              <button mat-button color="warn"
                       (click)="reviewSuggestion(suggestion.id, 'rejected')">
                 拒绝
               </button>
             </div>
-            
+
             <div class="suggestion-status" *ngIf="suggestion.status !== 'pending'">
               <span class="status-badge" [class]="suggestion.status">
                 {{ getSuggestionStatusLabel(suggestion.status) }}
               </span>
             </div>
           </div>
-          
+
           <div *ngIf="suggestions.length === 0" class="empty-state">
             <mat-icon>rate_review</mat-icon>
             <p>暂无建议</p>
@@ -222,7 +222,7 @@
   </div>
 
   <!-- 选区操作工具栏 -->
-  <div class="selection-toolbar" *ngIf="showSelectionToolbar" 
+  <div class="selection-toolbar" *ngIf="showSelectionToolbar"
        [style.left.px]="selectionToolbarPosition.x"
        [style.top.px]="selectionToolbarPosition.y">
     <button mat-icon-button (click)="openCommentDialog()">

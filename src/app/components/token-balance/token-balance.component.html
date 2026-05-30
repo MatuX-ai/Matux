@@ -1,0 +1,51 @@
+<div class="token-balance-card">
+  <!-- 状态图标和标题 -->
+  <div class="balance-header">
+    <mat-icon>account_balance_wallet</mat-icon>
+    <span class="status-text">Token 余额</span>
+  </div>
+
+  <!-- 主要余额信息 -->
+  <div class="balance-main">
+    <div class="balance-item">
+      <span class="balance-label">可用 Token</span>
+      <span class="balance-value highlight">{{ formatNumber(remainingTokens) }}</span>
+    </div>
+
+    <div *ngIf="showDetails" class="balance-details">
+      <div class="balance-item small">
+        <span class="balance-label">累计充值</span>
+        <span class="balance-value">{{ formatNumber(totalTokens) }}</span>
+      </div>
+      <div class="balance-item small">
+        <span class="balance-label">已消费</span>
+        <span class="balance-value">{{ formatNumber(usedTokens) }}</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- 进度条 -->
+  <div *ngIf="showDetails && totalTokens > 0" class="balance-progress">
+    <mat-progress-bar
+      mode="determinate"
+      [value]="usagePercent"
+      [color]="getProgressColor()">
+    </mat-progress-bar>
+    <div class="progress-labels">
+      <span class="progress-label">使用进度</span>
+      <span class="progress-percent">{{ usagePercent | number:'1.0-0' }}%</span>
+    </div>
+  </div>
+
+  <!-- 快捷操作按钮 -->
+  <div class="balance-actions">
+    <button mat-button color="primary" class="action-btn">
+      <mat-icon>add_shopping_cart</mat-icon>
+      购买 Token
+    </button>
+    <button mat-button color="accent" class="action-btn">
+      <mat-icon>history</mat-icon>
+      使用记录
+    </button>
+  </div>
+</div>

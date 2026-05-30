@@ -1,0 +1,107 @@
+<!-- 多标签页编辑器 -->
+<div class="tabbed-editor">
+  <!-- 标签栏 -->
+  <div class="tab-bar" role="tablist">
+    <div class="tab-list">
+      @for (tab of tabs; track tab.id) {
+        <div
+          class="tab-item"
+          [class.active]="tab.id === activeTabId"
+          [class.dirty]="tab.isDirty"
+          role="tab"
+          [attr.aria-selected]="tab.id === activeTabId"
+          (click)="selectTab(tab.id)"
+        >
+          <span class="tab-icon">
+            @if (tab.icon) {
+              <i class="ri-{{ tab.icon }}"></i>
+            } @else {
+              <i class="ri-file-code-line"></i>
+            }
+          </span>
+          <span class="tab-title">{{ tab.title }}</span>
+          @if (tab.isDirty) {
+            <span class="tab-dirty-indicator">●</span>
+          }
+          <button
+            class="tab-close-btn"
+            (click)="closeTab(tab.id, $event)"
+            title="关闭 (Ctrl+W)"
+            aria-label="关闭标签页"
+          >
+            <i class="ri-close-line"></i>
+          </button>
+        </div>
+      }
+    </div>
+
+    <!-- 标签栏操作按钮 -->
+    <div class="tab-actions">
+      <button class="tab-action-btn" (click)="newTabRequest.emit()" title="新建标签页 (Ctrl+N)" aria-label="新建标签页">
+        <i class="ri-add-line"></i>
+      </button>
+      <button class="tab-action-btn" (click)="openFileRequest.emit()" title="打开文件 (Ctrl+O)" aria-label="打开文件">
+        <i class="ri-folder-open-line"></i>
+      </button>
+    </div>
+  </div>
+
+  <!-- 编辑器区域 -->
+  <div class="editor-area">
+    @if (getActiveTab(); as activeTab) {
+      <div class="editor-content">
+        <!-- Monaco Editor -->
+        <ngx-monaco-editor
+          class="monaco-editor"
+          [options]="getEditorOptions(activeTab.language)"
+          [(ngModel)]="activeTab.content"
+          (ngModelChange)="onContentChange(activeTab.id, $event)"
+        ></ngx-monaco-editor>
+      </div>
+    } @else {
+      <div class="editor-empty">
+        <div class="empty-icon">
+          <i class="ri-code-box-line"></i>
+        </div>
+        <p class="empty-text">没有打开的标签页</p>
+        <p class="empty-hint">按 Ctrl+N 新建，或 Ctrl+O 打开文件</p>
+      </div>
+    }
+  </div>
+
+  <!-- 运行结果面板 -->
+  @if (showOutput && lastRunResult) {
+    <div class="output-panel">
+      <div class="output-header">
+        <span class="output-title">
+          <i [class]="lastRunResult.success ? 'ri-check-line success' : 'ri-error-warning-line error'"></i>
+          运行结果
+          @if (lastRunResult.executionTime != null) {
+            <span class="exec-time">({{ lastRunResult.executionTime }}ms)</span>
+          }
+        </span>
+        <button class="output-close-btn" (click)="showOutput = false" aria-label="关闭输出面板">
+          <i class="ri-close-line"></i>
+        </button>
+      </div>
+      <pre class="output-content" [class.error-output]="!lastRunResult.success">{{ lastRunResult.output || '' }}</pre>
+    </div>
+  }
+
+  <!-- 底部状态栏 -->
+  <div class="editor-statusbar">
+    @if (getActiveTab(); as activeTab) {
+      <span class="status-language">{{ getLanguageLabel(activeTab.language) }}</span>
+      <span class="status-file">{{ activeTab.filePath || '未保存' }}</span>
+      @if (activeTab.isDirty) {
+        <span class="status-dirty">未保存</span>
+      }
+    }
+    <span class="status-spacer"></span>
+    @if (isRunning) {
+      <span class="status-running">运行中...</span>
+    }
+    <span class="status-encoding">UTF-8</span>
+    <span class="status-tabs">{{ tabs.length }} 个标签页</span>
+  </div>
+</div>

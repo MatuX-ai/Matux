@@ -138,7 +138,7 @@ class Settings(BaseSettings):
     NEO4J_USERNAME: str = "neo4j"
     NEO4J_PASSWORD: str = "password"
     NEO4J_DATABASE: str = "neo4j"  # Neo4j Desktop 实例名称 (如 iMato-DB)
-    NEO4J_ENABLED: bool = True  # 设置为 False 可禁用 Neo4j
+    NEO4J_ENABLED: bool = False  # 设置为 True 可启用 Neo4j
 
     # 可选路由配置 (通过环境变量控制功能模块的启用/禁用)
     ENABLE_AR_VR_ROUTES: bool = False  # AR/VR课程内容管理

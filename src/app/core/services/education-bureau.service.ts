@@ -1,4 +1,7 @@
 /**
+ * @deprecated 教育局管理功能将逐步迁移到 OpenMTEduInst 子项目。
+ * 当前保留用于 iMato 学习端的教育局数据展示需求。
+ * 未来版本中此服务将移至 OpenMTEduInst 项目维护。
  * 教育局服务
  * 提供教育局Dashboard相关API调用封装，包括区域数据概览、学校数据对比、教学质量监控等功能
  */
@@ -6,7 +9,7 @@
 import { HttpClient } from '@angular/common/http';
 import { Injectable } from '@angular/core';
 import { Observable, of } from 'rxjs';
-import { map, catchError, timeout, retry } from 'rxjs/operators';
+import { catchError, map, retry, timeout } from 'rxjs/operators';
 
 import { ApiResponse } from '../../models/education-management.models';
 
@@ -188,24 +191,25 @@ export class EducationBureauService {
       return this.getSimulatedRegionalOverview(districtId);
     }
 
-    return this.http.get<ApiResponse<RegionalOverview>>(
-      `${this.EDUCATION_BUREAU_API_BASE}/district/${districtId}/overview`,
-      { headers: this.getAuthHeaders() }
-    ).pipe(
-      timeout(10000), // 10秒超时
-      retry(2), // 失败重试2次
-      map(response => {
-        if (response.success && response.data) {
-          return response.data;
-        } else {
-          throw new Error(response.message || '获取区域数据概览失败');
-        }
-      }),
-      catchError(err => {
-        console.warn('真实API获取区域数据概览失败，回退到模拟数据:', err);
-        return this.getSimulatedRegionalOverview(districtId);
-      })
-    );
+    return this.http
+      .get<
+        ApiResponse<RegionalOverview>
+      >(`${this.EDUCATION_BUREAU_API_BASE}/district/${districtId}/overview`, { headers: this.getAuthHeaders() })
+      .pipe(
+        timeout(10000), // 10秒超时
+        retry(2), // 失败重试2次
+        map((response) => {
+          if (response.success && response.data) {
+            return response.data;
+          } else {
+            throw new Error(response.message || '获取区域数据概览失败');
+          }
+        }),
+        catchError((err) => {
+          console.warn('真实API获取区域数据概览失败，回退到模拟数据:', err);
+          return this.getSimulatedRegionalOverview(districtId);
+        })
+      );
   }
 
   /**
@@ -216,24 +220,25 @@ export class EducationBureauService {
       return this.getSimulatedSchoolComparisons(districtId);
     }
 
-    return this.http.get<ApiResponse<SchoolComparison[]>>(
-      `${this.EDUCATION_BUREAU_API_BASE}/district/${districtId}/schools/comparisons`,
-      { headers: this.getAuthHeaders() }
-    ).pipe(
-      timeout(15000), // 15秒超时（数据量较大）
-      retry(2),
-      map(response => {
-        if (response.success && response.data) {
-          return response.data;
-        } else {
-          throw new Error(response.message || '获取学校对比数据失败');
-        }
-      }),
-      catchError(err => {
-        console.warn('真实API获取学校对比数据失败，回退到模拟数据:', err);
-        return this.getSimulatedSchoolComparisons(districtId);
-      })
-    );
+    return this.http
+      .get<
+        ApiResponse<SchoolComparison[]>
+      >(`${this.EDUCATION_BUREAU_API_BASE}/district/${districtId}/schools/comparisons`, { headers: this.getAuthHeaders() })
+      .pipe(
+        timeout(15000), // 15秒超时（数据量较大）
+        retry(2),
+        map((response) => {
+          if (response.success && response.data) {
+            return response.data;
+          } else {
+            throw new Error(response.message || '获取学校对比数据失败');
+          }
+        }),
+        catchError((err) => {
+          console.warn('真实API获取学校对比数据失败，回退到模拟数据:', err);
+          return this.getSimulatedSchoolComparisons(districtId);
+        })
+      );
   }
 
   /**
@@ -244,24 +249,25 @@ export class EducationBureauService {
       return this.getSimulatedTeachingQualityMetrics(districtId);
     }
 
-    return this.http.get<ApiResponse<TeachingQualityMetric[]>>(
-      `${this.EDUCATION_BUREAU_API_BASE}/district/${districtId}/quality/metrics`,
-      { headers: this.getAuthHeaders() }
-    ).pipe(
-      timeout(10000),
-      retry(2),
-      map(response => {
-        if (response.success && response.data) {
-          return response.data;
-        } else {
-          throw new Error(response.message || '获取教学质量监控指标失败');
-        }
-      }),
-      catchError(err => {
-        console.warn('真实API获取教学质量监控指标失败，回退到模拟数据:', err);
-        return this.getSimulatedTeachingQualityMetrics(districtId);
-      })
-    );
+    return this.http
+      .get<
+        ApiResponse<TeachingQualityMetric[]>
+      >(`${this.EDUCATION_BUREAU_API_BASE}/district/${districtId}/quality/metrics`, { headers: this.getAuthHeaders() })
+      .pipe(
+        timeout(10000),
+        retry(2),
+        map((response) => {
+          if (response.success && response.data) {
+            return response.data;
+          } else {
+            throw new Error(response.message || '获取教学质量监控指标失败');
+          }
+        }),
+        catchError((err) => {
+          console.warn('真实API获取教学质量监控指标失败，回退到模拟数据:', err);
+          return this.getSimulatedTeachingQualityMetrics(districtId);
+        })
+      );
   }
 
   /**
@@ -272,24 +278,25 @@ export class EducationBureauService {
       return this.getSimulatedScoreDistributions(districtId);
     }
 
-    return this.http.get<ApiResponse<ScoreDistribution[]>>(
-      `${this.EDUCATION_BUREAU_API_BASE}/district/${districtId}/scores/distributions`,
-      { headers: this.getAuthHeaders() }
-    ).pipe(
-      timeout(15000),
-      retry(2),
-      map(response => {
-        if (response.success && response.data) {
-          return response.data;
-        } else {
-          throw new Error(response.message || '获取成绩分布统计失败');
-        }
-      }),
-      catchError(err => {
-        console.warn('真实API获取成绩分布统计失败，回退到模拟数据:', err);
-        return this.getSimulatedScoreDistributions(districtId);
-      })
-    );
+    return this.http
+      .get<
+        ApiResponse<ScoreDistribution[]>
+      >(`${this.EDUCATION_BUREAU_API_BASE}/district/${districtId}/scores/distributions`, { headers: this.getAuthHeaders() })
+      .pipe(
+        timeout(15000),
+        retry(2),
+        map((response) => {
+          if (response.success && response.data) {
+            return response.data;
+          } else {
+            throw new Error(response.message || '获取成绩分布统计失败');
+          }
+        }),
+        catchError((err) => {
+          console.warn('真实API获取成绩分布统计失败，回退到模拟数据:', err);
+          return this.getSimulatedScoreDistributions(districtId);
+        })
+      );
   }
 
   /**
@@ -300,24 +307,25 @@ export class EducationBureauService {
       return this.getSimulatedResourceRecommendations(districtId);
     }
 
-    return this.http.get<ApiResponse<ResourceAllocationRecommendation[]>>(
-      `${this.EDUCATION_BUREAU_API_BASE}/district/${districtId}/recommendations`,
-      { headers: this.getAuthHeaders() }
-    ).pipe(
-      timeout(12000),
-      retry(2),
-      map(response => {
-        if (response.success && response.data) {
-          return response.data;
-        } else {
-          throw new Error(response.message || '获取资源调配建议失败');
-        }
-      }),
-      catchError(err => {
-        console.warn('真实API获取资源调配建议失败，回退到模拟数据:', err);
-        return this.getSimulatedResourceRecommendations(districtId);
-      })
-    );
+    return this.http
+      .get<
+        ApiResponse<ResourceAllocationRecommendation[]>
+      >(`${this.EDUCATION_BUREAU_API_BASE}/district/${districtId}/recommendations`, { headers: this.getAuthHeaders() })
+      .pipe(
+        timeout(12000),
+        retry(2),
+        map((response) => {
+          if (response.success && response.data) {
+            return response.data;
+          } else {
+            throw new Error(response.message || '获取资源调配建议失败');
+          }
+        }),
+        catchError((err) => {
+          console.warn('真实API获取资源调配建议失败，回退到模拟数据:', err);
+          return this.getSimulatedResourceRecommendations(districtId);
+        })
+      );
   }
 
   /**
@@ -328,24 +336,25 @@ export class EducationBureauService {
       return this.getSimulatedDashboard(districtId);
     }
 
-    return this.http.get<ApiResponse<EducationBureauDashboard>>(
-      `${this.EDUCATION_BUREAU_API_BASE}/district/${districtId}/dashboard`,
-      { headers: this.getAuthHeaders() }
-    ).pipe(
-      timeout(20000), // 20秒超时（完整Dashboard数据）
-      retry(2),
-      map(response => {
-        if (response.success && response.data) {
-          return response.data;
-        } else {
-          throw new Error(response.message || '获取教育局Dashboard失败');
-        }
-      }),
-      catchError(err => {
-        console.warn('真实API获取教育局Dashboard失败，回退到模拟数据:', err);
-        return this.getSimulatedDashboard(districtId);
-      })
-    );
+    return this.http
+      .get<
+        ApiResponse<EducationBureauDashboard>
+      >(`${this.EDUCATION_BUREAU_API_BASE}/district/${districtId}/dashboard`, { headers: this.getAuthHeaders() })
+      .pipe(
+        timeout(20000), // 20秒超时（完整Dashboard数据）
+        retry(2),
+        map((response) => {
+          if (response.success && response.data) {
+            return response.data;
+          } else {
+            throw new Error(response.message || '获取教育局Dashboard失败');
+          }
+        }),
+        catchError((err) => {
+          console.warn('真实API获取教育局Dashboard失败，回退到模拟数据:', err);
+          return this.getSimulatedDashboard(districtId);
+        })
+      );
   }
 
   /**
@@ -355,24 +364,26 @@ export class EducationBureauService {
     if (this.SIMULATION_MODE) {
       console.log('模拟数据导出:', options);
       // 返回模拟的Excel文件
-      return of(new Blob(['Simulated export data'], { type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet' }));
+      return of(
+        new Blob(['Simulated export data'], {
+          type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
+        })
+      );
     }
 
-    return this.http.post(
-      `${this.EDUCATION_BUREAU_API_BASE}/export`,
-      options,
-      { 
+    return this.http
+      .post(`${this.EDUCATION_BUREAU_API_BASE}/export`, options, {
         headers: this.getAuthHeaders(),
-        responseType: 'blob'
-      }
-    ).pipe(
-      timeout(30000), // 30秒超时（生成报表可能需要时间）
-      retry(1),
-      catchError(err => {
-        console.error('数据导出失败:', err);
-        throw new Error('数据导出失败，请稍后重试');
+        responseType: 'blob',
       })
-    );
+      .pipe(
+        timeout(30000), // 30秒超时（生成报表可能需要时间）
+        retry(1),
+        catchError((err) => {
+          console.error('数据导出失败:', err);
+          throw new Error('数据导出失败，请稍后重试');
+        })
+      );
   }
 
   /**
@@ -382,8 +393,8 @@ export class EducationBureauService {
     // TODO: 从AuthService获取实际的token
     const token = localStorage.getItem('access_token') || 'mock-token-for-development';
     return {
-      'Authorization': `Bearer ${token}`,
-      'Content-Type': 'application/json'
+      Authorization: `Bearer ${token}`,
+      'Content-Type': 'application/json',
     };
   }
 
@@ -405,17 +416,17 @@ export class EducationBureauService {
         urban_schools: 16,
         rural_schools: 8,
         urban_students: 11200,
-        rural_students: 4480
+        rural_students: 4480,
       },
       enrollment_trend: {
         current_year: 15680,
         previous_year: 15200,
-        growth_rate: 3.16
+        growth_rate: 3.16,
       },
       created_at: '2026-03-21T10:00:00Z',
-      updated_at: '2026-03-21T10:00:00Z'
+      updated_at: '2026-03-21T10:00:00Z',
     };
-    
+
     return of(overview);
   }
 
@@ -439,18 +450,18 @@ export class EducationBureauService {
           bachelor_degree: 60,
           master_degree: 23,
           phd_degree: 2,
-          certified_teachers: 78
+          certified_teachers: 78,
         },
         resource_allocation: {
           total_funding: 2850000,
           funding_per_student: 2375,
           classroom_count: 36,
           lab_count: 8,
-          library_size: 15000
+          library_size: 15000,
         },
         performance_rank: 1,
         created_at: '2026-03-21T10:00:00Z',
-        updated_at: '2026-03-21T10:00:00Z'
+        updated_at: '2026-03-21T10:00:00Z',
       },
       {
         school_id: 2,
@@ -470,18 +481,18 @@ export class EducationBureauService {
           bachelor_degree: 52,
           master_degree: 15,
           phd_degree: 1,
-          certified_teachers: 62
+          certified_teachers: 62,
         },
         resource_allocation: {
           total_funding: 2150000,
           funding_per_student: 2194,
           classroom_count: 28,
           lab_count: 6,
-          library_size: 12000
+          library_size: 12000,
         },
         performance_rank: 2,
         created_at: '2026-03-21T10:00:00Z',
-        updated_at: '2026-03-21T10:00:00Z'
+        updated_at: '2026-03-21T10:00:00Z',
       },
       {
         school_id: 3,
@@ -501,18 +512,18 @@ export class EducationBureauService {
           bachelor_degree: 40,
           master_degree: 14,
           phd_degree: 1,
-          certified_teachers: 52
+          certified_teachers: 52,
         },
         resource_allocation: {
           total_funding: 1850000,
           funding_per_student: 2467,
           classroom_count: 24,
           lab_count: 5,
-          library_size: 18000
+          library_size: 18000,
         },
         performance_rank: 3,
         created_at: '2026-03-21T10:00:00Z',
-        updated_at: '2026-03-21T10:00:00Z'
+        updated_at: '2026-03-21T10:00:00Z',
       },
       {
         school_id: 4,
@@ -532,18 +543,18 @@ export class EducationBureauService {
           bachelor_degree: 35,
           master_degree: 12,
           phd_degree: 1,
-          certified_teachers: 48
+          certified_teachers: 48,
         },
         resource_allocation: {
           total_funding: 3200000,
           funding_per_student: 5333,
           classroom_count: 20,
           lab_count: 4,
-          library_size: 22000
+          library_size: 22000,
         },
         performance_rank: 4,
         created_at: '2026-03-21T10:00:00Z',
-        updated_at: '2026-03-21T10:00:00Z'
+        updated_at: '2026-03-21T10:00:00Z',
       },
       {
         school_id: 5,
@@ -563,25 +574,27 @@ export class EducationBureauService {
           bachelor_degree: 28,
           master_degree: 4,
           phd_degree: 0,
-          certified_teachers: 25
+          certified_teachers: 25,
         },
         resource_allocation: {
           total_funding: 950000,
           funding_per_student: 2262,
           classroom_count: 16,
           lab_count: 2,
-          library_size: 6000
+          library_size: 6000,
         },
         performance_rank: 5,
         created_at: '2026-03-21T10:00:00Z',
-        updated_at: '2026-03-21T10:00:00Z'
-      }
+        updated_at: '2026-03-21T10:00:00Z',
+      },
     ];
-    
+
     return of(schools);
   }
 
-  private getSimulatedTeachingQualityMetrics(districtId: number): Observable<TeachingQualityMetric[]> {
+  private getSimulatedTeachingQualityMetrics(
+    districtId: number
+  ): Observable<TeachingQualityMetric[]> {
     const metrics: TeachingQualityMetric[] = [
       {
         metric_id: 1,
@@ -598,8 +611,8 @@ export class EducationBureauService {
         historical_data: [
           { period: '2025-09', value: 82.3 },
           { period: '2025-12', value: 83.5 },
-          { period: '2026-03', value: 84.6 }
-        ]
+          { period: '2026-03', value: 84.6 },
+        ],
       },
       {
         metric_id: 2,
@@ -616,8 +629,8 @@ export class EducationBureauService {
         historical_data: [
           { period: '2025-09', value: 95.2 },
           { period: '2025-12', value: 95.6 },
-          { period: '2026-03', value: 95.8 }
-        ]
+          { period: '2026-03', value: 95.8 },
+        ],
       },
       {
         metric_id: 3,
@@ -634,8 +647,8 @@ export class EducationBureauService {
         historical_data: [
           { period: '2025-09', value: 85.6 },
           { period: '2025-12', value: 87.2 },
-          { period: '2026-03', value: 88.4 }
-        ]
+          { period: '2026-03', value: 88.4 },
+        ],
       },
       {
         metric_id: 4,
@@ -652,8 +665,8 @@ export class EducationBureauService {
         historical_data: [
           { period: '2025-09', value: 84.5 },
           { period: '2025-12', value: 83.2 },
-          { period: '2026-03', value: 82.3 }
-        ]
+          { period: '2026-03', value: 82.3 },
+        ],
       },
       {
         metric_id: 5,
@@ -670,11 +683,11 @@ export class EducationBureauService {
         historical_data: [
           { period: '2025-09', value: 3.2 },
           { period: '2025-12', value: 3.0 },
-          { period: '2026-03', value: 2.8 }
-        ]
-      }
+          { period: '2026-03', value: 2.8 },
+        ],
+      },
     ];
-    
+
     return of(metrics);
   }
 
@@ -691,7 +704,7 @@ export class EducationBureauService {
           { range: '80-89', count: 375, percentage: 30.0 },
           { range: '70-79', count: 325, percentage: 26.0 },
           { range: '60-69', count: 175, percentage: 14.0 },
-          { range: '0-59', count: 95, percentage: 7.6 }
+          { range: '0-59', count: 95, percentage: 7.6 },
         ],
         avg_score: 78.6,
         median_score: 80.0,
@@ -700,8 +713,8 @@ export class EducationBureauService {
         subject_rank: 1,
         trend_analysis: {
           compared_to_last_year: 'improved',
-          improvement_rate: 3.2
-        }
+          improvement_rate: 3.2,
+        },
       },
       {
         district_id: districtId,
@@ -714,7 +727,7 @@ export class EducationBureauService {
           { range: '80-89', count: 400, percentage: 32.0 },
           { range: '70-79', count: 350, percentage: 28.0 },
           { range: '60-69', count: 200, percentage: 16.0 },
-          { range: '0-59', count: 75, percentage: 6.0 }
+          { range: '0-59', count: 75, percentage: 6.0 },
         ],
         avg_score: 76.8,
         median_score: 78.0,
@@ -723,8 +736,8 @@ export class EducationBureauService {
         subject_rank: 2,
         trend_analysis: {
           compared_to_last_year: 'stable',
-          improvement_rate: 0.8
-        }
+          improvement_rate: 0.8,
+        },
       },
       {
         district_id: districtId,
@@ -737,7 +750,7 @@ export class EducationBureauService {
           { range: '80-89', count: 325, percentage: 26.0 },
           { range: '70-79', count: 400, percentage: 32.0 },
           { range: '60-69', count: 225, percentage: 18.0 },
-          { range: '0-59', count: 100, percentage: 8.0 }
+          { range: '0-59', count: 100, percentage: 8.0 },
         ],
         avg_score: 74.5,
         median_score: 76.0,
@@ -746,15 +759,17 @@ export class EducationBureauService {
         subject_rank: 3,
         trend_analysis: {
           compared_to_last_year: 'improved',
-          improvement_rate: 2.5
-        }
-      }
+          improvement_rate: 2.5,
+        },
+      },
     ];
-    
+
     return of(distributions);
   }
 
-  private getSimulatedResourceRecommendations(districtId: number): Observable<ResourceAllocationRecommendation[]> {
+  private getSimulatedResourceRecommendations(
+    districtId: number
+  ): Observable<ResourceAllocationRecommendation[]> {
     const recommendations: ResourceAllocationRecommendation[] = [
       {
         recommendation_id: 1,
@@ -769,15 +784,15 @@ export class EducationBureauService {
           metric: '教师流失率',
           current_value: 12.5,
           projected_value: 8.0,
-          improvement: 36.0
+          improvement: 36.0,
         },
         affected_schools: [5, 6, 7, 8],
         timeline: {
           immediate: ['制定津贴标准'],
           short_term: ['预算审批', '教师薪酬调整'],
-          long_term: ['评估教师流失率变化']
+          long_term: ['评估教师流失率变化'],
         },
-        created_at: '2026-03-21T10:00:00Z'
+        created_at: '2026-03-21T10:00:00Z',
       },
       {
         recommendation_id: 2,
@@ -792,15 +807,15 @@ export class EducationBureauService {
           metric: '实验课程完成率',
           current_value: 85.0,
           projected_value: 95.0,
-          improvement: 11.8
+          improvement: 11.8,
         },
         affected_schools: [2, 5, 9, 12],
         timeline: {
           immediate: ['设备需求评估'],
           short_term: ['采购招标', '设备安装调试'],
-          long_term: ['教师设备使用培训']
+          long_term: ['教师设备使用培训'],
         },
-        created_at: '2026-03-21T10:00:00Z'
+        created_at: '2026-03-21T10:00:00Z',
       },
       {
         recommendation_id: 3,
@@ -815,18 +830,18 @@ export class EducationBureauService {
           metric: 'STEM课程参与率',
           current_value: 32.0,
           projected_value: 45.0,
-          improvement: 40.6
+          improvement: 40.6,
         },
         affected_schools: [1, 3, 10, 15, 18],
         timeline: {
           immediate: ['学校选拔'],
           short_term: ['师资培训', '教材开发'],
-          long_term: ['试点评估推广']
+          long_term: ['试点评估推广'],
         },
-        created_at: '2026-03-21T10:00:00Z'
-      }
+        created_at: '2026-03-21T10:00:00Z',
+      },
     ];
-    
+
     return of(recommendations);
   }
 
@@ -847,15 +862,15 @@ export class EducationBureauService {
           urban_schools: 16,
           rural_schools: 8,
           urban_students: 11200,
-          rural_students: 4480
+          rural_students: 4480,
         },
         enrollment_trend: {
           current_year: 15680,
           previous_year: 15200,
-          growth_rate: 3.16
+          growth_rate: 3.16,
         },
         created_at: '2026-03-21T10:00:00Z',
-        updated_at: '2026-03-21T10:00:00Z'
+        updated_at: '2026-03-21T10:00:00Z',
       },
       school_comparisons: [
         {
@@ -876,19 +891,19 @@ export class EducationBureauService {
             bachelor_degree: 60,
             master_degree: 23,
             phd_degree: 2,
-            certified_teachers: 78
+            certified_teachers: 78,
           },
           resource_allocation: {
             total_funding: 2850000,
             funding_per_student: 2375,
             classroom_count: 36,
             lab_count: 8,
-            library_size: 15000
+            library_size: 15000,
           },
           performance_rank: 1,
           created_at: '2026-03-21T10:00:00Z',
-          updated_at: '2026-03-21T10:00:00Z'
-        }
+          updated_at: '2026-03-21T10:00:00Z',
+        },
       ],
       quality_metrics: [
         {
@@ -906,9 +921,9 @@ export class EducationBureauService {
           historical_data: [
             { period: '2025-09', value: 82.3 },
             { period: '2025-12', value: 83.5 },
-            { period: '2026-03', value: 84.6 }
-          ]
-        }
+            { period: '2026-03', value: 84.6 },
+          ],
+        },
       ],
       score_distributions: [
         {
@@ -922,7 +937,7 @@ export class EducationBureauService {
             { range: '80-89', count: 375, percentage: 30.0 },
             { range: '70-79', count: 325, percentage: 26.0 },
             { range: '60-69', count: 175, percentage: 14.0 },
-            { range: '0-59', count: 95, percentage: 7.6 }
+            { range: '0-59', count: 95, percentage: 7.6 },
           ],
           avg_score: 78.6,
           median_score: 80.0,
@@ -931,9 +946,9 @@ export class EducationBureauService {
           subject_rank: 1,
           trend_analysis: {
             compared_to_last_year: 'improved',
-            improvement_rate: 3.2
-          }
-        }
+            improvement_rate: 3.2,
+          },
+        },
       ],
       recommendations: [
         {
@@ -949,16 +964,16 @@ export class EducationBureauService {
             metric: '教师流失率',
             current_value: 12.5,
             projected_value: 8.0,
-            improvement: 36.0
+            improvement: 36.0,
           },
           affected_schools: [5, 6, 7, 8],
           timeline: {
             immediate: ['制定津贴标准'],
             short_term: ['预算审批', '教师薪酬调整'],
-            long_term: ['评估教师流失率变化']
+            long_term: ['评估教师流失率变化'],
           },
-          created_at: '2026-03-21T10:00:00Z'
-        }
+          created_at: '2026-03-21T10:00:00Z',
+        },
       ],
       alerts: [
         {
@@ -968,10 +983,10 @@ export class EducationBureauService {
           description: '第5、8、12号学校的平均成绩连续两学期下降超过5%',
           severity: 'medium',
           affected_schools: [5, 8, 12],
-          created_at: '2026-03-20T14:30:00Z'
-        }
+          created_at: '2026-03-20T14:30:00Z',
+        },
       ],
-      generated_at: '2026-03-21T10:00:00Z'
+      generated_at: '2026-03-21T10:00:00Z',
     });
   }
 }

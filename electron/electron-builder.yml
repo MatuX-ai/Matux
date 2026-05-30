@@ -1,0 +1,131 @@
+# Electron Builder 配置文件
+# 用于生成 Windows 安装包
+
+appId: com.imato.desktop
+productName: iMato
+description: "iMato 智能教育平台 - Windows 桌面版"
+version: 1.0.0
+
+# 构建目录
+directories:
+  output: dist
+  buildResources: build
+
+# 包含的文件
+files:
+  - main.js
+  - preload.js
+  - build/**/*
+  - ../dist/imatuproject/**/*
+
+# 排除的文件（减小包体积）
+asarUnpack:
+  - "**/*.node"
+
+# Windows 特定配置
+win:
+  target:
+    - target: nsis
+      arch:
+        - x64
+        - ia32
+  icon: icon.ico
+  
+  # 文件信息
+  requestedExecutionLevel: asInvoker
+  certificateFile: null  # 代码签名证书（可选）
+  certificatePassword: null
+
+# NSIS 安装程序配置
+nsis:
+  oneClick: false  # false = 用户可选择安装位置
+  allowToChangeInstallationDirectory: true
+  perMachine: false
+  
+  # 安装界面语言
+  language: 2052  # 简体中文
+  
+  # 快捷方式
+  createDesktopShortcut: true
+  createStartMenuShortcut: true
+  shortcutName: iMato
+  
+  # 卸载显示名称
+  uninstallDisplayName: iMato
+  
+  # 允许 UAC 提权
+  allowElevation: true
+  
+  # 安装包输出文件名
+  artifactName: "${productName}-${version}-Setup.${ext}"
+  
+  # 安装包图标
+  installerIcon: icon.ico
+  
+  # 卸载图标
+  uninstallerIcon: icon.ico
+  
+  # NSIS 脚本头
+  installerHeaderIcon: icon.ico
+  
+  # 自定义 NSIS 脚本
+  include: null  # 自定义.nsh 文件路径（可选）
+  
+  # 运行安装完成后执行
+  runAfterFinish: true
+  
+  # 删除旧版本
+  deleteAppDataOnUninstall: false
+
+# 便携版配置（无需安装）
+portable:
+  artifactName: "${productName}-${version}-Portable.${ext}"
+
+# 压缩方式
+compression: maximum
+
+# 是否发布到 GitHub
+publish:
+  provider: github
+  owner: imatuproject
+  repo: imato
+  
+  # 发布策略
+  # always - 每次构建都发布
+  # never - 不发布
+  releaseType: draft  # draft = 草稿，prerelease = 预发布，release = 正式发布
+
+# 额外资源
+extraMetadata:
+  main: main.js
+
+# 协议注册（可选）
+protocols:
+  - name: iMato Protocol
+    schemes:
+      - imato
+
+# 文件关联（可选）
+fileAssociations:
+  - ext: imato
+    name: iMato Course Package
+    description: iMato 课程包
+    role: Viewer
+    mimeType: application/x-imato
+
+# 图标配置
+icon: build/icon.ico
+
+# 构建钩子（可选）
+afterPack: null  # 打包后执行的脚本
+afterSign: null  # 签名后执行的脚本
+
+# 应用分类
+category: Education
+
+# 构建日志
+npmRebuild: true
+buildDependenciesFromSource: false
+
+# Node.js 版本
+nodeGypRebuild: false

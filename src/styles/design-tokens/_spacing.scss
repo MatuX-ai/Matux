@@ -1,0 +1,264 @@
+// Design Tokens - Spacing
+//
+// 间距设计变量系统锛屽熀浜?8px 网格系统鐨勯棿璺濊鑼?
+// 纭繚鐣岄潰鍏冪礌闂翠繚鎸佷竴鑷寸殑太空鍏崇郴
+
+// 寰皬间距 - 鐢ㄤ簬绮剧粏璋冩暣
+/// 2px 间距
+$spacing-xxs: 0.125rem !default; // 2px
+/// 4px 间距
+$spacing-xs: 0.25rem !default;   // 4px
+
+// 基础间距 - 鍩轰簬 8px 网格
+/// 8px 基础鍗曚綅
+$spacing-sm: 0.5rem !default;    // 8px
+/// 12px
+$spacing-md: 0.75rem !default;   // 12px
+/// 16px
+$spacing-lg: 1rem !default;      // 16px
+/// 24px
+$spacing-xl: 1.5rem !default;    // 24px
+/// 32px
+$spacing-xxl: 2rem !default;     // 32px
+
+// 数字化间距命名（用于更精确的间距控制）
+$spacing-0: 0 !default;                    // 0px
+$spacing-1: 0.25rem !default;              // 4px
+$spacing-2: 0.5rem !default;               // 8px
+$spacing-3: 0.75rem !default;              // 12px
+$spacing-4: 1rem !default;                 // 16px
+$spacing-5: 1.25rem !default;              // 20px
+$spacing-6: 1.5rem !default;               // 24px
+$spacing-8: 2rem !default;                 // 32px
+$spacing-10: 2.5rem !default;              // 40px
+$spacing-12: 3rem !default;                // 48px
+$spacing-16: 4rem !default;                // 64px
+$spacing-20: 5rem !default;               // 80px
+$spacing-24: 6rem !default;                // 96px
+$spacing-3xl: 4rem !default;               // 64px (别名)
+$spacing-4xl: 3rem !default;               // 48px (别名)
+
+// 澶ч棿璺?- 鐢ㄤ簬组件间距绂?
+/// 40px
+$spacing-xxxl: 2.5rem !default;  // 40px
+/// 48px
+$spacing-xxxxl: 3rem !default;   // 48px
+/// 56px
+$spacing-xxxxxl: 3.5rem !default; // 56px
+/// 64px
+$spacing-xxxxxxl: 4rem !default;  // 64px
+
+// 鐗瑰ぇ间距 - 鐢ㄤ簬椤甸潰布局
+/// 80px
+$spacing-huge: 5rem !default;    // 80px
+/// 96px
+$spacing-giant: 6rem !default;   // 96px
+/// 128px
+$spacing-massive: 8rem !default; // 128px
+
+// 方向鎬ч棿璺?
+/// 内边距濆皬
+$padding-sm: $spacing-sm !default;
+
+/// 内边距濅腑
+$padding-md: $spacing-md !default;
+
+/// 内边距濆ぇ
+$padding-lg: $spacing-lg !default;
+
+/// 内边距濈壒澶?
+$padding-xl: $spacing-xl !default;
+
+/// 澶栬竟璺濆皬
+$margin-sm: $spacing-sm !default;
+
+/// 澶栬竟璺濅腑
+$margin-md: $spacing-md !default;
+
+/// 澶栬竟璺濆ぇ
+$margin-lg: $spacing-lg !default;
+
+/// 澶栬竟璺濈壒澶?
+$margin-xl: $spacing-xl !default;
+
+/// 闂撮殧灏?
+$gap-sm: $spacing-sm !default;
+
+/// 闂撮殧涓?
+$gap-md: $spacing-md !default;
+
+/// 闂撮殧澶?
+$gap-lg: $spacing-lg !default;
+
+/// 闂撮殧鐗瑰ぇ
+$gap-xl: $spacing-xl !default;
+
+// 响应式忛棿璺?
+/// 移动端揣鍑戦棿璺?- 灏?
+$spacing-mobile-sm: 0.25rem !default;   // 4px
+/// 移动端揣鍑戦棿璺?- 涓?
+$spacing-mobile-md: 0.5rem !default;    // 8px
+/// 移动端揣鍑戦棿璺?- 澶?
+$spacing-mobile-lg: 0.75rem !default;   // 12px
+/// 移动端揣鍑戦棿璺?- 鐗瑰ぇ
+$spacing-mobile-xl: 1rem !default;      // 16px
+
+/// 平板端€備腑间距 - 灏?
+$spacing-tablet-sm: 0.5rem !default;    // 8px
+/// 平板端€備腑间距 - 涓?
+$spacing-tablet-md: 0.75rem !default;   // 12px
+/// 平板端€備腑间距 - 澶?
+$spacing-tablet-lg: 1rem !default;      // 16px
+/// 平板端€備腑间距 - 鐗瑰ぇ
+$spacing-tablet-xl: 1.5rem !default;    // 24px
+
+/// 桌面端鏉鹃棿璺?- 灏?
+$spacing-desktop-sm: 0.75rem !default;   // 12px
+/// 桌面端鏉鹃棿璺?- 涓?
+$spacing-desktop-md: 1rem !default;      // 16px
+/// 桌面端鏉鹃棿璺?- 澶?
+$spacing-desktop-lg: 1.5rem !default;    // 24px
+/// 桌面端鏉鹃棿璺?- 鐗瑰ぇ
+$spacing-desktop-xl: 2rem !default;      // 32px
+
+// 间距工具 Mixins
+/// 设置内边距?
+/// @param {String} $size - 间距澶у皬 (sm|md|lg|xl|xxl)
+@mixin padding($size: md) {
+  @if $size == sm {
+    padding: $padding-sm;
+  } @else if $size == md {
+    padding: $padding-md;
+  } @else if $size == lg {
+    padding: $padding-lg;
+  } @else if $size == xl {
+    padding: $padding-xl;
+  } @else if $size == xxl {
+    padding: $spacing-xxl;
+  } @else {
+    padding: $padding-md;
+  }
+}
+
+/// 设置澶栬竟璺?
+/// @param {String} $size - 间距澶у皬 (sm|md|lg|xl|xxl)
+@mixin margin($size: md) {
+  @if $size == sm {
+    margin: $margin-sm;
+  } @else if $size == md {
+    margin: $margin-md;
+  } @else if $size == lg {
+    margin: $margin-lg;
+  } @else if $size == xl {
+    margin: $margin-xl;
+  } @else if $size == xxl {
+    margin: $spacing-xxl;
+  } @else {
+    margin: $margin-md;
+  }
+}
+
+/// 设置 Flex 闂撮殧
+/// @param {String} $size - 间距澶у皬 (sm|md|lg|xl)
+@mixin gap($size: md) {
+  @if $size == sm {
+    gap: $gap-sm;
+  } @else if $size == md {
+    gap: $gap-md;
+  } @else if $size == lg {
+    gap: $gap-lg;
+  } @else if $size == xl {
+    gap: $gap-xl;
+  } @else {
+    gap: $gap-md;
+  }
+}
+
+/// 响应式忓唴杈硅窛
+/// @param {String} $breakpoint - 断点 (mobile|tablet|desktop)
+/// @param {String} $size - 间距澶у皬 (sm|md|lg|xl)
+@mixin responsive-padding($breakpoint: mobile, $size: md) {
+  @if $breakpoint == mobile {
+    @if $size == sm {
+      padding: $spacing-mobile-sm;
+    } @else if $size == md {
+      padding: $spacing-mobile-md;
+    } @else if $size == lg {
+      padding: $spacing-mobile-lg;
+    } @else if $size == xl {
+      padding: $spacing-mobile-xl;
+    }
+  } @else if $breakpoint == tablet {
+    @if $size == sm {
+      padding: $spacing-tablet-sm;
+    } @else if $size == md {
+      padding: $spacing-tablet-md;
+    } @else if $size == lg {
+      padding: $spacing-tablet-lg;
+    } @else if $size == xl {
+      padding: $spacing-tablet-xl;
+    }
+  } @else if $breakpoint == desktop {
+    @if $size == sm {
+      padding: $spacing-desktop-sm;
+    } @else if $size == md {
+      padding: $spacing-desktop-md;
+    } @else if $size == lg {
+      padding: $spacing-desktop-lg;
+    } @else if $size == xl {
+      padding: $spacing-desktop-xl;
+    }
+  }
+}
+
+// 间距工具函数
+/// 灏嗗儚绱犲€艰浆鎹负 rem
+/// @param {Number} $pixels - 鍍忕礌鍊?
+/// @return {String} rem 鍊?
+@function px-to-rem($pixels) {
+  @return #{$pixels / 16}rem;
+}
+
+/// 鍩轰簬 8px 网格璁＄畻间距
+/// @param {Number} $multiplier - 鍊嶆暟 (1 = 8px, 2 = 16px, etc.)
+/// @return {String} 璁＄畻鍚庣殑间距鍊?
+@function spacing-scale($multiplier) {
+  @return #{$multiplier * 0.5}rem;
+}
+
+/// 鑾峰彇基础间距鍊?
+/// @param {String} $size - 间距标识 (xxs|xs|sm|md|lg|xl|xxl)
+/// @return {String} 瀵瑰簲鐨勯棿璺濆€?
+@function get-spacing($size) {
+  @if $size == xxs {
+    @return $spacing-xxs;
+  } @else if $size == xs {
+    @return $spacing-xs;
+  } @else if $size == sm {
+    @return $spacing-sm;
+  } @else if $size == md {
+    @return $spacing-md;
+  } @else if $size == lg {
+    @return $spacing-lg;
+  } @else if $size == xl {
+    @return $spacing-xl;
+  } @else if $size == xxl {
+    @return $spacing-xxl;
+  } @else if $size == xxxl {
+    @return $spacing-xxxl;
+  } @else if $size == xxxxl {
+    @return $spacing-xxxxl;
+  } @else if $size == xxxxxl {
+    @return $spacing-xxxxxl;
+  } @else if $size == xxxxxxl {
+    @return $spacing-xxxxxxl;
+  } @else if $size == huge {
+    @return $spacing-huge;
+  } @else if $size == giant {
+    @return $spacing-giant;
+  } @else if $size == massive {
+    @return $spacing-massive;
+  } @else {
+    @return $spacing-md;
+  }
+}

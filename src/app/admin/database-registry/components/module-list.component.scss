@@ -1,0 +1,125 @@
+@use '../../../../styles/design-tokens' as tokens;
+
+.module-list-container {
+  padding: tokens.$spacing-lg;
+  max-width: 1400px;
+  margin: 0 auto;
+
+  .page-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    margin-bottom: tokens.$spacing-lg;
+    gap: tokens.$spacing-lg;
+
+    .header-content {
+      h2 {
+        display: flex;
+        align-items: center;
+        gap: tokens.$spacing-md;
+        margin: 0;
+        font-size: tokens.$font-size-3xl;
+        font-weight: 400;
+        color: tokens.$color-brand-primary;
+        mat-icon { font-size: tokens.$font-size-4xl; width: tokens.$font-size-4xl; height: tokens.$font-size-4xl; }
+      }
+      .subtitle { margin: tokens.$spacing-sm 0 0 0; color: tokens.$color-neutral-600; font-size: tokens.$font-size-sm; }
+    }
+    .header-actions { display: flex; gap: tokens.$spacing-md; align-items: center; }
+  }
+
+  .filters-card {
+    margin-bottom: tokens.$spacing-lg;
+    .filters-form {
+      .filters-row {
+        display: grid;
+        grid-template-columns: 2fr 1fr 1fr;
+        gap: tokens.$spacing-md;
+        .search-field { grid-column: 1 / -1; }
+        @media (min-width: tokens.$breakpoint-tablet-min) { .search-field { grid-column: 1; } }
+      }
+    }
+  }
+
+  .loading-container {
+    text-align: center;
+    padding: tokens.$spacing-3xl tokens.$spacing-lg;
+    mat-progress-bar { margin-bottom: tokens.$spacing-md; }
+    p { color: tokens.$color-neutral-600; margin: 0; }
+  }
+
+  .error-container {
+    .error-card {
+      border-left: 4px solid tokens.$color-error;
+      .error-content {
+        display: flex;
+        align-items: center;
+        gap: tokens.$spacing-md;
+        margin-bottom: tokens.$spacing-md;
+        mat-icon { font-size: tokens.$font-size-3xl + 8; width: tokens.$font-size-3xl + 8; height: tokens.$font-size-3xl + 8; }
+        .error-text {
+          h3 { margin: 0 0 tokens.$spacing-sm 0; color: tokens.$color-error; font-size: tokens.$font-size-lg; }
+          p { margin: 0; color: tokens.$color-neutral-600; }
+        }
+      }
+    }
+  }
+
+  .table-container {
+    .results-info {
+      margin-bottom: tokens.$spacing-md;
+      padding: 0 tokens.$spacing-sm;
+      .results-count { font-size: tokens.$font-size-sm; color: tokens.$color-neutral-600; }
+    }
+    mat-card {
+      .table-wrapper {
+        overflow-x: auto;
+        table {
+          width: 100%;
+          min-width: 800px;
+          .mat-mdc-header-cell { font-weight: 600; color: tokens.$color-neutral-800; }
+          .module-name {
+            strong { display: block; margin-bottom: tokens.$spacing-xs; }
+            .module-class { font-size: tokens.$font-size-xs; color: tokens.$color-neutral-600; font-family: 'Courier New', monospace; }
+          }
+          .table-name { background-color: tokens.$color-neutral-100; padding: tokens.$spacing-xs tokens.$spacing-sm; border-radius: tokens.$radius-sm; font-family: 'Courier New', monospace; font-size: tokens.$font-size-xs; color: tokens.$color-error-dark; }
+          .version-badge { background-color: tokens.$color-brand-primary-light; color: tokens.$color-brand-primary; padding: tokens.$spacing-xs tokens.$spacing-sm; border-radius: tokens.$radius-full; font-size: tokens.$font-size-xs; font-weight: 500; }
+          .status-cell {
+            display: flex;
+            align-items: center;
+            gap: tokens.$spacing-sm;
+            .status-chip { min-height: 28px; font-size: tokens.$font-size-xs; mat-icon { font-size: tokens.$font-size-base; width: tokens.$font-size-base; height: tokens.$font-size-base; } }
+            .tiny-icon { font-size: tokens.$font-size-sm - 2; width: tokens.$font-size-sm - 2; height: tokens.$font-size-sm - 2; opacity: 0.7; }
+          }
+          .action-buttons { display: flex; gap: tokens.$spacing-xs; justify-content: flex-end; }
+        }
+      }
+
+      .empty-state {
+        text-align: center;
+        padding: tokens.$spacing-4xl tokens.$spacing-lg;
+        color: tokens.$color-neutral-600;
+        mat-icon { font-size: tokens.$font-size-4xl + 16; width: tokens.$font-size-4xl + 16; height: tokens.$font-size-4xl + 16; margin-bottom: tokens.$spacing-md; opacity: 0.3; }
+        h3 { margin: 0 0 tokens.$spacing-sm 0; font-size: tokens.$font-size-lg; font-weight: 400; }
+        p { margin: 0; font-size: tokens.$font-size-sm; }
+      }
+    }
+  }
+
+  // 分类芯片颜色
+  .category-blue { background-color: tokens.$color-brand-primary-light; color: tokens.$color-brand-primary-dark; }
+  .category-green { background-color: tokens.$color-success-light; color: tokens.$color-success-dark; }
+  .category-orange { background-color: tokens.$color-warning-light; color: tokens.$color-warning-dark; }
+  .category-purple { background-color: #f3e5f5; color: #7b1fa2; }
+  .category-red { background-color: tokens.$color-error-light; color: tokens.$color-error-dark; }
+  .category-brown { background-color: #efebe9; color: #4e342e; }
+  .category-grey { background-color: tokens.$color-neutral-100; color: tokens.$color-neutral-800; }
+
+  // 响应式设计
+  @media (max-width: tokens.$breakpoint-mobile-max) {
+    padding: tokens.$spacing-md;
+    .page-header { flex-direction: column; align-items: stretch; .header-actions { justify-content: flex-start; flex-wrap: wrap; } }
+    .filters-form .filters-row { grid-template-columns: 1fr; }
+    .table-wrapper { font-size: tokens.$font-size-sm; }
+  }
+}

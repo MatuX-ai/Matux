@@ -1,0 +1,435 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>iMato 动效性能测试</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Inter', 'Microsoft YaHei', sans-serif;
+            background: #f5f5f5;
+            color: #333;
+        }
+
+        .test-container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 40px 20px;
+        }
+
+        h1 {
+            text-align: center;
+            margin-bottom: 40px;
+            color: #1e3a8a;
+        }
+
+        .test-section {
+            background: white;
+            padding: 30px;
+            margin-bottom: 30px;
+            border-radius: 12px;
+            box-shadow: 0 4px 16px rgba(30, 58, 138, 0.08);
+        }
+
+        .test-section h2 {
+            margin-bottom: 20px;
+            color: #1e40af;
+            font-size: 20px;
+        }
+
+        /* Hero 渐显动效测试 */
+        .hero-test {
+            background: linear-gradient(135deg, #1e3a8a 0%, #1e40af 50%, #3b82f6 100%);
+            color: white;
+            padding: 60px 20px;
+            border-radius: 8px;
+            overflow: hidden;
+        }
+
+        .hero-title {
+            font-size: 48px;
+            font-weight: 700;
+            margin-bottom: 20px;
+            opacity: 0;
+            animation: fadeInUp 0.5s ease 0.1s both;
+        }
+
+        .hero-subtitle {
+            font-size: 18px;
+            opacity: 0;
+            animation: fadeInUp 0.5s ease 0.3s both;
+        }
+
+        .hero-actions {
+            margin-top: 30px;
+            opacity: 0;
+            animation: fadeInUp 0.5s ease 0.5s both;
+        }
+
+        @keyframes fadeInUp {
+            from {
+                opacity: 0;
+                transform: translateY(15px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        /* 卡片 hover 测试 */
+        .cards-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 20px;
+            margin-top: 20px;
+        }
+
+        .test-card {
+            background: white;
+            border: 1px solid #e5e6eb;
+            border-radius: 12px;
+            padding: 24px;
+            transition: all 0.2s ease;
+            cursor: pointer;
+        }
+
+        .test-card:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 24px rgba(30, 58, 138, 0.12);
+            border-color: #3b82f6;
+        }
+
+        .test-card:hover .card-icon {
+            transform: rotate(3deg);
+            color: #36CFC9;
+            background: rgba(54, 207, 201, 0.12);
+        }
+
+        .card-icon {
+            width: 48px;
+            height: 48px;
+            font-size: 24px;
+            background: rgba(30, 58, 138, 0.08);
+            color: #1e3a8a;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.3s ease;
+            margin-bottom: 16px;
+        }
+
+        /* 按钮测试 */
+        .button-group {
+            display: flex;
+            gap: 16px;
+            flex-wrap: wrap;
+            margin-top: 20px;
+        }
+
+        .test-btn {
+            padding: 14px 28px;
+            font-size: 16px;
+            font-weight: 600;
+            border-radius: 8px;
+            border: none;
+            cursor: pointer;
+            transition: all 0.15s ease;
+        }
+
+        .btn-primary {
+            background: linear-gradient(135deg, #1e3a8a 0%, #3b82f6 100%);
+            color: white;
+            box-shadow: 0 4px 16px rgba(30, 58, 138, 0.2);
+        }
+
+        .btn-primary:hover {
+            transform: translateY(-2px) scale(1.02);
+            box-shadow: 0 8px 24px rgba(30, 58, 138, 0.3);
+        }
+
+        .btn-primary:active {
+            transform: scale(0.98);
+        }
+
+        .btn-outline {
+            background: transparent;
+            color: #1e3a8a;
+            border: 2px solid #1e3a8a;
+        }
+
+        .btn-outline:hover {
+            background: rgba(30, 58, 138, 0.05);
+            transform: translateY(-2px) scale(1.02);
+        }
+
+        /* 滚动渐入测试 */
+        .scroll-item {
+            opacity: 0;
+            transform: translateY(15px);
+            transition: opacity 0.4s cubic-bezier(0.4, 0, 0.2, 1),
+                        transform 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+            padding: 20px;
+            margin: 20px 0;
+            background: #f7f8fa;
+            border-radius: 8px;
+        }
+
+        .scroll-item.animate-in {
+            opacity: 1;
+            transform: translateY(0);
+        }
+
+        /* 性能指标显示 */
+        .metrics-panel {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            background: white;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 4px 16px rgba(0, 0, 0, 0.15);
+            z-index: 1000;
+            min-width: 200px;
+        }
+
+        .metric-item {
+            margin-bottom: 12px;
+            font-size: 14px;
+        }
+
+        .metric-label {
+            color: #666;
+            margin-bottom: 4px;
+        }
+
+        .metric-value {
+            font-weight: 600;
+            color: #1e3a8a;
+        }
+
+        .fps-good { color: #4caf50; }
+        .fps-medium { color: #ff9800; }
+        .fps-bad { color: #f44336; }
+
+        /* 测试说明 */
+        .test-instructions {
+            background: #e3f2fd;
+            padding: 20px;
+            border-radius: 8px;
+            margin-bottom: 30px;
+        }
+
+        .test-instructions h3 {
+            color: #1976d2;
+            margin-bottom: 12px;
+        }
+
+        .test-instructions ul {
+            list-style: disc;
+            padding-left: 20px;
+        }
+
+        .test-instructions li {
+            margin-bottom: 8px;
+            color: #555;
+        }
+    </style>
+</head>
+<body>
+    <!-- 性能指标面板 -->
+    <div class="metrics-panel">
+        <div class="metric-item">
+            <div class="metric-label">FPS (帧率)</div>
+            <div class="metric-value" id="fps-display">--</div>
+        </div>
+        <div class="metric-item">
+            <div class="metric-label">总动画时长</div>
+            <div class="metric-value" id="duration-display">-- ms</div>
+        </div>
+        <div class="metric-item">
+            <div class="metric-label">测试状态</div>
+            <div class="metric-value" id="status-display">准备中</div>
+        </div>
+    </div>
+
+    <div class="test-container">
+        <h1>🚀 iMato 动效性能测试</h1>
+
+        <!-- 测试说明 -->
+        <div class="test-instructions">
+            <h3>测试说明</h3>
+            <ul>
+                <li><strong>Hero 渐显测试</strong>: 检查标题、副标题、按钮的逐行渐显效果（总时长应 < 0.6s）</li>
+                <li><strong>卡片 Hover 测试</strong>: 鼠标悬停在卡片上，检查位移和图标旋转（过渡时间 0.2s）</li>
+                <li><strong>按钮 Hover 测试</strong>: 点击/悬停按钮，检查缩放和阴影效果（响应时间 0.15s）</li>
+                <li><strong>滚动渐入测试</strong>: 向下滚动页面，观察灰色条目的渐入效果（时长 0.4s）</li>
+                <li><strong>性能监控</strong>: 右上角实时显示 FPS 和动画时长</li>
+            </ul>
+        </div>
+
+        <!-- Hero 渐显动效测试 -->
+        <div class="test-section">
+            <h2>1️⃣ Hero 区逐行渐显动效测试</h2>
+            <div class="hero-test">
+                <div class="hero-title">Hero 区标题渐显测试</div>
+                <div class="hero-subtitle">这是副标题，应该在标题之后渐入显示，延迟 0.3s</div>
+                <div class="hero-actions">
+                    <button class="test-btn btn-primary">主按钮（延迟 0.5s）</button>
+                    <button class="test-btn btn-outline">描边按钮（延迟 0.5s）</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- 卡片 Hover 测试 -->
+        <div class="test-section">
+            <h2>2️⃣ 卡片 Hover 动效测试</h2>
+            <p>将鼠标悬停在卡片上，检查 hover 效果是否流畅（目标：≥30fps）</p>
+            <div class="cards-grid">
+                <div class="test-card">
+                    <div class="card-icon">📚</div>
+                    <h3>入门基础路径</h3>
+                    <p style="margin-top: 8px; color: #666; font-size: 14px;">
+                        适合零基础学习者，循序渐进掌握核心概念
+                    </p>
+                </div>
+                <div class="test-card">
+                    <div class="card-icon">⚡</div>
+                    <h3>进阶提升路径</h3>
+                    <p style="margin-top: 8px; color: #666; font-size: 14px;">
+                        实战项目驱动，提升工程实践能力
+                    </p>
+                </div>
+                <div class="test-card">
+                    <div class="card-icon">🏆</div>
+                    <h3>高级挑战路径</h3>
+                    <p style="margin-top: 8px; color: #666; font-size: 14px;">
+                        探索前沿技术，挑战复杂系统设计
+                    </p>
+                </div>
+            </div>
+        </div>
+
+        <!-- 按钮 Hover 测试 -->
+        <div class="test-section">
+            <h2>3️⃣ 按钮 Hover/Active 动效测试</h2>
+            <p>点击和悬停按钮，检查响应速度（目标：0.15s 快速响应）</p>
+            <div class="button-group">
+                <button class="test-btn btn-primary">主按钮（Hover 测试）</button>
+                <button class="test-btn btn-primary" style="background: linear-gradient(135deg, #36CFC9 0%, #3b82f6 100%);">辅助按钮</button>
+                <button class="test-btn btn-outline">描边按钮</button>
+                <button class="test-btn btn-outline" style="color: #36CFC9; border-color: #36CFC9;">活力青按钮</button>
+            </div>
+        </div>
+
+        <!-- 滚动渐入测试 -->
+        <div class="test-section">
+            <h2>4️⃣ 滚动渐入动效测试</h2>
+            <p>向下滚动页面，观察下方条目是否依次渐入显示</p>
+            <div id="scroll-container">
+                <!-- 由 JavaScript 动态生成测试条目 -->
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // 性能监控
+        let frameCount = 0;
+        let lastTime = performance.now();
+        let fps = 0;
+        let animationDuration = 0;
+
+        function updateFPS() {
+            const now = performance.now();
+            frameCount++;
+
+            if (now - lastTime >= 1000) {
+                fps = frameCount;
+                frameCount = 0;
+                lastTime = now;
+
+                const fpsDisplay = document.getElementById('fps-display');
+                fpsDisplay.textContent = fps + ' fps';
+                fpsDisplay.className = 'metric-value ' +
+                    (fps >= 50 ? 'fps-good' : fps >= 30 ? 'fps-medium' : 'fps-bad');
+            }
+
+            requestAnimationFrame(updateFPS);
+        }
+
+        // 启动 FPS 监控
+        requestAnimationFrame(updateFPS);
+
+        // 记录动画时长
+        const observer = new PerformanceObserver((list) => {
+            for (const entry of list.getEntries()) {
+                if (entry.entryType === 'animation') {
+                    animationDuration = Math.max(animationDuration, entry.duration || 0);
+                    document.getElementById('duration-display').textContent =
+                        animationDuration.toFixed(0) + ' ms';
+                }
+            }
+        });
+
+        try {
+            observer.observe({ entryTypes: ['animation'] });
+        } catch (e) {
+            console.log('Animation API 不支持');
+        }
+
+        // 滚动渐入测试
+        const scrollContainer = document.getElementById('scroll-container');
+        for (let i = 1; i <= 10; i++) {
+            const item = document.createElement('div');
+            item.className = 'scroll-item';
+            item.innerHTML = `
+                <strong>滚动渐入测试条目 #${i}</strong>
+                <p style="margin-top: 8px; color: #666;">
+                    当滚动到可视区域时，此条目应该平滑渐入显示（时长 0.4s）
+                </p>
+            `;
+            scrollContainer.appendChild(item);
+        }
+
+        // Intersection Observer 检测滚动渐入
+        const scrollObserver = new IntersectionObserver((entries) => {
+            entries.forEach(entry => {
+                if (entry.isIntersecting) {
+                    entry.target.classList.add('animate-in');
+                }
+            });
+        }, {
+            threshold: 0.1,
+            rootMargin: '0px 0px -50px 0px'
+        });
+
+        document.querySelectorAll('.scroll-item').forEach(item => {
+            scrollObserver.observe(item);
+        });
+
+        // 更新测试状态
+        setTimeout(() => {
+            document.getElementById('status-display').textContent = '✅ 测试进行中';
+        }, 1000);
+
+        // 性能数据导出
+        window.exportPerformanceData = function() {
+            return {
+                fps: fps,
+                totalAnimationDuration: animationDuration,
+                timestamp: new Date().toISOString(),
+                userAgent: navigator.userAgent
+            };
+        };
+
+        console.log('性能测试已就绪！使用 exportPerformanceData() 导出数据');
+    </script>
+</body>
+</html>
