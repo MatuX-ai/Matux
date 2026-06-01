@@ -5,7 +5,6 @@ import { AdminAuthGuard } from './auth/admin.guard';
 import { AdminLoginComponent } from './auth/admin-login.component';
 import { AdminCourseLibraryComponent } from './course-library/admin-course-library.component';
 import { AdminDashboardComponent } from './dashboard/admin-dashboard.component';
-import { LicenseListComponent } from './licenses/license-list.component';
 import { AdminMaterialLibraryComponent } from './material-library/admin-material-library.component';
 import { PaymentListComponent } from './payments/payment-list.component';
 import { UserListComponent } from './users/user-list.component';
@@ -29,10 +28,7 @@ const routes: Routes = [
         path: 'dashboard',
         component: AdminDashboardComponent,
       },
-      {
-        path: 'licenses',
-        component: LicenseListComponent,
-      },
+      // 许可证管理已解耦至 OpenMTEduInst 项目，路由已移除
       // {
       //   path: 'institutions',
       //   loadChildren: () =>

@@ -1,6 +1,8 @@
-# iMatu 技术文档中心
+# MatuX STEM 学习平台 - 技术文档中心
 
-本文档库包含 iMatu 项目的完整技术文档，按照代码模块结构组织，便于开发者快速查找和维护。
+本文档库包含 MatuX STEM 学习平台的完整技术文档，按照代码模块结构组织，便于开发者快速查找和维护。
+
+> **三项目生态**: MatuX（学生学习）+ OpenMTSciEd（课件资源）+ OpenMTEduInst（机构管理）。学生账号在三项目间互联互通。
 
 ## 📁 文档组织结构
 
@@ -174,4 +176,4 @@ documentation/
 ---
 
 **最后更新**: 2026-03-04  
-**维护团队**: iMatu Development Team
+**维护团队**: MatuX Development Team

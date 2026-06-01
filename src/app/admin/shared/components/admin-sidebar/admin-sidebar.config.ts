@@ -39,12 +39,7 @@ export const ADMIN_MENU_ITEMS: MenuItem[] = [
   },
 
   // 资源管理
-  {
-    id: 'licenses',
-    title: '许可证管理',
-    icon: 'vpn_key',
-    route: '/admin/licenses',
-  },
+  // licenses 已解耦至 OpenMTEduInst 项目，已移除
   // {
   //   id: 'organizations',
   //   title: '机构管理',
@@ -119,7 +114,7 @@ export const MENU_GROUPS: {
   },
   {
     title: '资源管理',
-    items: ['licenses', 'materials', 'courses'], // organizations 已解耦到 OpenMTEduInst 项目
+    items: ['materials', 'courses'], // organizations、licenses 已解耦到 OpenMTEduInst 项目
   },
   {
     title: '财务管理',

@@ -60,7 +60,7 @@ import { AuthService } from '../../core/services/auth.service';
               <input type="checkbox" [(ngModel)]="rememberMe" name="rememberMe" />
               <span>记住我</span>
             </label>
-            <a class="forgot-password" routerLink="/auth/forgot-password">忘记密码？</a>
+            <span class="forgot-password" style="cursor:default;color:#999;">忘记密码？</span>
           </div>
 
           <div class="error-alert" *ngIf="errorMessage">

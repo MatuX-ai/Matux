@@ -9,6 +9,7 @@
  * - 桌面端全屏适配
  */
 import { CommonModule } from '@angular/common';
+import { FormsModule } from '@angular/forms';
 import {
   ChangeDetectionStrategy,
   Component,
@@ -54,6 +55,7 @@ export interface DesktopEditorConfig {
   standalone: true,
   imports: [
     CommonModule,
+    FormsModule,
     MatButtonModule,
     MatIconModule,
     MatProgressSpinnerModule,

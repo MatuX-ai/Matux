@@ -393,9 +393,6 @@ export class UserManagementService {
         teacher: 120,
         student: 850,
         parent: 180,
-        org_admin: 50,
-        school_admin: 30,
-        education_bureau: 20,
       },
       usersByStatus: {
         [UserStatus.ACTIVE]: 980,
@@ -407,9 +404,6 @@ export class UserManagementService {
         [UserRole.TEACHER]: 120,
         [UserRole.STUDENT]: 850,
         [UserRole.PARENT]: 180,
-        [UserRole.ORG_ADMIN]: 50,
-        [UserRole.SCHOOL_ADMIN]: 30,
-        [UserRole.EDUCATION_BUREAU]: 20,
         [UserRole.ADMIN]: 5,
       },
       topOrganizations: [
@@ -438,17 +432,11 @@ export class UserManagementService {
         { value: 'teacher', label: '教师', count: 120 },
         { value: 'student', label: '学生', count: 850 },
         { value: 'parent', label: '家长', count: 180 },
-        { value: 'org_admin', label: '机构管理员', count: 50 },
-        { value: 'school_admin', label: '学校管理员', count: 30 },
-        { value: 'education_bureau', label: '教育局', count: 20 },
       ],
       roles: [
         { value: UserRole.TEACHER, label: '教师', count: 120 },
         { value: UserRole.STUDENT, label: '学生', count: 850 },
         { value: UserRole.PARENT, label: '家长', count: 180 },
-        { value: UserRole.ORG_ADMIN, label: '机构管理员', count: 50 },
-        { value: UserRole.SCHOOL_ADMIN, label: '学校管理员', count: 30 },
-        { value: UserRole.EDUCATION_BUREAU, label: '教育局', count: 20 },
       ],
       statuses: [
         { value: UserStatus.ACTIVE, label: '活跃', count: 980 },
@@ -479,9 +467,6 @@ export class UserManagementService {
       'teacher',
       'student',
       'parent',
-      'org_admin',
-      'school_admin',
-      'education_bureau',
     ];
     const statusValues = [
       UserStatus.ACTIVE,
@@ -493,9 +478,6 @@ export class UserManagementService {
       teacher: [UserRole.TEACHER],
       student: [UserRole.STUDENT],
       parent: [UserRole.PARENT],
-      org_admin: [UserRole.ORG_ADMIN],
-      school_admin: [UserRole.SCHOOL_ADMIN],
-      education_bureau: [UserRole.EDUCATION_BUREAU],
     };
     const orgNames = [
       '北京市第一中学',

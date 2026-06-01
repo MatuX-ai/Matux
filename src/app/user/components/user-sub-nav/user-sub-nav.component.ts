@@ -51,10 +51,10 @@ import { UserCenterMenuItem, UserCenterService } from '../../services/user-cente
           <button mat-icon-button [matTooltip]="'刷新页面'" (click)="refreshPage()">
             <mat-icon>refresh</mat-icon>
           </button>
-          <button mat-icon-button [matTooltip]="'返回首页'" routerLink="/marketing">
+          <button mat-icon-button [matTooltip]="'返回首页'" routerLink="/dashboard">
             <mat-icon>home</mat-icon>
           </button>
-          <button mat-icon-button [matTooltip]="'用户设置'" routerLink="/user/settings">
+          <button mat-icon-button [matTooltip]="'用户设置'" routerLink="/user/profile">
             <mat-icon>settings</mat-icon>
           </button>
         </div>
@@ -276,9 +276,6 @@ export class UserSubNavComponent {
       student: '学生',
       teacher: '教师',
       parent: '家长',
-      org_admin: '管理员',
-      school_admin: '学校管理',
-      education_bureau: '教育局',
     };
 
     return typeMap[userType] || userType;

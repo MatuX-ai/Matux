@@ -185,9 +185,7 @@ export class UserSidebarComponent {
 
     const typeMap: Record<string, string> = {
       student: '学生',
-      teacher: '教师',
       parent: '家长',
-      org_admin: '管理员',
     };
 
     return typeMap[userType] || '用户';

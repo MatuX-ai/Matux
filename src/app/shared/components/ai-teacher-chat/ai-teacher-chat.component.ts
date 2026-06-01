@@ -342,7 +342,7 @@ export class AITeacherChatComponent implements OnInit, OnDestroy {
     this.aiTeacherService.chat({
       userId: this.profile?.userId ?? '',
       message: msg,
-      sessionId: this.aiTeacherService.session$?.value?.sessionId ?? `session_${Date.now()}`,
+      sessionId: this.aiTeacherService.currentSession?.sessionId ?? `session_${Date.now()}`,
     }).subscribe({
       next: (response) => {
         const aiMsg: ChatMessage = {

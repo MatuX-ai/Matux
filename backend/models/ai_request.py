@@ -31,7 +31,6 @@ class AIRequest(Base):
     created_at = Column(DateTime(timezone=True), server_default=func.now())
 
     def to_dict(self) -> dict:
-        """杞崲涓哄瓧鍏?""
         return {
             "id": self.id,
             "user_id": self.user_id,

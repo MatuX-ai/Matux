@@ -54,7 +54,7 @@ class UserGuardian(Base):
 class GuardianBindRequest(BaseModel):
     """TODO: docstring"""
 
-    student_phone: str = Field(..., description="å­¦çææºå?)
+    student_phone: str = Field(..., description="Student phone number")
     relationship: Optional[str] = Field(None, description="å³ç³»ï¼father/mother/guardian")
     is_primary: bool = Field(default=False, description="æ¯å¦ä¸ºä¸»è¦çæ¤äºº")
 
@@ -71,7 +71,7 @@ class GuardianBindResponse(BaseModel):
 
 
 class StudentGuardianInfo(BaseModel):
-    """TODO: docstring"""è¢«çæ¤äººï¼å­©å­ï¼ä¿¡æ¯"""
+    """TODO: docstring"""
 
     student_id: int
     student_name: str

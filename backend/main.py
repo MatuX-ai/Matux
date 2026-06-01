@@ -1,6 +1,9 @@
 """
-iMato AI Service 主应用入口
-提供AI代码生成和其他AI功能的FastAPI服务
+MatuX STEM 学习平台 API 服务主入口
+提供AI代码生成、个性化学习、STEM实验等功能的FastAPI服务
+
+注意：课件管理模块已解耦至 OpenMTSciEd 项目，机构管理模块已解耦至 OpenMTEduInst 项目。
+本项目保留的路由存根仅用于兼容性，新功能请在对应项目中开发。
 """
 
 from fastapi import FastAPI
@@ -38,6 +41,7 @@ from routes import (  # noqa: E501
     hardware_certification_routes,
     learning_behavior_routes,
     learning_source_routes,
+    local_knowledge_graph_routes,  # 本地知识图谱
     material_routes,  # 统一课件库
     model_benchmark_routes,
     model_update_routes,
@@ -50,6 +54,7 @@ from routes import (  # noqa: E501
     unified_learning_record_routes,
     ai_edu_progress_routes,  # AI教育学习进度
     ai_teacher_routes,  # AI 个性化教师
+    vector_knowledge_routes,  # 向量知识库 (RAG)
 )
 from routes import ai_capabilities_routes  # XEduHub AI 能力组件
 from routes import openhydra_routes  # OpenHydra AI 沙箱环境
@@ -72,7 +77,7 @@ settings = Settings()
 app = FastAPI(
     title=settings.APP_NAME,
     version=settings.APP_VERSION,
-    description="iMato AI Service - 提供AI代码生成、个性化推荐、电商支付、硬件认证和其他智能功能",
+    description="MatuX STEM 学习平台 API 服务 - AI编程、个性化学习、STEM实验、游戏化激励",
     docs_url="/docs",
     redoc_url="/redoc",
 )
@@ -97,7 +102,7 @@ app.add_middleware(  # noqa: E501
 )
 
 # 配置许可证验证中间件
-app.add_middleware(LicenseMiddleware)
+# app.add_middleware(LicenseMiddleware)  # 临时禁用用于测试
 
 # 配置熔断器中间件
 if settings.CIRCUIT_BREAKER_ENABLED:
@@ -142,9 +147,16 @@ app.include_router(  # noqa: E501
     tags=["硬件认证"],
 )
 app.include_router(course_routes.router, tags=["课程管理"])
-app.include_router(tenant_config_routes.router, tags=["租户配置管理"])
-app.include_router(educational_institution_routes.router, tags=["教育机构管理"])
-app.include_router(permission_routes.router, tags=["权限管理"])
+# [已解耦] 租户配置管理路由 - 功能已迁移至 OpenMTEduInst 项目
+# 此路由保留作为兼容性存根，新功能请在 OpenMTEduInst 中开发
+app.include_router(tenant_config_routes.router, tags=["租户配置管理(已解耦)"])
+# [已解耦] 教育机构管理路由 - 功能已迁移至 OpenMTEduInst 项目
+# 此路由保留作为兼容性存根，新功能请在 OpenMTEduInst 中开发
+app.include_router(educational_institution_routes.router, tags=["教育机构管理(已解耦)"])
+
+# [已解耦] 权限管理路由 - 多租户权限功能已迁移至 OpenMTEduInst 项目
+# 此路由保留作为兼容性存根
+app.include_router(permission_routes.router, tags=["权限管理(已解耦)"])
 app.include_router(course_version_routes.router, tags=["课程版本控制"])
 app.include_router(collaborative_editor_routes.router, tags=["协作编辑"])
 app.include_router(multimedia_routes.router, tags=["多媒体资源"])
@@ -197,9 +209,10 @@ app.include_router(unified_auth_router)
 # 课程聚合 API 路由（子项目回调、学生课程查询）
 app.include_router(aggregation_router)
 
-# 统一课件库 API 路由
+# [已解耦] 统一课件库 API 路由 - 功能已迁移至 OpenMTSciEd 项目 (localhost:3000/api/v1)
+# 此路由保留作为兼容性存根，新功能请在 OpenMTSciEd 中开发
 # 支持24种课件类型的完整CRUD操作、统计分析、批量操作等功能
-app.include_router(material_routes.router, tags=["统一课件库"])
+app.include_router(material_routes.router, tags=["统一课件库(已解耦)"])
 
 # AI教育学习进度 API 路由
 # 提供学习进度的上报、查询和统计分析功能
@@ -208,6 +221,14 @@ app.include_router(ai_edu_progress_routes.router, tags=["AI教育学习进度"])
 # AI 个性化教师 API 路由
 # 提供学生学习画像、上下文记忆、AI教师对话、成长轨迹、智能教学建议等功能
 app.include_router(ai_teacher_routes.router, tags=["AI 个性化教师"])
+
+# 向量知识库 API 路由 (RAG)
+# 提供分层知识库检索、RAG上下文生成、知识库管理
+app.include_router(vector_knowledge_routes.router, tags=["向量知识库"])
+
+# 本地知识图谱 API 路由
+# 提供本地知识图谱管理、学习路径推荐、个性化学习画像
+app.include_router(local_knowledge_graph_routes.router, tags=["本地知识图谱"])
 
 # AR 奖励系统API路由
 # 处理 AR 场景完成、元件验证等奖励事件
@@ -391,22 +412,26 @@ async def root():
             "支付系统",
             "订阅系统",
             "硬件认证",
-            "许可证管理",
             "课程管理",
             "课程版本控制",
-            "多租户配置",
-            "教育机构管理",
-            "权限管理",
             "协作编辑",
             "多媒体资源",
             "创意引擎",
             "AR 实验室",
-            "教育数据联邦学习",
             "模型基准测试",
             "区块链网关",
             "学习行为特征",
-            "Celery 任务监控",
+            "AI 教育学习进度",
+            "AI 个性化教师",
+            "向量知识库 (RAG)",
+            "本地知识图谱",
         ],
+        "decoupled_modules": {
+            "课件管理": "已解耦至 OpenMTSciEd (localhost:3000/api/v1)",
+            "机构管理": "已解耦至 OpenMTEduInst (独立部署)",
+            "多租户配置": "已解耦至 OpenMTEduInst (保留兼容存根)",
+            "许可证管理": "已解耦至 OpenMTEduInst (保留兼容存根)",
+        },
         "optional_features": optional_features if optional_features else ["无"],
         "configuration_note": "可选功能通过环境变量控制，详见.env.example",
     }

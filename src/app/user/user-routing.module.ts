@@ -71,57 +71,57 @@ const routes: Routes = [
             (m) => m.StudentManagementComponent
           ),
       },
-      // 学校管理员功能模块路由
-      {
-        path: 'classes',
-        loadComponent: () =>
-          import('./school-admin/school-admin-dashboard.component').then(
-            (m) => m.SchoolAdminDashboardComponent
-          ),
-      },
-      {
-        path: 'school-courses',
-        loadComponent: () =>
-          import('./school-admin/school-admin-dashboard.component').then(
-            (m) => m.SchoolAdminDashboardComponent
-          ),
-      },
-      {
-        path: 'quality',
-        loadComponent: () =>
-          import('./school-admin/school-admin-dashboard.component').then(
-            (m) => m.SchoolAdminDashboardComponent
-          ),
-      },
-      {
-        path: 'teacher-workload',
-        loadComponent: () =>
-          import('./school-admin/school-admin-dashboard.component').then(
-            (m) => m.SchoolAdminDashboardComponent
-          ),
-      },
-      // 教育局功能模块路由
-      {
-        path: 'schools',
-        loadComponent: () =>
-          import('./education-bureau/education-bureau-dashboard.component').then(
-            (m) => m.EducationBureauDashboardComponent
-          ),
-      },
-      {
-        path: 'analysis',
-        loadComponent: () =>
-          import('./education-bureau/education-bureau-dashboard.component').then(
-            (m) => m.EducationBureauDashboardComponent
-          ),
-      },
-      {
-        path: 'reports-export',
-        loadComponent: () =>
-          import('./education-bureau/education-bureau-dashboard.component').then(
-            (m) => m.EducationBureauDashboardComponent
-          ),
-      },
+      // 学校管理员功能模块路由（已解耦至 OpenMTEduInst 项目，路由已移除）
+      // {
+      //   path: 'classes',
+      //   loadComponent: () =>
+      //     import('./school-admin/school-admin-dashboard.component').then(
+      //       (m) => m.SchoolAdminDashboardComponent
+      //     ),
+      // },
+      // {
+      //   path: 'school-courses',
+      //   loadComponent: () =>
+      //     import('./school-admin/school-admin-dashboard.component').then(
+      //       (m) => m.SchoolAdminDashboardComponent
+      //     ),
+      // },
+      // {
+      //   path: 'quality',
+      //   loadComponent: () =>
+      //     import('./school-admin/school-admin-dashboard.component').then(
+      //       (m) => m.SchoolAdminDashboardComponent
+      //     ),
+      // },
+      // {
+      //   path: 'teacher-workload',
+      //   loadComponent: () =>
+      //     import('./school-admin/school-admin-dashboard.component').then(
+      //       (m) => m.SchoolAdminDashboardComponent
+      //     ),
+      // },
+      // 教育局功能模块路由（已解耦至 OpenMTEduInst 项目，路由已移除）
+      // {
+      //   path: 'schools',
+      //   loadComponent: () =>
+      //     import('./education-bureau/education-bureau-dashboard.component').then(
+      //       (m) => m.EducationBureauDashboardComponent
+      //     ),
+      // },
+      // {
+      //   path: 'analysis',
+      //   loadComponent: () =>
+      //     import('./education-bureau/education-bureau-dashboard.component').then(
+      //       (m) => m.EducationBureauDashboardComponent
+      //     ),
+      // },
+      // {
+      //   path: 'reports-export',
+      //   loadComponent: () =>
+      //     import('./education-bureau/education-bureau-dashboard.component').then(
+      //       (m) => m.EducationBureauDashboardComponent
+      //     ),
+      // },
       // 默认重定向
       {
         path: '',

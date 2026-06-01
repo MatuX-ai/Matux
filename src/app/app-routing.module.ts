@@ -51,13 +51,7 @@ const routes: Routes = [
         (m) => m.DigitalTwinLabModule
       ),
   },
-  {
-    path: 'license-management',
-    loadChildren: () =>
-      import('./license-management/license-management.module').then(
-        (m) => m.LicenseManagementModule
-      ),
-  },
+  // 许可证管理模块已解耦至 OpenMTEduInst 项目，路由已移除
   {
     path: 'content-store',
     loadChildren: () =>
@@ -80,12 +74,7 @@ const routes: Routes = [
     path: 'user',
     loadChildren: () => import('./user/user.module').then((m) => m.UserModule),
   },
-  // Management Portals Module - 管理门户（包含机构/学校/教育局三个管理后台）
-  {
-    path: 'management',
-    loadChildren: () =>
-      import('./management/management-portals.module').then((m) => m.ManagementPortalsModule),
-  },
+  // Management Portals Module - 管理门户已解耦至 OpenMTEduInst 项目，路由已移除
 
   // Icon Debug Page
   {

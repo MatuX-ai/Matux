@@ -773,7 +773,28 @@ AIEduProgressService              → 集成到成长轨迹追踪
 └──────────────────────────────────────────┘
 ```
 
-### 4.4 与 OpenMTEduInst 的关系
+### 4.4 与外部项目的关系
+
+#### 与 OpenMTSciEd（课件资源）的关系
+
+```
+┌─────────────┐         ┌──────────────────────┐
+│   MatuX     │         │    OpenMTSciEd        │
+│  (学生端)    │ ──API──→│   (课件资源端)          │
+│             │         │                      │
+│ • 浏览课程  │         │ • 教程/课件管理        │
+│ • 观看视频  │         │ • 知识图谱             │
+│ • 下载课件  │         │ • 硬件项目资源          │
+│ • 学习内容  │         │ • 课程内容审核          │
+└─────────────┘         └──────────────────────┘
+     学生                    内容管理员
+
+OpenMTSciEd API ── localhost:3000/api/v1
+```
+
+MatuX 桌面端**不包含**任何课件内容管理功能。课程内容的创建、编辑、审核全部由 `OpenMTSciEd` 项目负责。MatuX 仅通过 API 获取学生可浏览的课程列表和课件内容。
+
+#### 与 OpenMTEduInst（机构管理）的关系
 
 ```
 ┌─────────────┐         ┌──────────────────────┐
@@ -792,6 +813,8 @@ AIEduProgressService              → 集成到成长轨迹追踪
 ```
 
 MatuX 桌面端**不包含**任何机构管理功能。学生所属的机构、课程分配、教师管理等全部由 `OpenMTEduInst` 项目负责。MatuX 仅通过后端 API 获取学生个人的课程列表和学习数据。
+
+> **避免重复开发**: 课件管理功能在 OpenMTSciEd 中开发，机构管理功能在 OpenMTEduInst 中开发，不在 MatuX 中重复。MatuX 通过 API 调用这两个项目的服务。
 
 ---
 
@@ -1478,16 +1501,19 @@ Phase 3: 打磨发布 (2-3 周)
 | Python 后端 | ✅ 已有 | 需 PyInstaller 打包 |
 | Monaco Editor | ✅ 已集成 | 需 IPC 文件系统桥接 |
 | Blockly | ✅ 已依赖 | 需桌面端事件适配 |
-| **ChromaDB 向量数据库** | ❌ 待集成 | AI 教师长期记忆存储（本地嵌入式） |
-| **BGE-small-zh 嵌入模型** | ❌ 待集成 | 中文文本向量化（本地推理） |
+| **ChromaDB 向量数据库** | ✅ 已集成（使用 FAISS 替代） | AI 教师长期记忆存储 + RAG 检索 |
+| **BGE-small-zh 嵌入模型** | ✅ 已集成（降级方案就绪） | 中文文本向量化（本地推理），降级为哈希向量 |
 | **LLM API (DeepSeek/OpenAI)** | ⚠️ 部分已有 | 已有 AIManager 多模型管理器，需升级 |
+| **OpenMTSciEd 后端 API** | ✅ 可用 | 课件/教程/知识图谱资源获取 (localhost:3000/api/v1) |
+| **OpenMTEduInst 后端 API** | ✅ 可用 | 机构/教师/排课数据获取 |
 | electron-builder | ✅ 已配置 | 需完善签名和发布流程 |
 | 代码签名证书 | ❌ 待获取 | Windows 代码签名 |
 
 ### 9.3 外部依赖
 
 - **GitHub Releases**：自动更新下载源
-- **OpenMTEduInst 后端 API**：课程数据、用户数据
+- **OpenMTSciEd 后端 API**：课件内容、教程资源、知识图谱 (localhost:3000/api/v1)
+- **OpenMTEduInst 后端 API**：课程数据、用户数据、机构信息
 - **代码签名证书**：避免 SmartScreen 警告
 
 ---
@@ -1496,7 +1522,7 @@ Phase 3: 打磨发布 (2-3 周)
 
 | 文件/目录 | 状态 | 说明 |
 |-----------|------|------|
-| `electron/main.js` | ✅ 完成 70% | 主进程：窗口、后端管理、IPC |
+| `electron/main.js` | ✅ 完成 85% | 主进程：窗口、后端管理、IPC、多窗口支持 |
 | `electron/preload.js` | ✅ 完成 | 安全桥接脚本 |
 | `electron/package.json` | ✅ 完成 | 依赖和构建配置 |
 | `electron/electron-builder.yml` | ✅ 完成 | 打包配置 |
@@ -1508,8 +1534,16 @@ Phase 3: 打磨发布 (2-3 周)
 | `src/app/ar-lab/` | ✅ 完成 | AR 实验室 |
 | `src/app/digital-twin-lab/` | ✅ 完成 | 数字孪生实验室 |
 | `src/app/creativity-engine/` | ✅ 完成 | 创意引擎 |
-| `src/app/offline-mode/` | ✅ 完成 | 离线模式 |
+| `src/app/offline-mode/` | ✅ 完成（含代码执行+同步） | 离线模式：仪表板、代码执行、数据同步 |
 | `src/app/core/services/pwa.service.ts` | ✅ 完成 | PWA 离线缓存 |
+| `src/app/core/services/vector-knowledge.service.ts` | ✅ 完成 | 前端向量知识库检索服务 (RAG) |
+| `src/app/core/services/circuit-shortcut-registrar.service.ts` | ✅ 完成 | 电路实验快捷键注册器 |
+| `src/app/offline-mode/services/offline-sync.service.ts` | ✅ 完成 | 离线数据同步服务 |
+| `src/app/offline-mode/services/offline-code-execution.service.ts` | ✅ 完成 | 离线代码执行服务 |
+| `src/app/offline-mode/components/offline-code-execution/` | ✅ 完成 | 离线代码执行面板 |
+| `src/app/offline-mode/components/offline-sync-panel/` | ✅ 完成 | 离线同步状态面板 |
+| `backend/services/vector_knowledge_service.py` | ✅ 完成 | 后端向量知识库服务 (FAISS + RAG) |
+| `backend/routes/vector_knowledge_routes.py` | ✅ 完成 | 向量知识库 API 路由 |
 
 ---
 
@@ -1518,6 +1552,7 @@ Phase 3: 打磨发布 (2-3 周)
 | 术语 | 说明 |
 |------|------|
 | MatuX | 面向学生的 AI 编程与 STEM 学习平台 |
+| OpenMTSciEd | 独立解耦的开放STEM教育资源平台（教程/课件/知识图谱/硬件项目） |
 | OpenMTEduInst | 独立解耦的机构管理平台（教师/机构/排课/财务） |
 | Electron | 跨平台桌面应用框架（Chromium + Node.js） |
 | Monaco Editor | VS Code 同款 Web 代码编辑器 |

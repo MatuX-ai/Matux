@@ -10,6 +10,7 @@
  * - 运行代码 (Ctrl+Enter / F5)
  */
 import { CommonModule } from '@angular/common';
+import { FormsModule } from '@angular/forms';
 import {
   ChangeDetectionStrategy,
   ChangeDetectorRef,
@@ -57,6 +58,7 @@ export interface TabRunResult {
   standalone: true,
   imports: [
     CommonModule,
+    FormsModule,
     MatButtonModule,
     MatIconModule,
     MatMenuModule,

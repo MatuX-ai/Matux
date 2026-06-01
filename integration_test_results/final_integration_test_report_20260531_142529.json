@@ -1,0 +1,94 @@
+{
+  "test_start_time": "2026-05-31T14:25:28.463939",
+  "modules_tested": [
+    "gamification",
+    "mobile_dkt",
+    "hardware_model",
+    "model_optimization",
+    "hot_update",
+    "esp32_acceleration",
+    "system_integration"
+  ],
+  "test_results": {
+    "gamification": {
+      "success": false,
+      "test_name": "游戏化规则引擎集成测试",
+      "details": {
+        "reports_found": 0,
+        "latest_report": null,
+        "functionality_verified": true
+      }
+    },
+    "mobile_dkt": {
+      "success": false,
+      "test_name": "移动端DKT模型集成测试",
+      "details": {
+        "model_file_exists": false,
+        "model_path": "mobile_dkt_core.py",
+        "core_components": [
+          "FeatureExtractor",
+          "KnowledgeTracker",
+          "PerformancePredictor"
+        ]
+      }
+    },
+    "hardware_model": {
+      "success": true,
+      "test_name": "硬件操作识别模型集成测试",
+      "details": {
+        "training_reports": 1,
+        "model_files": 1,
+        "categories_supported": 6,
+        "accuracy_achieved": "92.00%"
+      }
+    },
+    "model_optimization": {
+      "success": true,
+      "test_name": "模型优化压缩集成测试",
+      "details": {
+        "optimization_reports": 1,
+        "final_model_size_kb": 99.9,
+        "compression_ratio": 2.9,
+        "target_met": true
+      }
+    },
+    "hot_update": {
+      "success": true,
+      "test_name": "模型热更新机制集成测试",
+      "details": {
+        "update_packages": 2,
+        "ble_protocol_implemented": true,
+        "rollback_mechanism": true,
+        "integrity_verification": true
+      }
+    },
+    "esp32_acceleration": {
+      "success": true,
+      "test_name": "ESP32推理加速集成测试",
+      "details": {
+        "acceleration_reports": 2,
+        "best_latency_ms": 7.95,
+        "throughput_fps": 125.8,
+        "speedup_ratio": 5.66
+      }
+    },
+    "system_integration": {
+      "success": true,
+      "test_name": "系统协同工作集成测试",
+      "details": {
+        "integration_points_total": 5,
+        "integration_points_verified": 5,
+        "data_flow_integrity": true,
+        "error_handling": true,
+        "performance_monitoring": true
+      }
+    }
+  },
+  "integration_success": false,
+  "issues_found": [
+    "游戏化规则引擎测试失败",
+    "移动端DKT模型测试失败"
+  ],
+  "test_end_time": "2026-05-31T14:25:29.641357",
+  "test_duration_seconds": 1.177418
+}

@@ -12,7 +12,6 @@ import { MatInputModule } from '@angular/material/input';
 import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
 import { MatSelectModule } from '@angular/material/select';
 import { MatSnackBarModule } from '@angular/material/snack-bar';
-import { RouterModule } from '@angular/router';
 import { BaseChartDirective, provideCharts, withDefaultRegisterables } from 'ng2-charts';
 
 import {
@@ -24,6 +23,7 @@ import {
   SponsorshipDashboardComponent,
 } from './sponsorship-dashboard.component';
 import { SponsorshipDashboardService } from './sponsorship-dashboard.service';
+import { SponsorshipDashboardRoutingModule } from './sponsorship-dashboard-routing.module';
 
 @NgModule({
   declarations: [
@@ -36,7 +36,7 @@ import { SponsorshipDashboardService } from './sponsorship-dashboard.service';
     CommonModule,
     ReactiveFormsModule,
     FormsModule,
-    RouterModule,
+    SponsorshipDashboardRoutingModule,
     BaseChartDirective,
 
     // Angular Material 模块

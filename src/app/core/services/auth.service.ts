@@ -558,76 +558,6 @@ export class AuthService {
   }
 
   /**
-   * 模拟管理员登录 - 机构云托管管理服务端
-   * 支持机构管理员、学校管理员、教育局管理员
-   */
-  mockAdminLogin(
-    adminType: 'organization' | 'school' | 'education_bureau'
-  ): Observable<AuthResponse> {
-    const mockUser = this.createMockAdminUser(adminType);
-    const mockResponse = this.createMockResponse(mockUser, 'admin');
-
-    // 直接存储认证数据
-    this.storeAuthData(mockResponse);
-
-    return new Observable((observer) => {
-      observer.next(mockResponse);
-      observer.complete();
-    });
-  }
-
-  /**
-   * 创建模拟管理员用户数据
-   */
-  private createMockAdminUser(adminType: 'organization' | 'school' | 'education_bureau'): User {
-    const now = new Date().toISOString();
-    const testAccount = {
-      email: 'admin@testorg.com',
-      password: 'TestAdmin123!',
-      organization: 'Test Organization',
-    };
-
-    const mockUsers = {
-      organization: {
-        id: 'mock-org-admin-001',
-        username: '机构管理员',
-        email: testAccount.email,
-        userType: 'org_admin' as const,
-        avatar: 'https://api.dicebear.com/7.x/avataaars/svg?seed=orgadmin',
-        organizationName: testAccount.organization,
-        role: '机构管理员',
-        licenseType: 'CLOUD_HOSTED',
-        createdAt: now,
-        updatedAt: now,
-      },
-      school: {
-        id: 'mock-school-admin-001',
-        username: '学校管理员',
-        email: 'school@testorg.com',
-        userType: 'school_admin' as const,
-        avatar: 'https://api.dicebear.com/7.x/avataaars/svg?seed=schooladmin',
-        organizationName: 'Test School',
-        role: '学校管理员',
-        createdAt: now,
-        updatedAt: now,
-      },
-      education_bureau: {
-        id: 'mock-edu-admin-001',
-        username: '教育局管理员',
-        email: 'edu@testorg.com',
-        userType: 'education_admin' as const,
-        avatar: 'https://api.dicebear.com/7.x/avataaars/svg?seed=eduadmin',
-        organizationName: 'Test Education Bureau',
-        role: '教育局管理员',
-        createdAt: now,
-        updatedAt: now,
-      },
-    };
-
-    return mockUsers[adminType] as unknown as User;
-  }
-
-  /**
    * 获取可用的模拟账号列表
    */
   getMockAccounts(): Array<{ type: string; label: string; description: string }> {
@@ -635,7 +565,6 @@ export class AuthService {
       { type: 'student', label: '学生账号', description: '体验学生端功能' },
       { type: 'teacher', label: '教师账号', description: '体验教师端功能' },
       { type: 'parent', label: '家长账号', description: '体验家长端功能' },
-      { type: 'admin', label: '管理员账号', description: '体验管理后台' },
     ];
   }
 

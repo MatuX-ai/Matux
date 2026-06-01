@@ -13,4 +13,4 @@ def __getattr__(name):
         _module_registry[name] = importlib.import_module(f".{name}", __package__)
     return _module_registry[name]
 
-__all__ = ["ai_routes", "auth_routes", "user_license_routes", "ai_edu_progress_routes", "ai_teacher_routes"]
+__all__ = ["ai_routes", "auth_routes", "user_license_routes", "ai_edu_progress_routes", "ai_teacher_routes", "vector_knowledge_routes"]

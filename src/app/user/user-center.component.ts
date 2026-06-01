@@ -27,7 +27,6 @@ import { ParentDashboardComponent } from './parent/parent-dashboard.component';
 import { SidebarService } from './services/sidebar.service';
 import { UserCenterService } from './services/user-center.service';
 import { StudentDashboardComponent } from './student/student-dashboard.component';
-import { TeacherDashboardComponent } from './teacher/teacher-dashboard.component';
 
 @Component({
   selector: 'app-user-center',
@@ -46,7 +45,6 @@ import { TeacherDashboardComponent } from './teacher/teacher-dashboard.component
     UserNavbarComponent,
     UserSubNavComponent,
     StudentDashboardComponent,
-    TeacherDashboardComponent,
     ParentDashboardComponent,
   ],
   template: `
@@ -75,30 +73,7 @@ import { TeacherDashboardComponent } from './teacher/teacher-dashboard.component
           <!-- 根据用户类型显示不同的仪表板 -->
           <ng-container [ngSwitch]="userType">
             <app-student-dashboard *ngSwitchCase="'student'"></app-student-dashboard>
-            <app-teacher-dashboard *ngSwitchCase="'teacher'"></app-teacher-dashboard>
             <app-parent-dashboard *ngSwitchCase="'parent'"></app-parent-dashboard>
-
-            <!-- 管理员跳转到管理门户 -->
-            <div *ngSwitchCase="'org_admin'">
-              <div class="redirect-notice">
-                <mat-icon>redirect</mat-icon>
-                <p>正在跳转到机构管理后台...</p>
-              </div>
-            </div>
-
-            <div *ngSwitchCase="'school_admin'">
-              <div class="redirect-notice">
-                <mat-icon>redirect</mat-icon>
-                <p>正在跳转到学校管理后台...</p>
-              </div>
-            </div>
-
-            <div *ngSwitchCase="'education_admin'">
-              <div class="redirect-notice">
-                <mat-icon>redirect</mat-icon>
-                <p>正在跳转到教育局管理后台...</p>
-              </div>
-            </div>
 
             <!-- 默认显示通用内容（不激活任何路由） -->
             <div *ngSwitchDefault class="default-content">
@@ -230,15 +205,6 @@ export class UserCenterComponent implements OnInit, OnDestroy {
     this.userCenterService.currentUser$.pipe(takeUntil(this.destroy$)).subscribe((user) => {
       this.currentUser = user;
       this.userType = user?.userType;
-      // 只在有用户且是管理员时才处理跳转
-      if (
-        user &&
-        (user.userType === 'org_admin' ||
-          user.userType === 'school_admin' ||
-          user.userType === 'education_admin')
-      ) {
-        this.handleUserTypeRedirect(user.userType);
-      }
     });
 
     // 如果没有用户信息，尝试获取（但不处理跳转，等待订阅触发）
@@ -249,28 +215,11 @@ export class UserCenterComponent implements OnInit, OnDestroy {
   }
 
   /**
-   * 根据用户类型处理重定向
+   * 根据用户类型处理重定向（已解耦至 OpenMTEduInst 项目，功能已移除）
    */
-  private handleUserTypeRedirect(userType?: string): void {
-    // 机构管理员跳转到管理门户（已解耦到 OpenMTEduInst 项目）
-    // if (userType === 'org_admin') {
-    //   setTimeout(() => {
-    //     void this.router.navigate(['/management/organization/dashboard']);
-    //   }, 1500);
-    // }
-    // 学校管理员跳转到管理门户
-    if (userType === 'school_admin') {
-      setTimeout(() => {
-        void this.router.navigate(['/management/school/dashboard']);
-      }, 1500);
-    }
-    // 教育局管理员跳转到管理门户（注意：AuthService 创建的是 education_admin）
-    else if (userType === 'education_admin' || userType === 'education_bureau') {
-      setTimeout(() => {
-        void this.router.navigate(['/management/education-bureau/dashboard']);
-      }, 1500);
-    }
-  }
+  // private handleUserTypeRedirect(userType?: string): void {
+  //   // 已解耦至 OpenMTEduInst 项目
+  // }
 
   ngOnDestroy(): void {
     this.destroy$.next();

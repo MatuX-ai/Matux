@@ -31,6 +31,7 @@ class EnhancedPermissionMiddleware(BaseHTTPMiddleware):
             "/health",
             "/favicon.ico",
             "/static/",
+            "/api/v1/local-knowledge-graph/health",
         ]
 
     async def dispatch(self, request: Request, call_next):
@@ -372,7 +373,10 @@ class EnhancedPermissionMiddleware(BaseHTTPMiddleware):
 
     def should_skip_permission_check(self, path: str) -> bool:
         """判断是否跳过权限检查"""
-        return any(path.startswith(excluded) for excluded in self.excluded_paths)
+        return any(
+            path == excluded or path.startswith(excluded) 
+            for excluded in self.excluded_paths
+        )
 
 
 # 保持向后兼容的别名

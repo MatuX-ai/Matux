@@ -218,6 +218,55 @@ function createMainWindow() {
   });
 }
 
+// ==================== 子窗口管理 ====================
+
+/** 子窗口集合 */
+const childWindows = new Set();
+
+/**
+ * 创建子窗口（数字孪生实验室弹出窗口等）
+ * PRD F-09 桌面端适配：多窗口模式
+ */
+function createChildWindow(options) {
+  const width = options.width || 1280;
+  const height = options.height || 800;
+  const title = options.title || 'MatuX 实验窗口';
+  const url = options.url || '';
+
+  const childWin = new BrowserWindow({
+    width,
+    height,
+    minWidth: 800,
+    minHeight: 600,
+    parent: mainWindow,
+    webPreferences: {
+      preload: path.join(__dirname, 'preload.js'),
+      nodeIntegration: false,
+      contextIsolation: true,
+    },
+    icon: path.join(__dirname, 'build', 'icon.ico'),
+    title,
+  });
+
+  // 加载页面
+  if (url.startsWith('http') || url.startsWith('/')) {
+    const fullUrl = url.startsWith('http')
+      ? url
+      : (isDev ? `http://localhost:4200` : `file://${path.join(__dirname, '..', 'dist', 'imatuproject', 'index.html')}`) + (url.startsWith('/') ? `#${url}` : url);
+    childWin.loadURL(fullUrl);
+  } else if (isDev) {
+    childWin.loadURL(`http://localhost:4200#${url}`);
+  } else {
+    const frontendPath = path.join(__dirname, '..', 'dist', 'imatuproject', 'index.html');
+    childWin.loadFile(frontendPath, { hash: url });
+  }
+
+  childWindows.add(childWin);
+  childWin.on('closed', () => {
+    childWindows.delete(childWin);
+  });
+}
+
 // ==================== 系统托盘 ====================
 
 /**
@@ -816,6 +865,10 @@ function registerIpcHandlers() {
         break;
       case 'toggle-fullscreen':
         mainWindow?.setFullScreen(!mainWindow?.isFullScreen());
+        break;
+      case 'open-new-window':
+        // 多窗口弹出（数字孪生实验室等）
+        createChildWindow(data);
         break;
       default:
         break;

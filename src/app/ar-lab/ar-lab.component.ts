@@ -85,6 +85,8 @@ export class ARLabComponent implements OnInit, OnDestroy {
   isARSupported = false;
   isTracking = false;
   arStatusMessage = '';
+  gpuAccelerationLevel: 'webgl2' | 'webgl1' | 'none' = 'none';
+  gpuRendererInfo = '';
 
   // 硬件连接状态
   hardwareConnected = false;
@@ -130,17 +132,39 @@ export class ARLabComponent implements OnInit, OnDestroy {
   }
 
   /**
-   * 检查AR支持情况
+   * 检查AR支持情况（含 GPU 加速检测和 WebGL2 降级策略）
+   * PRD F-08 桌面端适配：GPU 加速
    */
   private checkARSupport(): void {
-    // 检查 WebGL 支持
+    // 优先检测 WebGL2（GPU 加速渲染），降级到 WebGL1
     const canvas = document.createElement('canvas');
-    const gl = canvas.getContext('webgl') ?? canvas.getContext('experimental-webgl');
+    let gl: WebGL2RenderingContext | WebGLRenderingContext | null = canvas.getContext('webgl2');
 
-    if (!gl) {
-      this.isARSupported = false;
-      this.arStatusMessage = '您的浏览器不支持WebGL';
-      return;
+    if (gl) {
+      // WebGL2 可用，GPU 加速支持最佳
+      this.isARSupported = true;
+      this.gpuAccelerationLevel = 'webgl2';
+    } else {
+      // 降级到 WebGL1
+      gl = canvas.getContext('webgl') as WebGLRenderingContext | null
+        ?? canvas.getContext('experimental-webgl') as WebGLRenderingContext | null;
+      if (gl) {
+        this.isARSupported = true;
+        this.gpuAccelerationLevel = 'webgl1';
+      } else {
+        this.isARSupported = false;
+        this.arStatusMessage = '您的浏览器不支持WebGL';
+        return;
+      }
+    }
+
+    // 检查 GPU 渲染器信息（调试用）
+    if (gl) {
+      const debugInfo = gl.getExtension('WEBGL_debug_renderer_info');
+      if (debugInfo) {
+        const renderer = gl.getParameter(debugInfo.UNMASKED_RENDERER_WEBGL);
+        this.gpuRendererInfo = String(renderer);
+      }
     }
 
     // 检查摄像头权限
@@ -167,6 +191,14 @@ export class ARLabComponent implements OnInit, OnDestroy {
    */
   loadUnityApplication(): void {
     try {
+      // 检查 UnityLoader 是否可用
+      if (typeof UnityLoader === 'undefined') {
+        this.errorMessage = 'Unity WebGL 运行时未加载。请确认 Unity 构建已部署到 /ar-lab/build/ 目录。';
+        this.isLoading = false;
+        this.snackBar.open(this.errorMessage, '关闭', { duration: 5000 });
+        return;
+      }
+
       // Unity 构建文件路径
       const buildUrl = '/ar-lab/build/ARLabMain.json';
 

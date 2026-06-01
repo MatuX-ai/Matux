@@ -7,10 +7,6 @@ import { RegisterRequest } from '../../core/models/auth.models';
 import { USER_TYPE_CONFIG, UserType, UserTypeGroup } from '../../core/models/group.models';
 import { AuthService } from '../../core/services/auth.service';
 import { GroupService } from '../../core/services/group.service';
-import {
-  AdminMockDialogComponent,
-  AdminType,
-} from '../admin-mock-dialog/admin-mock-dialog.component';
 
 // 注册方式
 type RegisterMethod = 'email' | 'phone' | 'social';
@@ -18,7 +14,7 @@ type RegisterMethod = 'email' | 'phone' | 'social';
 @Component({
   selector: 'app-register-modal',
   standalone: true,
-  imports: [CommonModule, FormsModule, AdminMockDialogComponent],
+  imports: [CommonModule, FormsModule],
   template: `
     <div class="modal-overlay" (click)="onClose()">
       <div class="modal-container" (click)="$event.stopPropagation()">
@@ -107,30 +103,10 @@ type RegisterMethod = 'email' | 'phone' | 'social';
                 <span class="type-name">教师</span>
                 <span class="type-desc">教授AI课程</span>
               </div>
-              <div class="type-card" (click)="selectUserType(UserType.ORG_ADMIN)">
-                <span class="type-icon">🏢</span>
-                <span class="type-name">机构负责人</span>
-                <span class="type-desc">管理培训机构</span>
-              </div>
             </div>
           </div>
 
-          <!-- 教育机构 -->
-          <div class="type-group">
-            <h4 class="type-group-title">教育机构</h4>
-            <div class="type-cards">
-              <div class="type-card" (click)="selectUserType(UserType.SCHOOL_ADMIN)">
-                <span class="type-icon">🏫</span>
-                <span class="type-name">学校管理员</span>
-                <span class="type-desc">管理学校账号</span>
-              </div>
-              <div class="type-card" (click)="selectUserType(UserType.EDUCATION_BUREAU)">
-                <span class="type-icon">🏛️</span>
-                <span class="type-name">教育局</span>
-                <span class="type-desc">教育监管部门</span>
-              </div>
-            </div>
-          </div>
+
         </div>
 
         <!-- 邮箱注册表单 -->
@@ -388,14 +364,6 @@ type RegisterMethod = 'email' | 'phone' | 'social';
         </div>
       </div>
     </div>
-
-    <!-- 管理员模拟登录对话框 -->
-    <app-admin-mock-dialog
-      *ngIf="showAdminDialog"
-      (close)="showAdminDialog = false"
-      (loginSuccess)="onAdminLoginSuccess($event)"
-    >
-    </app-admin-mock-dialog>
   `,
   styles: [
     `
@@ -939,14 +907,10 @@ export class RegisterModalComponent {
     { type: 'student', label: '学生', icon: '🎓', description: '体验学生端功能' },
     { type: 'parent', label: '家长', icon: '👨‍👩‍👧', description: '体验家长端功能' },
     { type: 'teacher', label: '教师', icon: '👨‍🏫', description: '体验教师端功能' },
-    { type: 'admin', label: '管理员', icon: '⚙️', description: '体验管理后台' },
   ];
 
   // 快速体验入口展开状态
   quickExperienceExpanded = false;
-
-  // 显示管理员选择对话框
-  showAdminDialog = false;
 
   toggleQuickExperience(): void {
     this.quickExperienceExpanded = !this.quickExperienceExpanded;
@@ -1045,7 +1009,7 @@ export class RegisterModalComponent {
   /**
    * 模拟登录 - 快速体验登录效果
    */
-  loginWithMock(userType: 'student' | 'teacher' | 'parent' | 'admin'): void {
+  loginWithMock(userType: 'student' | 'teacher' | 'parent'): void {
     this.loading = true;
     this.errorMessage = '';
 
@@ -1053,7 +1017,8 @@ export class RegisterModalComponent {
       next: () => {
         setTimeout(() => {
           this.loading = false;
-          this.redirectToUserCenter(userType);
+          this.onClose();
+          void this.router.navigate(['/user']);
         }, 500);
       },
       error: () => {
@@ -1067,49 +1032,7 @@ export class RegisterModalComponent {
    * 模板调用辅助方法 - 处理类型断言
    */
   onMockLogin(type: string): void {
-    if (type === 'admin') {
-      // 管理员账号显示选择对话框
-      this.showAdminDialog = true;
-    } else {
-      // 其他账号直接登录
-      this.loginWithMock(type as 'student' | 'teacher' | 'parent');
-    }
-  }
-
-  /**
-   * 根据用户类型跳转到对应的用户中心
-   */
-  private redirectToUserCenter(_userType: 'student' | 'teacher' | 'parent' | 'admin'): void {
-    this.onClose(); // 先关闭模态框
-    // 所有用户都跳转到 /user，由 UserCenter 根据 userType 分发
-    void this.router.navigate(['/user']);
-  }
-
-  /**
-   * 处理管理员模拟登录成功
-   */
-  onAdminLoginSuccess(adminType: AdminType): void {
-    // 关闭对话框
-    this.showAdminDialog = false;
-    // 显示成功提示
-    const adminTypeLabel = this.getAdminTypeLabel(adminType);
-    this.successMessage = `已使用${adminTypeLabel}账号登录成功！`;
-    setTimeout(() => {
-      this.successMessage = '';
-      // ✅ 不再跳转到用户中心，由 AdminMockDialog 直接跳转到对应管理页面
-    }, 1000);
-  }
-
-  /**
-   * 获取管理员类型标签
-   */
-  private getAdminTypeLabel(type: AdminType): string {
-    const labels = {
-      organization: '机构',
-      school: '学校',
-      education_bureau: '教育局',
-    };
-    return labels[type] || '';
+    this.loginWithMock(type as 'student' | 'teacher' | 'parent');
   }
 
   onClose(): void {

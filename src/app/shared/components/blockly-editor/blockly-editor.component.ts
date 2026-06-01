@@ -254,7 +254,6 @@ const DEFAULT_TOOLBOX: Blockly.utils.toolbox.ToolboxDefinition = {
         <!-- 代码对照区 -->
         <div
           class="code-panel"
-          [class.hidden]="viewMode === 'blockly-only'"
           *ngIf="viewMode !== 'blockly-only'"
         >
           <div class="code-header">

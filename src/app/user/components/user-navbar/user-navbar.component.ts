@@ -39,28 +39,25 @@ import { UserCenterService } from '../../services/user-center.service';
         </button>
 
         <!-- Logo -->
-        <div class="navbar-logo" (click)="navigateTo('/marketing')">
+        <div class="navbar-logo" (click)="navigateTo('/dashboard')">
           <span class="logo-text">MatuX</span>
           <span class="logo-subtitle">用户中心</span>
         </div>
 
-        <!-- 导航菜单 - 营销页面主菜单 -->
+        <!-- 导航菜单 - 营销页面主菜单（营销页面已解耦，暂时隐藏） -->
         <nav class="navbar-nav">
-          <a routerLink="/marketing" routerLinkActive="active" class="nav-link"> 首页 </a>
-          <a routerLink="/marketing/courses" routerLinkActive="active" class="nav-link">
-            课程体系
+          <a routerLink="/dashboard" routerLinkActive="active" class="nav-link"> 首页 </a>
+          <a routerLink="/user/dashboard" routerLinkActive="active" class="nav-link">
+            学习中心
           </a>
-          <a routerLink="/marketing/roadmap" routerLinkActive="active" class="nav-link">
-            学习路径
+          <a routerLink="/ar-lab" routerLinkActive="active" class="nav-link">
+            AR 实验室
           </a>
-          <a routerLink="/marketing/projects" routerLinkActive="active" class="nav-link">
-            实战项目
+          <a routerLink="/content-store" routerLinkActive="active" class="nav-link">
+            内容商店
           </a>
-          <a routerLink="/marketing/achievements" routerLinkActive="active" class="nav-link">
-            学员成果
-          </a>
-          <a routerLink="/marketing/pricing" routerLinkActive="active" class="nav-link">
-            产品与服务
+          <a routerLink="/offline-mode" routerLinkActive="active" class="nav-link">
+            离线模式
           </a>
         </nav>
 
@@ -303,9 +300,6 @@ export class UserNavbarComponent implements OnInit, OnDestroy {
       student: '学生',
       teacher: '教师',
       parent: '家长',
-      org_admin: '机构管理员',
-      school_admin: '学校管理员',
-      education_bureau: '教育局',
     };
 
     return typeMap[this.userType] || this.userType;

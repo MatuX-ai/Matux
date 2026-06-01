@@ -192,9 +192,6 @@ export class UserHeaderComponent {
       student: '学生',
       teacher: '教师',
       parent: '家长',
-      org_admin: '机构管理员',
-      school_admin: '学校管理员',
-      education_bureau: '教育局',
     };
 
     return typeMap[userType] || userType;

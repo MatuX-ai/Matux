@@ -52,7 +52,7 @@ export interface RegisterRequest {
   password: string;
   username?: string;
   grade?: string; // 年级信息
-  userType?: string; // 用户类型: student, parent, teacher, org_admin, school_admin, education_bureau
+  userType?: string; // 用户类型: student, parent, teacher
   userTypeGroup?: string; // 用户组: personal, org, edu
   organizationName?: string; // 机构名称
   inviteCode?: string; // 邀请码

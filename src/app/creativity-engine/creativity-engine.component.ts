@@ -16,6 +16,7 @@ import {
   PromptTemplateResponse,
 } from '../../shared/models/creative-idea.interface';
 import { CreativityService } from '../../shared/services/creativity.service';
+import { ElectronService } from '../core/services/electron.service';
 import { safeJsonParse, safeJsonParseArray } from '../../shared/utils/type-safe-json.utils';
 
 @Component({
@@ -64,7 +65,8 @@ export class CreativityEngineComponent implements OnInit {
   constructor(
     private fb: FormBuilder,
     private creativityService: CreativityService,
-    private snackBar: MatSnackBar
+    private snackBar: MatSnackBar,
+    private electronService: ElectronService,
   ) {
     /* eslint-disable @typescript-eslint/unbound-method */
     this.ideaForm = this.fb.group({
@@ -357,7 +359,7 @@ export class CreativityEngineComponent implements OnInit {
     }
   }
 
-  // 导出创意想法
+  // 导出创意想法（支持 .imato 格式和 JSON 格式）
   exportIdea(idea: CreativeIdeaResponse): void {
     try {
       const exportData = {
@@ -366,22 +368,73 @@ export class CreativityEngineComponent implements OnInit {
         ai_generated_content: idea.ai_generated_content,
         category: idea.category,
         scores: idea.scores,
+        images: idea.images,
         created_at: idea.created_at,
+        // .imato 格式特有元数据
+        _format: 'imato',
+        _version: '1.0',
+        _exportedAt: new Date().toISOString(),
       };
 
-      const blob = new Blob([JSON.stringify(exportData, null, 2)], { type: 'application/json' });
-      const url = window.URL.createObjectURL(blob);
-      const a = document.createElement('a');
-      a.href = url;
-      a.download = `创意想法_${idea.title}_${new Date().toISOString().slice(0, 10)}.json`;
-      a.click();
-      window.URL.revokeObjectURL(url);
+      if (this.electronService.isElectron) {
+        // 桌面端：使用 Electron 文件保存对话框，保存为 .imato 格式
+        this.electronService.showSaveDialog().subscribe((result) => {
+          if (result.success && result.filePath) {
+            const filePath = result.filePath.endsWith('.imato')
+              ? result.filePath
+              : result.filePath + '.imato';
+            this.electronService.writeFile(
+              filePath,
+              JSON.stringify(exportData, null, 2),
+            ).subscribe((writeResult) => {
+              if (writeResult.success) {
+                this.snackBar.open('已保存为 .imato 文件', '关闭', { duration: 3000 });
+              } else {
+                this.snackBar.open('保存失败', '关闭', { duration: 3000 });
+              }
+            });
+          }
+        });
+      } else {
+        // 浏览器端：下载为 JSON 文件
+        const blob = new Blob([JSON.stringify(exportData, null, 2)], { type: 'application/json' });
+        const url = window.URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = `创意想法_${idea.title}_${new Date().toISOString().slice(0, 10)}.json`;
+        a.click();
+        window.URL.revokeObjectURL(url);
 
-      this.snackBar.open('导出成功!', '关闭', { duration: 3000 });
+        this.snackBar.open('导出成功!', '关闭', { duration: 3000 });
+      }
     } catch (error) {
       console.error('导出创意想法失败:', error);
       this.snackBar.open('导出失败', '关闭', { duration: 3000 });
     }
+  }
+
+  // 打开本地 .imato 项目文件
+  openLocalProject(): void {
+    if (!this.electronService.isElectron) {
+      this.snackBar.open('此功能仅在桌面端可用', '关闭', { duration: 3000 });
+      return;
+    }
+
+    this.electronService.showOpenDialog().subscribe((result) => {
+      if (result.success && result.content) {
+        try {
+          const projectData = JSON.parse(result.content);
+          if (projectData._format === 'imato') {
+            // 加载 .imato 项目文件
+            this.snackBar.open(`已加载项目: ${projectData.title}`, '关闭', { duration: 3000 });
+          } else {
+            this.snackBar.open('不是有效的 .imato 文件', '关闭', { duration: 3000 });
+          }
+        } catch {
+          this.snackBar.open('文件解析失败', '关闭', { duration: 3000 });
+        }
+      }
+    });
   }
 
   // 获取评分颜色

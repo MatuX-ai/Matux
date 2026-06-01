@@ -22,7 +22,28 @@ const routes: Routes = [
       description: '离线状态下的学习管理面板',
     },
   },
-  // 其他路由将在后续开发中添加
+  {
+    path: 'code-execution',
+    loadComponent: () =>
+      import('./components/offline-code-execution/offline-code-execution.component').then(
+        (m) => m.OfflineCodeExecutionComponent
+      ),
+    data: {
+      title: '离线代码执行',
+      description: '离线环境下编写和运行代码',
+    },
+  },
+  {
+    path: 'sync',
+    loadComponent: () =>
+      import('./components/offline-sync-panel/offline-sync-panel.component').then(
+        (m) => m.OfflineSyncPanelComponent
+      ),
+    data: {
+      title: '数据同步',
+      description: '管理离线操作同步',
+    },
+  },
 ];
 
 @NgModule({

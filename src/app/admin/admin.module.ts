@@ -16,7 +16,6 @@ import { RouterModule } from '@angular/router';
 import { AdminAuthModule } from './auth/auth.module';
 import { DashboardModule } from './dashboard/dashboard.module';
 import { DatabaseRegistryModule } from './database-registry/database-registry.module'; // 新增
-import { LicensesModule } from './licenses/licenses.module';
 import { AdminMarketingModule } from './marketing/marketing.module'; // 新增营销数据模块
 import { PaymentsModule } from './payments/payments.module';
 import { SponsorshipDashboardModule } from './sponsorship-dashboard/sponsorship-dashboard.module';
@@ -44,7 +43,6 @@ import { AdminRoutingModule } from './admin-routing.module';
     // Feature Modules
     AdminAuthModule,
     DashboardModule,
-    LicensesModule,
     PaymentsModule,
     UsersModule,
     SponsorshipDashboardModule,

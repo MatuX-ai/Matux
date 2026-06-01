@@ -5,7 +5,9 @@
 import { CommonModule } from '@angular/common';
 import { NgModule } from '@angular/core';
 
+import { ARVRCoursePlayerRoutingModule } from './arvr-course-player-routing.module';
+
 @NgModule({
-  imports: [CommonModule],
+  imports: [CommonModule, ARVRCoursePlayerRoutingModule],
 })
 export class ARVRCoursePlayerModule {}

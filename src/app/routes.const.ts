@@ -42,7 +42,7 @@ export const ROUTES = {
     AI_EDU: '/ai-edu',
     ARVR_COURSE: '/arvr-course',
     DIGITAL_TWIN_LAB: '/digital-twin-lab',
-    LICENSE_MANAGEMENT: '/license-management',
+    // LICENSE_MANAGEMENT: '/license-management', // 已解耦至 OpenMTEduInst 项目
     CONTENT_STORE: '/content-store',
     CREATIVITY_ENGINE: '/creativity-engine',
   },
@@ -51,8 +51,7 @@ export const ROUTES = {
   ADMIN: {
     LOGIN: '/admin/login',
     DASHBOARD: '/admin',
-    LICENSES: '/admin/licenses',
-    // ORGANIZATIONS: '/admin/institutions', // ✅ 已解耦到 OpenMTEduInst 项目
+    // LICENSES: '/admin/licenses', // 已解耦至 OpenMTEduInst 项目
     USERS: '/admin/users',
     PAYMENTS: '/admin/payments',
     SPONSORSHIP: '/admin/sponsorship',
@@ -63,9 +62,3 @@ export const ROUTES = {
 
 // 路由参数类型
 export type RoutePath = string;
-
-// Tab类型
-export enum TabType {
-  B = 'B', // B端 - 教培机构
-  G = 'G', // G端 - 校园服务
-}

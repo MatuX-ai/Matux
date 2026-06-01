@@ -36,11 +36,11 @@
 
   <!-- 编程题 -->
   <div class="answer-section code-answer" *ngIf="question.type === 'code'">
-    <monaco-editor
+    <ngx-monaco-editor
       [(ngModel)]="userAnswer"
       [options]="editorOptions"
       class="code-editor">
-    </monaco-editor>
+    </ngx-monaco-editor>
     <button class="run-code-btn" (click)="runCode()" [disabled]="submitted">
       ▶️ 运行代码
     </button>

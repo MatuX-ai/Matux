@@ -11,12 +11,14 @@ from routes.micro_course_routes import router as micro_course_router
 from routes.llm_assistant_routes import router as llm_assistant_router
 from routes.leaderboard_routes import router as leaderboard_router
 from routes.error_log_routes import router as error_log_router
-from routes.collaboration_routes import (
-    discussion_router,
-    document_router,
-    group_router,
-    project_router,
-)
+from routes.creativity_routes import router as creativity_router
+# 协作文档模块因编码问题暂未修复，后续处理
+# from routes.collaboration_routes import (
+#     discussion_router,
+#     document_router,
+#     group_router,
+#     project_router,
+# )
 from routes.ai_edu_websocket_routes import router as ai_edu_websocket_router
 from routes.ai_edu_quiz_routes import router as ai_edu_quiz_router
 from routes.ai_edu_progress_routes import router as ai_edu_progress_router
@@ -82,14 +84,18 @@ app.include_router(ai_edu_websocket_router, tags=["AI 教育 WebSocket"])
 app.include_router(achievement_router, tags=["成就系统"])
 app.include_router(recommendation_router, tags=["AI 智能推荐"])
 app.include_router(leaderboard_router, tags=["积分排行榜"])
-app.include_router(discussion_router, tags=["协作学习 - 讨论区"])
-app.include_router(document_router, tags=["协作学习 - 协作文档"])
-app.include_router(group_router, tags=["协作学习 - 学习小组"])
-app.include_router(project_router, tags=["协作学习 - 项目管理"])
+# 协作文档路由因编码问题暂未启用
+# app.include_router(discussion_router, tags=["协作学习 - 讨论区"])
+# app.include_router(document_router, tags=["协作学习 - 协作文档"])
+# app.include_router(group_router, tags=["协作学习 - 学习小组"])
+# app.include_router(project_router, tags=["协作学习 - 项目管理"])
 # O2.3 微课程转化
 app.include_router(micro_course_router, tags=["微课程转化"])
 # O2.4 AI 学习助手
 app.include_router(llm_assistant_router, tags=["AI 学习助手"])
+
+# 创意激发引擎
+app.include_router(creativity_router, tags=["创意引擎"])
 # Token 管理
 app.include_router(token_router, tags=["Token 管理"])
 # 错误日志收集

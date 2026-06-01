@@ -1,6 +1,18 @@
-# MatuX 项目文档中心
+# MatuX STEM 学习平台 - 项目文档中心
 
-欢迎来到 iMatu 教育平台的完整文档中心！本文档为您提供了项目的全面技术资料和使用指南。
+欢迎来到 MatuX STEM 学习平台的完整文档中心！本文档为您提供了项目的全面技术资料和使用指南。
+
+## 🌐 三项目生态
+
+MatuX 是 STEM 学习生态系统的学生端项目，与以下独立项目互联互通：
+
+| 项目 | 定位 | 技术栈 | 仓库路径 |
+|------|------|--------|----------|
+| **MatuX** | STEM 学习平台（学生端） | Angular 21 + FastAPI + Electron + Flutter | 本项目 |
+| **OpenMTSciEd** | 开放STEM教育资源平台（课件管理） | Next.js + Neo4j | G:\OpenMTSciEd |
+| **OpenMTEduInst** | STEM教育机构管理工具 | FastAPI + Angular | G:\OpenMTEduInst |
+
+> 学生账号在三项目间互联互通，通过共享 JWT 实现单点登录。
 
 ## 📢 重要通知 - 文档结构优化（2026-03-04）
 
@@ -33,6 +45,9 @@
 - [**项目概览**](../documentation/shared/architecture/project-overview.md) - 项目整体介绍、价值主张和功能模块（已迁移）
 - [**系统架构**](../documentation/shared/architecture/system-architecture.md) - 详细的技术架构设计和组件关系（已迁移）
 - [**网站地图**](SITE_MAP.md) - 完整的前端页面和 API 端点映射
+- [**项目需求文档**](PROJECT_REQUIREMENTS.md) - MatuX 功能需求与模块定义
+- [**项目路线图**](PROJECT_ROADMAP.md) - 开发里程碑与进度追踪
+- [**桌面端 PRD**](MatuX_Desktop_PRD.md) - Electron 桌面端产品需求文档
 
 ### 🎯 开发指南
 - [**快速开始**](../documentation/shared/guides/quick-start.md) - 项目搭建和环境配置指南（已迁移）
@@ -41,29 +56,37 @@
 
 ### 🔧 技术专项文档
 - [**AI 推荐系统**](../documentation/backend/services/recommendation-service.md) - 智能推荐算法实现（已迁移）
-- [**电商支付系统**](E_COMMERCE_PAYMENT_SYSTEM.md) - 支付流程和集成方案
 - [**硬件认证系统**](../documentation/backend/hardware/certification-system.md) - IoT 设备接入管理（已迁移）
-- [**多租户部署**](MULTITENANT_DEPLOYMENT_GUIDE.md) - SaaS 架构部署指南
-- [**许可证管理**](API_LICENSE_MANAGEMENT.md) - 软件授权方案设计
 - [**区块链网关**](../documentation/backend/blockchain/gateway-technical-documentation.md) - Fabric 网络接入方案（已迁移）
 - [**多模态激励系统**](../documentation/shared/architecture/multimodal-incentive.md) - 语音/AR/手势激励平台（已迁移）
 - [**全局技术架构**](../documentation/shared/architecture/global-technical-architecture.md) - 系统整体架构演进（已迁移）
 - [**Vircadia 元宇宙集成**](../documentation/shared/architecture/vircadia/integration-plan.md) - 虚拟世界平台集成方案（已迁移）
-- [**OpenHydra + XEdu AI 教育平台**](../FINAL_COMPLETION_REPORT.md) - OpenHydra 与 XEdu 深度融合（新增）
+- [**OpenHydra + XEdu AI 教育平台**](../FINAL_COMPLETION_REPORT.md) - OpenHydra 与 XEdu 深度融合
   - [微课程转化系统](../reports/O2_3_O2_4_TASK_COMPLETE_REPORT.md) - 游戏化课程设计
   - [AI 学习助手](../reports/O2_3_O2_4_TASK_COMPLETE_REPORT.md) - 对话式 AI 辅导
   - [联动任务开发](../O3.1_COMPLETE_SUMMARY.md) - 软硬结合综合实践
   - [智能温室监控系统](../docs/O3.1_LINKED_TASK_DESIGN.md) - 示范任务案例
 
+### 🔗 跨项目集成
+- [**机构模块迁移记录**](INSTITUTION_MODULE_MIGRATION.md) - 机构管理解耦至 OpenMTEduInst 的迁移文档
+- [**前端集成文档**](FRONTEND_INTEGRATION_README.md) - 前端与外部项目 API 集成指南
+- [**路由配置文档**](ROUTE_CONFIGURATION.md) - API 路由配置与解耦存根说明
+- [**电商支付系统**](E_COMMERCE_PAYMENT_SYSTEM.md) - 支付流程和集成方案
+- [**联邦学习部署**](FEDERATED_LEARNING_DEPLOYMENT_GUIDE.md) - 分布式机器学习方案
+
+### ⚠️ 已解耦模块文档（仅供参考，新功能在对应项目开发）
+- ~~[**多租户部署**](MULTITENANT_DEPLOYMENT_GUIDE.md)~~ → 已迁移至 **OpenMTEduInst**
+- ~~[**许可证管理**](API_LICENSE_MANAGEMENT.md)~~ → 已迁移至 **OpenMTEduInst**
+- ~~[**组织仪表板**](ORGANIZATION_DASHBOARD_GUIDE.md)~~ → 已迁移至 **OpenMTEduInst**
+
 ### 🔐 安全与认证
 - [**认证系统实现**](../documentation/frontend/components/auth/system-implementation-report.md) - JWT 和 OAuth2 集成（已迁移）
-- [**权限控制**](../documentation/frontend/components/auth/system-documentation.md) - RBAC 权限管理体系（已迁移）
-- [**AI 认证集成**](AI_AUTH_INTEGRATION.md) - AI 服务的安全接入
+- [**权限控制**](../documentation/frontend/components/auth/system-documentation.md) - 学生/家长角色权限（已迁移）
+- [**AI 认证集成**](API_AUTH_INTEGRATION.md) - AI 服务的安全接入
 
 ### 📊 API文档
 - [**API总览**](API_DOCUMENTATION.md) - RESTful API设计规范
 - [**用户批量导入**](API_USER_BULK_IMPORT.md) - 批量数据处理接口
-- [**组织仪表板**](ORGANIZATION_DASHBOARD_GUIDE.md) - 管理界面API
 
 ### 🎨 设计系统
 - [**组件样式指南**](../documentation/frontend/design-system/component-guide.md) - Design System 使用手册（已迁移）
@@ -89,11 +112,11 @@
 - **新开发者** → 从 [快速开始](QUICK_START.md) 和 [项目概览](PROJECT_OVERVIEW.md) 开始
 - **前端工程师** → 查看 [前端路由](FRONTEND_ROUTING.md) 和 [设计系统](component-style-guide.md)
 - **后端工程师** → 阅读 [后端API映射](BACKEND_API_MAPPING.md) 和 [系统架构](SYSTEM_ARCHITECTURE.md)
-- **区块链开发者** → 参考 [Fabric 开发者文档](../blockchain/FABRIC_DEVELOPER_DOCUMENTATION.md) 和 [API参考手册](../blockchain/API_REFERENCE_MANUAL.md)
 - **AI 工程师** → 查看 [多模态激励系统](MULTIMODAL_INCENTIVE_SYSTEM_TECHNICAL_DOC.md)、[OpenHydra+XEdu 集成](../FINAL_COMPLETION_REPORT.md) 和相关 AI 文档
-- **教育科技开发者** → 查看 [OpenHydra 集成计划](../OPENHYDRA_XEDU_INTEGRATION_PLAN.md)、[微课程转化系统](../reports/O2_3_O2_4_TASK_COMPLETE_REPORT.md)、[AI 学习助手](../reports/O2_3_O2_4_TASK_COMPLETE_REPORT.md)（新增）
-- **元宇宙/VR 开发者** → 查看 [Vircadia 集成方案](VIRCADIA_INTEGRATION_PLAN.md)
-- **产品经理** → 参考 [项目概览](PROJECT_OVERVIEW.md) 和 [网站地图](SITE_MAP.md)
+- **STEM 教育开发者** → 查看 [OpenHydra 集成计划](../OPENHYDRA_XEDU_INTEGRATION_PLAN.md)、[微课程转化系统](../reports/O2_3_O2_4_TASK_COMPLETE_REPORT.md)
+- **桌面端开发者** → 查看 [桌面端 PRD](MatuX_Desktop_PRD.md) 和 Electron 相关文档
+- **移动端开发者** → 查看 Flutter 移动端相关文档
+- **产品经理** → 参考 [项目需求文档](PROJECT_REQUIREMENTS.md) 和 [项目路线图](PROJECT_ROADMAP.md)
 - **架构师** → 阅读 [全局技术架构](GLOBAL_TECHNICAL_ARCHITECTURE.md) 和 [系统架构](SYSTEM_ARCHITECTURE.md)
 - **运维工程师** → 查看 [部署指南](DEPLOYMENT_GUIDE.md) 和相关运维文档
 - **测试工程师** → 关注各模块的测试报告和指南
@@ -159,9 +182,10 @@ npm run e2e                       # 端到端测试
 ## 📊 项目统计信息
 
 ### 技术栈概览
-- **前端**: Angular 16 + TypeScript + SCSS
+- **前端**: Angular 21 + TypeScript + SCSS
 - **后端**: FastAPI + Python 3.9
 - **数据库**: PostgreSQL + Redis
+- **桌面端**: Electron 28
 - **移动端**: Flutter
 - **部署**: Docker + Nginx
 
@@ -185,6 +209,7 @@ npm run e2e                       # 端到端测试
 |------|------|----------|
 | v1.0 | 2026-02-26 | 初始文档集合创建，包含完整的技术文档体系 |
 | v1.1 | 2026-03-01 | 新增多模态激励系统和全局技术架构文档 |
+| v2.0 | 2026-05-31 | 模块解耦更新：添加三项目生态导航，标记已解耦模块文档 |
 
 ## 📞 技术支持
 
@@ -194,4 +219,4 @@ npm run e2e                       # 端到端测试
 - 问题反馈: [待填写]
 
 ---
-*iMatu 文档中心 | 版本 v1.0 | 最后更新 2026年2月*
+*MatuX STEM 学习平台文档中心 | 版本 v2.0 | 最后更新 2026年5月*

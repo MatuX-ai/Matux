@@ -242,12 +242,6 @@ export class GroupService {
         return [GroupType.FAMILY];
       case UserType.TEACHER:
         return [GroupType.CLASS];
-      case UserType.ORG_ADMIN:
-        return [GroupType.ORGANIZATION, GroupType.CLASS];
-      case UserType.SCHOOL_ADMIN:
-        return [GroupType.SCHOOL, GroupType.CLASS];
-      case UserType.EDUCATION_BUREAU:
-        return [GroupType.DEPARTMENT, GroupType.SCHOOL];
       default:
         return [];
     }

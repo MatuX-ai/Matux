@@ -1,7 +1,19 @@
-# OpenMTSciEd 前端集成 - 快速开始
+# MatuX 前端集成 - 外部项目 API 指南
 
 ## 🎯 目标
-将OpenMTSciEd API集成到iMato Angular前端应用
+将 OpenMTSciEd 和 OpenMTEduInst API 集成到 MatuX Angular 前端应用
+
+> **解耦说明**: 课件管理模块已解耦至 OpenMTSciEd，机构管理模块已解耦至 OpenMTEduInst。MatuX 前端通过 HTTP API 调用这两个项目获取数据，不在本地重复实现。
+
+---
+
+## 🌐 三项目 API 架构
+
+| 项目 | API 端点 | 环境变量 | 功能 |
+|------|----------|----------|------|
+| **MatuX** | `localhost:8000` | `apiUrl` | 学生学习、AI编程、STEM实验 |
+| **OpenMTSciEd** | `localhost:3000/api/v1` | `openMtSciEdApiUrl` | 教程/课件/知识图谱/硬件项目 |
+| **OpenMTEduInst** | 独立部署 | `openMtEduInstApiUrl` | 机构/教师/排课/设备管理 |
 
 ---
 
@@ -64,7 +76,8 @@ export const environment = {
   production: false,
   apiUrl: 'http://localhost:8000',
   wsUrl: 'ws://localhost:8000',
-  openMtSciEdApiUrl: 'http://localhost:3000/api/v1',  // ← 添加这行
+  openMtSciEdApiUrl: 'http://localhost:3000/api/v1',      // OpenMTSciEd 课件资源 API
+  openMtEduInstApiUrl: 'http://localhost:8001/api/v1',    // OpenMTEduInst 机构管理 API
 };
 ```
 

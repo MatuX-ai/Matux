@@ -18,7 +18,7 @@
 import { HttpClient } from '@angular/common/http';
 import { Injectable } from '@angular/core';
 import { BehaviorSubject, Observable, of } from 'rxjs';
-import { catchError, tap } from 'rxjs/operators';
+import { catchError, switchMap, tap } from 'rxjs/operators';
 
 import {
   AITeacherChatRequest,
@@ -37,6 +37,7 @@ import {
   TeachingSuggestion,
   TeacherPersona,
 } from '../models/ai-teacher.models';
+import { VectorKnowledgeService, RAGResult } from './vector-knowledge.service';
 
 @Injectable({
   providedIn: 'root',
@@ -53,6 +54,8 @@ export class AITeacherService {
   /** 当前会话记忆 */
   private sessionSubject = new BehaviorSubject<SessionMemory | null>(null);
   public session$ = this.sessionSubject.asObservable();
+  /** 同步获取当前会话值（供模板/组件使用） */
+  get currentSession(): SessionMemory | null { return this.sessionSubject.value; }
 
   /** AI教师人格配置 */
   private personaSubject = new BehaviorSubject<TeacherPersona>(this.getDefaultPersona());
@@ -74,7 +77,10 @@ export class AITeacherService {
   private knowledgeStateSubject = new BehaviorSubject<KnowledgeStateItem[]>([]);
   public knowledgeState$ = this.knowledgeStateSubject.asObservable();
 
-  constructor(private http: HttpClient) {}
+  constructor(
+    private http: HttpClient,
+    private vectorKnowledge: VectorKnowledgeService,
+  ) {}
 
   // ==================== 学习画像 ====================
 
@@ -191,51 +197,84 @@ export class AITeacherService {
       },
     };
 
-    return this.http.post<AITeacherChatResponse>(`${this.API_BASE}/chat`, enhancedRequest).pipe(
-      tap((response) => {
-        // 更新会话记忆
-        const session = this.sessionSubject.value;
-        if (session) {
-          const userMsg: ChatMessage = {
-            role: 'user',
-            content: request.message,
-            timestamp: new Date().toISOString(),
-          };
-          const aiMsg: ChatMessage = {
-            role: 'assistant',
-            content: response.reply,
-            timestamp: new Date().toISOString(),
-            metadata: {
-              knowledgeUsed: response.knowledgeUsed,
-              confidence: response.confidence,
-              referencedMemories: response.memoriesReferenced,
-              emotionDetected: response.emotionDetected,
-            },
-          };
-          const updatedMessages = [...session.recentMessages, userMsg, aiMsg].slice(-20);
-          this.sessionSubject.next({
-            ...session,
-            recentMessages: updatedMessages,
-            lastActivityAt: new Date().toISOString(),
-          });
-        }
-      }),
-      catchError(() => {
-        // Mock响应降级
-        const mockResponse: AITeacherChatResponse = {
-          reply: this.generateMockReply(request.message, persona),
-          sessionId: request.sessionId,
-          emotionDetected: 'neutral',
-          memoriesReferenced: [],
-          knowledgeUsed: false,
-          suggestions: [],
-          model: 'mock',
-          confidence: 0.7,
-          inferenceTimeMs: 200,
+    // RAG 检索：先获取相关知识上下文，再发送对话请求
+    const ragObservable: Observable<RAGResult | null> = request.userId
+      ? this.vectorKnowledge.ragRetrieve(
+          request.message,
+          request.userId,
+          profile ? this.generatePersonaSeed(profile) : '',
+          this.inferStage(profile?.gradeLevel),
+        )
+      : of(null);
+
+    return ragObservable.pipe(
+      switchMap((ragResult: RAGResult | null) => {
+        // 将 RAG 上下文注入请求
+        const requestWithContext = {
+          ...enhancedRequest,
+          knowledgeContext: ragResult?.context ?? '',
+          knowledgeSources: ragResult?.sources ?? [],
         };
-        return of(mockResponse);
-      })
+
+        return this.http.post<AITeacherChatResponse>(`${this.API_BASE}/chat`, requestWithContext).pipe(
+          tap((response) => {
+            // 更新会话记忆
+            const session = this.sessionSubject.value;
+            if (session) {
+              const userMsg: ChatMessage = {
+                role: 'user',
+                content: request.message,
+                timestamp: new Date().toISOString(),
+              };
+              const aiMsg: ChatMessage = {
+                role: 'assistant',
+                content: response.reply,
+                timestamp: new Date().toISOString(),
+                metadata: {
+                  knowledgeUsed: response.knowledgeUsed || !!ragResult?.context,
+                  confidence: response.confidence,
+                  referencedMemories: response.memoriesReferenced,
+                  emotionDetected: response.emotionDetected,
+                },
+              };
+              const updatedMessages = [...session.recentMessages, userMsg, aiMsg].slice(-20);
+              this.sessionSubject.next({
+                ...session,
+                recentMessages: updatedMessages,
+                lastActivityAt: new Date().toISOString(),
+              });
+            }
+          }),
+          catchError(() => {
+            // Mock响应降级
+            const mockResponse: AITeacherChatResponse = {
+              reply: this.generateMockReply(request.message, persona),
+              sessionId: request.sessionId,
+              emotionDetected: 'neutral',
+              memoriesReferenced: [],
+              knowledgeUsed: !!ragResult?.context,
+              suggestions: [],
+              model: 'mock',
+              confidence: 0.7,
+              inferenceTimeMs: 200,
+            };
+            return of(mockResponse);
+          }),
+        );
+      }),
     );
+  }
+
+  /** 根据年级推断学习阶段 */
+  private inferStage(gradeLevel?: string): 'L1' | 'L2' | 'L3' | 'L4' | undefined {
+    if (!gradeLevel) return undefined;
+    const match = gradeLevel.match(/(\d+)/);
+    if (!match) return undefined;
+    const grade = parseInt(match[1], 10);
+    if (grade <= 3) return 'L1';
+    if (grade <= 6) return 'L2';
+    if (grade <= 9) return 'L3';
+    return 'L4';
   }
 
   // ==================== 成长轨迹 ====================

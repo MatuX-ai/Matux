@@ -1,16 +1,18 @@
-# iMatu 系统架构文档
+# MatuX STEM 学习平台 - 系统架构文档
 
 ## 1. 整体架构设计
 
 ### 1.1 架构模式
-iMatu 采用**微服务架构**结合**前后端分离**的设计模式：
+MatuX 采用**微服务架构**结合**前后端分离**的设计模式，并与其他两个独立项目通过 API 集成：
+
+> **模块解耦说明**: 课件管理已解耦至 OpenMTSciEd，机构管理已解耦至 OpenMTEduInst。学生账号三项目互联互通。
 
 ```
 ┌─────────────────────────────────────────────────────────────┐
 │                        客户端层                              │
 ├─────────────────┬─────────────────┬─────────────────────────┤
 │   Web浏览器     │   移动APP       │   桌面客户端            │
-│  (Angular 16)   │  (Flutter)      │  (Electron/Tauri)       │
+│  (Angular 21)   │  (Flutter)      │  (Electron 28)          │
 └─────────────────┴─────────────────┴─────────────────────────┘
                                 │
                                 ▼
@@ -21,19 +23,21 @@ iMatu 采用**微服务架构**结合**前后端分离**的设计模式：
 │            负载均衡 | SSL终止 | 请求路由                     │
 └─────────────────────────────────────────────────────────────┘
                                 │
-                                ▼
-┌─────────────────────────────────────────────────────────────┐
-│                      服务层                                  │
-├─────────┬─────────┬─────────┬─────────┬─────────┬───────────┤
-│   认证   │   AI    │ 支付    │ 硬件    │ 许可证  │ 推荐      │
-│ 服务     │ 服务    │ 服务    │ 认证    │ 管理    │ 系统      │
-└─────────┴─────────┴─────────┴─────────┴─────────┴───────────┘
+          ┌─────────────────────┼─────────────────────┐
+          ▼                     ▼                     ▼
+┌─────────────────┐ ┌─────────────────┐ ┌─────────────────────┐
+│  MatuX 服务层   │ │ OpenMTSciEd API │ │ OpenMTEduInst API   │
+├─────────────────┤ │  (课件资源)      │ │  (机构管理)          │
+│ 认证 + AI服务   │ │  localhost:3000  │ │  独立部署端点        │
+│ 推荐 + 硬件认证 │ │                 │ │                     │
+│ 游戏化 + 学习   │ │                 │ │                     │
+└─────────────────┘ └─────────────────┘ └─────────────────────┘
                                 │
                                 ▼
 ┌─────────────────────────────────────────────────────────────┐
 │                      中间件层                                │
 ├─────────────────────────────────────────────────────────────┤
-│   权限验证 | 许可证检查 | 日志记录 | 缓存 | 监控              │
+│   认证验证 | 日志记录 | 缓存 | 监控                          │
 └─────────────────────────────────────────────────────────────┘
                                 │
                                 ▼
@@ -128,237 +132,18 @@ Component A ──Service──► Component B
 Root Component ──State Management──► Any Component
 ```
 
-### 2.4 多后台管理架构 ⭐ NEW
+### 2.4 多后台管理架构（已解耦）
 
-iMatu 平台采用**多租户管理架构**,清晰区分三个独立的管理门户:
-
-```
-┌─────────────────────────────────────────────────────────────┐
-│                    iMatu Management Architecture            │
-├─────────────────┬─────────────────┬─────────────────────────┤
-│ Platform Admin  │ Tenant Mgmt     │ Public Portal           │
-│ Portal          │ Portal          │                         │
-│ /admin/*        │ /management/*   │ /marketing, /user/*     │
-├─────────────────┼─────────────────┼─────────────────────────┤
-│ 平台行政管理    │ 机构自主运营    │ 营销展示 + 用户中心      │
-│ 超级管理员使用  │ 机构管理员使用  │ 所有用户使用            │
-└─────────────────┴─────────────────┴─────────────────────────┘
-```
-
-#### 2.4.1 Platform Admin Portal (`/admin/*`)
-
-**定位**: 平台运营方使用的**行政管理后台**,负责审批和监管入驻机构。
-
-**核心功能模块**:
-- `/admin/dashboard`: 平台数据总览
-- `/admin/institutions`: 机构审批与监管 (原 `organizations`,已重命名)
-  - InstitutionListComponent: 所有机构列表
-  - InstitutionDetailComponent: 机构详情 (行政视角)
-  - InstitutionApprovalComponent: 待审批列表
-- `/admin/licenses`: 许可证管理
-  - LicenseManagementComponent: 创建、分配、回收许可证
-  - LicenseUsageStatsComponent: 使用统计
-- `/admin/users`: 全平台用户管理
-- `/admin/analytics`: 平台数据分析
-- `/admin/settings`: 全局配置
-
-**技术特点**:
-- **认证方式**: `AuthService` + `RoleGuard` (requiredRoles: ['super_admin', 'admin'])
-- **数据范围**: 全平台所有数据
-- **UI 主题**: 深蓝色系 (`#1976d2`),体现权威性
-- **典型用户**: CTO、运营总监、客服主管
-
-**关键业务流程**:
-```mermaid
-sequenceDiagram
-    participant Admin as 平台管理员
-    participant API as Backend API
-    
-    Admin->>API: GET /api/v1/admin/institutions?status=pending
-    API-->>Admin: 返回待审批机构列表
-    
-    Admin->>API: POST /api/v1/admin/institutions/{id}/approve
-    API->>API: 更新 is_approved=true
-    API->>API: 生成默认许可证
-    API-->>Admin: 审批通过
-```
-
-#### 2.4.2 Tenant Management Portal (`/management/*`)
-
-**定位**: 入驻机构内部使用的**自主运营后台**,管理人、财、物。
-
-**子门户分类**:
-| 子门户 | URL 路径 | 适用场景 | 特点 |
-|-------|---------|---------|------|
-| Organization Portal | `/management/organization/:id/*` | 企业/培训机构 | 强调培训管理、员工发展 |
-| School Portal | `/management/school/:id/*` | 中小学/高校 | 强调班级管理、课程体系 |
-| Education Bureau Portal | `/management/education-bureau/:regionId/*` | 教育局/教委 | 强调数据汇总、监管分析 |
-
-**Organization Portal 核心功能**:
-- `/management/organization/:id/dashboard`: 机构概览
-- `/management/organization/:id/finance`: 财务管理
-- `/management/organization/:id/classrooms`: 教室管理
-- `/management/organization/:id/teachers`: 教师管理
-- `/management/organization/:id/students`: 学生管理
-- `/management/organization/:id/schedule`: 课程排期
-- `/management/organization/:id/courses`: 课程内容
-- `/management/organization/:id/settings`: 机构设置
-
-**技术特点**:
-- **认证方式**: `AuthService` + `RoleGuard` (requiredModule: 'tenant-management')
-- **数据范围**: 仅本机构数据 (自动过滤)
-- **UI 主题**: 绿色系 (`#4caf50`),体现活力
-- **典型用户**: 机构负责人、教务主任、班主任
-
-**数据隔离机制**:
-```python
-# 后端中间件自动注入租户 ID
-@router.get("/my-org/stats")
-async def get_organization_stats(
-    current_user: User = Depends(require_org_role),
-    db: AsyncSession = Depends(get_db)
-):
-    # 自动从 user.organization_id 获取租户 ID
-    org_id = current_user.organization_id
-    
-    # 查询时自动添加 WHERE organization_id = :org_id
-    stats = await db.execute(
-        select(Course).where(Course.organization_id == org_id)
-    )
-    return stats
-```
-
-#### 2.4.3 Public Portal (`/marketing/*`, `/user/*`)
-
-**定位**: 对外营销展示 + 用户学习中心的**公共服务门户**。
-
-**功能模块**:
-- `/marketing/*`: 营销网站 (首页、功能、价格、关于、联系)
-- `/user/*`: 用户中心 (仪表板、我的课程、成就、钱包、设置)
-
-**技术特点**:
-- **认证方式**: 可选 (未登录可浏览 marketing,访问 user/* 需登录)
-- **数据范围**: 公开数据 + 个人数据
-- **UI 主题**: 多彩色系，吸引眼球
-- **典型用户**: 潜在客户、注册用户、学生/教师
-
-#### 2.4.4 代码组织结构对比
-
-**当前结构 **(存在问题) ❌:
-```
-src/app/
-├── admin/
-│   └── organizations/              # ❌ 语义混淆：是"行政管理"还是"自主运营"?
-│       ├── organization-list.component.ts  # ❌ 与 management 重复!
-│       └── organization-dashboard.component.ts  # ❌ 重复!
-└── management/
-    └── organization-portal/
-        ├── organization-list.component.ts  # ❌ 重复!
-        └── organization-dashboard.component.ts  # ❌ 重复!
-```
-
-**目标结构 **(重构后) ✅:
-```
-src/app/
-├── platform-admin/                 # ✅ 明确：平台管理端
-│   └── institutions/               # ✅ 语义清晰：行政管理机构
-│       ├── institution-list/
-│       ├── institution-detail/
-│       └── institution-approval/
-├── tenant-management/              # ✅ 明确：租户管理端
-│   ├── organization-portal/
-│   ├── school-portal/
-│   └── education-bureau-portal/
-├── public-portal/                  # ✅ 统一：公共服务
-│   ├── marketing/
-│   └── user-center/
-└── shared/                         # ✅ 共享组件下沉
-    ├── admin-components/           # 行政管理端复用组件
-    ├── tenant-components/          # 租户端复用组件
-    └── common-components/          # 通用业务组件
-```
-
-#### 2.4.5 路由映射表
-
-完整路由清单请参考：[`MULTI_TENANT_ARCHITECTURE.md`](./MULTI_TENANT_ARCHITECTURE.md#51-完整路由清单)
-
-| URL 路径 | 归属门户 | 所需角色 | 说明 |
-|---------|---------|---------|------|
-| `/admin/*` | Platform Admin | super_admin, admin | 平台管理端 |
-| `/admin/institutions` | Platform Admin | super_admin, admin | 机构列表 (行政视角) |
-| `/management/organization/*` | Tenant Management | org_admin, school_admin | 机构运营后台 |
-| `/marketing/*` | Public Portal | 匿名/已登录 | 营销网站 |
-| `/user/*` | Public Portal | 已登录 | 用户中心 |
-
-#### 2.4.6 权限控制矩阵
-
-详细权限定义请参考：[`PERMISSION_SYSTEM_DESIGN.md`](./PERMISSION_SYSTEM_DESIGN.md#3-权限矩阵)
-
-| 功能模块 | super_admin | admin | org_admin | student |
-|---------|:-----------:|:-----:|:---------:|:-------:|
-| 机构审批 | ✅ | ✅ | ❌ | ❌ |
-| 许可证管理 | ✅ | ✅ | ❌ | ❌ |
-| 本机构运营 | ✅ | ❌ | ✅ | ❌ |
-| 查看财务数据 | ✅ | ⚠️ | ✅ | ❌ |
-| 管理课程内容 | ✅ | ❌ | ✅ | ✅ |
-
-**图例**: ✅ = 完全访问 | ⚠️ = 受限访问 | ❌ = 无权限
-
-#### 2.4.7 登录分流逻辑
-
-```typescript
-// src/app/core/services/login-redirect.service.ts
-
-redirectAfterLogin(user: User): void {
-  switch (user.role) {
-    case 'super_admin':
-    case 'admin':
-      // 平台管理员 → 行政管理后台
-      this.router.navigate(['/admin/dashboard']);
-      break;
-      
-    case 'org_admin':
-      // 机构管理员 → 机构管理后台
-      const orgId = this.extractOrgId(user);
-      this.router.navigate(['/management/organization', orgId, 'dashboard']);
-      break;
-      
-    case 'school_admin':
-      // 学校管理员 → 学校管理后台
-      const schoolId = this.extractSchoolId(user);
-      this.router.navigate(['/management/school', schoolId, 'dashboard']);
-      break;
-      
-    case 'teacher':
-    case 'student':
-      // 教师/学生 → 用户中心
-      this.router.navigate(['/user/dashboard']);
-      break;
-      
-    default:
-      // 未知角色 → 默认首页
-      this.router.navigate(['/marketing']);
-  }
-}
-```
-
-#### 2.4.8 UI/UX 差异化设计
-
-**主题色对比**:
-```scss
-// Platform Admin Theme (深蓝色 - 权威专业)
-$admin-primary: #1976d2;
-.admin-theme { .mat-toolbar { background: $admin-primary; } }
-
-// Tenant Management Theme (绿色 - 活力成长)
-$tenant-primary: #4caf50;
-.tenant-theme { .mat-toolbar { background: $tenant-primary; } }
-```
-
-**Logo 和 Branding**:
-- **Admin Portal**: iMatu Platform 官方标识
-- **Tenant Portal**: 支持机构自定义 Logo(可选)
-- **Public Portal**: 统一品牌标识
+> ⚠️ 多租户后台管理架构（Platform Admin / Tenant Management / Education Bureau）已整体解耦至 **OpenMTEduInst** 项目。
+>
+> MatuX 仅保留学生端和家长监护视图，不再包含以下功能：
+> - 平台行政管理后台
+> - 机构/学校/教育局管理门户
+> - 多租户权限管理
+> - 许可证管理
+>
+> 以上功能请在 `G:\OpenMTEduInst` 项目中查看和开发。
+> 详细架构文档请参考 OpenMTEduInst 项目文档。
 
 ---
 

@@ -134,6 +134,8 @@ class ChatRequest(BaseModel):
     profile_seed: Optional[str] = None
     persona: Optional[Dict[str, str]] = None
     context: Optional[Dict[str, str]] = None
+    knowledge_context: Optional[str] = None  # RAG 检索上下文
+    knowledge_sources: Optional[List[str]] = None  # RAG 知识来源
 
 
 class ChatResponse(BaseModel):
@@ -363,7 +365,7 @@ async def get_session(user_id: str):
 
 @router.post("/chat", response_model=ChatResponse)
 async def chat_with_teacher(request: ChatRequest):
-    """AI 教师对话"""
+    """AI 教师对话（集成 RAG 知识检索）"""
     start_time = datetime.now()
 
     # 构建个性化回复
@@ -371,9 +373,29 @@ async def chat_with_teacher(request: ChatRequest):
     profile_seed = request.profile_seed or ""
     address_mode = persona.get("address_mode", "name")
 
-    # 基于学生画像生成个性化回复（当前为 Mock，后续集成 LLM）
+    # RAG 上下文注入
+    knowledge_context = request.knowledge_context or ""
+    knowledge_used = bool(knowledge_context)
+
+    # 如果没有前端传入的 RAG 上下文，后端自行检索
+    if not knowledge_context:
+        try:
+            from services.vector_knowledge_service import get_vector_knowledge_service
+            rag_service = get_vector_knowledge_service()
+            rag_result = rag_service.rag_retrieve(
+                query=request.message,
+                user_id=request.user_id,
+                profile_seed=profile_seed,
+            )
+            knowledge_context = rag_result.context
+            knowledge_used = rag_result.total_score > 0
+        except Exception:
+            pass  # RAG 不可用时降级
+
+    # 基于学生画像 + RAG 上下文生成个性化回复
     reply = _generate_personalized_reply(
-        request.message, profile_seed, address_mode, persona
+        request.message, profile_seed, address_mode, persona,
+        knowledge_context=knowledge_context,
     )
 
     # 更新会话
@@ -392,8 +414,8 @@ async def chat_with_teacher(request: ChatRequest):
         reply=reply,
         session_id=request.session_id,
         emotion_detected="neutral",
-        memories_referenced=[],
-        knowledge_used=True,
+        memories_referenced=request.knowledge_sources or [],
+        knowledge_used=knowledge_used,
         suggestions=[],
         model="mock-ai-teacher",
         confidence=0.85,
@@ -548,15 +570,31 @@ async def reset_memory(user_id: str):
 # ==================== 辅助函数 ====================
 
 def _generate_personalized_reply(
-    message: str, profile_seed: str, address_mode: str, persona: Dict[str, str]
+    message: str, profile_seed: str, address_mode: str, persona: Dict[str, str],
+    knowledge_context: str = "",
 ) -> str:
-    """生成个性化回复（Mock 版本，后续替换为 LLM）"""
+    """生成个性化回复（集成 RAG 知识上下文）"""
     language_style = persona.get("language_style", "lively")
     hint_level = persona.get("hint_level", "guided_thinking")
     emoji_usage = persona.get("emoji_usage", "moderate")
 
     emoji = "💡" if emoji_usage != "none" else ""
     address = "同学" if address_mode == "classmate" else "你"
+
+    # 如果有 RAG 知识上下文，融入回复
+    if knowledge_context:
+        if "循环" in message or "loop" in message.lower():
+            return (
+                f"{address}，关于循环，我帮你找到了一些知识：{emoji}\n\n"
+                f"{knowledge_context}\n\n"
+                f"还记得你上次用动画学懂了条件判断吗？循环其实很像条件判断的重复版。"
+                f"要不要先在 Blockly 里试试循环积木？"
+            )
+        return (
+            f"{address}，这是个好问题！{emoji} 让我结合知识库帮你理清思路：\n\n"
+            f"{knowledge_context}\n\n"
+            f"你觉得从哪个角度来思考比较好呢？"
+        )
 
     if "循环" in message or "loop" in message.lower():
         if hint_level == "direct_answer":

@@ -8,8 +8,31 @@ import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
 import { MatSnackBar, MatSnackBarModule } from '@angular/material/snack-bar';
 import { Router, RouterModule } from '@angular/router';
 
-import { TokenBalance, TokenPackage } from '../../models/license.models';
-import { LicenseManagementService } from '../../services/license-management.service';
+import { Observable, of } from 'rxjs';
+import { map } from 'rxjs/operators';
+
+import { TokenService } from '../../core/services/token.service';
+import { UserTokenBalance } from '../../models/token.models';
+
+// 组件内部使用的简化 Token 类型
+interface TokenPackageDisplay {
+  id: number;
+  name: string;
+  price: number;
+  isRecommended?: boolean;
+  tokenAmount: number;
+  validityDays: number;
+  description: string;
+  suitableFor: string;
+}
+
+interface TokenBalanceDisplay {
+  balance: number;
+  purchasedThisMonth: number;
+  consumedThisMonth: number;
+  autoRenewalEnabled: boolean;
+  nextBillingDate?: string;
+}
 
 @Component({
   selector: 'app-token-package-selector',
@@ -30,13 +53,13 @@ import { LicenseManagementService } from '../../services/license-management.serv
 export class TokenPackageSelectorComponent implements OnInit {
   @ViewChild('purchaseDialog') purchaseDialog!: TemplateRef<any>;
 
-  packages: TokenPackage[] = [];
-  balance: TokenBalance | null = null;
+  packages: TokenPackageDisplay[] = [];
+  balance: TokenBalanceDisplay | null = null;
   selectedPackageId: number | null = null;
   isLoading = true;
 
   constructor(
-    private licenseService: LicenseManagementService,
+    private tokenService: TokenService,
     private snackBar: MatSnackBar,
     private dialog: MatDialog,
     private router: Router
@@ -49,7 +72,18 @@ export class TokenPackageSelectorComponent implements OnInit {
 
   loadPackages(): void {
     this.isLoading = true;
-    this.licenseService.getTokenPackages().subscribe({
+    this.tokenService.getTokenPackages().pipe(
+      map((packages) => packages.map((p, i) => ({
+        id: i + 1,
+        name: p.name,
+        price: p.priceCents / 100,
+        isRecommended: p.isRecommended ?? p.isPopular,
+        tokenAmount: p.tokenAmount,
+        validityDays: p.validityDays ?? 0,
+        description: p.description ?? '',
+        suitableFor: '',
+      })))
+    ).subscribe({
       next: (packages) => {
         this.packages = packages;
         // 默认选择推荐套餐
@@ -68,7 +102,14 @@ export class TokenPackageSelectorComponent implements OnInit {
   }
 
   loadBalance(): void {
-    this.licenseService.getTokenBalance().subscribe({
+    this.tokenService.getBalance().pipe(
+      map((b: UserTokenBalance) => ({
+        balance: b.availableBalance,
+        purchasedThisMonth: 0,
+        consumedThisMonth: 0,
+        autoRenewalEnabled: false,
+      }))
+    ).subscribe({
       next: (balance) => {
         this.balance = balance;
       },
@@ -82,7 +123,7 @@ export class TokenPackageSelectorComponent implements OnInit {
     this.selectedPackageId = packageId;
   }
 
-  onPurchase(event: Event, pkg: TokenPackage): void {
+  onPurchase(event: Event, pkg: TokenPackageDisplay): void {
     event.stopPropagation();
 
     const dialogRef = this.dialog.open(this.purchaseDialog, {

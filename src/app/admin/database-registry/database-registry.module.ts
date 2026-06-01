@@ -21,12 +21,13 @@ import { MatSnackBarModule } from '@angular/material/snack-bar';
 import { MatSortModule } from '@angular/material/sort';
 import { MatTableModule } from '@angular/material/table';
 import { MatTooltipModule } from '@angular/material/tooltip';
-import { RouterModule } from '@angular/router';
 
 import { ModuleActivationDialogComponent } from './components/module-activation-dialog.component';
 import { ModuleListComponent } from './components/module-list.component';
 // Components
 import { DatabaseRegistryDashboardComponent } from './database-registry-dashboard.component';
+// Routing
+import { DatabaseRegistryRoutingModule } from './database-registry-routing.module';
 
 @NgModule({
   declarations: [
@@ -38,7 +39,7 @@ import { DatabaseRegistryDashboardComponent } from './database-registry-dashboar
     CommonModule,
     ReactiveFormsModule,
     FormsModule,
-    RouterModule,
+    DatabaseRegistryRoutingModule,
 
     // Material Modules
     MatCardModule,

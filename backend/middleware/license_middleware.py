@@ -39,6 +39,7 @@ class LicenseMiddleware(BaseHTTPMiddleware):
             "/api/v1/auth/token",      # ✅ 登录接口豁免
             "/api/v1/auth/register",   # ✅ 注册接口豁免
             "/api/v1/finance",         # ✅ 财务管理接口豁免（开发环境）
+            "/api/v1/local-knowledge-graph",  # ✅ 本地知识图谱接口豁免
         ])
 
     async def dispatch(self, request: Request, call_next):
@@ -97,7 +98,7 @@ class LicenseMiddleware(BaseHTTPMiddleware):
     def _should_exclude(self, path: str) -> bool:
         """检查路径是否应该排除验证"""
         return any(
-            path.startswith(exclude_path)
+            path == exclude_path or path.startswith(exclude_path)
             for exclude_path in self.exclude_paths
         )
 

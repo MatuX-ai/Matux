@@ -7,9 +7,6 @@ export enum UserType {
   STUDENT = 'student', // 学生
   PARENT = 'parent', // 家长
   TEACHER = 'teacher', // 教师
-  ORG_ADMIN = 'org_admin', // 机构管理员
-  SCHOOL_ADMIN = 'school_admin', // 学校管理员
-  EDUCATION_BUREAU = 'education_bureau', // 教育局
 }
 
 // 用户类型分组
@@ -169,27 +166,6 @@ export const USER_TYPE_CONFIG: Record<
     canCreateGroup: true,
     canInvite: true,
     defaultRoleInGroup: GroupMemberRole.TEACHER,
-  },
-  [UserType.ORG_ADMIN]: {
-    label: '机构管理员',
-    group: UserTypeGroup.ORGANIZATION,
-    canCreateGroup: true,
-    canInvite: true,
-    defaultRoleInGroup: GroupMemberRole.OWNER,
-  },
-  [UserType.SCHOOL_ADMIN]: {
-    label: '学校管理员',
-    group: UserTypeGroup.EDUCATION,
-    canCreateGroup: true,
-    canInvite: true,
-    defaultRoleInGroup: GroupMemberRole.OWNER,
-  },
-  [UserType.EDUCATION_BUREAU]: {
-    label: '教育局',
-    group: UserTypeGroup.EDUCATION,
-    canCreateGroup: true,
-    canInvite: true,
-    defaultRoleInGroup: GroupMemberRole.OWNER,
   },
 };
 

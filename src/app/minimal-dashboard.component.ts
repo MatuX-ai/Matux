@@ -1,5 +1,6 @@
 import { CommonModule } from '@angular/common';
 import { Component } from '@angular/core';
+import { Router } from '@angular/router';
 
 @Component({
   selector: 'app-minimal-dashboard',
@@ -58,6 +59,7 @@ import { Component } from '@angular/core';
 
         <div style="text-align: center; margin-top: 2rem;">
           <button
+            (click)="startLearning()"
             style="background: #2196F3; color: white; border: none; padding: 0.8rem 2rem; border-radius: 4px; cursor: pointer; font-size: 1rem;"
           >
             开始学习之旅
@@ -76,5 +78,9 @@ import { Component } from '@angular/core';
   imports: [CommonModule],
 })
 export class MinimalDashboardComponent {
-  constructor() {}
+  constructor(private router: Router) {}
+
+  startLearning(): void {
+    void this.router.navigate(['/user/dashboard']);
+  }
 }

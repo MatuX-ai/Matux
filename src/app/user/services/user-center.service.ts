@@ -56,16 +56,6 @@ export class UserCenterService {
   }
 
   /**
-   * 是否为管理员
-   */
-  isAdmin(): boolean {
-    const userType = this.getCurrentUserType();
-    return (
-      userType === 'org_admin' || userType === 'school_admin' || userType === 'education_bureau'
-    );
-  }
-
-  /**
    * 是否为教师
    */
   isTeacher(): boolean {
@@ -114,11 +104,6 @@ export class UserCenterService {
     const userTypeMenus: Record<string, UserCenterMenuItem[]> = {
       student: [
         {
-          icon: 'school',
-          label: '我的课程',
-          route: '/user/courses',
-        },
-        {
           icon: 'emoji_events',
           label: '成就系统',
           route: '/user/achievements',
@@ -135,11 +120,6 @@ export class UserCenterService {
           label: '学生管理',
           route: '/user/students',
         },
-        {
-          icon: 'menu_book',
-          label: '课程管理',
-          route: '/user/teacher-courses',
-        },
       ],
       parent: [
         {
@@ -153,60 +133,60 @@ export class UserCenterService {
           route: '/user/reports',
         },
       ],
-      school_admin: [
-        {
-          icon: 'school',
-          label: '学校概览',
-          route: '/user/dashboard',
-        },
-        {
-          icon: 'groups',
-          label: '年级班级管理',
-          route: '/user/classes',
-        },
-        {
-          icon: 'menu_book',
-          label: '校本课程',
-          route: '/user/school-courses',
-        },
-        {
-          icon: 'assessment',
-          label: '教学质量监控',
-          route: '/user/quality',
-        },
-        {
-          icon: 'people',
-          label: '教师工作量',
-          route: '/user/teacher-workload',
-        },
-      ],
-      education_bureau: [
-        {
-          icon: 'domain',
-          label: '区域概览',
-          route: '/user/dashboard',
-        },
-        {
-          icon: 'account_balance',
-          label: '学校管理',
-          route: '/user/schools',
-        },
-        {
-          icon: 'assessment',
-          label: '教学质量监控',
-          route: '/user/quality',
-        },
-        {
-          icon: 'pie_chart',
-          label: '数据分析',
-          route: '/user/analysis',
-        },
-        {
-          icon: 'download',
-          label: '报表导出',
-          route: '/user/reports-export',
-        },
-      ],
+      // school_admin: [  // 已解耦至 OpenMTEduInst 项目
+      //   {
+      //     icon: 'school',
+      //     label: '学校概览',
+      //     route: '/user/dashboard',
+      //   },
+      //   {
+      //     icon: 'groups',
+      //     label: '年级班级管理',
+      //     route: '/user/classes',
+      //   },
+      //   {
+      //     icon: 'menu_book',
+      //     label: '校本课程',
+      //     route: '/user/school-courses',
+      //   },
+      //   {
+      //     icon: 'assessment',
+      //     label: '教学质量监控',
+      //     route: '/user/quality',
+      //   },
+      //   {
+      //     icon: 'people',
+      //     label: '教师工作量',
+      //     route: '/user/teacher-workload',
+      //   },
+      // ],
+      // education_bureau: [  // 已解耦至 OpenMTEduInst 项目
+      //   {
+      //     icon: 'domain',
+      //     label: '区域概览',
+      //     route: '/user/dashboard',
+      //   },
+      //   {
+      //     icon: 'account_balance',
+      //     label: '学校管理',
+      //     route: '/user/schools',
+      //   },
+      //   {
+      //     icon: 'assessment',
+      //     label: '教学质量监控',
+      //     route: '/user/quality',
+      //   },
+      //   {
+      //     icon: 'pie_chart',
+      //     label: '数据分析',
+      //     route: '/user/analysis',
+      //   },
+      //   {
+      //     icon: 'download',
+      //     label: '报表导出',
+      //     route: '/user/reports-export',
+      //   },
+      // ],
       // org_admin: [  // 已解耦到 OpenMTEduInst 项目
       //   {
       //     icon: 'business',

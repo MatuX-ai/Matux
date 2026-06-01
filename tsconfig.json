@@ -14,7 +14,7 @@
     "declaration": false,
     "downlevelIteration": true,
     "experimentalDecorators": true,
-    "ignoreDeprecations": "6.0",
+    "ignoreDeprecations": "5.0",
     "moduleResolution": "bundler",
     "importHelpers": true,
     "target": "ES2022",
@@ -45,7 +45,9 @@
     "**/*.test.ts",
     "**/*.spec.ts",
     "node_modules/echarts/**",
-    "node_modules/ng2-charts/**"
+    "node_modules/ng2-charts/**",
+    "edu-proto/**",
+    "edu-proto-clean/**"
   ],
   "angularCompilerOptions": {
     "enableI18nLegacyMessageIdFormat": false,

@@ -1,6 +1,11 @@
-"""TODO: docstring"""
+"""
+协作学习数据模型
+
+包含讨论区、协作文档、学习小组、项目任务、同伴审查等模型
+"""
 
 import enum
+from datetime import datetime
 
 from sqlalchemy import (
     JSON,
@@ -15,103 +20,110 @@ from sqlalchemy import (
     String,
     Text,
     UniqueConstraint,
-    func,
 )
 from sqlalchemy.orm import relationship
-from sqlalchemy.sql import func as sql_func
+from sqlalchemy.sql import func
 
-from database.db import Base
+from utils.database import Base
 
-  # TODO
+
+# ==================== 枚举定义 ====================
 
 
 class DiscussionCategory(str, enum.Enum):
-    """TODO: docstring"""
+    """讨论区分类"""
 
-    GENERAL = "general"    # TODO
-    COURSE_QA = "course_qa"    # TODO
-    PROJECT_SHOWCASE = "showcase"    # TODO
-    STUDY_GROUP = "study_group"    # TODO
-    TECHNICAL = "technical"    # TODO
+    GENERAL = "general"
+    COURSE_QA = "course_qa"
+    PROJECT_SHOWCASE = "showcase"
+    STUDY_GROUP = "study_group"
+    TECHNICAL = "technical"
 
 
 class PostType(str, enum.Enum):
-    """TODO: docstring"""
+    """帖子类型"""
 
-    QUESTION = "question"    # TODO
-    DISCUSSION = "discussion"    # TODO
-    TUTORIAL = "tutorial"    # TODO
-    SHOWCASE = "showcase"    # TODO
-    ANNOUNCEMENT = "announcement"    # TODO
+    QUESTION = "question"
+    DISCUSSION = "discussion"
+    TUTORIAL = "tutorial"
+    SHOWCASE = "showcase"
+    ANNOUNCEMENT = "announcement"
 
 
 class DocumentPermission(str, enum.Enum):
-    """TODO: docstring"""
+    """文档权限"""
 
-    PRIVATE = "private"    # TODO
-    PUBLIC = "public"    # TODO
+    PRIVATE = "private"
+    PUBLIC = "public"
 
 
 class ReviewStatus(str, enum.Enum):
-    """TODO: docstring"""è®¨è®ºå¸å­è¡?""
+    """审查状态"""
+
+    PENDING = "pending"
+    IN_PROGRESS = "in_progress"
+    COMPLETED = "completed"
+
+
+# ==================== 讨论区模型 ====================
+
+
+class DiscussionPost(Base):
+    """讨论帖模型"""
 
     __tablename__ = "discussion_posts"
 
     id = Column(Integer, primary_key=True, autoincrement=True)
-
-      # TODO
     user_id = Column(
-        Integer, ForeignKey("users.id"), nullable=False, index=True, comment="åå¸äº?ID"
+        Integer, ForeignKey("users.id"), nullable=False, index=True, comment="发帖人ID"
     )
     course_id = Column(
         Integer,
         ForeignKey("courses.id"),
         nullable=True,
         index=True,
-        comment="å³èè¯¾ç¨ IDï¼å¯éï¼",
+        comment="关联课程 ID（可选）",
     )
     parent_id = Column(
         Integer,
         ForeignKey("discussion_posts.id"),
         nullable=True,
         index=True,
-        comment="ç¶å¸å­?IDï¼ç¨äºåå¤ï¼",
+        comment="父帖子ID（用于回复）",
     )
 
-      # TODO
-    title = Column(String(200), nullable=False, comment="æ é¢")
-    content = Column(Text, nullable=False, comment="æ­£æåå®¹")
+    title = Column(String(200), nullable=False, comment="标题")
+    content = Column(Text, nullable=False, comment="正文内容")
     category = Column(
         SQLEnum(DiscussionCategory),
         nullable=False,
         default=DiscussionCategory.GENERAL,
-        comment="åç±»",
+        comment="分类",
     )
     post_type = Column(
-        SQLEnum(PostType), nullable=False, default=PostType.DISCUSSION, comment="ç±»å"
+        SQLEnum(PostType), nullable=False, default=PostType.DISCUSSION, comment="类型"
     )
-    tags = Column(JSON, default=list, comment="æ ç­¾åè¡¨")
+    tags = Column(JSON, default=list, comment="标签列表")
 
-      # TODO
-    view_count = Column(Integer, default=0, comment="æµè§æ¬¡æ°")
-    like_count = Column(Integer, default=0, comment="ç¹èµæ?)
-    comment_count = Column(Integer, default=0, comment="è¯è®ºæ?)
-    is_pinned = Column(Boolean, default=False, comment="æ¯å¦ç½®é¡¶")
-    is_locked = Column(Boolean, default=False, comment="æ¯å¦éå®ï¼ç¦æ­¢åå¤ï¼")
-    is_solved = Column(Boolean, default=False, comment="æ¯å¦å·²è§£å³ï¼é®é¢å¸ï¼")
-
-      # TODO
-        DateTime(timezone=True), server_default=sql_func.now(), index=True
+    view_count = Column(Integer, default=0, comment="浏览次数")
+    like_count = Column(Integer, default=0, comment="点赞数")
+    comment_count = Column(Integer, default=0, comment="评论数")
+    is_pinned = Column(Boolean, default=False, comment="是否置顶")
+    is_locked = Column(Boolean, default=False, comment="是否锁定（禁止回复）")
+    is_solved = Column(Boolean, default=False, comment="是否已解决（问题帖）")
+    created_at = Column(
+        DateTime(timezone=True), server_default=func.now(), index=True
     )
-    updated_at = Column(DateTime(timezone=True), onupdate=sql_func.now())
+    updated_at = Column(DateTime(timezone=True), onupdate=func.now())
     last_activity_at = Column(
-        DateTime(timezone=True), onupdate=sql_func.now(), comment="æåæ´»è·æ¶é?
+        DateTime(timezone=True), server_default=func.now(), onupdate=func.now(), comment="最后活跃时间"
     )
 
-      # TODO
+    # 关联关系
     author = relationship("User", backref="posts")
     course = relationship("Course", backref="posts")
-    parent = relationship("DiscussionPost", remote_side=[id], backref="replies")
+    parent = relationship("DiscussionPost", remote_side=[
+                          id], backref="replies")
     comments = relationship(
         "DiscussionComment", back_populates="post", cascade="all, delete-orphan"
     )
@@ -119,7 +131,6 @@ class ReviewStatus(str, enum.Enum):
         "PostLike", back_populates="post", cascade="all, delete-orphan"
     )
 
-      # TODO
     __table_args__ = (
         Index("idx_post_category_created", "category", "created_at"),
         Index("idx_post_user_created", "user_id", "created_at"),
@@ -130,8 +141,8 @@ class ReviewStatus(str, enum.Enum):
             "id": self.id,
             "title": self.title,
             "content": self.content,
-            "category": self.category.value,
-            "post_type": self.post_type.value,
+            "category": self.category.value if self.category else None,
+            "post_type": self.post_type.value if self.post_type else None,
             "tags": self.tags,
             "view_count": self.view_count,
             "like_count": self.like_count,
@@ -155,8 +166,8 @@ class ReviewStatus(str, enum.Enum):
         }
 
 
-class DiscussionComment(Base):
-    """TODO: docstring"""å¸å­ç¹èµè¡?""
+class PostLike(Base):
+    """帖子点赞模型"""
 
     __tablename__ = "post_likes"
 
@@ -164,16 +175,17 @@ class DiscussionComment(Base):
     post_id = Column(
         Integer, ForeignKey("discussion_posts.id"), nullable=False, index=True
     )
-    user_id = Column(Integer, ForeignKey("users.id"), nullable=False, index=True)
-    created_at = Column(DateTime(timezone=True), server_default=sql_func.now())
+    user_id = Column(Integer, ForeignKey("users.id"),
+                     nullable=False, index=True)
+    created_at = Column(DateTime(timezone=True), server_default=func.now())
 
-      # TODO
+    # 关联关系
+    post = relationship("DiscussionPost", back_populates="likes")
+    user = relationship("User", backref="post_likes")
+
     __table_args__ = (
         UniqueConstraint("post_id", "user_id", name="uix_post_like_unique"),
     )
-
-    post = relationship("DiscussionPost", back_populates="likes")
-    user = relationship("User", backref="post_likes")
 
     def to_dict(self):
         return {
@@ -184,61 +196,138 @@ class DiscussionComment(Base):
         }
 
 
+class DiscussionComment(Base):
+    """讨论评论模型"""
+
+    __tablename__ = "discussion_comments"
+
+    id = Column(Integer, primary_key=True, autoincrement=True)
+    post_id = Column(
+        Integer, ForeignKey("discussion_posts.id"), nullable=False, index=True
+    )
+    user_id = Column(Integer, ForeignKey("users.id"),
+                     nullable=False, index=True)
+    parent_id = Column(
+        Integer,
+        ForeignKey("discussion_comments.id"),
+        nullable=True,
+        index=True,
+        comment="父评论ID（用于回复）",
+    )
+    content = Column(Text, nullable=False, comment="评论内容")
+    created_at = Column(DateTime(timezone=True),
+                        server_default=func.now(), index=True)
+    updated_at = Column(DateTime(timezone=True), onupdate=func.now())
+
+    # 关联关系
+    post = relationship("DiscussionPost", back_populates="comments")
+    author = relationship("User", backref="discussion_comments")
+    parent = relationship("DiscussionComment", remote_side=[
+                          id], backref="replies")
+
+    def to_dict(self):
+        return {
+            "id": self.id,
+            "post_id": self.post_id,
+            "user_id": self.user_id,
+            "parent_id": self.parent_id,
+            "content": self.content,
+            "author": (
+                {"id": self.author.id, "username": self.author.username}
+                if self.author
+                else None
+            ),
+            "created_at": self.created_at.isoformat() if self.created_at is not None else None,
+            "updated_at": self.updated_at.isoformat() if self.updated_at is not None else None,
+        }
+
+
 class CommentLike(Base):
-    """TODO: docstring"""åä½ææ¡£è¡?""
+    """评论点赞模型"""
+
+    __tablename__ = "comment_likes"
+
+    id = Column(Integer, primary_key=True, autoincrement=True)
+    comment_id = Column(
+        Integer, ForeignKey("discussion_comments.id"), nullable=False, index=True
+    )
+    user_id = Column(Integer, ForeignKey("users.id"),
+                     nullable=False, index=True)
+    created_at = Column(DateTime(timezone=True), server_default=func.now())
+
+    # 关联关系
+    comment = relationship("DiscussionComment", backref="likes")
+    user = relationship("User", backref="comment_likes")
+
+    __table_args__ = (
+        UniqueConstraint("comment_id", "user_id",
+                         name="uix_comment_like_unique"),
+    )
+
+    def to_dict(self):
+        return {
+            "id": self.id,
+            "comment_id": self.comment_id,
+            "user_id": self.user_id,
+            "created_at": self.created_at.isoformat() if self.created_at is not None else None,
+        }
+
+
+# ==================== 协作文档模型 ====================
+
+
+class CollaborativeDocument(Base):
+    """协作文档模型"""
 
     __tablename__ = "collaborative_documents"
 
     id = Column(Integer, primary_key=True, autoincrement=True)
 
-      # TODO
     user_id = Column(
-        Integer, ForeignKey("users.id"), nullable=False, index=True, comment="åå»ºè?ID"
+        Integer, ForeignKey("users.id"), nullable=False, index=True, comment="创建者ID"
     )
     group_id = Column(
         Integer,
         ForeignKey("study_groups.id"),
         nullable=True,
         index=True,
-        comment="æå±å°ç»?IDï¼å¯éï¼",
+        comment="所属小组ID（可选）",
     )
     course_id = Column(
         Integer,
         ForeignKey("courses.id"),
         nullable=True,
         index=True,
-        comment="å³èè¯¾ç¨ IDï¼å¯éï¼",
+        comment="关联课程 ID（可选）",
     )
 
-      # TODO
-    title = Column(String(200), nullable=False, comment="ææ¡£æ é¢")
-    content = Column(Text, default="", comment="ææ¡£åå®¹ï¼Markdown æ ¼å¼ï¼?)
+    title = Column(String(200), nullable=False, comment="文档标题")
+    content = Column(Text, default="", comment="文档内容（Markdown 格式）")
     permission = Column(
         SQLEnum(DocumentPermission),
         default=DocumentPermission.PRIVATE,
-        comment="æéè®¾ç½®",
+        comment="权限设置",
     )
 
-      # TODO
-    version = Column(Integer, default=1, comment="çæ¬å?)
+    version = Column(Integer, default=1, comment="版本号")
     last_editor_id = Column(
         Integer,
         ForeignKey("users.id"),
         nullable=True,
         index=True,
-        comment="æåç¼è¾è?ID",
+        comment="最后编辑者ID",
     )
 
-      # TODO
-    collaborators = Column(JSON, default=list, comment="åä½èåè¡?[{user_id, role}]")
-
-      # TODO
-        DateTime(timezone=True), server_default=sql_func.now(), index=True
+    collaborators = Column(
+        JSON, default=list, comment="协作者列表[{user_id, role}]")
+    created_at = Column(
+        DateTime(timezone=True), server_default=func.now(), index=True
     )
-    updated_at = Column(DateTime(timezone=True), onupdate=sql_func.now())
+    updated_at = Column(DateTime(timezone=True), onupdate=func.now())
 
-      # TODO
-    creator = relationship("User", foreign_keys=[user_id], backref="created_documents")
+    # 关联关系
+    creator = relationship("User", foreign_keys=[
+                           user_id], backref="created_documents")
     last_editor = relationship("User", foreign_keys=[last_editor_id])
     group = relationship("StudyGroup", back_populates="documents")
     versions = relationship(
@@ -253,7 +342,7 @@ class CommentLike(Base):
             "id": self.id,
             "title": self.title,
             "content": self.content,
-            "permission": self.permission.value,
+            "permission": self.permission.value if self.permission else None,
             "version": self.version,
             "user_id": self.user_id,
             "group_id": self.group_id,
@@ -271,45 +360,84 @@ class CommentLike(Base):
 
 
 class DocumentVersion(Base):
-    """TODO: docstring"""ææ¡£è¯è®ºè¡¨ï¼æ¯æè¡çº§è¯è®ºï¼?""
+    """文档版本历史模型"""
 
-    __tablename__ = "document_comments"
+    __tablename__ = "document_versions"
 
     id = Column(Integer, primary_key=True, autoincrement=True)
-
-      # TODO
     document_id = Column(
         Integer, ForeignKey("collaborative_documents.id"), nullable=False, index=True
     )
-    user_id = Column(Integer, ForeignKey("users.id"), nullable=False, index=True)
-    parent_id = Column(
-        Integer, ForeignKey("document_comments.id"), nullable=True, index=True
-    )
+    user_id = Column(Integer, ForeignKey("users.id"),
+                     nullable=False, index=True)
+    version_number = Column(Integer, nullable=False, comment="版本号")
+    content = Column(Text, comment="版本内容")
+    change_summary = Column(String(500), comment="变更摘要")
+    created_at = Column(DateTime(timezone=True), server_default=func.now())
 
-      # TODO
-    content = Column(Text, nullable=False, comment="è¯è®ºåå®¹")
-    line_number = Column(Integer, comment="è¡å·ï¼ç¨äºè¡çº§è¯è®ºï¼")
-    is_resolved = Column(Boolean, default=False, comment="æ¯å¦å·²è§£å?)
-
-      # TODO
-        DateTime(timezone=True), server_default=sql_func.now(), index=True
-    )
-    updated_at = Column(DateTime(timezone=True), onupdate=sql_func.now())
-
-      # TODO
-    document = relationship("CollaborativeDocument", back_populates="comments")
-    author = relationship("User", backref="document_comments")
-    parent = relationship("DocumentComment", remote_side=[id], backref="replies")
+    # 关联关系
+    document = relationship("CollaborativeDocument", back_populates="versions")
+    author = relationship("User", backref="document_versions")
 
     def to_dict(self):
         return {
             "id": self.id,
+            "document_id": self.document_id,
+            "user_id": self.user_id,
+            "version_number": self.version_number,
+            "content": self.content,
+            "change_summary": self.change_summary,
+            "author": (
+                {"id": self.author.id, "username": self.author.username}
+                if self.author
+                else None
+            ),
+            "created_at": self.created_at.isoformat() if self.created_at is not None else None,
+        }
+
+
+class DocumentComment(Base):
+    """文档评论/批注模型"""
+
+    __tablename__ = "document_comments"
+
+    id = Column(Integer, primary_key=True, autoincrement=True)
+    document_id = Column(
+        Integer, ForeignKey("collaborative_documents.id"), nullable=False, index=True
+    )
+    user_id = Column(Integer, ForeignKey("users.id"),
+                     nullable=False, index=True)
+    parent_id = Column(
+        Integer,
+        ForeignKey("document_comments.id"),
+        nullable=True,
+        index=True,
+        comment="父评论ID",
+    )
+
+    content = Column(Text, nullable=False, comment="评论内容")
+    line_number = Column(Integer, nullable=True, comment="行号（用于行级评论）")
+    is_resolved = Column(Boolean, default=False, comment="是否已解决")
+    created_at = Column(
+        DateTime(timezone=True), server_default=func.now(), index=True
+    )
+    updated_at = Column(DateTime(timezone=True), onupdate=func.now())
+
+    # 关联关系
+    document = relationship("CollaborativeDocument", back_populates="comments")
+    author = relationship("User", backref="document_comments")
+    parent = relationship("DocumentComment", remote_side=[
+                          id], backref="replies")
+
+    def to_dict(self):
+        return {
+            "id": self.id,
+            "document_id": self.document_id,
+            "user_id": self.user_id,
+            "parent_id": self.parent_id,
             "content": self.content,
             "line_number": self.line_number,
             "is_resolved": self.is_resolved,
-            "user_id": self.user_id,
-            "document_id": self.document_id,
-            "parent_id": self.parent_id,
             "author": (
                 {"id": self.author.id, "username": self.author.username}
                 if self.author
@@ -320,33 +448,89 @@ class DocumentVersion(Base):
         }
 
 
-  # TODO
+# ==================== 学习小组模型 ====================
 
 
 class StudyGroup(Base):
-    """TODO: docstring"""å°ç»æåè¡?""
+    """学习小组模型"""
+
+    __tablename__ = "study_groups"
+
+    id = Column(Integer, primary_key=True, autoincrement=True)
+    creator_id = Column(
+        Integer, ForeignKey("users.id"), nullable=False, index=True, comment="创建者ID"
+    )
+    name = Column(String(100), nullable=False, comment="小组名称")
+    description = Column(Text, comment="小组描述")
+    org_id = Column(
+        Integer, ForeignKey("organizations.id"), nullable=False, index=True, comment="所属机构ID"
+    )
+    course_id = Column(
+        Integer,
+        ForeignKey("courses.id"),
+        nullable=True,
+        index=True,
+        comment="关联课程 ID（可选）",
+    )
+    max_members = Column(Integer, default=10, comment="最大成员数")
+    member_count = Column(Integer, default=0, comment="当前成员数")
+    is_private = Column(Boolean, default=False, comment="是否私密小组")
+    created_at = Column(DateTime(timezone=True), server_default=func.now())
+    updated_at = Column(DateTime(timezone=True), onupdate=func.now())
+
+    # 关联关系
+    creator = relationship("User", foreign_keys=[
+                           creator_id], backref="created_groups")
+    members = relationship(
+        "StudyGroupMember", back_populates="group", cascade="all, delete-orphan"
+    )
+    documents = relationship(
+        "CollaborativeDocument", back_populates="group", cascade="all, delete-orphan"
+    )
+
+    def to_dict(self):
+        return {
+            "id": self.id,
+            "name": self.name,
+            "description": self.description,
+            "org_id": self.org_id,
+            "course_id": self.course_id,
+            "max_members": self.max_members,
+            "member_count": self.member_count,
+            "is_private": self.is_private,
+            "creator_id": self.creator_id,
+            "creator": (
+                {"id": self.creator.id, "username": self.creator.username}
+                if self.creator
+                else None
+            ),
+            "created_at": self.created_at.isoformat() if self.created_at is not None else None,
+            "updated_at": self.updated_at.isoformat() if self.updated_at is not None else None,
+        }
+
+
+class StudyGroupMember(Base):
+    """小组成员模型"""
 
     __tablename__ = "study_group_members"
 
     id = Column(Integer, primary_key=True, autoincrement=True)
-
-      # TODO
     group_id = Column(
         Integer, ForeignKey("study_groups.id"), nullable=False, index=True
     )
-    user_id = Column(Integer, ForeignKey("users.id"), nullable=False, index=True)
+    user_id = Column(Integer, ForeignKey("users.id"),
+                     nullable=False, index=True)
 
-      # TODO
-    role = Column(String(20), default="member", comment="è§è²ï¼admin/member")
-    joined_at = Column(DateTime(timezone=True), server_default=sql_func.now())
+    role = Column(String(20), default="member", comment="角色：admin/member")
+    joined_at = Column(DateTime(timezone=True), server_default=func.now())
 
-      # TODO
+    # 关联关系
     group = relationship("StudyGroup", back_populates="members")
     user = relationship("User", backref="group_memberships")
 
-      # TODO
     __table_args__ = (
-        UniqueConstraint("group_id", "user_id", name="uix_group_member_unique"),
+        UniqueConstraint("group_id", "user_id",
+                         name="uix_group_member_unique"),
     )
 
     def to_dict(self):
@@ -364,17 +548,76 @@ class StudyGroup(Base):
         }
 
 
-  # TODO
+# ==================== 项目管理模型 ====================
 
 
 class StudyProject(Base):
-    """TODO: docstring"""é¡¹ç®ä»»å¡è¡?""
+    """学习项目模型"""
+
+    __tablename__ = "study_projects"
+
+    id = Column(Integer, primary_key=True, autoincrement=True)
+    group_id = Column(
+        Integer, ForeignKey("study_groups.id"), nullable=False, index=True
+    )
+    user_id = Column(
+        Integer, ForeignKey("users.id"), nullable=False, index=True, comment="创建者ID"
+    )
+    title = Column(String(200), nullable=False, comment="项目标题")
+    description = Column(Text, comment="项目描述")
+    course_id = Column(
+        Integer,
+        ForeignKey("courses.id"),
+        nullable=True,
+        index=True,
+        comment="关联课程 ID（可选）",
+    )
+    repository_url = Column(String(500), comment="代码仓库地址")
+    status = Column(
+        String(20), default="planning", comment="状态：planning/active/completed/archived"
+    )
+    progress_percentage = Column(Integer, default=0, comment="进度百分比（0-100）")
+    created_at = Column(DateTime(timezone=True), server_default=func.now())
+    updated_at = Column(DateTime(timezone=True), onupdate=func.now())
+
+    # 关联关系
+    group = relationship("StudyGroup", backref="projects")
+    creator = relationship("User", foreign_keys=[
+                           user_id], backref="created_projects")
+    tasks = relationship(
+        "ProjectTask", back_populates="project", cascade="all, delete-orphan"
+    )
+    reviews = relationship(
+        "PeerReview", back_populates="project", cascade="all, delete-orphan"
+    )
+
+    def to_dict(self):
+        return {
+            "id": self.id,
+            "group_id": self.group_id,
+            "user_id": self.user_id,
+            "title": self.title,
+            "description": self.description,
+            "course_id": self.course_id,
+            "repository_url": self.repository_url,
+            "status": self.status,
+            "progress_percentage": self.progress_percentage,
+            "creator": (
+                {"id": self.creator.id, "username": self.creator.username}
+                if self.creator
+                else None
+            ),
+            "created_at": self.created_at.isoformat() if self.created_at is not None else None,
+            "updated_at": self.updated_at.isoformat() if self.updated_at is not None else None,
+        }
+
+
+class ProjectTask(Base):
+    """项目任务模型"""
 
     __tablename__ = "project_tasks"
 
     id = Column(Integer, primary_key=True, autoincrement=True)
-
-      # TODO
     project_id = Column(
         Integer, ForeignKey("study_projects.id"), nullable=False, index=True
     )
@@ -383,33 +626,36 @@ class StudyProject(Base):
         ForeignKey("users.id"),
         nullable=True,
         index=True,
-        comment="è´è´£äº?IDï¼å¯éï¼",
+        comment="负责人ID（可选）",
     )
 
-      # TODO
-    title = Column(String(200), nullable=False, comment="ä»»å¡æ é¢")
-    description = Column(Text, comment="ä»»å¡æè¿°")
-    status = Column(String(20), default="todo", comment="ç¶æï¼todo/in_progress/done")
-    priority = Column(String(20), default="medium", comment="ä¼åçº§ï¼low/medium/high")
-    due_date = Column(DateTime(timezone=True), comment="æªæ­¢æ¥æ")
+    title = Column(String(200), nullable=False, comment="任务标题")
+    description = Column(Text, comment="任务描述")
+    status = Column(
+        String(20), default="todo", comment="状态：todo/in_progress/done"
+    )
+    priority = Column(
+        String(20), default="medium", comment="优先级：low/medium/high"
+    )
+    due_date = Column(DateTime(timezone=True), nullable=True, comment="截止日期")
+    created_at = Column(DateTime(timezone=True), server_default=func.now())
+    updated_at = Column(DateTime(timezone=True), onupdate=func.now())
 
-      # TODO
-    updated_at = Column(DateTime(timezone=True), onupdate=sql_func.now())
-
-      # TODO
+    # 关联关系
     project = relationship("StudyProject", back_populates="tasks")
-    assignee = relationship("User", backref="assigned_tasks")
+    assignee = relationship("User", foreign_keys=[
+                            user_id], backref="assigned_tasks")
 
     def to_dict(self):
         return {
             "id": self.id,
+            "project_id": self.project_id,
+            "user_id": self.user_id,
             "title": self.title,
             "description": self.description,
             "status": self.status,
             "priority": self.priority,
             "due_date": self.due_date.isoformat() if self.due_date is not None else None,
-            "project_id": self.project_id,
-            "user_id": self.user_id,
             "assignee": (
                 {"id": self.assignee.id, "username": self.assignee.username}
                 if self.assignee
@@ -420,52 +666,53 @@ class StudyProject(Base):
         }
 
 
+# ==================== 同伴审查模型 ====================
+
+
 class PeerReview(Base):
-    """åä¼´å®¡æ¥è¡?""
+    """同伴审查表"""
 
     __tablename__ = "peer_reviews"
 
     id = Column(Integer, primary_key=True, autoincrement=True)
 
-      # TODO
     project_id = Column(
         Integer, ForeignKey("study_projects.id"), nullable=False, index=True
     )
     reviewer_id = Column(
-        Integer, ForeignKey("users.id"), nullable=False, index=True, comment="å®¡æ¥äº?ID"
+        Integer, ForeignKey("users.id"), nullable=False, index=True, comment="审查人ID"
     )
     reviewee_id = Column(
         Integer,
         ForeignKey("users.id"),
         nullable=False,
         index=True,
-        comment="è¢«å®¡æ¥äºº ID",
+        comment="被审查人ID",
     )
 
-      # TODO
     status = Column(
-        SQLEnum(ReviewStatus), default=ReviewStatus.PENDING, comment="å®¡æ¥ç¶æ?
+        SQLEnum(ReviewStatus), default=ReviewStatus.PENDING, comment="审查状态"
     )
-    feedback = Column(Text, comment="å®¡æ¥åé¦")
-    score = Column(Integer, comment="è¯åï¼?-100ï¼?)
-    strengths = Column(JSON, default=list, comment="ä¼ç¹åè¡¨")
-    suggestions = Column(JSON, default=list, comment="æ¹è¿å»ºè®®åè¡¨")
-
-      # TODO
-        DateTime(timezone=True), server_default=sql_func.now(), index=True
+    feedback = Column(Text, comment="审查反馈")
+    score = Column(Integer, comment="评分（0-100）")
+    strengths = Column(JSON, default=list, comment="优点列表")
+    suggestions = Column(JSON, default=list, comment="改进建议列表")
+    created_at = Column(
+        DateTime(timezone=True), server_default=func.now(), index=True
     )
-    updated_at = Column(DateTime(timezone=True), onupdate=sql_func.now())
+    updated_at = Column(DateTime(timezone=True), onupdate=func.now())
 
-      # TODO
+    # 关联关系
     project = relationship("StudyProject", back_populates="reviews")
-    reviewer = relationship("User", foreign_keys=[reviewer_id], backref="given_reviews")
+    reviewer = relationship("User", foreign_keys=[
+                            reviewer_id], backref="given_reviews")
     reviewee = relationship(
         "User", foreign_keys=[reviewee_id], backref="received_reviews"
     )
 
-      # TODO
     __table_args__ = (
-        UniqueConstraint("project_id", "reviewer_id", name="uix_peer_review_unique"),
+        UniqueConstraint("project_id", "reviewer_id",
+                         name="uix_peer_review_unique"),
     )
 
     def to_dict(self):
@@ -474,7 +721,7 @@ class PeerReview(Base):
             "project_id": self.project_id,
             "reviewer_id": self.reviewer_id,
             "reviewee_id": self.reviewee_id,
-            "status": self.status.value,
+            "status": self.status.value if self.status else None,
             "feedback": self.feedback,
             "score": self.score,
             "strengths": self.strengths,

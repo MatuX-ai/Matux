@@ -4,6 +4,8 @@
 
 本项目采用配置化的方式管理可选功能模块，通过环境变量控制各个功能模块的启用/禁用状态。
 
+> **模块解耦说明**: 课件管理模块已解耦至 OpenMTSciEd，机构管理模块已解耦至 OpenMTEduInst。以下标记为「已解耦」的模块仅保留 API 存根用于兼容性，新功能请在对应项目中开发。
+
 ## 核心功能模块 (默认启用)
 
 以下模块始终启用，无需额外配置:
@@ -14,23 +16,47 @@
 - ✅ 支付系统
 - ✅ 订阅系统
 - ✅ 硬件认证
-- ✅ 许可证管理
 - ✅ 课程管理
 - ✅ 课程版本控制
-- ✅ 多租户配置
-- ✅ 教育机构管理
-- ✅ 权限管理
 - ✅ 协作编辑
 - ✅ 多媒体资源
 - ✅ 创意引擎
 - ✅ AR 实验室
-- ✅ 教育数据联邦学习
 - ✅ 模型基准测试
 - ✅ 区块链网关
 - ✅ 学习行为特征
-- ✅ Celery 任务监控
 - ✅ 手势识别系统 (gesture_recognition)
 - ✅ AR 奖励系统
+- ✅ AI 教育学习进度
+- ✅ AI 个性化教师
+- ✅ 向量知识库 (RAG)
+- ✅ 本地知识图谱
+
+## 已解耦模块 (保留兼容存根)
+
+> ⚠️ 以下模块已解耦至独立项目，MatuX 仅保留 API 存根用于兼容性。新功能请在对应项目中开发，避免重复开发。
+
+| 模块 | 路由文件 | 目标项目 | 说明 |
+|------|----------|----------|------|
+| 课件管理 | `material_routes.py` | **OpenMTSciEd** | 教程/课件/知识图谱 → localhost:3000/api/v1 |
+| 机构管理 | `educational_institution_routes.py` | **OpenMTEduInst** | 机构/教师/排课/设备管理 |
+| 多租户配置 | `tenant_config_routes.py` | **OpenMTEduInst** | SaaS 多租户权限控制 |
+| 许可证管理 | (集成在license模块) | **OpenMTEduInst** | 软件授权方案 |
+| 权限管理 | `permission_routes.py` | **OpenMTEduInst** | 多租户权限体系 |
+
+## 外部项目 API 集成
+
+MatuX 通过 HTTP API 调用以下外部项目服务：
+
+### OpenMTSciEd (课件资源)
+- **端点**: `localhost:3000/api/v1`
+- **功能**: 教程、课件、知识图谱、硬件项目资源
+- **环境变量**: `OPENMTSCIED_API_URL=http://localhost:3000/api/v1`
+
+### OpenMTEduInst (机构管理)
+- **端点**: 独立部署（通过环境变量配置）
+- **功能**: 机构、教师、排课、校区、设备管理
+- **环境变量**: `OPENMTEDUINST_API_URL=http://localhost:8001/api/v1`
 
 ## 可选功能模块 (需配置启用)
 
@@ -195,7 +221,7 @@ curl http://localhost:8000/
 响应示例:
 ```json
 {
-  "message": "Welcome to iMato AI Service",
+  "message": "Welcome to MatuX STEM Learning Platform",
   "version": "1.0.0",
   "status": "healthy",
   "core_features": [...],

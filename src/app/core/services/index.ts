@@ -48,7 +48,7 @@ export { EnhancedToastService } from './enhanced-toast.service';
 
 // ==================== 订阅与授权 ====================
 export { SubscriptionService } from './subscription.service';
-export { LicenseService } from './license.service';
+// 许可证服务已随许可证管理模块一并移除（已解耦至 OpenMTEduInst 项目）
 
 // ==================== 电路相关服务 ====================
 export { CircuitAssemblyService } from './circuit-assembly.service';

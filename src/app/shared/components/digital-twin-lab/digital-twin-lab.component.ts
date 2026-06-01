@@ -12,6 +12,8 @@ import { MatSnackBar } from '@angular/material/snack-bar';
 import { ActivatedRoute, Router } from '@angular/router';
 import { Subject } from 'rxjs';
 
+import { ElectronService } from '../../../core/services/electron.service';
+
 interface CircuitElement {
   element_id: string;
   element_type: string;
@@ -128,7 +130,8 @@ export class DigitalTwinLabComponent implements OnInit, OnDestroy {
     private router: Router,
     private http: HttpClient,
     private snackBar: MatSnackBar,
-    private dialog: MatDialog
+    private dialog: MatDialog,
+    private electronService: ElectronService,
   ) {}
 
   ngOnInit(): void {
@@ -503,6 +506,26 @@ export class DigitalTwinLabComponent implements OnInit, OnDestroy {
     } else {
       void document.exitFullscreen();
     }
+  }
+
+  // 弹出独立实验窗口（PRD F-09 桌面端适配：多窗口模式）
+  openInNewWindow(): void {
+    if (!this.electronService.isElectron) {
+      // 浏览器端降级：新标签页打开
+      window.open(`/digital-twin-lab/${this.sessionId}`, '_blank');
+      return;
+    }
+
+    // Electron 端：通过 IPC 请求主进程创建新窗口
+    this.electronService.sendAppEvent({
+      type: 'open-new-window' as never,
+      url: `/digital-twin-lab/${this.sessionId}`,
+      title: `数字孪生实验 - ${this.sessionId}`,
+      width: 1280,
+      height: 800,
+    } as never);
+
+    this.snackBar.open('实验窗口已弹出', '关闭', { duration: 2000 });
   }
 
   // 获取平均电压

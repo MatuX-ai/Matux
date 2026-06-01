@@ -1,4 +1,4 @@
-# MatuX 平台网站地图
+# MatuX STEM 学习平台 - 网站地图
 
 ## 🌐 前端页面结构
 
@@ -10,56 +10,35 @@
 │   ├── /auth/login         # 登录页
 │   ├── /auth/register      # 注册页
 │   └── /auth/forgot-password # 忘记密码
-├── /dashboard              # 仪表板首页 (根据用户角色动态展示)
-│   └── SimpleDashboardModule
-├── /admin                  # 管理后台 (系统管理员)
-│   ├── /admin/dashboard    # 管理仪表板
-│   ├── /admin/users        # 用户管理
-│   ├── /admin/organizations # 组织管理
-│   ├── /admin/licenses     # 许可证管理
-│   ├── /admin/payments     # 支付管理
-│   └── /admin/auth         # 认证管理
-├── /teacher                # 教师角色Dashboard (新增: 2026-03-21)
-│   ├── /teacher/dashboard  # 教师仪表板
-│   │   ├── teaching-progress # 跨机构教学进度
-│   │   ├── student-overview # 学生学情总览
-│   │   └── resource-manager # 教学资源管理
-│   └── /teacher/courses    # 教师课程管理
-│       ├── /teacher/courses/my-courses # 我的课程
-│       └── /teacher/courses/assignments # 作业管理
-├── /org-admin              # 机构管理员Dashboard (新增: 2026-03-20)
-│   ├── /org-admin/dashboard # 机构仪表板
-│   │   ├── org-overview     # 机构概览
-│   │   ├── course-operation # 课程运营统计
-│   │   ├── teacher-management # 教师管理
-│   │   └── student-management # 学员管理
-│   └── /org-admin/courses   # 机构课程库
-│       ├── /org-admin/courses/all # 所有课程
-│       └── /org-admin/courses/enrollment # 报名统计
-├── /school-admin           # 学校管理员Dashboard (新增: 2026-03-21)
-│   ├── /school-admin/dashboard # 学校仪表板
-│   │   ├── grade-class-management # 年级班级管理
-│   │   ├── school-curriculum # 校本课程管理
-│   │   ├── teacher-workload  # 教师工作量统计
-│   │   └── student-growth    # 学生成长档案
-│   └── /school-admin/reports # 学校报表
-│       ├── /school-admin/reports/attendance # 出勤统计
-│       └── /school-admin/reports/achievements # 成绩报告
-├── /education-bureau       # 教育局Dashboard (新增: 2026-03-21)
-│   ├── /education-bureau/dashboard # 教育局仪表板
-│   │   ├── regional-overview # 区域数据概览
-│   │   ├── school-comparison # 学校对比分析
-│   │   ├── quality-monitoring # 教学质量监控
-│   │   └── resource-suggestions # AI资源调配建议
-│   └── /education-bureau/reports # 区域报表
-│       ├── /education-bureau/reports/export # 数据导出
-│       └── /education-bureau/reports/trends # 趋势分析
-└── /courses                # 统一课程库 (新增: 2026-03-21)
-    ├── /courses/library    # 课程库浏览
-    ├── /courses/detail/{id} # 课程详情
-    ├── /courses/create     # 创建课程
-    ├── /courses/edit/{id}  # 编辑课程
-    └── /courses/enrollment # 课程报名管理
+├── /dashboard              # 学生学习主页 (学生学习门户)
+│   └── StudentDashboardModule
+├── /admin                  # 系统管理 (仅开发者)
+│   ├── /admin/settings     # 全局设置
+│   └── /admin/dashboard    # 系统状态
+├── /student                # 学生学习路由
+│   ├── /student/courses    # 课程浏览与学习
+│   ├── /student/ai-programming # AI编程工作台
+│   ├── /student/stem-lab   # STEM虚拟实验室
+│   ├── /student/ai-teacher # AI个性化教师
+│   ├── /student/creativity # 创意引擎
+│   └── /student/reports    # 学习报告
+├── /parent                 # 家长监护视图
+│   ├── /parent/dashboard   # 家长仪表板
+│   └── /parent/reports     # 孩子学习报告
+├── /profile                # 个人中心
+│   ├── /profile/learning-portrait # 学习画像
+│   ├── /profile/growth     # 成长轨迹
+│   ├── /profile/achievements # 成就系统
+│   └── /profile/settings   # 设置
+│
+├── ~~[已解耦] 以下路由已迁移至 OpenMTEduInst~~
+│   ├── ~~[已解耦] /teacher              # 教师角色Dashboard → OpenMTEduInst~~
+│   ├── ~~[已解耦] /org-admin            # 机构管理员Dashboard → OpenMTEduInst~~
+│   ├── ~~[已解耦] /school-admin         # 学校管理员Dashboard → OpenMTEduInst~~
+│   └── ~~[已解耦] /education-bureau     # 教育局Dashboard → OpenMTEduInst~~
+│
+└── ~~[已解耦] 以下路由已迁移至 OpenMTSciEd~~
+    └── ~~[已解耦] /courses              # 统一课程库 → OpenMTSciEd~~
 ```
 
 ### 独立演示页面 (docs/)
@@ -140,8 +119,9 @@ PUT    /hardware/{device_id} # 更新设备信息
 DELETE /hardware/{device_id} # 删除设备
 ```
 
-### 许可证管理 (/api/v1/licenses)
+### 许可证管理 (/api/v1/licenses) ⚠️ 已解耦至 OpenMTEduInst
 ```
+⚠️ 此 API 已解耦至 OpenMTEduInst 项目，保留兼容存根
 GET    /licenses            # 许可证列表
 POST   /licenses            # 创建许可证
 GET    /licenses/{id}       # 许可证详情
@@ -149,8 +129,9 @@ PUT    /licenses/{id}       # 更新许可证
 DELETE /licenses/{id}       # 删除许可证
 ```
 
-### 用户许可证 (/api/v1/user-licenses)
+### 用户许可证 (/api/v1/user-licenses) ⚠️ 已解耦至 OpenMTEduInst
 ```
+⚠️ 此 API 已解耦至 OpenMTEduInst 项目，保留兼容存根
 GET    /user-licenses       # 用户许可证列表
 POST   /user-licenses       # 分配用户许可证
 GET    /user-licenses/{id}  # 用户许可证详情
@@ -167,15 +148,17 @@ PUT    /courses/{id}        # 更新课程
 DELETE /courses/{id}        # 删除课程
 ```
 
-### 租户配置 (/tenant-config)
+### 租户配置 (/tenant-config) ⚠️ 已解耦至 OpenMTEduInst
 ```
+⚠️ 此 API 已解耦至 OpenMTEduInst 项目，保留兼容存根
 GET    /tenant-config/{org_id} # 组织配置信息
 PUT    /tenant-config/{org_id} # 更新组织配置
 GET    /tenant-config/{org_id}/resources # 资源使用情况
 ```
 
-### 教育机构管理 (/educational-institutions)
+### 教育机构管理 (/educational-institutions) ⚠️ 已解耦至 OpenMTEduInst
 ```
+⚠️ 此 API 已解耦至 OpenMTEduInst 项目，保留兼容存根
 GET    /educational-institutions # 机构列表
 POST   /educational-institutions # 创建机构
 GET    /educational-institutions/{id} # 机构详情
@@ -183,71 +166,40 @@ PUT    /educational-institutions/{id} # 更新机构
 DELETE /educational-institutions/{id} # 删除机构
 ```
 
-### 多角色Dashboard API (新增: 2026-03-22)
+### 多角色Dashboard API ⚠️ 已解耦至 OpenMTEduInst
 
-#### 教师Dashboard API (/api/v1/teacher)
-```
-GET    /teacher/dashboard              # 教师仪表板数据
-GET    /teacher/students-progress      # 学生学情总览
-GET    /teacher/cross-institution-progress # 跨机构教学进度
-POST   /teacher/resources/upload       # 教学资源上传
-GET    /teacher/assignments            # 作业列表
-POST   /teacher/assignments            # 创建作业
-PUT    /teacher/assignments/{id}       # 批改作业
-```
+> 以下 Dashboard API 已全部解耦至 OpenMTEduInst 项目，MatuX 仅保留学生相关功能。
 
-#### 机构管理员Dashboard API (/api/v1/org-admin)
-```
-GET    /org-admin/dashboard/{org_id}   # 机构仪表板数据
-GET    /org-admin/overview/{org_id}    # 机构概览统计
-GET    /org-admin/courses/{org_id}     # 机构课程运营统计
-GET    /org-admin/teachers/{org_id}    # 机构教师管理
-GET    /org-admin/students/{org_id}    # 机构学员管理
-POST   /org-admin/courses              # 创建机构课程
-PUT    /org-admin/courses/{course_id}  # 更新机构课程
-DELETE /org-admin/courses/{course_id}  # 删除机构课程
-```
+#### ~~教师Dashboard API (/api/v1/teacher) → OpenMTEduInst~~
+#### ~~机构管理员Dashboard API (/api/v1/org-admin) → OpenMTEduInst~~
+#### ~~学校管理员Dashboard API (/api/v1/school-admin) → OpenMTEduInst~~
+#### ~~教育局Dashboard API (/api/v1/education-bureau) → OpenMTEduInst~~
 
-#### 学校管理员Dashboard API (/api/v1/school-admin)
+### 统一课件库API ⚠️ 已解耦至 OpenMTSciEd
+
+> 课件管理功能已解耦至 OpenMTSciEd 项目 (localhost:3000/api/v1)，MatuX 通过 API 调用获取课件资源。
+
+#### ~~统一课件库API (/api/v1/courses) → OpenMTSciEd~~
+
+### 外部项目 API 端点
+
+#### OpenMTSciEd 课件资源 API (localhost:3000/api/v1)
 ```
-GET    /school-admin/dashboard/{school_id} # 学校仪表板数据
-GET    /school-admin/grade-classes/{school_id} # 年级班级管理
-GET    /school-admin/curriculum/{school_id} # 校本课程管理
-GET    /school-admin/teacher-workload/{school_id} # 教师工作量统计
-GET    /school-admin/student-growth/{school_id} # 学生成长档案
-POST   /school-admin/grade-classes      # 创建年级班级
-PUT    /school-admin/grade-classes/{class_id} # 更新班级信息
-POST   /school-admin/courses            # 创建校本课程
+GET    /api/v1/tutorials          # 教程列表
+GET    /api/v1/tutorials/{id}     # 教程详情
+GET    /api/v1/coursewares        # 课件列表
+GET    /api/v1/coursewares/{id}   # 课件详情
+GET    /api/v1/knowledge-graph    # 知识图谱查询
+GET    /api/v1/hardware-projects  # 硬件项目资源
 ```
 
-#### 教育局Dashboard API (/api/v1/education-bureau)
+#### OpenMTEduInst 机构管理 API
 ```
-GET    /education-bureau/dashboard/{region_id} # 教育局仪表板数据
-GET    /education-bureau/regional-overview/{region_id} # 区域数据概览
-GET    /education-bureau/school-comparison/{region_id} # 学校对比分析
-GET    /education-bureau/quality-metrics/{region_id} # 教学质量监控
-GET    /education-bureau/score-distributions/{region_id} # 成绩分布统计
-POST   /education-bureau/resource-recommendations # AI资源调配建议
-GET    /education-bureau/reports/export/{format} # 数据导出(Excel/PDF/CSV)
-```
-
-#### 统一课程库API (/api/v1/courses) (新增: 2026-03-21)
-```
-GET    /courses                        # 课程列表(支持多场景筛选)
-POST   /courses                        # 创建课程
-GET    /courses/{course_id}            # 课程详情
-PUT    /courses/{course_id}            # 更新课程
-DELETE /courses/{course_id}            # 删除课程
-GET    /courses/{course_id}/chapters   # 课程章节列表
-POST   /courses/{course_id}/chapters   # 添加章节
-GET    /courses/{course_id}/lessons    # 课程课时列表
-POST   /courses/{course_id}/lessons    # 添加课时
-POST   /courses/enrollment             # 课程报名
-GET    /courses/{course_id}/enrollment # 课程报名统计
-POST   /courses/{course_id}/progress   # 更新学习进度
-GET    /courses/{course_id}/progress   # 学习进度统计
-GET    /courses/search                 # 课程搜索(支持多条件)
-GET    /courses/statistics             # 课程统计分析
+GET    /api/v1/institutions       # 机构列表
+GET    /api/v1/institutions/{id}  # 机构详情
+GET    /api/v1/teachers           # 教师列表
+GET    /api/v1/schedules          # 排课信息
+GET    /api/v1/devices            # 设备管理
 ```
 
 ## 📊 系统监控端点
@@ -348,32 +300,31 @@ public/
 
 ```mermaid
 graph TD
-    A[首页 /] --> B[仪表板 /dashboard]
-    A --> C[管理后台 /admin]
+    A[首页 /] --> B[学生主页 /dashboard]
     A --> D[认证页面 /auth]
+    A --> S[学生路由 /student]
+    A --> P[家长视图 /parent]
     
-    B --> B1[数据分析]
-    B --> B2[学习进度]
-    B --> B3[推荐内容]
+    B --> B1[学习概览]
+    B --> B2[课程推荐]
+    B --> B3[成就墙]
     
-    C --> C1[用户管理]
-    C --> C2[组织管理]
-    C --> C3[许可证管理]
-    C --> C4[支付管理]
+    S --> S1[AI编程工作台]
+    S --> S2[STEM实验室]
+    S --> S3[AI个性化教师]
+    S --> S4[创意引擎]
+    
+    P --> P1[孩子学习报告]
+    P --> P2[监护设置]
     
     D --> D1[登录 /auth/login]
     D --> D2[注册 /auth/register]
     D --> D3[找回密码 /auth/forgot-password]
     
-    C1 --> API1[用户API]
-    C2 --> API2[组织API]
-    C3 --> API3[许可证API]
-    C4 --> API4[支付API]
-    
-    B1 --> AI1[AI推荐服务]
-    B2 --> AI2[学习分析服务]
-    B3 --> AI3[内容推荐服务]
+    S1 --> API1[MatuX AI服务]
+    S2 --> API2[OpenMTSciEd课件API]
+    P1 --> API3[OpenMTEduInst机构API]
 ```
 
 ---
-*网站地图版本：v1.0 | 最后更新：2026年2月*
+*MatuX STEM 学习平台网站地图 | 版本 v2.0 | 最后更新：2026年5月*

@@ -386,9 +386,6 @@ export class UserProfileComponent implements OnInit, OnDestroy {
       student: '学生',
       parent: '家长',
       teacher: '教师',
-      org_admin: '机构管理员',
-      school_admin: '学校管理员',
-      education_bureau: '教育局',
     };
 
     return typeLabels[this.userProfile.userType] || '用户';

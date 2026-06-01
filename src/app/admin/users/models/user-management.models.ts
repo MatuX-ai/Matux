@@ -31,9 +31,6 @@ export enum UserRole {
   TEACHER = 'teacher',
   STUDENT = 'student',
   PARENT = 'parent',
-  ORG_ADMIN = 'org_admin',
-  SCHOOL_ADMIN = 'school_admin',
-  EDUCATION_BUREAU = 'education_bureau',
 }
 
 // 扩展的用户信息接口
