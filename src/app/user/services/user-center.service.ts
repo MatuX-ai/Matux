@@ -8,14 +8,12 @@ import { Injectable } from '@angular/core';
 import { BehaviorSubject } from 'rxjs';
 
 import { User } from '../../core/models/auth.models';
-import { UserType } from '../../core/models/group.models';
 import { AuthService } from '../../core/services/auth.service';
 
 export interface UserCenterMenuItem {
   icon: string;
   label: string;
   route: string;
-  userTypes?: UserType[]; // 哪些用户类型可以看到此菜单
   children?: UserCenterMenuItem[];
 }
 
@@ -56,13 +54,6 @@ export class UserCenterService {
   }
 
   /**
-   * 是否为教师
-   */
-  isTeacher(): boolean {
-    return this.isUserType('teacher');
-  }
-
-  /**
    * 是否为学生
    */
   isStudent(): boolean {
@@ -70,23 +61,44 @@ export class UserCenterService {
   }
 
   /**
-   * 是否为家长
-   */
-  isParent(): boolean {
-    return this.isUserType('parent');
-  }
-
-  /**
-   * 根据用户类型获取侧边栏菜单
+   * 获取侧边栏菜单（学生端固定菜单）
    */
   getSidebarMenu(): UserCenterMenuItem[] {
-    const userType = this.getCurrentUserType() as UserType;
-
-    const baseMenu: UserCenterMenuItem[] = [
+    return [
       {
         icon: 'dashboard',
-        label: '仪表板',
+        label: '学习仪表板',
         route: '/user/dashboard',
+      },
+      {
+        icon: 'menu_book',
+        label: '我的课程',
+        route: '/user/courses',
+      },
+      {
+        icon: 'psychology',
+        label: '学习画像',
+        route: '/user/learning-profile',
+      },
+      {
+        icon: 'trending_up',
+        label: '我的成长',
+        route: '/user/growth-trajectory',
+      },
+      {
+        icon: 'assessment',
+        label: '学习报告',
+        route: '/user/reports',
+      },
+      {
+        icon: 'emoji_events',
+        label: '成就系统',
+        route: '/user/achievements',
+      },
+      {
+        icon: 'token',
+        label: 'Token管理',
+        route: '/user/token',
       },
       {
         icon: 'person',
@@ -94,131 +106,11 @@ export class UserCenterService {
         route: '/user/profile',
       },
       {
-        icon: 'token',
-        label: 'Token管理',
-        route: '/user/token',
+        icon: 'smart_toy',
+        label: 'AI教师设置',
+        route: '/user/ai-teacher-settings',
       },
     ];
-
-    // 根据不同用户类型添加特定菜单
-    const userTypeMenus: Record<string, UserCenterMenuItem[]> = {
-      student: [
-        {
-          icon: 'emoji_events',
-          label: '成就系统',
-          route: '/user/achievements',
-        },
-      ],
-      teacher: [
-        {
-          icon: 'class',
-          label: '教学管理',
-          route: '/user/teaching',
-        },
-        {
-          icon: 'people',
-          label: '学生管理',
-          route: '/user/students',
-        },
-      ],
-      parent: [
-        {
-          icon: 'family_restroom',
-          label: '孩子管理',
-          route: '/user/children',
-        },
-        {
-          icon: 'assessment',
-          label: '学习报告',
-          route: '/user/reports',
-        },
-      ],
-      // school_admin: [  // 已解耦至 OpenMTEduInst 项目
-      //   {
-      //     icon: 'school',
-      //     label: '学校概览',
-      //     route: '/user/dashboard',
-      //   },
-      //   {
-      //     icon: 'groups',
-      //     label: '年级班级管理',
-      //     route: '/user/classes',
-      //   },
-      //   {
-      //     icon: 'menu_book',
-      //     label: '校本课程',
-      //     route: '/user/school-courses',
-      //   },
-      //   {
-      //     icon: 'assessment',
-      //     label: '教学质量监控',
-      //     route: '/user/quality',
-      //   },
-      //   {
-      //     icon: 'people',
-      //     label: '教师工作量',
-      //     route: '/user/teacher-workload',
-      //   },
-      // ],
-      // education_bureau: [  // 已解耦至 OpenMTEduInst 项目
-      //   {
-      //     icon: 'domain',
-      //     label: '区域概览',
-      //     route: '/user/dashboard',
-      //   },
-      //   {
-      //     icon: 'account_balance',
-      //     label: '学校管理',
-      //     route: '/user/schools',
-      //   },
-      //   {
-      //     icon: 'assessment',
-      //     label: '教学质量监控',
-      //     route: '/user/quality',
-      //   },
-      //   {
-      //     icon: 'pie_chart',
-      //     label: '数据分析',
-      //     route: '/user/analysis',
-      //   },
-      //   {
-      //     icon: 'download',
-      //     label: '报表导出',
-      //     route: '/user/reports-export',
-      //   },
-      // ],
-      // org_admin: [  // 已解耦到 OpenMTEduInst 项目
-      //   {
-      //     icon: 'business',
-      //     label: '机构概览',
-      //     route: '/admin/organizations/dashboard',
-      //   },
-      //   {
-      //     icon: 'people',
-      //     label: '教师管理',
-      //     route: '/admin/organizations/teachers',
-      //   },
-      //   {
-      //     icon: 'school',
-      //     label: '学员管理',
-      //     route: '/admin/organizations/students',
-      //   },
-      //   {
-      //     icon: 'menu_book',
-      //     label: '课程管理',
-      //     route: '/admin/organizations/courses',
-      //   },
-      //   {
-      //     icon: 'assessment',
-      //     label: '运营统计',
-      //     route: '/admin/organizations/stats',
-      //   },
-      // ],
-    };
-
-    const specificMenu = userType && userTypeMenus[userType] ? userTypeMenus[userType] : [];
-
-    return [...baseMenu, ...specificMenu];
   }
 
   /**

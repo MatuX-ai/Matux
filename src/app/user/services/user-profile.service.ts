@@ -16,7 +16,7 @@ import { Injectable } from '@angular/core';
 import { delay, Observable, of, throwError } from 'rxjs';
 import { catchError } from 'rxjs/operators';
 
-import { UserProfile, UserType, UserTypeGroup } from '../../core/models/group.models';
+import { UserProfile } from '../../core/models/group.models';
 
 /**
  * 是否使用模拟数据
@@ -97,8 +97,8 @@ export class UserProfileService {
         avatar: '/assets/images/default-avatar.png',
         createdAt: new Date('2024-01-15T10:00:00'),
         updatedAt: new Date('2025-03-18T16:30:00'),
-        userType: UserType.PARENT,
-        userTypeGroup: UserTypeGroup.PERSONAL,
+        userType: 'student' as any,
+        userTypeGroup: 'personal' as any,
       };
       return of(mockProfile).pipe(delay(400));
     }
@@ -122,8 +122,8 @@ export class UserProfileService {
         avatar: profileData.avatar ?? '/assets/images/default-avatar.png',
         createdAt: new Date('2024-01-15T10:00:00'),
         updatedAt: new Date(),
-        userType: UserType.PARENT,
-        userTypeGroup: UserTypeGroup.PERSONAL,
+        userType: 'student' as any,
+        userTypeGroup: 'personal' as any,
       };
       return of(updatedProfile).pipe(delay(600));
     }
