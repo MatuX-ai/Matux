@@ -146,7 +146,18 @@ class Settings(BaseSettings):
     ENABLE_DIGITAL_TWIN_ROUTES: bool = False  # 数字孪生实验室
     ENABLE_FEDERATED_ROUTES: bool = False  # 联邦学习 API
     ENABLE_MODEL_UPDATE_ROUTES: bool = False  # AI 模型热更新
-    ENABLE_XR_GESTURE_ROUTES: bool = False  # XR 手势识别 (与 gesture_recognition 重复)
+    # XR 手势识别 (与 gesture_recognition 重复)
+    ENABLE_XR_GESTURE_ROUTES: bool = False
+
+    # OAuth 配置（第三方登录）
+    GITHUB_CLIENT_ID: str = ""
+    GITHUB_CLIENT_SECRET: str = ""
+    GOOGLE_CLIENT_ID: str = ""
+    GOOGLE_CLIENT_SECRET: str = ""
+    WECHAT_APP_ID: str = ""
+    WECHAT_APP_SECRET: str = ""
+    QQ_APP_ID: str = ""
+    QQ_APP_KEY: str = ""
 
     # OpenHydra 集成配置
     OPENHYDRA_API_URL: str = "http://localhost:8080"  # OpenHydra API 地址

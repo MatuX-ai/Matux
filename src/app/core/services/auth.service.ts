@@ -2,7 +2,7 @@ import { HttpClient, HttpHeaders } from '@angular/common/http';
 import { Injectable } from '@angular/core';
 import { Router } from '@angular/router';
 import { BehaviorSubject, Observable, of, throwError } from 'rxjs';
-import { catchError, tap } from 'rxjs/operators';
+import { catchError, map, tap } from 'rxjs/operators';
 
 import {
   AuthResponse,
@@ -32,6 +32,7 @@ import { ElectronService } from './electron.service';
 export class AuthService {
   private readonly API_BASE_URL = '/api/auth';
   private readonly UNIFIED_AUTH_URL = '/api/v1/unified-auth';
+  private readonly OAUTH_API_URL = '/api/v1/oauth';
   private readonly TOKEN_KEY = 'access_token';
   private readonly REFRESH_TOKEN_KEY = 'refresh_token';
   private readonly USER_KEY = 'user_data';
@@ -296,27 +297,47 @@ export class AuthService {
 
   /**
    * OAuth 登录（桌面端：使用系统浏览器；Web 端：页面跳转）
+   * 通过后端 API 获取授权 URL，支持 CSRF 保护
    */
   signInWithOAuth(provider: 'github' | 'google' | 'wechat' | 'qq'): void {
-    const state = this.generateState();
     const redirectUri = encodeURIComponent(`${window.location.origin}/auth/callback`);
-    const authUrl = this.buildOAuthUrl(provider, redirectUri, state);
 
-    this.storeOAuthState({
-      provider,
-      state,
-      redirectUrl: this.router.url,
-    });
+    // 从后端获取授权 URL
+    this.http
+      .get<{ authorize_url: string; state: string }>(
+        `${this.OAUTH_API_URL}/${provider}/authorize`,
+        { params: { redirect_uri: redirectUri } }
+      )
+      .subscribe({
+        next: (response) => {
+          this.storeOAuthState({
+            provider,
+            state: response.state,
+            redirectUrl: this.router.url,
+          });
 
-    if (this.isElectron && this.electronService) {
-      // 桌面端：使用系统默认浏览器完成授权
-      this.electronService.openExternal(authUrl).subscribe();
-      // 显示提示：请在浏览器中完成授权后返回
-      console.log('[Auth] 已打开系统浏览器进行 OAuth 授权');
-    } else {
-      // Web 端：页面跳转
-      window.location.href = authUrl;
-    }
+          if (this.isElectron && this.electronService) {
+            // 桌面端：使用系统默认浏览器完成授权
+            this.electronService.openExternal(response.authorize_url).subscribe();
+            console.log('[Auth] 已打开系统浏览器进行 OAuth 授权');
+          } else {
+            // Web 端：页面跳转
+            window.location.href = response.authorize_url;
+          }
+        },
+        error: (err) => {
+          console.error('[Auth] 获取 OAuth 授权 URL 失败:', err);
+          // 降级：使用本地构建的 URL
+          const state = this.generateState();
+          const authUrl = this.buildOAuthUrl(provider, decodeURIComponent(redirectUri), state);
+          this.storeOAuthState({ provider, state, redirectUrl: this.router.url });
+          if (this.isElectron && this.electronService) {
+            this.electronService.openExternal(authUrl).subscribe();
+          } else {
+            window.location.href = authUrl;
+          }
+        }
+      });
   }
 
   /**
@@ -365,33 +386,82 @@ export class AuthService {
   }
 
   /**
-   * GitHub OAuth 登录（兼容旧接口）
+   * GitHub OAuth 登录
    */
   signInWithGitHub(): void {
     this.signInWithOAuth('github');
   }
 
   /**
-   * 处理OAuth回调
+   * Google OAuth 登录
    */
-  handleOAuthCallback(code: string, state: string): Observable<AuthResponse> {
+  signInWithGoogle(): void {
+    this.signInWithOAuth('google');
+  }
+
+  /**
+   * WeChat OAuth 登录
+   */
+  signInWithWeChat(): void {
+    this.signInWithOAuth('wechat');
+  }
+
+  /**
+   * QQ OAuth 登录
+   */
+  signInWithQQ(): void {
+    this.signInWithOAuth('qq');
+  }
+
+  /**
+   * 处理OAuth回调
+   * 发送 code 和 state 到后端完成登录流程
+   */
+  handleOAuthCallback(
+    provider: string,
+    code: string,
+    state: string,
+    redirectUri: string
+  ): Observable<AuthResponse> {
     // 验证state参数
     const storedState = this.getStoredOAuthState();
     if (!storedState || storedState.state !== state) {
       return throwError(() => new Error('Invalid OAuth state'));
     }
 
-    // 根据提供商处理回调
-    switch (storedState.provider) {
-      case 'github':
-        return this.handleGithubCallback(code, storedState);
-      case 'wechat':
-        return this.handleWechatCallback(code, storedState);
-      case 'qq':
-        return this.handleQQCallback(code, storedState);
-      default:
-        return throwError(() => new Error('Unsupported OAuth provider'));
-    }
+    // 调用后端 OAuth 回调 API
+    return this.http
+      .post<{
+        access_token: string;
+        refresh_token: string;
+        token_type: string;
+        user: any;
+      }>(`${this.OAUTH_API_URL}/${provider}/callback`, {
+        code,
+        state,
+        redirect_uri: redirectUri,
+      })
+      .pipe(
+        map((response) => {
+          const user: User = {
+            id: String(response.user.id),
+            email: response.user.email || '',
+            username: response.user.username,
+            userType: response.user.role,
+            createdAt: response.user.created_at ? new Date(response.user.created_at) : new Date(),
+            updatedAt: response.user.updated_at ? new Date(response.user.updated_at) : new Date(),
+          };
+          const authResponse: AuthResponse = {
+            accessToken: response.access_token,
+            refreshToken: response.refresh_token,
+            user,
+          };
+          this.storeAuthData(authResponse);
+          this.clearOAuthState();
+          return authResponse;
+        }),
+        catchError((error) => this.handleError(error))
+      );
   }
 
   /**

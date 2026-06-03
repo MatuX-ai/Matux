@@ -45,12 +45,38 @@
       "urls": [
         "/api/v1/users/**",
         "/api/v1/tasks/**",
-        "/api/v1/courses/**"
+        "/api/v1/courses/**",
+        "/api/v1/exams/**"
       ],
       "cacheConfig": {
         "strategy": "performance",
-        "maxSize": 50,
+        "maxSize": 100,
         "maxAge": "1h"
+      }
+    },
+    {
+      "name": "api-offline",
+      "urls": [
+        "/api/v1/sync/**",
+        "/api/v1/progress/**"
+      ],
+      "cacheConfig": {
+        "strategy": "freshness",
+        "maxSize": 200,
+        "maxAge": "7d",
+        "timeout": "5s"
+      }
+    },
+    {
+      "name": "static-content",
+      "urls": [
+        "/assets/data/**",
+        "/assets/courses/**"
+      ],
+      "cacheConfig": {
+        "strategy": "performance",
+        "maxSize": 200,
+        "maxAge": "30d"
       }
     }
   ],

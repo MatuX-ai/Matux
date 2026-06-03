@@ -62,6 +62,9 @@ from routes import openhydra_routes  # OpenHydra AI 沙箱环境
 from routes import admin_settings_routes  # Admin 后台全局设置
 from routes import finance_routes  # 财务管理
 from routes import sensor_data_routes  # 传感器数据
+from routes import oauth_routes  # OAuth 第三方登录
+from routes import exam_routes  # 防作弊测验系统
+from ai_service.model_routes import router as model_router  # AI 模型热更新管理
 from modules.auth.auth_routes import router as unified_auth_router
 from modules.learning.aggregation_routes import (  # noqa: E501
     router as aggregation_router,
@@ -212,6 +215,18 @@ app.include_router(sensor_data_routes.router)
 # 统一认证 API 路由（手机号注册/登录、家长绑定学生、Token刷新）
 app.include_router(unified_auth_router)
 
+# OAuth 第三方登录 API 路由
+# 提供 GitHub/Google/WeChat/QQ 的 OAuth 2.0 授权码流程
+app.include_router(oauth_routes.router)
+
+# 防作弊测验系统 API 路由
+# 提供测验 CRUD、考试流程、防作弊检测等功能
+app.include_router(exam_routes.router)
+
+# AI 模型热更新管理 API 路由
+# 提供模型的注册、加载、卸载、推理、A/B测试等功能
+app.include_router(model_router)
+
 # 课程聚合 API 路由（子项目回调、学生课程查询）
 app.include_router(aggregation_router)
 
@@ -299,6 +314,8 @@ async def startup_event():
     from models.ai_request import AIRequest  # noqa: F401
     from models.unified_material import UnifiedMaterial  # noqa: F401
     from models.user_guardian import UserGuardian  # noqa: F401
+    from models.oauth_account import OAuthAccount  # noqa: F401
+    from models.exam import Exam, Question, ExamAttempt, CheatEvent  # noqa: F401
     from modules.learning.models import (  # noqa: F401
         StudentCourseAggregation,
     )

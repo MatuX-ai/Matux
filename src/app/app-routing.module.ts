@@ -79,6 +79,18 @@ const routes: Routes = [
   },
   // Management Portals Module - 管理门户已解耦至 OpenMTEduInst 项目，路由已移除
 
+  // Exam Module - 在线测验（懒加载）
+  {
+    path: 'exam',
+    loadChildren: () =>
+      import('./exam/exam.module').then((m) => m.ExamModule),
+  },
+  // Vircadia Module - 元宇宙教室（懒加载）
+  {
+    path: 'vircadia',
+    loadChildren: () =>
+      import('./vircadia/vircadia.module').then((m) => m.VircadiaModule),
+  },
   // Icon Debug Page
   {
     path: 'icon-debug',

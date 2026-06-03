@@ -1,0 +1,212 @@
+name: Backend Tests
+
+on:
+  push:
+    branches: [main, develop]
+    paths:
+      - 'backend/**'
+      - 'requirements*.txt'
+      - 'pyproject.toml'
+  pull_request:
+    branches: [main, develop]
+    paths:
+      - 'backend/**'
+      - 'requirements*.txt'
+  workflow_dispatch:
+
+env:
+  PYTHON_VERSION: '3.11'
+
+jobs:
+  # ==================== 单元测试 ====================
+  unit-tests:
+    name: 单元测试
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        python-version: ['3.11', '3.12']
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Setup Python ${{ matrix.python-version }}
+        uses: actions/setup-python@v5
+        with:
+          python-version: ${{ matrix.python-version }}
+
+      - name: Install dependencies
+        working-directory: backend
+        run: |
+          python -m pip install --upgrade pip
+          pip install -r requirements.txt
+          pip install pytest pytest-asyncio pytest-cov httpx pytest-mock
+
+      - name: Run unit tests
+        working-directory: backend
+        env:
+          DATABASE_URL: sqlite+aiosqlite:///./test.db
+          SECRET_KEY: test-secret-key
+        run: |
+          python -m pytest tests/ -v \
+            --cov=. \
+            --cov-report=xml:coverage.xml \
+            --cov-report=term \
+            -m "not integration" \
+            --timeout=30
+
+      - name: Upload coverage
+        uses: actions/upload-artifact@v4
+        with:
+          name: coverage-unit-${{ matrix.python-version }}
+          path: backend/coverage.xml
+          retention-days: 7
+
+  # ==================== 集成测试 ====================
+  integration-tests:
+    name: 集成测试
+    runs-on: ubuntu-latest
+    services:
+      postgres:
+        image: postgres:15
+        env:
+          POSTGRES_USER: imato
+          POSTGRES_PASSWORD: imato_test
+          POSTGRES_DB: imato_test
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd pg_isready
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+      redis:
+        image: redis:7
+        ports:
+          - 6379:6379
+        options: >-
+          --health-cmd "redis-cli ping"
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Setup Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: ${{ env.PYTHON_VERSION }}
+
+      - name: Install dependencies
+        working-directory: backend
+        run: |
+          python -m pip install --upgrade pip
+          pip install -r requirements.txt
+          pip install pytest pytest-asyncio pytest-cov httpx
+
+      - name: Run integration tests
+        working-directory: backend
+        env:
+          DATABASE_URL: postgresql+asyncpg://imato:imato_test@localhost:5432/imato_test
+          REDIS_URL: redis://localhost:6379/0
+          SECRET_KEY: test-secret-key-integration
+        run: |
+          python -m pytest tests/ -v \
+            --cov=. \
+            --cov-report=xml:coverage.xml \
+            --cov-report=term \
+            -m "integration" \
+            --timeout=120
+
+      - name: Upload integration coverage
+        uses: actions/upload-artifact@v4
+        with:
+          name: coverage-integration
+          path: backend/coverage.xml
+          retention-days: 7
+
+  # ==================== 代码质量 ====================
+  code-quality:
+    name: 代码质量检查
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Setup Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: ${{ env.PYTHON_VERSION }}
+
+      - name: Install linting tools
+        working-directory: backend
+        run: |
+          python -m pip install --upgrade pip
+          pip install flake8 black isort mypy
+          pip install -r requirements.txt
+
+      - name: Run flake8
+        working-directory: backend
+        run: flake8 . --count --statistics
+
+      - name: Run black check
+        working-directory: backend
+        run: black --check --diff .
+
+      - name: Run isort check
+        working-directory: backend
+        run: isort --check --diff .
+
+      - name: Run mypy
+        working-directory: backend
+        run: mypy . --ignore-missing-imports || true
+
+  # ==================== 安全检查 ====================
+  security-scan:
+    name: 依赖安全检查
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Setup Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: ${{ env.PYTHON_VERSION }}
+
+      - name: Install safety
+        working-directory: backend
+        run: |
+          python -m pip install --upgrade pip
+          pip install safety
+
+      - name: Run safety check
+        working-directory: backend
+        run: |
+          safety check -r requirements.txt --full-report || true
+
+  # ==================== 汇总结果 ====================
+  results:
+    name: 测试结果汇总
+    runs-on: ubuntu-latest
+    needs: [unit-tests, integration-tests, code-quality, security-scan]
+    if: always()
+
+    steps:
+      - name: Check job results
+        run: |
+          echo "Unit Tests: ${{ needs.unit-tests.result }}"
+          echo "Integration Tests: ${{ needs.integration-tests.result }}"
+          echo "Code Quality: ${{ needs.code-quality.result }}"
+          echo "Security Scan: ${{ needs.security-scan.result }}"
+
+          FAILED=false
+          [ "${{ needs.unit-tests.result }}" != "success" ] && FAILED=true
+          [ "${{ needs.integration-tests.result }}" != "success" ] && FAILED=true
+          [ "${{ needs.code-quality.result }}" != "success" ] && FAILED=true
+
+          if [ "$FAILED" = true ]; then
+            echo "❌ Some checks failed!"
+            exit 1
+          fi
+          echo "✅ All checks passed!"

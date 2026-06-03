@@ -45,6 +45,14 @@ dependencies:
   intl: ^0.17.0
   uuid: ^4.3.3
 
+  # 推送通知
+  firebase_core: ^2.25.4
+  firebase_messaging: ^14.7.19
+  flutter_local_notifications: ^17.0.0
+
+  # 网络状态检测
+  connectivity_plus: ^5.0.2
+
 dev_dependencies:
   flutter_test:
     sdk: flutter

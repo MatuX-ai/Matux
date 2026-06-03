@@ -16,6 +16,13 @@ import {
   NetworkStatus,
 } from '../../../core/services/network-monitor.service';
 import { OfflineStorageService } from '../../../core/services/offline-storage.service';
+import {
+  OfflineCourseStorageService,
+} from '../../services/offline-course-storage.service';
+import {
+  OfflineProgressStorageService,
+} from '../../services/offline-progress-storage.service';
+import { OfflineSyncService, SyncStatus } from '../../services/offline-sync.service';
 
 @Component({
   selector: 'app-offline-dashboard',
@@ -38,12 +45,26 @@ export class OfflineDashboardComponent implements OnInit, OnDestroy {
   networkStatus: NetworkStatus | null = null;
   /** 存储统计 */
   storageStats: OfflineStorageStats | null = null;
+  /** 课程缓存统计 */
+  courseCacheStats: { courseCount: number; resourceCount: number; totalSize: number } | null = null;
+  /** 进度同步统计 */
+  progressSyncStats: { synced: number; unsynced: number; conflicts: number } | null = null;
+  /** 同步状态 */
+  syncStatus: SyncStatus = 'idle';
+  /** 同步进度 */
+  syncProgress = 0;
+  /** 缓存清理中 */
+  isCleaningUp = false;
+
   /** 订阅集合 */
   private subscriptions: Subscription[] = [];
 
   constructor(
     private networkMonitor: NetworkMonitorService,
-    private offlineStorage: OfflineStorageService
+    private offlineStorage: OfflineStorageService,
+    private courseStorage: OfflineCourseStorageService,
+    private progressStorage: OfflineProgressStorageService,
+    private syncService: OfflineSyncService,
   ) {}
 
   ngOnInit(): void {
@@ -71,6 +92,28 @@ export class OfflineDashboardComponent implements OnInit, OnDestroy {
         this.storageStats = stats;
       })
     );
+
+    // 订阅同步状态
+    this.subscriptions.push(
+      this.syncService.syncStatus$.subscribe((status) => {
+        this.syncStatus = status;
+      })
+    );
+
+    // 订阅同步进度
+    this.subscriptions.push(
+      this.syncService.syncProgress$.subscribe((progress) => {
+        this.syncProgress = progress;
+      })
+    );
+
+    // 加载扩展统计
+    this.loadExtendedStats();
+  }
+
+  private async loadExtendedStats(): Promise<void> {
+    this.courseCacheStats = await this.courseStorage.getCacheStats();
+    this.progressSyncStats = await this.progressStorage.getSyncStats();
   }
 
   /**
@@ -107,17 +150,17 @@ export class OfflineDashboardComponent implements OnInit, OnDestroy {
   getNetworkQualityColor(quality: NetworkQuality | null | undefined): string {
     switch (quality) {
       case NetworkQuality.OFFLINE:
-        return '#f44336'; // 红色
+        return '#f44336';
       case NetworkQuality.SLOW_2G:
-        return '#ff9800'; // 橙色
+        return '#ff9800';
       case NetworkQuality.SLOW_3G:
-        return '#ffc107'; // 黄色
+        return '#ffc107';
       case NetworkQuality.FAST_4G:
-        return '#4caf50'; // 绿色
+        return '#4caf50';
       case NetworkQuality.FAST_WIFI:
-        return '#2196f3'; // 蓝色
+        return '#2196f3';
       default:
-        return '#9e9e9e'; // 灰色
+        return '#9e9e9e';
     }
   }
 
@@ -132,6 +175,20 @@ export class OfflineDashboardComponent implements OnInit, OnDestroy {
   }
 
   /**
+   * 获取同步状态文本
+   */
+  getSyncStatusText(): string {
+    return this.syncService.getSyncStatusDescription();
+  }
+
+  /**
+   * 是否正在同步
+   */
+  isSyncing(): boolean {
+    return this.syncStatus === 'syncing';
+  }
+
+  /**
    * 手动刷新网络状态
    */
   refreshNetworkStatus(): void {
@@ -139,13 +196,24 @@ export class OfflineDashboardComponent implements OnInit, OnDestroy {
   }
 
   /**
+   * 触发同步
+   */
+  triggerSync(): void {
+    void this.syncService.manualSync();
+  }
+
+  /**
    * 清理过期缓存
    */
-  cleanupCache(): void {
-    this.offlineStorage
-      .cleanupExpiredCache()
-      .then(() => {})
-      .catch(() => {});
+  async cleanupCache(): Promise<void> {
+    this.isCleaningUp = true;
+    try {
+      await this.offlineStorage.cleanupExpiredCache();
+      await this.courseStorage.cleanupExpiredCourses();
+      await this.loadExtendedStats();
+    } finally {
+      this.isCleaningUp = false;
+    }
   }
 
   /**
@@ -159,7 +227,17 @@ export class OfflineDashboardComponent implements OnInit, OnDestroy {
       settings: '设置数据',
       cache: '缓存数据',
       syncQueue: '同步队列',
+      courses: '课程缓存',
+      progress: '学习进度',
+      assets: '资源文件',
     };
     return typeNames[key] || key;
+  }
+
+  /**
+   * 获取同步进度百分比
+   */
+  getSyncProgressPercent(): number {
+    return Math.round(this.syncProgress);
   }
 }

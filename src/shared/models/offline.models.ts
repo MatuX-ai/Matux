@@ -19,6 +19,12 @@ export enum OfflineStorageKey {
   CACHE = 'cache',
   /** 待同步操作队列 */
   SYNC_QUEUE = 'syncQueue',
+  /** 课程内容离线缓存 */
+  COURSES = 'courses',
+  /** 学习进度离线存储 */
+  PROGRESS = 'progress',
+  /** 音频/图片等资源文件 */
+  ASSETS = 'assets',
 }
 
 /**

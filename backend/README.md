@@ -11,6 +11,7 @@
 - ✅ 异步处理提高性能
 - ✅ 详细的日志记录
 - ✅ 数据库存储历史记录
+- ✅ AI 模型热更新管理（动态加载/卸载 TensorFlow/ONNX/PyTorch 模型）
 
 ## 技术栈
 
@@ -20,6 +21,7 @@
 - **认证**: JWT + OAuth2
 - **日志**: Python logging
 - **测试**: pytest
+- **模型推理**: TensorFlow / ONNX Runtime / PyTorch (动态加载)
 
 ## 快速开始
 
@@ -112,7 +114,11 @@ backend/
 ├── ai_service/          # AI服务核心模块
 │   ├── __init__.py
 │   ├── ai_manager.py    # AI模型管理器
-│   └── models.py        # 数据模型
+│   ├── models.py        # 数据模型
+│   ├── model_manager.py # 模型热更新管理器（621行）
+│   ├── model_registry.py# 模型注册中心（267行）
+│   ├── model_routes.py  # 模型管理 API（232行）
+│   └── federated_learning/ # 联邦学习模块
 ├── config/              # 配置模块
 │   └── settings.py      # 应用配置
 ├── models/              # 数据库模型

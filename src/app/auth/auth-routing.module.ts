@@ -3,6 +3,7 @@ import { RouterModule, Routes } from '@angular/router';
 
 import { LoginComponent } from './login/login.component';
 import { RegisterComponent } from './register/register.component';
+import { OAuthCallbackComponent } from './oauth-callback/oauth-callback.component';
 
 const routes: Routes = [
   {
@@ -22,6 +23,13 @@ const routes: Routes = [
     component: RegisterComponent,
     data: {
       title: '注册',
+    },
+  },
+  {
+    path: 'callback',
+    component: OAuthCallbackComponent,
+    data: {
+      title: 'OAuth 回调处理',
     },
   },
 ];

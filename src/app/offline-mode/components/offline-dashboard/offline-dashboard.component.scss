@@ -121,6 +121,66 @@
         }
       }
     }
+
+    &.storage-stats {
+      .extra-stats {
+        margin-top: $spacing-lg;
+
+        .stat-row {
+          display: flex;
+          justify-content: space-between;
+          align-items: center;
+          padding: $spacing-sm 0;
+          border-bottom: 1px solid #eee;
+
+          &:last-child { border-bottom: none; }
+          .label { color: $text-secondary; }
+          .value {
+            font-weight: 500;
+            color: $text-primary;
+
+            &.success { color: #2e7d32; }
+            &.warning { color: #ef6c00; }
+            &.conflict { color: #c62828; font-weight: 600; }
+          }
+        }
+      }
+    }
+
+    &.sync-status {
+      .sync-info {
+        .status-item {
+          display: flex;
+          justify-content: space-between;
+          align-items: center;
+          padding: $spacing-sm 0;
+
+          .label { color: $text-secondary; }
+          .value {
+            font-weight: 500;
+            color: $text-primary;
+
+            &.syncing { color: #2196f3; }
+          }
+        }
+
+        .progress-wrapper {
+          display: flex;
+          align-items: center;
+          gap: $spacing-md;
+          margin-top: $spacing-lg;
+
+          mat-progress-bar { flex: 1; }
+          .progress-text {
+            font-size: 0.85rem;
+            font-weight: 500;
+            color: #2196f3;
+            min-width: 40px;
+            text-align: right;
+          }
+        }
+      }
+    }
   }
 
   .quick-action-card {

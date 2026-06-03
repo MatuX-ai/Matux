@@ -53,8 +53,8 @@
         <mat-icon>storage</mat-icon>
         本地存储
       </mat-card-title>
-      <button mat-icon-button (click)="cleanupCache()" matTooltip="清理过期缓存">
-        <mat-icon>cleaning_services</mat-icon>
+      <button mat-icon-button (click)="cleanupCache()" [disabled]="isCleaningUp" matTooltip="清理过期缓存">
+        <mat-icon>{{ isCleaningUp ? 'hourglass_top' : 'cleaning_services' }}</mat-icon>
       </button>
     </mat-card-header>
     <mat-card-content>
@@ -79,6 +79,67 @@
             <span class="item-label">{{getItemTypeName(entry.key)}}:</span>
             <span class="item-count">{{entry.value}}</span>
           </div>
+        </div>
+
+        <!-- 课程缓存统计 -->
+        <mat-divider *ngIf="courseCacheStats"></mat-divider>
+        <div class="extra-stats" *ngIf="courseCacheStats">
+          <div class="stat-row">
+            <span class="label">📚 缓存课程数:</span>
+            <span class="value">{{courseCacheStats.courseCount}}</span>
+          </div>
+          <div class="stat-row">
+            <span class="label">📦 缓存资源数:</span>
+            <span class="value">{{courseCacheStats.resourceCount}}</span>
+          </div>
+          <div class="stat-row">
+            <span class="label">💾 资源占用:</span>
+            <span class="value">{{formatStorageSize(courseCacheStats.totalSize)}}</span>
+          </div>
+        </div>
+
+        <!-- 进度同步统计 -->
+        <mat-divider *ngIf="progressSyncStats"></mat-divider>
+        <div class="extra-stats" *ngIf="progressSyncStats">
+          <div class="stat-row">
+            <span class="label">📊 已同步进度:</span>
+            <span class="value" [class.success]="progressSyncStats.synced > 0">{{progressSyncStats.synced}}</span>
+          </div>
+          <div class="stat-row">
+            <span class="label">⏳ 未同步进度:</span>
+            <span class="value" [class.warning]="progressSyncStats.unsynced > 0">{{progressSyncStats.unsynced}}</span>
+          </div>
+          <div class="stat-row" *ngIf="progressSyncStats.conflicts > 0">
+            <span class="label">⚠️ 同步冲突:</span>
+            <span class="value conflict">{{progressSyncStats.conflicts}}</span>
+          </div>
+        </div>
+      </div>
+    </mat-card-content>
+  </mat-card>
+
+  <!-- 同步状态卡片 -->
+  <mat-card class="status-card sync-status" *ngIf="syncStatus">
+    <mat-card-header>
+      <mat-card-title>
+        <mat-icon [style.color]="isSyncing() ? '#2196f3' : '#4caf50'">
+          {{ isSyncing() ? 'sync' : 'sync_disabled' }}
+        </mat-icon>
+        数据同步
+      </mat-card-title>
+      <button mat-icon-button (click)="triggerSync()" [disabled]="isSyncing()" matTooltip="手动触发同步">
+        <mat-icon>refresh</mat-icon>
+      </button>
+    </mat-card-header>
+    <mat-card-content>
+      <div class="sync-info">
+        <div class="status-item">
+          <span class="label">同步状态:</span>
+          <span class="value" [class.syncing]="isSyncing()">{{getSyncStatusText()}}</span>
+        </div>
+        <div class="progress-wrapper" *ngIf="isSyncing()">
+          <mat-progress-bar mode="determinate" [value]="getSyncProgressPercent()"></mat-progress-bar>
+          <span class="progress-text">{{getSyncProgressPercent()}}%</span>
         </div>
       </div>
     </mat-card-content>

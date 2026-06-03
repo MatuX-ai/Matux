@@ -27,8 +27,8 @@ import {
 export class OfflineStorageService {
   /** 数据库名称 */
   private readonly DB_NAME = 'iMatuProject_OfflineDB';
-  /** 数据库版本 — 升级至 v2 以支持大文件分片存储 */
-  private readonly DB_VERSION = 2;
+  /** 数据库版本 — v3: 新增 courses(课程内容), progress(学习进度), assets(资源文件) */
+  private readonly DB_VERSION = 3;
   /** 数据库实例 */
   private db: IDBDatabase | null = null;
   /** 是否运行在 Electron 环境 */
@@ -124,6 +124,31 @@ export class OfflineStorageService {
           const chunkStore = db.createObjectStore('fileChunks', { keyPath: 'id' });
           chunkStore.createIndex('fileId', 'fileId');
           chunkStore.createIndex('chunkIndex', 'chunkIndex');
+        }
+
+        // v3: 课程内容离线缓存
+        if (!db.objectStoreNames.contains('courses')) {
+          const courseStore = db.createObjectStore('courses', { keyPath: 'id' });
+          courseStore.createIndex('courseId', 'courseId', { unique: true });
+          courseStore.createIndex('downloadedAt', 'downloadedAt');
+          courseStore.createIndex('expiresAt', 'expiresAt');
+        }
+
+        // v3: 学习进度离线存储
+        if (!db.objectStoreNames.contains('progress')) {
+          const progressStore = db.createObjectStore('progress', { keyPath: 'id' });
+          progressStore.createIndex('userId', 'userId');
+          progressStore.createIndex('courseId', 'courseId');
+          progressStore.createIndex('synced', 'synced');
+          progressStore.createIndex('updatedAt', 'updatedAt');
+        }
+
+        // v3: 音频/图片等资源文件 blob 存储
+        if (!db.objectStoreNames.contains('assets')) {
+          const assetStore = db.createObjectStore('assets', { keyPath: 'id' });
+          assetStore.createIndex('resourceUrl', 'resourceUrl', { unique: true });
+          assetStore.createIndex('mimeType', 'mimeType');
+          assetStore.createIndex('expiresAt', 'expiresAt');
         }
       };
     });
