@@ -8,9 +8,9 @@
  * @version 1.0.0
  */
 
-import { Injectable } from '@angular/core';
+import { Injectable, OnDestroy } from '@angular/core';
 import { BehaviorSubject, Observable, Subject } from 'rxjs';
-import { filter, map } from 'rxjs/operators';
+import { filter, map, takeUntil } from 'rxjs/operators';
 
 /**
  * WebSocket 消息类型
@@ -77,10 +77,18 @@ export enum ConnectionStatus {
   RECONNECTING = 'reconnecting',
 }
 
+/** 重连状态 */
+export interface WsReconnectState {
+  attempting: boolean;
+  attempt: number;
+  maxAttempts: number;
+  nextDelay: number;
+}
+
 @Injectable({
   providedIn: 'root',
 })
-export class WebSocketNotificationService {
+export class WebSocketNotificationService implements OnDestroy {
   private ws: WebSocket | null = null;
   private readonly WS_URL = 'ws://localhost:8080/ws/notifications'; // TODO: 替换为实际地址
 
@@ -102,14 +110,31 @@ export class WebSocketNotificationService {
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   private heartbeatTimer: any = null;
   private readonly HEARTBEAT_INTERVAL = 30000; // 30 秒
+  private pongTimeoutMs = 10000;
+  private pongTimeoutTimer: any = null;
+  private lastPongTime: number = 0;
 
   // 重连配置
   private reconnectAttempts = 0;
-  private readonly MAX_RECONNECT_ATTEMPTS = 5;
-  private readonly RECONNECT_DELAY = 5000; // 5 秒
+  private maxReconnectAttempts = 5;
+  private baseDelay = 2000;
+  private maxDelay = 30000;
+  private jitterMax = 1000;
+  private reconnectTimer: any = null;
+
+  // 重连状态流
+  private reconnectStateSubject = new BehaviorSubject<WsReconnectState>({
+    attempting: false,
+    attempt: 0,
+    maxAttempts: this.maxReconnectAttempts,
+    nextDelay: 0,
+  });
+  readonly reconnectState$ = this.reconnectStateSubject.asObservable();
 
   // 是否启用 (开发时可禁用)
   private enabled = true;
+
+  private destroy$ = new Subject<void>();
 
   constructor() {}
 
@@ -126,8 +151,6 @@ export class WebSocketNotificationService {
       this.ws &&
       (this.ws.readyState === WebSocket.CONNECTING || this.ws.readyState === WebSocket.OPEN)
     ) {
-      // eslint-disable-next-line no-console
-      console.log('WebSocket 已在连接中');
       return;
     }
 
@@ -137,24 +160,26 @@ export class WebSocketNotificationService {
       this.ws = new WebSocket(this.WS_URL);
 
       this.ws.onopen = () => {
-        // eslint-disable-next-line no-console
-        console.log('WebSocket 连接成功');
         this.statusSubject.next(ConnectionStatus.CONNECTED);
         this.reconnectAttempts = 0;
+        this.lastPongTime = Date.now();
+        this.updateReconnectState(false, 0);
         this.startHeartbeat();
+        this.startPongTimeout();
       };
 
       this.ws.onmessage = (event) => {
         try {
           // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
           const message = JSON.parse(event.data) as WsMessage;
-          this.messageSubject.next(message);
 
           if (message.type === WsMessageType.PONG) {
-            // 心跳响应，无需处理
+            this.lastPongTime = Date.now();
           } else if (message.type === WsMessageType.ERROR) {
             console.error('WebSocket 错误:', message.data);
           }
+
+          this.messageSubject.next(message);
         } catch (error) {
           console.error('解析 WebSocket 消息失败:', error);
         }
@@ -165,14 +190,12 @@ export class WebSocketNotificationService {
       };
 
       this.ws.onclose = (event) => {
-        // eslint-disable-next-line no-console
-        console.log('WebSocket 连接关闭:', event.code, event.reason);
         this.statusSubject.next(ConnectionStatus.DISCONNECTED);
         this.stopHeartbeat();
+        this.stopPongTimeout();
 
-        // 尝试重连
-        if (event.code !== 1000) {
-          // 非正常关闭
+        // 尝试重连（code 1000=正常关闭不重连）
+        if (event.code !== 1000 && this.reconnectAttempts < this.maxReconnectAttempts) {
           this.scheduleReconnect();
         }
       };
@@ -187,12 +210,21 @@ export class WebSocketNotificationService {
    */
   disconnect(): void {
     this.stopHeartbeat();
+    this.stopPongTimeout();
+    this.clearReconnectTimer();
 
     if (this.ws) {
       this.ws.close(1000, '用户主动断开');
       this.ws = null;
     }
 
+    this.reconnectAttempts = 0;
+    this.reconnectStateSubject.next({
+      attempting: false,
+      attempt: 0,
+      maxAttempts: this.maxReconnectAttempts,
+      nextDelay: 0,
+    });
     this.statusSubject.next(ConnectionStatus.DISCONNECTED);
   }
 
@@ -236,22 +268,107 @@ export class WebSocketNotificationService {
   }
 
   /**
+   * 计算指数退避延迟（带抖动）
+   */
+  private calculateBackoff(attempt: number): number {
+    const exponentialDelay = Math.min(
+      this.maxDelay,
+      this.baseDelay * Math.pow(2, attempt - 1)
+    );
+    const jitter = Math.random() * this.jitterMax;
+    return Math.floor(exponentialDelay + jitter);
+  }
+
+  /**
    * 安排重连
    */
   private scheduleReconnect(): void {
-    if (this.reconnectAttempts >= this.MAX_RECONNECT_ATTEMPTS) {
+    if (this.reconnectAttempts >= this.maxReconnectAttempts) {
       console.error('WebSocket 重连次数已达上限');
       return;
     }
 
     this.reconnectAttempts++;
-    this.statusSubject.next(ConnectionStatus.RECONNECTING);
+    const delay = this.calculateBackoff(this.reconnectAttempts);
 
-    setTimeout(() => {
+    this.statusSubject.next(ConnectionStatus.RECONNECTING);
+    this.updateReconnectState(true, delay);
+
+    this.clearReconnectTimer();
+    this.reconnectTimer = setTimeout(() => {
       // eslint-disable-next-line no-console
       console.log(`WebSocket 尝试第 ${this.reconnectAttempts} 次重连`);
       this.connect();
-    }, this.RECONNECT_DELAY);
+    }, delay);
+  }
+
+  /**
+   * 更新重连状态
+   */
+  private updateReconnectState(attempting: boolean, nextDelay: number): void {
+    this.reconnectStateSubject.next({
+      attempting,
+      attempt: this.reconnectAttempts,
+      maxAttempts: this.maxReconnectAttempts,
+      nextDelay,
+    });
+  }
+
+  /**
+   * 清除重连定时器
+   */
+  private clearReconnectTimer(): void {
+    if (this.reconnectTimer) {
+      clearTimeout(this.reconnectTimer);
+      this.reconnectTimer = null;
+    }
+  }
+
+  /**
+   * 启动 pong 超时检测
+   */
+  private startPongTimeout(): void {
+    this.stopPongTimeout();
+
+    this.pongTimeoutTimer = setInterval(() => {
+      if (!this.isConnected()) {
+        return;
+      }
+
+      const elapsed = Date.now() - this.lastPongTime;
+      if (elapsed > this.pongTimeoutMs) {
+        this.forceReconnect();
+      }
+    }, Math.min(this.pongTimeoutMs, 5000));
+  }
+
+  /**
+   * 停止 pong 超时检测
+   */
+  private stopPongTimeout(): void {
+    if (this.pongTimeoutTimer) {
+      clearInterval(this.pongTimeoutTimer);
+      this.pongTimeoutTimer = null;
+    }
+  }
+
+  /**
+   * 强制重连
+   */
+  private forceReconnect(): void {
+    if (this.ws) {
+      this.ws.onclose = null;
+      this.ws.close(4001, 'Heartbeat timeout');
+      this.ws = null;
+    }
+
+    this.statusSubject.next(ConnectionStatus.DISCONNECTED);
+    this.stopHeartbeat();
+    this.stopPongTimeout();
+
+    if (this.reconnectAttempts < this.maxReconnectAttempts) {
+      this.scheduleReconnect();
+    }
   }
 
   /**
@@ -280,6 +397,13 @@ export class WebSocketNotificationService {
    */
   disable(): void {
     this.enabled = false;
+    this.disconnect();
+  }
+
+  ngOnDestroy(): void {
+    this.destroy$.next();
+    this.destroy$.complete();
+    this.clearReconnectTimer();
     this.disconnect();
   }
 }

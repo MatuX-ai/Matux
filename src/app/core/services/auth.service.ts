@@ -15,7 +15,7 @@ import {
   UnifiedTokenResponse,
   User,
 } from '../models/auth.models';
-import type { ElectronService } from './electron.service';
+import { ElectronService } from './electron.service';
 
 /**
  * 用户认证服务
@@ -50,21 +50,12 @@ export class AuthService {
   private rememberMeSubject = new BehaviorSubject<boolean>(this.isRememberMe());
   public rememberMe$ = this.rememberMeSubject.asObservable();
 
-  // Electron 服务引用（延迟注入以避免循环依赖）
-  private electronService: ElectronService | null = null;
-
   constructor(
     private http: HttpClient,
-    private router: Router
+    private router: Router,
+    private electronService?: ElectronService
   ) {
     this.initializeAuthState();
-  }
-
-  /**
-   * 设置 Electron 服务引用（由 AppComponent 或模块初始化时注入）
-   */
-  setElectronService(electronService: ElectronService): void {
-    this.electronService = electronService;
   }
 
   /**

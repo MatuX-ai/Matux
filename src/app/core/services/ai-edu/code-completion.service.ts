@@ -67,6 +67,15 @@ export class CodeCompletionService {
   private websocketSubject = new BehaviorSubject<any>(null);
   private reconnectAttempts = 0;
   private maxReconnectAttempts = 5;
+  private baseDelay = 1000;
+  private maxDelay = 30000;
+  private jitterMax = 1000;
+  private reconnectTimer: any = null;
+  private pingIntervalMs = 30000;
+  private pongTimeoutMs = 10000;
+  private pingInterval: any = null;
+  private pongTimeoutTimer: any = null;
+  private lastPongTime: number = 0;
 
   constructor() {}
 
@@ -183,26 +192,32 @@ export class CodeCompletionService {
 
     this.websocket.onopen = (event) => {
       this.reconnectAttempts = 0;
+      this.lastPongTime = Date.now();
       this.websocketSubject.next({ type: 'connected', event });
+      this.startPingInterval();
+      this.startPongTimeout();
     };
 
     this.websocket.onmessage = (event) => {
       try {
         const message = JSON.parse(event.data);
+
+        if (message.type === 'pong') {
+          this.lastPongTime = Date.now();
+        }
+
         this.websocketSubject.next(message);
       } catch (error) {}
     };
 
     this.websocket.onclose = (event) => {
       this.websocketSubject.next({ type: 'disconnected', event });
+      this.stopPingInterval();
+      this.stopPongTimeout();
 
-      // 自动重连
-      if (this.reconnectAttempts < this.maxReconnectAttempts) {
-        setTimeout(() => {
-          this.reconnectAttempts++;
-
-          this.connectWebSocket();
-        }, 3000);
+      // 自动重连（code 1000=正常关闭不重连）
+      if (event.code !== 1000 && this.reconnectAttempts < this.maxReconnectAttempts) {
+        this.scheduleReconnect();
       }
     };
 
@@ -252,9 +267,121 @@ export class CodeCompletionService {
    * 断开WebSocket连接
    */
   disconnectWebSocket(): void {
+    this.stopPingInterval();
+    this.stopPongTimeout();
+    this.clearReconnectTimer();
+
     if (this.websocket) {
-      this.websocket.close();
+      this.websocket.close(1000, 'User disconnected');
       this.websocket = null;
+    }
+
+    this.reconnectAttempts = 0;
+  }
+
+  // ========== WebSocket 重连与心跳 ==========
+
+  /**
+   * 计算指数退避延迟（带抖动）
+   */
+  private calculateBackoff(attempt: number): number {
+    const exponentialDelay = Math.min(
+      this.maxDelay,
+      this.baseDelay * Math.pow(2, attempt - 1)
+    );
+    const jitter = Math.random() * this.jitterMax;
+    return Math.floor(exponentialDelay + jitter);
+  }
+
+  /**
+   * 安排重连
+   */
+  private scheduleReconnect(): void {
+    this.reconnectAttempts++;
+    const delay = this.calculateBackoff(this.reconnectAttempts);
+
+    this.clearReconnectTimer();
+    this.reconnectTimer = setTimeout(() => {
+      this.connectWebSocket();
+    }, delay);
+  }
+
+  /**
+   * 清除重连定时器
+   */
+  private clearReconnectTimer(): void {
+    if (this.reconnectTimer) {
+      clearTimeout(this.reconnectTimer);
+      this.reconnectTimer = null;
+    }
+  }
+
+  /**
+   * 启动心跳定时器
+   */
+  private startPingInterval(): void {
+    this.stopPingInterval();
+
+    this.pingInterval = setInterval(() => {
+      if (this.websocket && this.websocket.readyState === WebSocket.OPEN) {
+        this.websocket.send(JSON.stringify({ type: 'ping' }));
+      }
+    }, this.pingIntervalMs);
+  }
+
+  /**
+   * 停止心跳定时器
+   */
+  private stopPingInterval(): void {
+    if (this.pingInterval) {
+      clearInterval(this.pingInterval);
+      this.pingInterval = null;
+    }
+  }
+
+  /**
+   * 启动 pong 超时检测
+   */
+  private startPongTimeout(): void {
+    this.stopPongTimeout();
+
+    this.pongTimeoutTimer = setInterval(() => {
+      if (!this.websocket || this.websocket.readyState !== WebSocket.OPEN) {
+        return;
+      }
+
+      const elapsed = Date.now() - this.lastPongTime;
+      if (elapsed > this.pongTimeoutMs) {
+        this.forceReconnect();
+      }
+    }, Math.min(this.pongTimeoutMs, 5000));
+  }
+
+  /**
+   * 停止 pong 超时检测
+   */
+  private stopPongTimeout(): void {
+    if (this.pongTimeoutTimer) {
+      clearInterval(this.pongTimeoutTimer);
+      this.pongTimeoutTimer = null;
+    }
+  }
+
+  /**
+   * 强制重连
+   */
+  private forceReconnect(): void {
+    if (this.websocket) {
+      this.websocket.onclose = null;
+      this.websocket.close(4001, 'Heartbeat timeout');
+      this.websocket = null;
+    }
+
+    this.stopPingInterval();
+    this.stopPongTimeout();
+
+    if (this.reconnectAttempts < this.maxReconnectAttempts) {
+      this.scheduleReconnect();
     }
   }
 

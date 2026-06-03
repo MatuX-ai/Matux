@@ -18,7 +18,6 @@ import { BrowserAnimationsModule } from '@angular/platform-browser/animations';
 // import { ServiceWorkerModule } from '@angular/service-worker'; // 已禁用
 import { MonacoEditorModule } from 'ngx-monaco-editor-v2';
 
-import { PathMapModule } from './components/path-map/path-map.module';
 import { SharedModule } from './shared/shared.module';
 import { AppComponent } from './app.component';
 import { AppRoutingModule } from './app-routing.module';
@@ -45,7 +44,6 @@ import { AppRoutingModule } from './app-routing.module';
     MatCardModule,
     SharedModule,
     AppRoutingModule,
-    PathMapModule,
     // ServiceWorkerModule.register('ngsw-worker.js', {
     //   enabled: true,
     //   // Register the ServiceWorker as soon as the application is stable

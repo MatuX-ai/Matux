@@ -9,12 +9,18 @@ import { AppStateService } from './app-state.service';
   providedIn: 'root',
 })
 export class PwaService {
+  /** 是否在 Electron 环境中运行（Electron 下应禁用 PWA Service Worker） */
+  private readonly isElectron: boolean;
+
   constructor(
     private swUpdate: SwUpdate,
     private snackBar: MatSnackBar,
     private appState: AppStateService
   ) {
-    this.initPwa();
+    this.isElectron = !!(typeof window !== 'undefined' && (window as any).electronAPI);
+    if (!this.isElectron) {
+      this.initPwa();
+    }
   }
 
   /**

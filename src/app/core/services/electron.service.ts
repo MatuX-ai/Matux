@@ -16,10 +16,14 @@ import { catchError, map } from 'rxjs/operators';
 import type {
   AppEvent,
   AppInfo,
+  DirectoryEntry,
+  FileInfoResult,
   FileReadResult,
   FileWriteResult,
+  ListDirectoryResult,
   OpenDialogResult,
   SaveDialogResult,
+  SelectDirectoryResult,
 } from '../models/electron-api.model';
 
 @Injectable({
@@ -59,7 +63,13 @@ export class ElectronService {
     // 监听应用事件
     api.receive('app-event', (data: unknown) => {
       this.ngZone.run(() => {
-        this.appEventSubject.next(data as AppEvent);
+        const event = data as AppEvent;
+        this.appEventSubject.next(event);
+
+        // 后端断连时弹出系统通知
+        if (event.type === 'backend-disconnected') {
+          api.showNotification('后端连接断开', '后端服务可能已崩溃，部分功能将不可用');
+        }
       });
     });
   }
@@ -135,6 +145,56 @@ export class ElectronService {
       return of({ success: false, error: '非桌面环境' });
     }
     return from(window.electronAPI!.showOpenDialog());
+  }
+
+  /** ==================== 增强文件系统操作 (P1-4) ==================== */
+
+  /** 列出目录内容 */
+  listDirectory(dirPath: string): Observable<ListDirectoryResult> {
+    if (!this.isElectron) {
+      return of({ success: false, error: '非桌面环境' });
+    }
+    return from(window.electronAPI!.listDirectory(dirPath));
+  }
+
+  /** 创建目录（递归） */
+  makeDirectory(dirPath: string): Observable<{ success: boolean; error?: string }> {
+    if (!this.isElectron) {
+      return of({ success: false, error: '非桌面环境' });
+    }
+    return from(window.electronAPI!.makeDirectory(dirPath));
+  }
+
+  /** 删除文件或目录 */
+  deleteFile(targetPath: string): Observable<{ success: boolean; error?: string }> {
+    if (!this.isElectron) {
+      return of({ success: false, error: '非桌面环境' });
+    }
+    return from(window.electronAPI!.deleteFile(targetPath));
+  }
+
+  /** 检查文件是否存在 */
+  fileExists(targetPath: string): Observable<{ exists: boolean }> {
+    if (!this.isElectron) {
+      return of({ exists: false });
+    }
+    return from(window.electronAPI!.fileExists(targetPath));
+  }
+
+  /** 获取文件信息 */
+  getFileInfo(filePath: string): Observable<FileInfoResult> {
+    if (!this.isElectron) {
+      return of({ success: false, error: '非桌面环境' });
+    }
+    return from(window.electronAPI!.getFileInfo(filePath));
+  }
+
+  /** 选择目录对话框 */
+  selectDirectory(): Observable<SelectDirectoryResult> {
+    if (!this.isElectron) {
+      return of({ success: false, error: '非桌面环境' });
+    }
+    return from(window.electronAPI!.selectDirectory());
   }
 
   /**

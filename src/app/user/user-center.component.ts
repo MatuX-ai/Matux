@@ -23,7 +23,7 @@ import { UserFooterComponent } from './components/user-footer/user-footer.compon
 import { UserNavbarComponent } from './components/user-navbar/user-navbar.component';
 import { UserSidebarComponent } from './components/user-sidebar/user-sidebar.component';
 import { UserSubNavComponent } from './components/user-sub-nav/user-sub-nav.component';
-import { ParentDashboardComponent } from './parent/parent-dashboard.component';
+// 家长仪表板已解耦至 OpenMTEduInst 项目
 import { SidebarService } from './services/sidebar.service';
 import { UserCenterService } from './services/user-center.service';
 import { StudentDashboardComponent } from './student/student-dashboard.component';
@@ -45,7 +45,7 @@ import { StudentDashboardComponent } from './student/student-dashboard.component
     UserNavbarComponent,
     UserSubNavComponent,
     StudentDashboardComponent,
-    ParentDashboardComponent,
+    // ParentDashboardComponent 已移除
   ],
   template: `
     <div class="user-center-container">
@@ -70,16 +70,8 @@ import { StudentDashboardComponent } from './student/student-dashboard.component
       <div class="main-content">
         <!-- 页面内容 -->
         <main class="content-area">
-          <!-- 根据用户类型显示不同的仪表板 -->
-          <ng-container [ngSwitch]="userType">
-            <app-student-dashboard *ngSwitchCase="'student'"></app-student-dashboard>
-            <app-parent-dashboard *ngSwitchCase="'parent'"></app-parent-dashboard>
-
-            <!-- 默认显示通用内容（不激活任何路由） -->
-            <div *ngSwitchDefault class="default-content">
-              <p>欢迎使用 MatuX 平台</p>
-            </div>
-          </ng-container>
+          <!-- 学生仪表板（MatuX 仅有学生角色） -->
+          <app-student-dashboard></app-student-dashboard>
 
           <!-- 底部导航 -->
           <app-user-footer></app-user-footer>

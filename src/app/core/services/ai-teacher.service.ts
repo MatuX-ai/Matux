@@ -330,6 +330,262 @@ export class AITeacherService {
     );
   }
 
+  // ==================== 学习诊断引擎（本地分析）====================
+
+  /**
+   * 本地诊断学生学习问题（当API不可用时降级使用）
+   * 分析画像和知识状态，生成教学建议
+   */
+  diagnoseLearningIssues(
+    profile: StudentLearningProfile,
+    knowledgeState: KnowledgeStateItem[]
+  ): TeachingSuggestion[] {
+    const suggestions: TeachingSuggestion[] = [];
+
+    // 1. 前置知识缺失检测
+    this.detectPrerequisiteGaps(knowledgeState).forEach((s) => suggestions.push(s));
+
+    // 2. 概念混淆检测（根据错误模式）
+    this.detectConceptConfusion(profile).forEach((s) => suggestions.push(s));
+
+    // 3. 学习高原期检测
+    this.detectLearningPlateau(profile).forEach((s) => suggestions.push(s));
+
+    // 4. 能力不均衡检测
+    this.detectSkillImbalance(profile).forEach((s) => suggestions.push(s));
+
+    // 5. 注意力下降检测
+    this.detectAttentionDecline(profile).forEach((s) => suggestions.push(s));
+
+    // 6. AI过度依赖检测
+    this.detectAIDependence(profile).forEach((s) => suggestions.push(s));
+
+    return suggestions;
+  }
+
+  /** 检测前置知识缺失 */
+  private detectPrerequisiteGaps(knowledgeState: KnowledgeStateItem[]): TeachingSuggestion[] {
+    const results: TeachingSuggestion[] = [];
+    for (const item of knowledgeState) {
+      if (item.status === 'learning' && item.mastery < 0.5) {
+        // 检查前置知识是否掌握
+        const missingPrereqs = item.prerequisites.filter((prereqId) => {
+          const prereq = knowledgeState.find((k) => k.knowledgePoint === prereqId);
+          return prereq && prereq.mastery < 0.7;
+        });
+        if (missingPrereqs.length > 0) {
+          results.push({
+            id: `diag_prereq_${item.knowledgePoint}_${Date.now()}`,
+            diagnosisType: 'prerequisite_missing',
+            severity: 'warning',
+            title: `前置知识缺失：${item.knowledgePoint}`,
+            description: `你正在学 ${item.knowledgePoint}，但 ${missingPrereqs.join('、')} 还没完全掌握。`,
+            suggestedAction: `先巩固 ${missingPrereqs.join('、')} 的基础知识，再继续学习 ${item.knowledgePoint}`,
+            relatedKnowledgePoints: [...missingPrereqs, item.knowledgePoint],
+            recommendedCourses: missingPrereqs.map((p) => `review_${p}`),
+            createdAt: new Date().toISOString(),
+            isRead: false,
+          });
+        }
+      }
+    }
+    return results;
+  }
+
+  /** 检测概念混淆（根据高频错误模式） */
+  private detectConceptConfusion(profile: StudentLearningProfile): TeachingSuggestion[] {
+    const results: TeachingSuggestion[] = [];
+
+    // 分析错误模式，找出高频错误类型
+    const errorEntries = Object.entries(profile.errorPatterns || {});
+    if (errorEntries.length === 0) return results;
+
+    // 按错误次数排序，取前2个
+    const topErrors = errorEntries
+      .sort(([, a], [, b]) => b - a)
+      .slice(0, 2);
+
+    const errorLabels: Record<string, string> = {
+      'indentation_error': '缩进错误',
+      'range_parameter': 'range() 参数混淆',
+      'list_index': '列表索引越界',
+      'type_error': '类型错误',
+      'syntax_error': '语法错误',
+    };
+
+    for (const [errorType, count] of topErrors) {
+      if (count >= 3) {
+        results.push({
+          id: `diag_confusion_${errorType}_${Date.now()}`,
+          diagnosisType: 'concept_confusion',
+          severity: count >= 10 ? 'critical' : 'info',
+          title: `概念混淆：${errorLabels[errorType] || errorType}`,
+          description: `你最近出现了 ${count} 次 ${errorLabels[errorType] || errorType}，你可能对这个概念的理解还不够扎实。`,
+          suggestedAction: `建议做 ${errorLabels[errorType] || errorType} 相关的专项练习`,
+          relatedKnowledgePoints: [errorType],
+          recommendedCourses: [`practice_${errorType}`],
+          createdAt: new Date().toISOString(),
+          isRead: false,
+        });
+      }
+    }
+    return results;
+  }
+
+  /** 检测学习高原期 */
+  private detectLearningPlateau(profile: StudentLearningProfile): TeachingSuggestion[] {
+    const results: TeachingSuggestion[] = [];
+
+    // 检查是否有在学的知识点进度停滞（> 3天没有进步）
+    const learningSkills = Object.entries(profile.knowledgeMastery || {})
+      .filter(([, mastery]) => mastery > 0 && mastery < 1)
+      .sort(([, a], [, b]) => a - b);
+
+    if (learningSkills.length > 0) {
+      const slowest = learningSkills[0];
+      if (slowest[1] < 0.3) {
+        results.push({
+          id: `diag_plateau_${Date.now()}`,
+          diagnosisType: 'learning_plateau',
+          severity: 'warning',
+          title: `学习高原期：${slowest[0]}`,
+          description: `${slowest[0]} 的进度似乎有些停滞，掌握度 ${Math.round(slowest[1] * 100)}%`,
+          suggestedAction: '换个方式试试！换个学习方式，或者休息一下再来挑战。',
+          relatedKnowledgePoints: [slowest[0]],
+          recommendedCourses: [`alt_${slowest[0]}`],
+          createdAt: new Date().toISOString(),
+          isRead: false,
+        });
+      }
+    }
+    return results;
+  }
+
+  /** 检测能力不均衡 */
+  private detectSkillImbalance(profile: StudentLearningProfile): TeachingSuggestion[] {
+    const results: TeachingSuggestion[] = [];
+    const dims = profile.abilityDimensions;
+    if (!dims) return results;
+
+    const entries = Object.entries(dims);
+    const values = entries.map(([, v]) => v);
+    const avg = values.reduce((a, b) => a + b, 0) / values.length;
+    const threshold = 20;
+
+    // 找出明显低于平均的维度
+    const weakDims = entries.filter(([key, val]) => {
+      if (key === 'independentCompletion' || key === 'questionQuality') return false;
+      return val < avg - threshold;
+    });
+
+    const strongDims = entries.filter(([key, val]) => {
+      if (key === 'independentCompletion' || key === 'questionQuality') return false;
+      return val > avg + threshold;
+    });
+
+    if (weakDims.length > 0 && strongDims.length > 0) {
+      const dimLabels: Record<string, string> = {
+        programmingThinking: '编程思维',
+        algorithmAbility: '算法能力',
+        debuggingSkill: '调试能力',
+        projectPractice: '项目实践',
+        stemExperiment: 'STEM实验',
+        codeQuality: '代码规范',
+      };
+
+      results.push({
+        id: `diag_imbalance_${Date.now()}`,
+        diagnosisType: 'skill_imbalance',
+        severity: 'info',
+        title: '能力发展不均衡',
+        description: `你的 ${dimLabels[strongDims[0][0]] || strongDims[0][0]} 很强，但 ${dimLabels[weakDims[0][0]] || weakDims[0][0]} 相对较弱。`,
+        suggestedAction: `可以多花点时间在 ${dimLabels[weakDims[0][0]] || weakDims[0][0]} 上的练习。`,
+        relatedKnowledgePoints: weakDims.map(([k]) => k),
+        recommendedCourses: [`enhance_${weakDims[0][0]}`],
+        createdAt: new Date().toISOString(),
+        isRead: false,
+      });
+    }
+    return results;
+  }
+
+  /** 检测注意力下降 */
+  private detectAttentionDecline(profile: StudentLearningProfile): TeachingSuggestion[] {
+    const results: TeachingSuggestion[] = [];
+    const attention = profile.attentionProfile;
+    if (!attention) return results;
+
+    if (attention.trend === 'declining') {
+      results.push({
+        id: `diag_attention_${Date.now()}`,
+        diagnosisType: 'attention_decline',
+        severity: 'warning',
+        title: '注意力下降提醒',
+        description: '最近你的注意力集中时间有所下降，切屏频率增加。',
+        suggestedAction: '建议适当休息，或换一个更有趣的学习任务来重新激发兴趣。',
+        relatedKnowledgePoints: [],
+        recommendedCourses: ['fun_projects'],
+        createdAt: new Date().toISOString(),
+        isRead: false,
+      });
+    }
+    return results;
+  }
+
+  /** 检测AI过度依赖 */
+  private detectAIDependence(profile: StudentLearningProfile): TeachingSuggestion[] {
+    const results: TeachingSuggestion[] = [];
+
+    // 检查独立完成率
+    const independence = profile.abilityDimensions?.independentCompletion;
+    if (independence !== undefined && independence < 40) {
+      results.push({
+        id: `diag_dependence_${Date.now()}`,
+        diagnosisType: 'ai_overdependence',
+        severity: 'info',
+        title: '尝试独立解决问题',
+        description: `你的独立完成率为 ${independence}%，可以先自己思考 2 分钟。`,
+        suggestedAction: '遇到问题先自己尝试解决，实在不行再问 AI 老师。',
+        relatedKnowledgePoints: [],
+        recommendedCourses: ['independent_practice'],
+        createdAt: new Date().toISOString(),
+        isRead: false,
+      });
+    }
+    return results;
+  }
+
+  /**
+   * 获取主动教学建议（结合API和本地诊断）
+   */
+  getActiveTeachingSuggestions(userId: string): Observable<TeachingSuggestion[]> {
+    const profile = this.profileSubject.value;
+    const knowledgeState = this.knowledgeStateSubject.value;
+
+    // 尝试从API获取
+    return this.http.get<TeachingSuggestion[]>(`${this.API_BASE}/active-suggestions/${userId}`).pipe(
+      tap((suggestions) => {
+        const updated = [
+          ...this.diagnoseLearningIssues(
+            profile || this.createMockProfile(userId),
+            knowledgeState.length > 0 ? knowledgeState : this.createMockKnowledgeState()
+          ) as TeachingSuggestion[],
+          ...suggestions,
+        ];
+        this.suggestionsSubject.next(updated);
+      }),
+      catchError(() => {
+        // API 不可用，使用本地诊断
+        const localSuggestions: TeachingSuggestion[] = this.diagnoseLearningIssues(
+          profile || this.createMockProfile(userId),
+          knowledgeState.length > 0 ? knowledgeState : this.createMockKnowledgeState()
+        );
+        this.suggestionsSubject.next(localSuggestions);
+        return of(localSuggestions);
+      })
+    );
+  }
+
   // ==================== 知识状态 ====================
 
   /** 获取知识状态 */
@@ -524,6 +780,40 @@ export class AITeacherService {
         { period: '2026-03', interests: [{ name: '机器人', percentage: 30 }, { name: '游戏开发', percentage: 50 }] },
         { period: '2026-05', interests: [{ name: '机器人', percentage: 45 }, { name: '游戏开发', percentage: 35 }] },
       ],
+      peerComparison: {
+        peerAverages: {
+          programmingThinking: 45,
+          algorithmAbility: 28,
+          debuggingSkill: 35,
+          projectPractice: 38,
+          stemExperiment: 32,
+          independentCompletion: 40,
+          totalStudyHours: 140,
+          completedProjects: 5,
+        },
+        userAverages: {
+          programmingThinking: 62,
+          algorithmAbility: 35,
+          debuggingSkill: 48,
+          projectPractice: 50,
+          stemExperiment: 45,
+          independentCompletion: 55,
+          totalStudyHours: 187,
+          completedProjects: 8,
+        },
+        percentileRank: 72,
+        beatRate: '超过 72% 的同龄学习者',
+        dimensionLabels: {
+          programmingThinking: '编程思维',
+          algorithmAbility: '算法能力',
+          debuggingSkill: '调试技能',
+          projectPractice: '项目实践',
+          stemExperiment: 'STEM实验',
+          independentCompletion: '独立完成',
+          totalStudyHours: '总学时',
+          completedProjects: '完成项目',
+        },
+      },
     };
   }
 
@@ -531,18 +821,50 @@ export class AITeacherService {
     return [
       {
         id: 'sug_1', diagnosisType: 'prerequisite_missing', severity: 'warning',
-        title: '前置知识缺失', description: '你正在学函数，但变量作用域还没掌握',
-        suggestedAction: '先回顾变量作用域的概念',
+        title: '前置知识缺失', description: '你正在学函数，但变量作用域还没完全掌握',
+        suggestedAction: '先回顾变量作用域的概念，再继续学习函数',
         relatedKnowledgePoints: ['变量作用域', '函数'],
         recommendedCourses: ['python_scope_basics'],
         createdAt: new Date().toISOString(), isRead: false,
       },
       {
         id: 'sug_2', diagnosisType: 'concept_confusion', severity: 'info',
-        title: '概念混淆', description: '你好像把 list 和 tuple 搞混了',
-        suggestedAction: '对比练习：创建 list 和 tuple，尝试修改元素',
-        relatedKnowledgePoints: ['list', 'tuple'],
-        recommendedCourses: ['python_data_structures'],
+        title: '概念混淆', description: '你最近出现了 range() 参数混淆的错误',
+        suggestedAction: '对比练习：分别测试 range(5)、range(1,5)、range(1,5,2) 的输出',
+        relatedKnowledgePoints: ['range()', 'for循环'],
+        recommendedCourses: ['python_loops_fundamentals'],
+        createdAt: new Date().toISOString(), isRead: false,
+      },
+      {
+        id: 'sug_3', diagnosisType: 'learning_plateau', severity: 'warning',
+        title: '学习高原期', description: '循环的掌握度在 45% 停留了 3 天，没有明显进步',
+        suggestedAction: '换个方式试试！先用 Blockly 搭 3 个循环积木，再翻译成 Python',
+        relatedKnowledgePoints: ['循环', 'Blockly 转换'],
+        recommendedCourses: ['blockly_to_python'],
+        createdAt: new Date().toISOString(), isRead: false,
+      },
+      {
+        id: 'sug_4', diagnosisType: 'skill_imbalance', severity: 'info',
+        title: '能力发展不均衡', description: '你的编程思维很强，但代码规范方面需要加强',
+        suggestedAction: '建议安装代码格式化插件，并学习 Python PEP 8 规范',
+        relatedKnowledgePoints: ['PEP 8', '代码规范'],
+        recommendedCourses: ['python_code_style'],
+        createdAt: new Date().toISOString(), isRead: false,
+      },
+      {
+        id: 'sug_5', diagnosisType: 'attention_decline', severity: 'warning',
+        title: '注意力下降', description: '最近你的平均专注时长从 30 分钟降到了 20 分钟',
+        suggestedAction: '建议适当休息，或尝试交互式更强的学习方式',
+        relatedKnowledgePoints: [],
+        recommendedCourses: ['fun_interactive_projects'],
+        createdAt: new Date().toISOString(), isRead: false,
+      },
+      {
+        id: 'sug_6', diagnosisType: 'ai_overdependence', severity: 'info',
+        title: '独立解题能力提醒', description: '最近你频繁向 AI 老师求助，独立完成率 40%',
+        suggestedAction: '遇到问题先自己思考 2 分钟，借助提示尝试独立解决',
+        relatedKnowledgePoints: ['问题拆解', '独立调试'],
+        recommendedCourses: ['independent_debug_practice'],
         createdAt: new Date().toISOString(), isRead: false,
       },
     ];

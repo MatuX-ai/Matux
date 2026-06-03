@@ -47,17 +47,17 @@ export const ROUTES = {
     CREATIVITY_ENGINE: '/creativity-engine',
   },
 
-  // 后台管理
-  ADMIN: {
-    LOGIN: '/admin/login',
-    DASHBOARD: '/admin',
-    // LICENSES: '/admin/licenses', // 已解耦至 OpenMTEduInst 项目
-    USERS: '/admin/users',
-    PAYMENTS: '/admin/payments',
-    SPONSORSHIP: '/admin/sponsorship',
-    DATABASE_REGISTRY: '/admin/database-registry',
-    MARKETING: '/admin/marketing',
-  },
+  // 后台管理（已解耦至 OpenMTEduInst 项目）
+  // ADMIN: {
+  //   LOGIN: '/admin/login',
+  //   DASHBOARD: '/admin',
+  //   LICENSES: '/admin/licenses',
+  //   USERS: '/admin/users',
+  //   PAYMENTS: '/admin/payments',
+  //   SPONSORSHIP: '/admin/sponsorship',
+  //   DATABASE_REGISTRY: '/admin/database-registry',
+  //   MARKETING: '/admin/marketing',
+  // },
 } as const;
 
 // 路由参数类型

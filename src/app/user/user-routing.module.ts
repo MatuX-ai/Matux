@@ -37,10 +37,31 @@ const routes: Routes = [
           import('./token-dashboard/token-dashboard.module').then((m) => m.TokenDashboardModule),
       },
       {
-        path: 'children',
+        path: 'achievements',
         loadComponent: () =>
-          import('./components/children-management/children-management.component').then(
-            (m) => m.ChildrenManagementComponent
+          import('./components/achievements/achievements.component').then(
+            (m) => m.AchievementsComponent
+          ),
+      },
+      {
+        path: 'courses',
+        loadComponent: () =>
+          import('./components/my-courses/my-courses.component').then(
+            (m) => m.MyCoursesComponent
+          ),
+      },
+      {
+        path: 'learning-profile',
+        loadComponent: () =>
+          import('./components/learning-profile/learning-profile.component').then(
+            (m) => m.LearningProfileComponent
+          ),
+      },
+      {
+        path: 'growth-trajectory',
+        loadComponent: () =>
+          import('./components/growth-trajectory/growth-trajectory.component').then(
+            (m) => m.GrowthTrajectoryPageComponent
           ),
       },
       {
@@ -51,77 +72,15 @@ const routes: Routes = [
           ),
       },
       {
-        path: 'achievements',
+        path: 'ai-teacher-settings',
         loadComponent: () =>
-          import('./components/achievements/achievements.component').then(
-            (m) => m.AchievementsComponent
+          import('./components/ai-teacher-settings/ai-teacher-settings.component').then(
+            (m) => m.AITeacherSettingsComponent
           ),
       },
-      {
-        path: 'teaching',
-        loadComponent: () =>
-          import('./components/teaching-management/teaching-management.component').then(
-            (m) => m.TeachingManagementComponent
-          ),
-      },
-      {
-        path: 'students',
-        loadComponent: () =>
-          import('./components/student-management/student-management.component').then(
-            (m) => m.StudentManagementComponent
-          ),
-      },
-      // 学校管理员功能模块路由（已解耦至 OpenMTEduInst 项目，路由已移除）
-      // {
-      //   path: 'classes',
-      //   loadComponent: () =>
-      //     import('./school-admin/school-admin-dashboard.component').then(
-      //       (m) => m.SchoolAdminDashboardComponent
-      //     ),
-      // },
-      // {
-      //   path: 'school-courses',
-      //   loadComponent: () =>
-      //     import('./school-admin/school-admin-dashboard.component').then(
-      //       (m) => m.SchoolAdminDashboardComponent
-      //     ),
-      // },
-      // {
-      //   path: 'quality',
-      //   loadComponent: () =>
-      //     import('./school-admin/school-admin-dashboard.component').then(
-      //       (m) => m.SchoolAdminDashboardComponent
-      //     ),
-      // },
-      // {
-      //   path: 'teacher-workload',
-      //   loadComponent: () =>
-      //     import('./school-admin/school-admin-dashboard.component').then(
-      //       (m) => m.SchoolAdminDashboardComponent
-      //     ),
-      // },
-      // 教育局功能模块路由（已解耦至 OpenMTEduInst 项目，路由已移除）
-      // {
-      //   path: 'schools',
-      //   loadComponent: () =>
-      //     import('./education-bureau/education-bureau-dashboard.component').then(
-      //       (m) => m.EducationBureauDashboardComponent
-      //     ),
-      // },
-      // {
-      //   path: 'analysis',
-      //   loadComponent: () =>
-      //     import('./education-bureau/education-bureau-dashboard.component').then(
-      //       (m) => m.EducationBureauDashboardComponent
-      //     ),
-      // },
-      // {
-      //   path: 'reports-export',
-      //   loadComponent: () =>
-      //     import('./education-bureau/education-bureau-dashboard.component').then(
-      //       (m) => m.EducationBureauDashboardComponent
-      //     ),
-      // },
+      // 教学管理/学生管理路由已解耦至 OpenMTEduInst 项目
+      // 学校管理员功能模块（已解耦至 OpenMTEduInst 项目）
+      // 教育局功能模块（已解耦至 OpenMTEduInst 项目）
       // 默认重定向
       {
         path: '',

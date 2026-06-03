@@ -6,22 +6,25 @@ import { CustomPreloadingStrategy } from './core/services/custom-preloading.stra
 const routes: Routes = [
   {
     path: '',
-    redirectTo: '/dashboard',
+    redirectTo: '/user/dashboard',
     pathMatch: 'full',
   },
+  // 开发调试用最小化仪表板
   {
     path: 'dashboard',
     loadComponent: () =>
       import('./minimal-dashboard.component').then((m) => m.MinimalDashboardComponent),
   },
+  // 学习路径地图
+  {
+    path: 'learning-path',
+    loadComponent: () =>
+      import('./components/path-map/path-map.component').then((m) => m.PathMapComponent),
+  },
   {
     path: 'openmt-demo',
     loadComponent: () =>
       import('./components/openmt-demo/openmt-demo.component').then((m) => m.OpenMtDemoComponent),
-  },
-  {
-    path: 'admin',
-    loadChildren: () => import('./admin/admin.module').then((m) => m.AdminModule),
   },
   {
     path: 'ar-lab',

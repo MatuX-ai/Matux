@@ -33,6 +33,40 @@ export interface OpenDialogResult {
   error?: string;
 }
 
+/** 目录列表结果 */
+export interface DirectoryEntry {
+  name: string;
+  path: string;
+  isDirectory: boolean;
+  size?: number;
+  modifiedAt?: string;
+}
+
+/** 目录列表结果 */
+export interface ListDirectoryResult {
+  success: boolean;
+  entries?: DirectoryEntry[];
+  error?: string;
+}
+
+/** 文件信息 */
+export interface FileInfoResult {
+  success: boolean;
+  name?: string;
+  path?: string;
+  size?: number;
+  isDirectory?: boolean;
+  modifiedAt?: string;
+  error?: string;
+}
+
+/** 选择目录结果 */
+export interface SelectDirectoryResult {
+  success: boolean;
+  path?: string;
+  error?: string;
+}
+
 /** 应用信息 */
 export interface AppInfo {
   version: string;
@@ -89,6 +123,24 @@ export interface ElectronAPI {
 
   /** 打开文件对话框 */
   showOpenDialog(): Promise<OpenDialogResult>;
+
+  /** 列出目录内容 */
+  listDirectory(dirPath: string): Promise<ListDirectoryResult>;
+
+  /** 创建目录（递归） */
+  makeDirectory(dirPath: string): Promise<{ success: boolean; error?: string }>;
+
+  /** 删除文件或目录 */
+  deleteFile(targetPath: string): Promise<{ success: boolean; error?: string }>;
+
+  /** 检查文件是否存在 */
+  fileExists(targetPath: string): Promise<{ exists: boolean }>;
+
+  /** 获取文件信息 */
+  getFileInfo(filePath: string): Promise<FileInfoResult>;
+
+  /** 选择目录对话框 */
+  selectDirectory(): Promise<SelectDirectoryResult>;
 
   /** 打开外部链接 */
   openExternal(url: string): Promise<{ success: boolean; error?: string }>;

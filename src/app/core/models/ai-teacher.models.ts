@@ -201,6 +201,21 @@ export interface GrowthTrajectory {
   aiMonthlyMessage: string;
   statistics: GrowthStatistics;
   interestEvolution: InterestEvolution[];
+  peerComparison?: PeerComparisonData;
+}
+
+/** 同龄对比数据 (P1-5) */
+export interface PeerComparisonData {
+  /** 同年级平均水平 */
+  peerAverages: Record<string, number>;
+  /** 用户当前水平 */
+  userAverages: Record<string, number>;
+  /** 排名百分位 (0-100) */
+  percentileRank: number;
+  /** 超越同龄人数比例描述 */
+  beatRate: string;
+  /** 各维度标签 */
+  dimensionLabels: Record<string, string>;
 }
 
 /** 成长统计 */

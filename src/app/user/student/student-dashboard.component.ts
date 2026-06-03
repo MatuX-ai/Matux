@@ -6,10 +6,11 @@
  */
 
 import { CommonModule } from '@angular/common';
-import { ChangeDetectionStrategy, ChangeDetectorRef, Component, OnDestroy, OnInit } from '@angular/core';
+import { ChangeDetectionStrategy, ChangeDetectorRef, Component, OnDestroy, OnInit, inject } from '@angular/core';
 import { MatButtonModule } from '@angular/material/button';
 import { MatCardModule } from '@angular/material/card';
 import { MatChipsModule } from '@angular/material/chips';
+import { MatDialog, MatDialogModule } from '@angular/material/dialog';
 import { MatIconModule } from '@angular/material/icon';
 import { MatProgressBarModule } from '@angular/material/progress-bar';
 import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
@@ -43,6 +44,8 @@ import {
 } from '../../shared/components/stats-card/stats-card.component';
 import { StudentMaterialDashboardComponent } from '../../shared/components/student-material-dashboard/student-material-dashboard.component';
 import { UnifiedCourseCardComponent } from '../../shared/components/unified-course-card/unified-course-card.component';
+import { DashboardLayoutService } from '../../core/services/dashboard-layout.service';
+import { DashboardLayoutDialogComponent } from '../../shared/components/dashboard-layout-dialog/dashboard-layout-dialog.component';
 
 interface RecentCourse {
   title: string;
@@ -85,29 +88,37 @@ interface AchievementBadge {
     MatTabsModule,
     MatProgressSpinnerModule,
     MatTooltipModule,
+    MatDialogModule,
     LearningSourceProgressComponent,
     LearningCalendarHeatmapComponent,
     StatsCardComponent,
     StudentMaterialDashboardComponent,
     UnifiedCourseCardComponent,
+    DashboardLayoutDialogComponent,
   ],
   template: `
     <div class="student-dashboard">
-      <h1 class="page-title">学习仪表板</h1>
+      <div class="page-header">
+        <h1 class="page-title">学习仪表板</h1>
+        <button mat-stroked-button (click)="openLayoutDialog()" matTooltip="自定义仪表盘布局">
+          <mat-icon>dashboard_customize</mat-icon>
+          布局
+        </button>
+      </div>
 
       <!-- 统计卡片 -->
-      <div class="stats-grid">
+      <div class="stats-grid" *ngIf="layout.isVisible('stats')">
         <app-stats-card [config]="statsConfig.inProgressCourses"></app-stats-card>
         <app-stats-card [config]="statsConfig.achievements"></app-stats-card>
         <app-stats-card [config]="statsConfig.learningPoints"></app-stats-card>
         <app-stats-card [config]="statsConfig.tokenBalance"></app-stats-card>
       </div>
 
-      <!-- 跨机构学习进度（新增） -->
-      <div class="section">
+      <!-- 我的学习来源（原跨机构学习进度） -->
+      <div class="section" *ngIf="layout.isVisible('learning_sources')">
         <h2 class="section-title">
           <mat-icon>hub</mat-icon>
-          跨机构学习进度
+          我的学习来源
         </h2>
 
         <app-learning-source-progress
@@ -122,10 +133,10 @@ interface AchievementBadge {
       </div>
 
       <!-- 学习来源概览 -->
-      <div class="section" *ngIf="learningSources.length > 0">
+      <div class="section" *ngIf="layout.isVisible('source_details') && learningSources.length > 0">
         <h2 class="section-title">
           <mat-icon>account_balance</mat-icon>
-          我的学习来源
+          学习来源详情
         </h2>
         <div class="sources-grid">
           <mat-card
@@ -156,14 +167,14 @@ interface AchievementBadge {
       </div>
 
       <!-- 学习日历热力图 + 成就墙 双栏 -->
-      <div class="dual-column-section">
+      <div class="dual-column-section" *ngIf="layout.isVisible('heatmap') || layout.isVisible('achievements')">
         <!-- 学习日历热力图 -->
-        <div class="section section-heatmap">
+        <div class="section section-heatmap" *ngIf="layout.isVisible('heatmap')">
           <app-learning-calendar-heatmap [config]="heatmapConfig"></app-learning-calendar-heatmap>
         </div>
 
         <!-- 成就墙 -->
-        <div class="section section-achievements">
+        <div class="section section-achievements" *ngIf="layout.isVisible('achievements')">
           <div class="achievements-card">
             <h2 class="section-title">
               <mat-icon>emoji_events</mat-icon>
@@ -192,7 +203,7 @@ interface AchievementBadge {
       </div>
 
       <!-- 正在学习的课程（使用统一课程卡片） -->
-      <div class="section">
+      <div class="section" *ngIf="layout.isVisible('enrolled_courses')">
         <h2 class="section-title">正在学习</h2>
         <div class="course-grid" *ngIf="enrolledCourses$ | async as enrolledCourses">
           <ng-container *ngIf="enrolledCourses.length > 0; else noEnrolledCourses">
@@ -223,7 +234,7 @@ interface AchievementBadge {
       </div>
 
       <!-- 推荐课程（使用统一课程卡片） -->
-      <div class="section">
+      <div class="section" *ngIf="layout.isVisible('recommended_courses')">
         <div class="section-header">
           <h2 class="section-title">推荐课程</h2>
           <button mat-button color="primary" (click)="navigateToCourseLibrary()">
@@ -258,7 +269,7 @@ interface AchievementBadge {
       </div>
 
       <!-- 课件库模块 -->
-      <div class="section">
+      <div class="section" *ngIf="layout.isVisible('materials')">
         <app-student-material-dashboard></app-student-material-dashboard>
       </div>
     </div>
@@ -280,11 +291,18 @@ interface AchievementBadge {
         padding: 0 var(--dash-padding);
       }
 
+      .page-header {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        margin-bottom: 24px;
+      }
+
       .page-title {
         font-size: 28px;
         font-weight: 700;
-        margin-bottom: 24px;
         color: #333;
+        margin: 0;
       }
 
       /* ===== 统计卡片网格 ===== */
@@ -797,11 +815,21 @@ export class StudentDashboardComponent implements OnInit, OnDestroy {
     private courseEnrollmentService: CourseEnrollmentService,
     private wsService: AiEduWebSocketService,
     private cdr: ChangeDetectorRef,
-    private router: Router
+    private router: Router,
+    public layout: DashboardLayoutService,
+    private dialog: MatDialog,
   ) {}
 
   ngOnInit(): void {
     this.loadCurrentUser();
+  }
+
+  /** 打开仪表盘布局设置对话框 */
+  openLayoutDialog(): void {
+    this.dialog.open(DashboardLayoutDialogComponent, {
+      width: '480px',
+      maxWidth: '90vw',
+    });
   }
 
   private loadCurrentUser(): void {
