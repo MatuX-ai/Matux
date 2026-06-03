@@ -425,7 +425,7 @@ export class LearningProfileComponent implements OnInit, OnDestroy {
   skillTreeCategories: Array<{ id: string; name: string; children: SkillTreeNode[] }> = [];
 
   // 雷达图配置
-  radarOption: EChartsOption = {};
+  radarOption: any = {};
 
   currentUser: User | null = null;
 

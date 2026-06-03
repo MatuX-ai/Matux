@@ -7,6 +7,7 @@
 
 import { CommonModule } from '@angular/common';
 import { ChangeDetectionStrategy, ChangeDetectorRef, Component, OnDestroy, OnInit } from '@angular/core';
+import { MatIconModule } from '@angular/material/icon';
 import { Subject } from 'rxjs';
 import { takeUntil } from 'rxjs/operators';
 
@@ -21,6 +22,7 @@ import type { User } from '../../../core/models/auth.models';
   standalone: true,
   imports: [
     CommonModule,
+    MatIconModule,
     GrowthTrajectoryComponent,
   ],
   changeDetection: ChangeDetectionStrategy.OnPush,

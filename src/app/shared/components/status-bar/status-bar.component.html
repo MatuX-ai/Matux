@@ -1,10 +1,16 @@
 <!-- 底部状态栏 -->
 <footer class="status-bar" role="contentinfo">
   <div class="status-bar-content">
-    <!-- 左侧：在线状态 -->
-    <div class="status-item" [matTooltip]="isOnline ? '已连接网络' : '网络未连接'">
-      <mat-icon [class]="getOnlineStatusClass()">{{ getOnlineStatusIcon() }}</mat-icon>
-      <span class="status-text">{{ getOnlineStatusText() }}</span>
+    <!-- 左侧：用户信息 + 在线状态 -->
+    <div class="status-group">
+      <div class="status-item user-info" *ngIf="currentUser" matTooltip="当前用户">
+        <mat-icon>person</mat-icon>
+        <span class="status-text">{{ currentUser }}</span>
+      </div>
+      <div class="status-item" [matTooltip]="isOnline ? '已连接网络' : '网络未连接'">
+        <mat-icon [class]="getOnlineStatusClass()">{{ getOnlineStatusIcon() }}</mat-icon>
+        <span class="status-text">{{ getOnlineStatusText() }}</span>
+      </div>
     </div>
 
     <!-- 中间：后端状态 -->

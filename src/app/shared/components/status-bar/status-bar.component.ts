@@ -46,7 +46,7 @@ export class StatusBarComponent implements OnInit, OnDestroy {
       .pipe(takeUntil(this.destroy$))
       .subscribe(user => {
         if (user) {
-          this.currentUser = user.nickname || user.username || '同学';
+          this.currentUser = (user as any).nickname || user.username || '同学';
         }
       });
 
@@ -85,9 +85,23 @@ export class StatusBarComponent implements OnInit, OnDestroy {
    * Electron 环境下的后端检查
    */
   private checkElectronBackend(): void {
-    // TODO: 通过 Electron IPC 获取后端状态
-    // 暂时默认为运行中
-    this.isBackendRunning = true;
+    // 通过 Electron IPC 获取后端状态
+    if (typeof window !== 'undefined' && (window as any).electronAPI) {
+      (window as any).electronAPI
+        .healthCheck()
+        .then((result: any) => {
+          this.isBackendRunning = result?.success || false;
+          if (result?.version) {
+            this.backendVersion = `Python ${result.version}`;
+          }
+        })
+        .catch(() => {
+          this.isBackendRunning = false;
+        });
+    } else {
+      // 如果 electronAPI 未定义，默认为运行中
+      this.isBackendRunning = true;
+    }
   }
 
   /**

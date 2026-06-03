@@ -103,7 +103,7 @@ import {
             <div class="message-text" [innerHTML]="formatMessage(msg.content)"></div>
             <div *ngIf="msg.metadata" class="message-meta">
               <span *ngIf="msg.metadata.knowledgeUsed" class="meta-tag knowledge">📚 知识库</span>
-              <span *ngIf="msg.metadata.referencedMemories?.length" class="meta-tag memory">📌 记忆引用·{{ msg.metadata.referencedMemories.length }}</span>
+              <span *ngIf="msg.metadata.referencedMemories?.length" class="meta-tag memory">📌 记忆引用·{{ msg.metadata.referencedMemories?.length ?? 0 }}</span>
               <span *ngIf="msg.metadata.emotionDetected && msg.metadata.emotionDetected !== 'neutral'"
                 class="meta-tag emotion">{{ emotionEmoji[msg.metadata.emotionDetected] }} {{ emotionLabel(msg.metadata.emotionDetected) }}</span>
             </div>
@@ -119,8 +119,8 @@ import {
               *ngFor="let item of suggestions"
               mat-chip
               class="suggestion-chip"
-              (click)="sendQuickAction(item.suggestion)">
-              {{ item.suggestion }}
+              (click)="sendQuickAction(item.title)">
+              {{ item.title }}
             </button>
           </div>
         </div>

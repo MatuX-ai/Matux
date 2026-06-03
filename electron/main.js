@@ -792,17 +792,22 @@ async function healthCheck() {
     // 不仅检查状态码，还验证响应体内容（防止端口被占用时误判）
     if (!response.ok) {
       console.warn('[HEALTH] 后端健康检查返回非 200:', response.status);
-      return false;
+      return { success: false, error: 'Backend returned non-200 status' };
     }
     const body = await response.json();
     if (body && body.status === 'ok') {
-      return true;
+      return {
+        success: true,
+        status: 'ok',
+        version: body.python_version || '3.11',
+        uptime: body.uptime,
+      };
     }
     console.warn('[HEALTH] 后端健康检查响应异常:', JSON.stringify(body));
-    return false;
+    return { success: false, error: 'Invalid response body' };
   } catch (err) {
     console.error('[HEALTH] 健康检查失败:', err.message);
-    return false;
+    return { success: false, error: err.message };
   }
 }
 

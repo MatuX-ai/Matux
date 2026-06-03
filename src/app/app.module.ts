@@ -13,6 +13,7 @@ import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
 import { MatSidenavModule } from '@angular/material/sidenav';
 import { MatSnackBarModule } from '@angular/material/snack-bar';
 import { MatToolbarModule } from '@angular/material/toolbar';
+import { MatTooltipModule } from '@angular/material/tooltip';
 import { BrowserModule } from '@angular/platform-browser';
 import { BrowserAnimationsModule } from '@angular/platform-browser/animations';
 // import { ServiceWorkerModule } from '@angular/service-worker'; // 已禁用
@@ -21,6 +22,7 @@ import { MonacoEditorModule } from 'ngx-monaco-editor-v2';
 import { SharedModule } from './shared/shared.module';
 import { AppComponent } from './app.component';
 import { AppRoutingModule } from './app-routing.module';
+import { StatusBarComponent } from './shared/components/status-bar/status-bar.component';
 
 @NgModule({
   declarations: [AppComponent],
@@ -42,8 +44,10 @@ import { AppRoutingModule } from './app-routing.module';
     MatInputModule,
     MatCheckboxModule,
     MatCardModule,
+    MatTooltipModule,
     SharedModule,
     AppRoutingModule,
+    StatusBarComponent,
     // ServiceWorkerModule.register('ngsw-worker.js', {
     //   enabled: true,
     //   // Register the ServiceWorker as soon as the application is stable
