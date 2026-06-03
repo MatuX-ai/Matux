@@ -3,6 +3,8 @@ AR/VR 课程内容数据模型
 支持增强现实和虚拟现实课程内容的管理
 """
 
+from pydantic import BaseModel, Field
+from typing import Any, Dict, List, Optional
 from datetime import datetime
 import enum
 from typing import Any, Dict, List, Optional, TYPE_CHECKING
@@ -76,8 +78,10 @@ class ARVRContent(Base):
     __tablename__ = "ar_vr_contents"
 
     id = Column(Integer, primary_key=True, index=True)
-    org_id = Column(Integer, ForeignKey("organizations.id", use_alter=True), nullable=False, index=True)
-    course_id = Column(Integer, ForeignKey("courses.id", use_alter=True), nullable=False, index=True)
+    org_id = Column(Integer, ForeignKey("organizations.id",
+                    use_alter=True), nullable=False, index=True)
+    course_id = Column(Integer, ForeignKey(
+        "courses.id", use_alter=True), nullable=False, index=True)
     lesson_id = Column(
         Integer, ForeignKey("course_lessons.id", use_alter=True), nullable=True, index=True
     )
@@ -123,7 +127,8 @@ class ARVRContent(Base):
     is_featured = Column(Boolean, default=False)
 
     created_at = Column(DateTime, default=datetime.utcnow)
-    updated_at = Column(DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
+    updated_at = Column(DateTime, default=datetime.utcnow,
+                        onupdate=datetime.utcnow)
 
     # 关系
     organization = relationship("Organization")
@@ -140,8 +145,10 @@ class ARVRSensorData(Base):
     content_id = Column(
         Integer, ForeignKey("ar_vr_contents.id", use_alter=True), nullable=False, index=True
     )
-    user_id = Column(Integer, ForeignKey("users.id", use_alter=True), nullable=False, index=True)
-    org_id = Column(Integer, ForeignKey("organizations.id", use_alter=True), nullable=False)
+    user_id = Column(Integer, ForeignKey(
+        "users.id", use_alter=True), nullable=False, index=True)
+    org_id = Column(Integer, ForeignKey(
+        "organizations.id", use_alter=True), nullable=False)
 
     # 传感器信息
     sensor_type = Column(Enum(SensorType), nullable=False)
@@ -173,8 +180,10 @@ class ARVRInteractionLog(Base):
     content_id = Column(
         Integer, ForeignKey("ar_vr_contents.id", use_alter=True), nullable=False, index=True
     )
-    user_id = Column(Integer, ForeignKey("users.id", use_alter=True), nullable=False, index=True)
-    org_id = Column(Integer, ForeignKey("organizations.id", use_alter=True), nullable=False)
+    user_id = Column(Integer, ForeignKey(
+        "users.id", use_alter=True), nullable=False, index=True)
+    org_id = Column(Integer, ForeignKey(
+        "organizations.id", use_alter=True), nullable=False)
 
     # 交互信息
     interaction_type = Column(String(100), nullable=False)  # 交互类型
@@ -207,8 +216,10 @@ class ARVRProgressTracking(Base):
     content_id = Column(
         Integer, ForeignKey("ar_vr_contents.id", use_alter=True), nullable=False, index=True
     )
-    user_id = Column(Integer, ForeignKey("users.id", use_alter=True), nullable=False, index=True)
-    org_id = Column(Integer, ForeignKey("organizations.id", use_alter=True), nullable=False)
+    user_id = Column(Integer, ForeignKey(
+        "users.id", use_alter=True), nullable=False, index=True)
+    org_id = Column(Integer, ForeignKey(
+        "organizations.id", use_alter=True), nullable=False)
 
     # 进度信息
     progress_percentage = Column(Float, default=0.0)  # 完成百分比
@@ -226,7 +237,8 @@ class ARVRProgressTracking(Base):
     assessment_score = Column(Float)  # 评估分数
 
     created_at = Column(DateTime, default=datetime.utcnow)
-    updated_at = Column(DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
+    updated_at = Column(DateTime, default=datetime.utcnow,
+                        onupdate=datetime.utcnow)
 
     # 关系
     content = relationship("ARVRContent")
@@ -234,11 +246,7 @@ class ARVRProgressTracking(Base):
     organization = relationship("Organization")
 
 
-from datetime import datetime
-from typing import Any, Dict, List, Optional
-
 # Pydantic模型用于API请求/响应
-from pydantic import BaseModel, Field
 
 
 class ARVRContentCreate(BaseModel):
@@ -307,8 +315,7 @@ class ARVRContentResponse(BaseModel):
     created_at: datetime
     updated_at: datetime
 
-    class Config:
-        orm_mode = True
+    model_config = {"from_attributes": True}
 
 
 class SensorDataCreate(BaseModel):
@@ -338,8 +345,7 @@ class SensorDataResponse(BaseModel):
     longitude: Optional[float]
     altitude: Optional[float]
 
-    class Config:
-        orm_mode = True
+    model_config = {"from_attributes": True}
 
 
 class InteractionLogCreate(BaseModel):
@@ -385,5 +391,4 @@ class ProgressTrackingResponse(BaseModel):
     interaction_count: int
     assessment_score: Optional[float]
 
-    class Config:
-        orm_mode = True
+    model_config = {"from_attributes": True}

@@ -3,6 +3,7 @@
 实现实时协同编辑和评论批注功能
 """
 
+from pydantic import BaseModel, Field, validator
 from datetime import datetime
 import hashlib
 from typing import Any, Dict, List, Optional
@@ -29,8 +30,10 @@ class CollaborativeDocument(Base):
     __tablename__ = "collaborative_documents"
 
     id = Column(Integer, primary_key=True, index=True)
-    course_id = Column(Integer, ForeignKey("courses.id"), nullable=False, index=True)
-    org_id = Column(Integer, ForeignKey("organizations.id"), nullable=False, index=True)
+    course_id = Column(Integer, ForeignKey(
+        "courses.id"), nullable=False, index=True)
+    org_id = Column(Integer, ForeignKey("organizations.id"),
+                    nullable=False, index=True)
 
     # 文档信息
     document_name = Column(String(255), nullable=False)  # 文档名称
@@ -53,7 +56,8 @@ class CollaborativeDocument(Base):
     allow_suggestions = Column(Boolean, default=True)  # 是否允许建议
 
     created_at = Column(DateTime, default=datetime.utcnow)
-    updated_at = Column(DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
+    updated_at = Column(DateTime, default=datetime.utcnow,
+                        onupdate=datetime.utcnow)
 
     # 关系
     course = relationship("Course")
@@ -75,7 +79,8 @@ class DocumentOperation(Base):
     document_id = Column(
         Integer, ForeignKey("collaborative_documents.id"), nullable=False, index=True
     )
-    user_id = Column(Integer, ForeignKey("users.id"), nullable=False, index=True)
+    user_id = Column(Integer, ForeignKey("users.id"),
+                     nullable=False, index=True)
 
     # 操作信息
     operation_type = Column(String(20), nullable=False)  # insert/delete/update
@@ -122,7 +127,8 @@ class DocumentComment(Base):
     document_id = Column(
         Integer, ForeignKey("collaborative_documents.id"), nullable=False, index=True
     )
-    user_id = Column(Integer, ForeignKey("users.id"), nullable=False, index=True)
+    user_id = Column(Integer, ForeignKey("users.id"),
+                     nullable=False, index=True)
 
     # 评论位置
     start_position = Column(Integer, nullable=False)  # 开始位置
@@ -143,11 +149,13 @@ class DocumentComment(Base):
     resolved_by = Column(Integer, ForeignKey("users.id"))  # 解决者ID
 
     # 回复
-    parent_comment_id = Column(Integer, ForeignKey("document_comments.id"))  # 父评论ID
+    parent_comment_id = Column(
+        Integer, ForeignKey("document_comments.id"))  # 父评论ID
     replies_count = Column(Integer, default=0)  # 回复数量
 
     created_at = Column(DateTime, default=datetime.utcnow)
-    updated_at = Column(DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
+    updated_at = Column(DateTime, default=datetime.utcnow,
+                        onupdate=datetime.utcnow)
 
     # 关系
     document = relationship("CollaborativeDocument")
@@ -172,7 +180,8 @@ class DocumentSuggestion(Base):
     document_id = Column(
         Integer, ForeignKey("collaborative_documents.id"), nullable=False, index=True
     )
-    user_id = Column(Integer, ForeignKey("users.id"), nullable=False, index=True)
+    user_id = Column(Integer, ForeignKey("users.id"),
+                     nullable=False, index=True)
 
     # 建议位置
     start_position = Column(Integer, nullable=False)
@@ -189,7 +198,8 @@ class DocumentSuggestion(Base):
     reviewed_by = Column(Integer, ForeignKey("users.id"))  # 审核者ID
 
     created_at = Column(DateTime, default=datetime.utcnow)
-    updated_at = Column(DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
+    updated_at = Column(DateTime, default=datetime.utcnow,
+                        onupdate=datetime.utcnow)
 
     # 关系
     document = relationship("CollaborativeDocument")
@@ -211,7 +221,8 @@ class DocumentSession(Base):
     document_id = Column(
         Integer, ForeignKey("collaborative_documents.id"), nullable=False, index=True
     )
-    user_id = Column(Integer, ForeignKey("users.id"), nullable=False, index=True)
+    user_id = Column(Integer, ForeignKey("users.id"),
+                     nullable=False, index=True)
 
     # 会话信息
     session_id = Column(String(64), unique=True)  # 会话ID
@@ -248,17 +259,15 @@ class DocumentSession(Base):
         self.session_id = hashlib.sha256(content_str.encode()).hexdigest()
 
 
-from typing import Any, Dict, List, Optional
-
 # Pydantic模型定义
-from pydantic import BaseModel, Field, validator
 
 
 class CollaborativeDocumentCreate(BaseModel):
     """创建协作文档的请求模型"""
 
     document_name: str = Field(..., min_length=1, max_length=255)
-    document_type: str = Field(default="richtext", pattern="^(richtext|markdown|html)$")
+    document_type: str = Field(
+        default="richtext", pattern="^(richtext|markdown|html)$")
     content: str = ""
     allow_comments: bool = True
     allow_suggestions: bool = True
@@ -288,8 +297,7 @@ class CollaborativeDocumentResponse(BaseModel):
     created_at: datetime
     updated_at: datetime
 
-    class Config:
-        orm_mode = True
+    model_config = {"from_attributes": True}
 
 
 class DocumentOperationCreate(BaseModel):
@@ -323,8 +331,7 @@ class DocumentOperationResponse(BaseModel):
     timestamp: datetime
     transformed_operation: Optional[Dict[str, Any]]
 
-    class Config:
-        orm_mode = True
+    model_config = {"from_attributes": True}
 
 
 class DocumentCommentCreate(BaseModel):
@@ -364,8 +371,7 @@ class DocumentCommentResponse(BaseModel):
     created_at: datetime
     updated_at: datetime
 
-    class Config:
-        orm_mode = True
+    model_config = {"from_attributes": True}
 
 
 class DocumentSuggestionCreate(BaseModel):
@@ -401,8 +407,7 @@ class DocumentSuggestionResponse(BaseModel):
     created_at: datetime
     updated_at: datetime
 
-    class Config:
-        orm_mode = True
+    model_config = {"from_attributes": True}
 
 
 class DocumentSessionResponse(BaseModel):
@@ -421,8 +426,7 @@ class DocumentSessionResponse(BaseModel):
     joined_at: datetime
     left_at: Optional[datetime]
 
-    class Config:
-        orm_mode = True
+    model_config = {"from_attributes": True}
 
 
 class OTTransformRequest(BaseModel):

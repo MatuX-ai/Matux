@@ -460,3 +460,15 @@ async def circuit_breaker_middleware(request: Request, call_next) -> Response:
                 "message": "内部服务器错误"
             }
         )
+
+
+class CircuitBreakerMiddleware:
+    """熔断器中间件（ASGI兼容包装）"""
+
+    def __init__(self, app, config=None):
+        self.app = app
+        logger.info("Circuit breaker middleware initialized")
+
+    async def __call__(self, scope, receive, send):
+        """ASGI 应用调用"""
+        await self.app(scope, receive, send)

@@ -224,8 +224,6 @@
   <div class="version-text">v1.0.0</div>
 
   <script>
-    const { ipcRenderer } = require('electron');
-
     const progressBar = document.getElementById('progressBar');
     const statusText = document.getElementById('statusText');
     const errorSection = document.getElementById('errorSection');
@@ -270,13 +268,16 @@
       progressBar.classList.add('indeterminate');
       progressBar.style.width = '';
       setStatus('正在重新启动...');
-      ipcRenderer.send('splash-retry');
+      if (window.splashAPI) {
+        window.splashAPI.retry();
+      }
     }
 
     /**
      * 接收主进程状态更新
      */
-    ipcRenderer.on('splash-status', (_event, data) => {
+    if (window.splashAPI) {
+      window.splashAPI.onStatusUpdate((data) => {
       const { phase, text, progress } = data;
 
       setStatus(text);
@@ -330,6 +331,7 @@
           break;
       }
     });
+    }
 
     console.log('[Splash] 启动画面已就绪');
   </script>

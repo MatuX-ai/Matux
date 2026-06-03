@@ -16,18 +16,24 @@ logger = logging.getLogger(__name__)
 
 
 class RedisLicenseStore:
-    """Redis许可证存储管理类"""
+    """Redis许可证存储管理类（延迟连接）"""
 
     def __init__(self):
-        """初始化Redis连接"""
+        """初始化时不连接 Redis，延迟到首次使用时"""
         self.config = load_sentinel_config()
-        self.client = None
-        self.connect()
+        self._client = None
 
-    def connect(self):
-        """建立 Redis 连接"""
+    @property
+    def client(self):
+        """延迟获取客户端连接"""
+        if self._client is None:
+            self._connect()
+        return self._client
+
+    def _connect(self):
+        """建立 Redis 连接（内部调用）"""
         try:
-            self.client = redis.Redis(
+            self._client = redis.Redis(
                 host=self.config.storage.host,
                 port=self.config.storage.port,
                 db=self.config.storage.db,
@@ -38,11 +44,11 @@ class RedisLicenseStore:
                 socket_timeout=5,
             )
             # 测试连接
-            self.client.ping()
+            self._client.ping()
             logger.info("✅ Redis 连接成功")
         except Exception as e:
             logger.warning(f"⚠️ Redis 未启用或不可用，将使用内存存储模式：{e}")
-            self.client = None
+            self._client = None
 
     def is_connected(self) -> bool:
         """检查 Redis 连接状态"""
@@ -51,6 +57,7 @@ class RedisLicenseStore:
         try:
             return self.client.ping()
         except (ConnectionError, TimeoutError, RuntimeError):
+            self._client = None
             return False
 
     def store_license(self, license_key: str, license_data: Dict[str, Any]) -> bool:
@@ -74,7 +81,8 @@ class RedisLicenseStore:
 
             # 存储许可证数据
             key = f"license:{license_key}"
-            self.client.setex(key, expire_time, json.dumps(license_data, default=str))
+            self.client.setex(key, expire_time, json.dumps(
+                license_data, default=str))
 
             logger.info(f"许可证已存储到Redis: {license_key}")
             return True
@@ -262,19 +270,64 @@ class RedisLicenseStore:
             return {"error": str(e)}
 
 
-# 全局 Redis 客户端实例
+# 全局 Redis 许可证存储实例（延迟连接）
 redis_license_store = RedisLicenseStore()
 
-# 简单的 Redis 客户端实例（用于通用缓存）
-try:
-    redis_client = redis.Redis(
-        host='localhost',
-        port=6379,
-        db=0,
-        decode_responses=True,
-        socket_connect_timeout=5,
-    )
-    redis_client.ping()
-except Exception as e:
-    logger.warning(f"Redis 连接失败：{e}")
-    redis_client = None
+
+class _LazyRedisClient:
+    """延迟初始化的 Redis 客户端代理（用于通用缓存）"""
+
+    def __init__(self):
+        self._client = None
+
+    def _ensure(self):
+        """确保客户端已连接"""
+        if self._client is None:
+            try:
+                self._client = redis.Redis(
+                    host='localhost',
+                    port=6379,
+                    db=0,
+                    decode_responses=True,
+                    socket_connect_timeout=5,
+                )
+                self._client.ping()
+            except Exception as e:
+                logger.warning(f"Redis 连接失败：{e}")
+                self._client = None
+        return self._client
+
+    def get(self, key):
+        client = self._ensure()
+        if client is None:
+            return None
+        return client.get(key)
+
+    def setex(self, name, time, value):
+        client = self._ensure()
+        if client is None:
+            return None
+        return client.setex(name, time, value)
+
+    def delete(self, key):
+        client = self._ensure()
+        if client is None:
+            return 0
+        return client.delete(key)
+
+    def ping(self):
+        client = self._ensure()
+        if client is None:
+            return False
+        return client.ping()
+
+    def __getattr__(self, name):
+        # 透传其他 Redis 方法
+        client = self._ensure()
+        if client is None:
+            raise AttributeError(f"Redis 未连接，无法调用 {name}")
+        return getattr(client, name)
+
+
+# 全局 Redis 客户端（延迟连接，兼容现有代码）
+redis_client = _LazyRedisClient()

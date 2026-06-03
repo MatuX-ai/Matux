@@ -48,6 +48,42 @@ contextBridge.exposeInMainWorld('electronAPI', {
   showOpenDialog: () => ipcRenderer.invoke('fs-open-dialog'),
 
   /**
+   * 列出目录内容
+   * @param dirPath 目录路径
+   * @returns {{ success: boolean, files?: Array, error?: string }}
+   */
+  listDirectory: (dirPath) => ipcRenderer.invoke('fs-list-dir', dirPath),
+
+  /**
+   * 创建目录（递归）
+   * @param dirPath 目录路径
+   */
+  makeDirectory: (dirPath) => ipcRenderer.invoke('fs-make-dir', dirPath),
+
+  /**
+   * 删除文件或空目录
+   * @param targetPath 文件或目录路径
+   */
+  deleteFile: (targetPath) => ipcRenderer.invoke('fs-delete-file', targetPath),
+
+  /**
+   * 检查文件或目录是否存在
+   * @param targetPath 目标路径
+   */
+  fileExists: (targetPath) => ipcRenderer.invoke('fs-file-exists', targetPath),
+
+  /**
+   * 获取文件信息（大小、修改时间等）
+   * @param filePath 文件路径
+   */
+  getFileInfo: (filePath) => ipcRenderer.invoke('fs-get-file-info', filePath),
+
+  /**
+   * 选择文件夹对话框
+   */
+  selectDirectory: () => ipcRenderer.invoke('fs-select-directory'),
+
+  /**
    * 打开外部链接（系统默认浏览器）
    */
   openExternal: (url) => ipcRenderer.invoke('open-external', url),

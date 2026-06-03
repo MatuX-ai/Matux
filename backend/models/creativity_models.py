@@ -3,6 +3,7 @@
 定义创意想法、Prompt模板、评分等相关数据结构
 """
 
+from models.user import User
 from datetime import datetime
 from enum import Enum
 from typing import Any, Dict, List, Optional
@@ -78,7 +79,8 @@ class CreativeIdea(Base):
     view_count = Column(Integer, default=0)
     like_count = Column(Integer, default=0)
     created_at = Column(DateTime, default=datetime.utcnow)
-    updated_at = Column(DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
+    updated_at = Column(DateTime, default=datetime.utcnow,
+                        onupdate=datetime.utcnow)
 
     # 关系
     user = relationship("User", back_populates="creative_ideas")
@@ -101,7 +103,8 @@ class PromptTemplate(Base):
     is_public = Column(Boolean, default=True)
     created_by = Column(Integer, ForeignKey("users.id"))
     created_at = Column(DateTime, default=datetime.utcnow)
-    updated_at = Column(DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
+    updated_at = Column(DateTime, default=datetime.utcnow,
+                        onupdate=datetime.utcnow)
 
     # 关系
     ideas = relationship("CreativeIdea", back_populates="prompt_template")
@@ -136,9 +139,11 @@ class CreativeIdeaCreate(BaseModel):
     """创建创意想法请求模型"""
 
     title: str = Field(..., min_length=1, max_length=255, description="创意标题")
-    description: Optional[str] = Field(None, max_length=2000, description="创意描述")
+    description: Optional[str] = Field(
+        None, max_length=2000, description="创意描述")
     category: Optional[IdeaCategory] = Field(None, description="创意分类")
-    prompt_template_id: Optional[int] = Field(None, description="使用的Prompt模板ID")
+    prompt_template_id: Optional[int] = Field(
+        None, description="使用的Prompt模板ID")
     tags: Optional[List[str]] = Field(None, description="标签列表")
     is_public: bool = Field(default=False, description="是否公开")
 
@@ -172,8 +177,7 @@ class CreativeIdeaResponse(BaseModel):
     created_at: datetime
     updated_at: datetime
 
-    class Config:
-        orm_mode = True
+    model_config = {"from_attributes": True}
 
 
 class PromptTemplateCreate(BaseModel):
@@ -183,7 +187,8 @@ class PromptTemplateCreate(BaseModel):
     category: Optional[str] = Field(None, max_length=100, description="模板分类")
     template: str = Field(..., min_length=10, description="模板内容")
     variables: Optional[Dict[str, Any]] = Field(None, description="模板变量定义")
-    description: Optional[str] = Field(None, max_length=1000, description="模板描述")
+    description: Optional[str] = Field(
+        None, max_length=1000, description="模板描述")
     is_public: bool = Field(default=True, description="是否公开")
 
 
@@ -202,8 +207,7 @@ class PromptTemplateResponse(BaseModel):
     created_at: datetime
     updated_at: datetime
 
-    class Config:
-        orm_mode = True
+    model_config = {"from_attributes": True}
 
 
 class IdeaGenerationRequest(BaseModel):
@@ -237,7 +241,8 @@ class ImageGenerationRequest(BaseModel):
         ..., min_length=10, max_length=1000, description="图像生成Prompt"
     )
     style: ImageStyle = Field(default=ImageStyle.REALISTIC, description="图像风格")
-    size: str = Field(default="1024x1024", pattern=r"^\d+x\d+$", description="图像尺寸")
+    size: str = Field(default="1024x1024",
+                      pattern=r"^\d+x\d+$", description="图像尺寸")
     quality: str = Field(default="standard", description="图像质量")
     n: int = Field(default=1, ge=1, le=10, description="生成图像数量")
 
@@ -295,8 +300,8 @@ class BusinessEvaluationResponse(BaseModel):
 
 
 # 扩展现有用户模型的关系
-from models.user import User
 
 User.creative_ideas = relationship("CreativeIdea", back_populates="user")
-User.created_templates = relationship("PromptTemplate", back_populates="creator")
+User.created_templates = relationship(
+    "PromptTemplate", back_populates="creator")
 User.scored_ideas = relationship("IdeaScore", back_populates="reviewer")

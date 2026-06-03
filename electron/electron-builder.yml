@@ -15,6 +15,9 @@ directories:
 files:
   - main.js
   - preload.js
+  - preload-splash.js
+  - splash.html
+  - package.json
   - build/**/*
   - ../dist/imatuproject/**/*
 

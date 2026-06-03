@@ -3,6 +3,8 @@
 用于追踪和分析学生的学习行为特征，包括代码调试时长和硬件操作成功率等指标
 """
 
+from pydantic import BaseModel, Field
+from typing import Any, Dict, List
 from datetime import datetime
 from enum import Enum
 from typing import Optional
@@ -55,8 +57,10 @@ class LearningBehaviorFeature(Base):
     __tablename__ = "learning_behavior_features"
 
     id = Column(Integer, primary_key=True, index=True)
-    org_id = Column(Integer, ForeignKey("organizations.id", use_alter=True), nullable=False, index=True)
-    student_id = Column(Integer, ForeignKey("students.id"), nullable=False, index=True)
+    org_id = Column(Integer, ForeignKey("organizations.id",
+                    use_alter=True), nullable=False, index=True)
+    student_id = Column(Integer, ForeignKey(
+        "students.id"), nullable=False, index=True)
 
     # 行为基础信息
     category = Column(String(50), nullable=False, index=True)  # 行为类别
@@ -102,7 +106,8 @@ class LearningBehaviorFeature(Base):
     is_processed = Column(Boolean, default=False)  # 是否已处理
     processing_notes = Column(Text)  # 处理备注
     created_at = Column(DateTime, default=datetime.utcnow, index=True)
-    updated_at = Column(DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
+    updated_at = Column(DateTime, default=datetime.utcnow,
+                        onupdate=datetime.utcnow)
 
     # 关系
     organization = relationship("Organization")
@@ -123,8 +128,10 @@ class LearningBehaviorSummary(Base):
     __tablename__ = "learning_behavior_summaries"
 
     id = Column(Integer, primary_key=True, index=True)
-    org_id = Column(Integer, ForeignKey("organizations.id", use_alter=True), nullable=False, index=True)
-    student_id = Column(Integer, ForeignKey("students.id"), nullable=False, index=True)
+    org_id = Column(Integer, ForeignKey("organizations.id",
+                    use_alter=True), nullable=False, index=True)
+    student_id = Column(Integer, ForeignKey(
+        "students.id"), nullable=False, index=True)
     period_type = Column(
         String(20), nullable=False, index=True
     )  # 统计周期类型：daily/weekly/monthly
@@ -157,7 +164,8 @@ class LearningBehaviorSummary(Base):
     collaboration_events = Column(Integer, default=0)  # 协作事件数
 
     # 系统字段
-    last_updated = Column(DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
+    last_updated = Column(DateTime, default=datetime.utcnow,
+                          onupdate=datetime.utcnow)
     created_at = Column(DateTime, default=datetime.utcnow)
 
     # 关系
@@ -169,15 +177,12 @@ class LearningBehaviorSummary(Base):
         Index(
             "idx_summary_student_period", "student_id", "period_type", "period_start"
         ),
-        Index("idx_summary_org_period", "org_id", "period_type", "period_start"),
+        Index("idx_summary_org_period", "org_id",
+              "period_type", "period_start"),
     )
 
 
-from datetime import datetime
-from typing import Any, Dict, List
-
 # Pydantic模型定义
-from pydantic import BaseModel, Field
 
 
 class LearningBehaviorCreate(BaseModel):
@@ -195,7 +200,8 @@ class LearningBehaviorCreate(BaseModel):
     breakpoints_used: Optional[int] = Field(None, ge=0)
     debug_commands_executed: Optional[int] = Field(None, ge=0)
     error_types_encountered: Optional[List[str]] = None
-    hardware_operation_success_rate: Optional[float] = Field(None, ge=0.0, le=1.0)
+    hardware_operation_success_rate: Optional[float] = Field(
+        None, ge=0.0, le=1.0)
     hardware_operations_count: Optional[int] = Field(None, ge=0)
     successful_operations: Optional[int] = Field(None, ge=0)
     failed_operations: Optional[int] = Field(None, ge=0)
@@ -217,7 +223,8 @@ class LearningBehaviorUpdate(BaseModel):
     duration_seconds: Optional[int] = Field(None, ge=0)
     debug_duration_seconds: Optional[int] = Field(None, ge=0)
     debug_attempts: Optional[int] = Field(None, ge=0)
-    hardware_operation_success_rate: Optional[float] = Field(None, ge=0.0, le=1.0)
+    hardware_operation_success_rate: Optional[float] = Field(
+        None, ge=0.0, le=1.0)
     success_indicator: Optional[bool] = None
     performance_score: Optional[float] = Field(None, ge=0.0, le=100.0)
     is_processed: Optional[bool] = None
@@ -249,8 +256,7 @@ class LearningBehaviorResponse(BaseModel):
     created_at: datetime
     updated_at: datetime
 
-    class Config:
-        orm_mode = True
+    model_config = {"from_attributes": True}
 
 
 class LearningBehaviorSummaryResponse(BaseModel):
@@ -274,8 +280,7 @@ class LearningBehaviorSummaryResponse(BaseModel):
     last_updated: datetime
     created_at: datetime
 
-    class Config:
-        orm_mode = True
+    model_config = {"from_attributes": True}
 
 
 class BehaviorAnalyticsRequest(BaseModel):
@@ -285,7 +290,8 @@ class BehaviorAnalyticsRequest(BaseModel):
     category: Optional[BehaviorCategory] = None
     start_date: datetime
     end_date: datetime
-    period_type: str = Field(default="daily", pattern="^(daily|weekly|monthly)$")
+    period_type: str = Field(
+        default="daily", pattern="^(daily|weekly|monthly)$")
 
 
 class BehaviorAnalyticsResponse(BaseModel):

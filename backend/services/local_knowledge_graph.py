@@ -12,8 +12,7 @@ from typing import Any, Dict, List, Optional, Set, Tuple
 import hashlib
 
 import networkx as nx
-from chromadb import Client, Collection
-from chromadb.config import Settings as ChromaSettings
+import chromadb
 
 logger = logging.getLogger(__name__)
 
@@ -32,18 +31,15 @@ class LocalKnowledgeGraph:
         self.data_dir.mkdir(exist_ok=True)
 
         # 初始化向量数据库
-        self.chroma_client = Client(
-            settings=ChromaSettings(
-                chroma_db_impl="duckdb+parquet",
-                persist_directory=str(self.data_dir / "chroma_db")
-            )
+        self.chroma_client = chromadb.PersistentClient(
+            path=str(self.data_dir / "chroma_db")
         )
 
         # 初始化图数据库
         self.graph = nx.DiGraph()
 
         # 知识节点集合
-        self.collections: Dict[str, Collection] = {}
+        self.collections: Dict[str, chromadb.Collection] = {}
 
         # 加载已有数据
         self._load_existing_data()
@@ -84,7 +80,8 @@ class LocalKnowledgeGraph:
             graph_file = self.data_dir / "knowledge_graph.gml"
             if graph_file.exists():
                 self.graph = nx.read_gml(graph_file)
-                logger.info(f"加载知识图谱: {self.graph.number_of_nodes()} 个节点, {self.graph.number_of_edges()} 条边")
+                logger.info(
+                    f"加载知识图谱: {self.graph.number_of_nodes()} 个节点, {self.graph.number_of_edges()} 条边")
 
             # 加载集合信息
             collections_file = self.data_dir / "collections.json"
@@ -261,7 +258,8 @@ class LocalKnowledgeGraph:
 
             # 查找最短路径
             if nx.has_path(subgraph, start_node, end_node):
-                path = nx.shortest_path(subgraph, start_node, end_node, weight='weight')
+                path = nx.shortest_path(
+                    subgraph, start_node, end_node, weight='weight')
                 logger.info(f"找到学习路径: {len(path)} 个节点")
                 return path
             else:
@@ -357,7 +355,7 @@ class LocalKnowledgeGraph:
 
                     # 检查前置知识是否掌握
                     missing_prereqs = prerequisites - mastered_nodes
-                    if missing_prereq:
+                    if missing_prereqs:
                         gaps.extend(missing_prereqs)
                     else:
                         gaps.append(target_node)
@@ -388,11 +386,13 @@ class LocalKnowledgeGraph:
             # 统计知识类型
             for node_id, data in self.graph.nodes(data=True):
                 knowledge_type = data.get('knowledge_type', 'unknown')
-                stats['knowledge_types'][knowledge_type] = stats['knowledge_types'].get(knowledge_type, 0) + 1
+                stats['knowledge_types'][knowledge_type] = stats['knowledge_types'].get(
+                    knowledge_type, 0) + 1
 
                 difficulty = data.get('difficulty', 0.5)
                 difficulty_level = 'easy' if difficulty < 0.3 else 'medium' if difficulty < 0.7 else 'hard'
-                stats['difficulty_distribution'][difficulty_level] = stats['difficulty_distribution'].get(difficulty_level, 0) + 1
+                stats['difficulty_distribution'][difficulty_level] = stats['difficulty_distribution'].get(
+                    difficulty_level, 0) + 1
 
             return stats
 
@@ -522,7 +522,8 @@ class StudentLearningProfile:
                     data = json.load(f)
                     self.mastered_nodes = set(data.get('mastered_nodes', []))
                     self.learning_history = data.get('learning_history', [])
-                    self.learning_preferences = data.get('learning_preferences', {})
+                    self.learning_preferences = data.get(
+                        'learning_preferences', {})
 
         except Exception as e:
             logger.warning(f"加载学生画像失败: {e}")
@@ -682,7 +683,8 @@ class StudentLearningProfile:
                 avg_performance = sum(
                     h['performance'] for h in self.learning_history
                 ) / len(self.learning_history)
-                total_time = sum(h['time_spent'] for h in self.learning_history)
+                total_time = sum(h['time_spent']
+                                 for h in self.learning_history)
             else:
                 avg_performance = 0.0
                 total_time = 0

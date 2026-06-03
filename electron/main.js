@@ -27,15 +27,39 @@ const HEALTH_CHECK_INTERVAL = 10000; // 健康检查间隔 10 秒
 
 const isDev = process.env.NODE_ENV === 'development';
 
+// ==================== 路径常量 ====================
+
+const APP_PATHS = {
+  backendDir: path.join(__dirname, '..', 'backend'),
+  frontendIndex: path.join(__dirname, '..', 'dist', 'imatuproject', 'index.html'),
+  icon: path.join(__dirname, 'build', 'icon.ico'),
+  preload: path.join(__dirname, 'preload.js'),
+  preloadSplash: path.join(__dirname, 'preload-splash.js'),
+  splashHtml: path.join(__dirname, 'splash.html'),
+};
+
 let splashWindow = null;
 let mainWindow = null;
 let backendProcess = null;
 let healthCheckTimer = null;
 let restartAttempts = 0;
 let isQuitting = false;
+let isStarting = false; // 防止 startBackend 并发调用
 let tray = null;
 
 // ==================== 工具函数 ====================
+
+/**
+ * 检查 Python 版本是否 >= 3.9（语义版本号比较，避免 parseFloat 误判）
+ * @param {string} versionStr 版本字符串，如 "3.12"
+ * @returns {boolean}
+ */
+function isPythonVersionGte39(versionStr) {
+  const parts = versionStr.split('.');
+  const major = parseInt(parts[0], 10);
+  const minor = parseInt(parts[1], 10);
+  return major > 3 || (major === 3 && minor >= 9);
+}
 
 /**
  * 向 Splash 窗口发送状态更新
@@ -50,29 +74,74 @@ function sendSplashStatus(phase, text, progress, detail) {
 }
 
 /**
- * 检测 Python 是否可用
+ * 搜索 Windows 上常见的 Python 安装路径
+ * @returns {string[]} 找到的 python.exe 路径列表
+ */
+function searchPythonPaths() {
+  if (process.platform !== 'win32') return [];
+  const found = new Set();
+
+  // 方法1: 使用 py --list-paths 获取所有注册的 Python 安装
+  try {
+    const output = execSync('py --list-paths 2>&1', {
+      encoding: 'utf-8',
+      timeout: 5000,
+      shell: true,
+    });
+    const regex = /-[\d.]+\s+(.+?python\.exe)/gi;
+    let m;
+    while ((m = regex.exec(output)) !== null) {
+      found.add(m[1].replace(/\s*\*$/, '').trim());
+    }
+  } catch { /* py 命令不可用 */ }
+
+  // 方法2: 检查常见安装目录（覆盖 C: 到 N: 的所有盘符）
+  const drives = 'CDEFGHIJKLMN'.split('');
+  const majorVersions = ['312', '311', '310', '39', '313'];
+  const pathTemplates = [];
+  for (const drive of drives) {
+    for (const ver of majorVersions) {
+      pathTemplates.push(`${drive}:\\Python${ver}\\python.exe`);
+      pathTemplates.push(`${drive}:\\Program Files\\Python${ver}\\python.exe`);
+    }
+  }
+
+  const userProfile = process.env.USERPROFILE || 'C:\\Users\\Default';
+  for (const ver of majorVersions) {
+    pathTemplates.push(`${userProfile}\\AppData\\Local\\Programs\\Python\\Python${ver}\\python.exe`);
+  }
+
+  for (const p of pathTemplates) {
+    if (fs.existsSync(p)) found.add(p);
+  }
+
+  return [...found];
+}
+
+/**
+ * 检测 Python 是否可用（自动搜索 PATH + 常见安装路径）
  * @returns {{ available: boolean, version: string, path: string }}
  */
 function detectPython() {
+  // Phase 1: 检查 PATH 命令
   const candidates = process.platform === 'win32'
     ? ['python', 'python3', 'py', 'py -3']
     : ['python3', 'python'];
 
   for (const cmd of candidates) {
     try {
-      const versionOutput = execSync(`"${cmd.split(' ')[0]}" --version 2>&1`, {
+      const versionOutput = execSync(`"${cmd}" --version 2>&1`, {
         encoding: 'utf-8',
         timeout: 5000,
         shell: true,
       }).trim();
       const versionMatch = versionOutput.match(/Python\s+(\d+\.\d+)/);
       if (versionMatch) {
-        const majorMinor = parseFloat(versionMatch[1]);
-        if (majorMinor >= 3.9) {
+        if (isPythonVersionGte39(versionMatch[1])) {
           return {
             available: true,
             version: versionMatch[1],
-            path: cmd.split(' ')[0],
+            path: cmd,
           };
         }
         console.warn(`[WARN] Python ${versionMatch[1]} 版本过低，需要 3.9+`);
@@ -81,21 +150,76 @@ function detectPython() {
       // 该命令不可用，尝试下一个
     }
   }
+
+  // Phase 2: 搜索常见安装路径（仅 Windows）
+  if (process.platform === 'win32') {
+    const searchedPaths = searchPythonPaths();
+    for (const pyPath of searchedPaths) {
+      try {
+        const versionOutput = execSync(`"${pyPath}" --version 2>&1`, {
+          encoding: 'utf-8',
+          timeout: 5000,
+        }).trim();
+        const versionMatch = versionOutput.match(/Python\s+(\d+\.\d+)/);
+        if (versionMatch && isPythonVersionGte39(versionMatch[1])) {
+          return {
+            available: true,
+            version: versionMatch[1],
+            path: pyPath,
+          };
+        }
+      } catch { /* 该路径不可执行，跳过 */ }
+    }
+  }
+
   return { available: false, version: '', path: '' };
+}
+
+/**
+ * 检测 Python 关键依赖包是否安装
+ * @param {object} pythonInfo detectPython 的返回值
+ * @returns {string[]} 缺失的包名列表
+ */
+function checkPythonDeps(pythonInfo) {
+  // 后端启动所必需的核心包（无此列表中的包将无法启动）
+  const criticalPkgs = ['fastapi', 'uvicorn', 'sqlalchemy', 'pydantic', 'python-jose', 'passlib', 'python-multipart'];
+
+  try {
+    const output = execSync(`"${pythonInfo.path}" -m pip list --format=columns 2>&1`, {
+      encoding: 'utf-8',
+      timeout: 15000,
+      shell: true,
+    });
+
+    // 解析 pip list 输出，收集已安装的包名
+    const installed = new Set();
+    const lines = output.split('\n');
+    for (const line of lines) {
+      if (line.startsWith('---') || line.toLowerCase().startsWith('package')) continue;
+      const pkgName = line.trim().split(/\s+/)[0];
+      if (pkgName) installed.add(pkgName.toLowerCase());
+    }
+
+    // 检查哪些核心包缺失
+    const missing = criticalPkgs.filter((pkg) => !installed.has(pkg.toLowerCase()));
+    return missing;
+  } catch (err) {
+    console.warn('[WARN] 无法检查 Python 依赖包:', err.message);
+    return []; // 无法检查时不阻塞启动
+  }
 }
 
 /**
  * 获取后端脚本路径
  */
 function getBackendScriptPath() {
-  const backendDir = path.join(__dirname, '..', 'backend');
   // 生产环境使用 PyInstaller 打包的 exe
   if (!isDev && process.platform === 'win32') {
-    const exePath = path.join(backendDir, 'dist', 'main_ai_edu.exe');
+    const exePath = path.join(APP_PATHS.backendDir, 'dist', 'main_ai_edu.exe');
     if (fs.existsSync(exePath)) return { type: 'exe', path: exePath };
   }
   // 开发环境使用源码
-  const scriptPath = path.join(backendDir, 'main_ai_edu.py');
+  const scriptPath = path.join(APP_PATHS.backendDir, 'main_ai_edu.py');
   return { type: 'script', path: scriptPath };
 }
 
@@ -116,14 +240,14 @@ function createSplashWindow() {
     show: false,
     backgroundColor: '#0f172a',
     webPreferences: {
-      preload: path.join(__dirname, 'preload-splash.js'),
+      preload: APP_PATHS.preloadSplash,
       nodeIntegration: false,
       contextIsolation: true,
     },
-    icon: path.join(__dirname, 'build', 'icon.ico'),
+    icon: APP_PATHS.icon,
   });
 
-  splashWindow.loadFile(path.join(__dirname, 'splash.html'));
+  splashWindow.loadFile(APP_PATHS.splashHtml);
 
   splashWindow.once('ready-to-show', () => {
     splashWindow.show();
@@ -145,23 +269,21 @@ function createMainWindow() {
     minHeight: 768,
     show: false,
     webPreferences: {
-      preload: path.join(__dirname, 'preload.js'),
+      preload: APP_PATHS.preload,
       nodeIntegration: false,
       contextIsolation: true,
     },
-    icon: path.join(__dirname, 'build', 'icon.ico'),
+    icon: APP_PATHS.icon,
     titleBarStyle: 'default',
     title: 'MatuX',
   });
 
   // 加载前端应用
-  const frontendPath = path.join(__dirname, '..', 'dist', 'imatuproject', 'index.html');
-
   if (isDev) {
     mainWindow.loadURL('http://localhost:4200');
     mainWindow.webContents.openDevTools();
   } else {
-    mainWindow.loadFile(frontendPath);
+    mainWindow.loadFile(APP_PATHS.frontendIndex);
   }
 
   // 主窗口就绪后关闭 Splash
@@ -240,25 +362,31 @@ function createChildWindow(options) {
     minHeight: 600,
     parent: mainWindow,
     webPreferences: {
-      preload: path.join(__dirname, 'preload.js'),
+      preload: APP_PATHS.preload,
       nodeIntegration: false,
       contextIsolation: true,
     },
-    icon: path.join(__dirname, 'build', 'icon.ico'),
+    icon: APP_PATHS.icon,
     title,
   });
 
   // 加载页面
-  if (url.startsWith('http') || url.startsWith('/')) {
-    const fullUrl = url.startsWith('http')
-      ? url
-      : (isDev ? `http://localhost:4200` : `file://${path.join(__dirname, '..', 'dist', 'imatuproject', 'index.html')}`) + (url.startsWith('/') ? `#${url}` : url);
-    childWin.loadURL(fullUrl);
-  } else if (isDev) {
-    childWin.loadURL(`http://localhost:4200#${url}`);
+  // 绝对 URL（http/https）直接加载
+  if (url.startsWith('http://') || url.startsWith('https://')) {
+    childWin.loadURL(url);
+  } else if (url.startsWith('/') || isDev) {
+    // 相对路径或开发环境：通过 dev server 或 hash 加载
+    const baseUrl = isDev ? 'http://localhost:4200' : APP_PATHS.frontendIndex;
+    const hashPath = url.startsWith('/') ? url : `/${url}`;
+    if (isDev) {
+      childWin.loadURL(`${baseUrl}#${hashPath}`);
+    } else {
+      // 生产环境使用 loadFile 的 hash 参数（兼容 Windows file:// 格式）
+      childWin.loadFile(baseUrl, { hash: hashPath });
+    }
   } else {
-    const frontendPath = path.join(__dirname, '..', 'dist', 'imatuproject', 'index.html');
-    childWin.loadFile(frontendPath, { hash: url });
+    // 默认情况：用 loadFile 携带 hash（兼容 Windows file:// 格式）
+    childWin.loadFile(APP_PATHS.frontendIndex, { hash: url.startsWith('/') ? url : `/${url}` });
   }
 
   childWindows.add(childWin);
@@ -273,7 +401,7 @@ function createChildWindow(options) {
  * 创建系统托盘
  */
 function createTray() {
-  const iconPath = path.join(__dirname, 'build', 'icon.ico');
+  const iconPath = APP_PATHS.icon;
   // 如果图标不存在，使用默认图标
   const trayIcon = fs.existsSync(iconPath) ? iconPath : undefined;
 
@@ -347,7 +475,7 @@ function showNotification(title, body, category = 'learning') {
   const notification = new Notification({
     title,
     body,
-    icon: path.join(__dirname, 'build', 'icon.ico'),
+    icon: APP_PATHS.icon,
     silent: false,
   });
 
@@ -533,10 +661,16 @@ function startBackend() {
     console.log('[INFO] 后端已在运行中');
     return;
   }
+  if (isStarting) {
+    console.log('[INFO] 后端正在启动中，跳过重复请求');
+    return;
+  }
+  isStarting = true;
 
   const pythonInfo = detectPython();
   if (!pythonInfo.available) {
     sendSplashStatus('python-missing', '未检测到 Python 3.9+ 环境', 0);
+    isStarting = false;
     return;
   }
 
@@ -546,19 +680,17 @@ function startBackend() {
 
   sendSplashStatus('starting-backend', '正在启动后端服务...', 20);
 
-  const backendDir = path.join(__dirname, '..', 'backend');
-
   if (backendInfo.type === 'exe') {
     // 生产环境：直接运行 PyInstaller 打包的 exe
     backendProcess = spawn(backendInfo.path, [], {
-      cwd: backendDir,
+      cwd: APP_PATHS.backendDir,
       env: { ...process.env, PORT: BACKEND_PORT.toString() },
       windowsHide: true,
     });
   } else {
     // 开发环境：运行 Python 脚本
     backendProcess = spawn(pythonInfo.path, [backendInfo.path], {
-      cwd: backendDir,
+      cwd: APP_PATHS.backendDir,
       env: { ...process.env, PORT: BACKEND_PORT.toString() },
       windowsHide: !isDev,
     });
@@ -578,10 +710,12 @@ function startBackend() {
     console.error(`[ERROR] 后端进程启动失败: ${err.message}`);
     sendSplashStatus('backend-error', '后端进程启动失败', 0, err.message);
     backendProcess = null;
+    isStarting = false;
   });
 
   backendProcess.on('close', (code, signal) => {
     console.log(`[INFO] 后端服务已退出 (code: ${code}, signal: ${signal})`);
+    isStarting = false;
 
     if (!isQuitting && restartAttempts < MAX_RESTART_ATTEMPTS) {
       restartAttempts++;
@@ -634,6 +768,7 @@ async function waitForBackend(timeout = BACKEND_START_TIMEOUT) {
     console.log('[INFO] 后端服务已就绪！');
     sendSplashStatus('backend-ready', '后端服务就绪 ✓', 90);
     restartAttempts = 0; // 重置重启计数
+    isStarting = false;
     return true;
   } catch (error) {
     clearInterval(progressInterval);
@@ -654,8 +789,19 @@ async function healthCheck() {
       signal: controller.signal,
     });
     clearTimeout(timeoutId);
-    return response.ok;
-  } catch {
+    // 不仅检查状态码，还验证响应体内容（防止端口被占用时误判）
+    if (!response.ok) {
+      console.warn('[HEALTH] 后端健康检查返回非 200:', response.status);
+      return false;
+    }
+    const body = await response.json();
+    if (body && body.status === 'ok') {
+      return true;
+    }
+    console.warn('[HEALTH] 后端健康检查响应异常:', JSON.stringify(body));
+    return false;
+  } catch (err) {
+    console.error('[HEALTH] 健康检查失败:', err.message);
     return false;
   }
 }
@@ -707,21 +853,29 @@ function stopBackend() {
  * 优雅关闭所有进程
  */
 function gracefulShutdown() {
+  if (isQuitting) return; // 防止重复调用
   isQuitting = true;
 
-  // 注销全局快捷键
-  unregisterGlobalShortcuts();
+  try { unregisterGlobalShortcuts(); } catch (err) {
+    console.error('[SHUTDOWN] 注销快捷键失败:', err.message);
+  }
 
   if (healthCheckTimer) {
     clearInterval(healthCheckTimer);
     healthCheckTimer = null;
   }
 
-  stopBackend();
+  try { stopBackend(); } catch (err) {
+    console.error('[SHUTDOWN] 停止后端失败:', err.message);
+  }
 
   // 销毁系统托盘
   if (tray) {
-    tray.destroy();
+    try {
+      tray.destroy();
+    } catch (err) {
+      console.error('[SHUTDOWN] 销毁托盘失败:', err.message);
+    }
     tray = null;
   }
 
@@ -764,6 +918,11 @@ function registerIpcHandlers() {
 
   ipcMain.handle('fs-write-file', async (_event, filePath, content) => {
     try {
+      // 确保父目录存在
+      const dir = path.dirname(filePath);
+      if (!fs.existsSync(dir)) {
+        fs.mkdirSync(dir, { recursive: true });
+      }
       // 支持 Buffer/ArrayBuffer（二进制）和字符串
       if (Buffer.isBuffer(content) || content instanceof ArrayBuffer) {
         fs.writeFileSync(filePath, Buffer.from(content));
@@ -823,6 +982,121 @@ function registerIpcHandlers() {
     try {
       await shell.openExternal(url);
       return { success: true };
+    } catch (err) {
+      return { success: false, error: err.message };
+    }
+  });
+
+  // 列出目录内容
+  ipcMain.handle('fs-list-dir', async (_event, dirPath) => {
+    try {
+      if (!fs.existsSync(dirPath)) {
+        return { success: false, error: '目录不存在' };
+      }
+      const entries = fs.readdirSync(dirPath, { withFileTypes: true });
+      const files = entries.map((entry) => {
+        const fullPath = path.join(dirPath, entry.name);
+        let stat;
+        try {
+          stat = fs.statSync(fullPath);
+        } catch {
+          stat = { size: 0, mtimeMs: 0, isFile: () => false, isDirectory: () => false };
+        }
+        return {
+          name: entry.name,
+          isDirectory: entry.isDirectory(),
+          isFile: entry.isFile(),
+          size: stat.size,
+          mtimeMs: stat.mtimeMs,
+          path: fullPath,
+        };
+      });
+      // 排序：目录在前，文件在后，各按名称排序
+      files.sort((a, b) => {
+        if (a.isDirectory !== b.isDirectory) return a.isDirectory ? -1 : 1;
+        return a.name.localeCompare(b.name);
+      });
+      return { success: true, files };
+    } catch (err) {
+      return { success: false, error: err.message };
+    }
+  });
+
+  // 创建目录（递归）
+  ipcMain.handle('fs-make-dir', async (_event, dirPath) => {
+    try {
+      fs.mkdirSync(dirPath, { recursive: true });
+      return { success: true };
+    } catch (err) {
+      return { success: false, error: err.message };
+    }
+  });
+
+  // 删除文件或空目录
+  ipcMain.handle('fs-delete-file', async (_event, targetPath) => {
+    try {
+      if (!fs.existsSync(targetPath)) {
+        return { success: false, error: '目标不存在' };
+      }
+      const stat = fs.statSync(targetPath);
+      if (stat.isDirectory()) {
+        fs.rmdirSync(targetPath);
+      } else {
+        fs.unlinkSync(targetPath);
+      }
+      return { success: true };
+    } catch (err) {
+      return { success: false, error: err.message };
+    }
+  });
+
+  // 检查文件是否存在
+  ipcMain.handle('fs-file-exists', async (_event, targetPath) => {
+    try {
+      return { success: true, exists: fs.existsSync(targetPath) };
+    } catch (err) {
+      return { success: false, error: err.message };
+    }
+  });
+
+  // 获取文件信息
+  ipcMain.handle('fs-get-file-info', async (_event, filePath) => {
+    try {
+      if (!fs.existsSync(filePath)) {
+        return { success: false, error: '文件不存在' };
+      }
+      const stat = fs.statSync(filePath);
+      return {
+        success: true,
+        info: {
+          size: stat.size,
+          isDirectory: stat.isDirectory(),
+          isFile: stat.isFile(),
+          createdMs: stat.birthtimeMs,
+          modifiedMs: stat.mtimeMs,
+          accessedMs: stat.atimeMs,
+          extension: path.extname(filePath),
+          name: path.basename(filePath),
+          dir: path.dirname(filePath),
+        },
+      };
+    } catch (err) {
+      return { success: false, error: err.message };
+    }
+  });
+
+  // 选择文件夹对话框
+  ipcMain.handle('fs-select-directory', async () => {
+    if (!mainWindow) return { success: false, error: '主窗口未就绪' };
+    try {
+      const result = await dialog.showOpenDialog(mainWindow, {
+        title: '选择文件夹',
+        properties: ['openDirectory'],
+      });
+      if (result.canceled || result.filePaths.length === 0) {
+        return { success: false, error: '用户取消' };
+      }
+      return { success: true, filePath: result.filePaths[0] };
     } catch (err) {
       return { success: false, error: err.message };
     }
@@ -904,30 +1178,94 @@ app.whenReady().then(async () => {
 
   // 2. 检测 Python 环境
   sendSplashStatus('checking-python', '正在检测 Python 环境...', 5);
-  const pythonInfo = detectPython();
+  let pythonInfo = detectPython();
 
-  if (!pythonInfo.available) {
-    // Python 不可用 - 显示错误并提供引导
+  // 如果自动检测未找到，循环弹窗让用户选择
+  while (!pythonInfo.available) {
     sendSplashStatus('python-missing', '未检测到 Python 3.9+ 环境', 0);
 
-    // 弹出系统对话框引导安装
     const { response } = await dialog.showMessageBox({
       type: 'warning',
       title: '缺少 Python 环境',
       message: 'MatuX 需要 Python 3.9 或更高版本',
-      detail: '检测到您的系统未安装 Python 或版本过低。\n\n请安装 Python 3.9+ 后重启 MatuX。',
-      buttons: ['下载 Python', '稍后再说'],
+      detail: '检测到您的系统未安装 Python 或版本过低。\n\n您可以选择手动指定 Python 位置，或下载安装。',
+      buttons: ['下载 Python', '手动选择 Python 位置', '暂不处理'],
       defaultId: 0,
+      cancelId: 2,
     });
 
     if (response === 0) {
       shell.openExternal('https://www.python.org/downloads/');
+      return;
     }
-    // 不退出，让用户看到 Splash 错误信息，可以重试
-    return;
+
+    if (response === 1) {
+      // 用户手动指定 Python 位置
+      const result = await dialog.showOpenDialog({
+        title: '请选择 python.exe',
+        defaultPath: process.env.ProgramFiles || 'C:\\',
+        filters: [{ name: 'Python 可执行文件', extensions: ['exe'] }],
+        properties: ['openFile'],
+      });
+
+      if (!result.canceled && result.filePaths.length > 0) {
+        const manualPath = result.filePaths[0];
+        try {
+          const versionOutput = execSync(`"${manualPath}" --version 2>&1`, {
+            encoding: 'utf-8',
+            timeout: 5000,
+          }).trim();
+          const versionMatch = versionOutput.match(/Python\s+(\d+\.\d+)/);
+          if (versionMatch && isPythonVersionGte39(versionMatch[1])) {
+            console.log(`[INFO] 用户手动指定 Python: ${manualPath} (${versionMatch[1]})`);
+            pythonInfo = { available: true, version: versionMatch[1], path: manualPath };
+            break;
+          }
+          await dialog.showMessageBox({
+            type: 'error',
+            title: '版本不符',
+            message: `所选 Python 版本 ${versionMatch ? versionMatch[1] : '未知'} 不符合要求`,
+            detail: 'MatuX 需要 Python 3.9 或更高版本。',
+          });
+        } catch {
+          await dialog.showMessageBox({
+            type: 'error',
+            title: '无效的文件',
+            message: '所选文件不是有效的 Python 可执行文件，请重新选择。',
+          });
+        }
+      }
+      // 用户取消文件选择，继续循环重新弹窗
+    } else {
+      // 暂不处理
+      return;
+    }
   }
 
   console.log(`[INFO] 检测到 Python ${pythonInfo.version} (${pythonInfo.path})`);
+
+  // 检查 Python 关键依赖包
+  sendSplashStatus('checking-deps', '正在检查 Python 依赖包...', 10);
+  const missingDeps = checkPythonDeps(pythonInfo);
+  if (missingDeps.length > 0) {
+    const msg = `缺少关键依赖: ${missingDeps.join(', ')}`;
+    console.error(`[ERROR] ${msg}`);
+    sendSplashStatus('pip-missing', '缺少 Python 依赖包', 0, msg);
+
+    const { response: depResponse } = await dialog.showMessageBox({
+      type: 'warning',
+      title: '缺少 Python 依赖包',
+      message: '请先安装 Python 依赖包再启动',
+      detail: `检测到以下 Python 依赖包缺失:\n\n${missingDeps.join('\n')}\n\n请在终端中执行:\ncd backend\npip install -r requirements.txt`,
+      buttons: ['查看依赖文件', '暂不处理'],
+      defaultId: 0,
+    });
+
+    if (depResponse === 0) {
+      shell.openPath(path.join(APP_PATHS.backendDir, 'requirements.txt'));
+    }
+    return;
+  }
 
   // 3. 启动后端服务
   startBackend();
@@ -943,8 +1281,34 @@ app.whenReady().then(async () => {
 
   if (!isReady) {
     console.error('[ERROR] 后端服务启动失败');
+    isStarting = false;
     return;
   }
+
+  // 确认后端健康（排除端口被其他程序占用的场景）
+  sendSplashStatus('verifying-health', '正在验证后端服务...', 90);
+  let isHealthy = await healthCheck();
+  // 首次失败后短等待重试（应对端口刚开但 uvicorn 未完全就绪的竞态）
+  if (!isHealthy) {
+    console.log('[INFO] 首次健康检查未通过，1 秒后重试...');
+    await new Promise((r) => setTimeout(r, 1000));
+    isHealthy = await healthCheck();
+  }
+  if (!isHealthy) {
+    console.error('[ERROR] 端口已开放但健康检查未通过，端口可能被其他程序占用');
+    sendSplashStatus('backend-error', '端口 8000 被占用，无法连接后端服务', 0,
+      '健康检查失败，请检查是否有其他程序占用了 8000 端口');
+    await dialog.showMessageBox({
+      type: 'error',
+      title: '端口冲突',
+      message: '端口 8000 已被其他程序占用',
+      detail: '检测到端口 8000 已开放，但无法识别为 MatuX 后端服务。\n\n请检查是否有其他程序（如 nginx、其他 MatuX 实例）占用了该端口。',
+    });
+    stopBackend();
+    return;
+  }
+
+  isStarting = false;
 
   // 5. 启动健康检查
   startHealthCheck();
@@ -975,12 +1339,16 @@ app.whenReady().then(async () => {
   }, 30000);
 });
 
-// macOS 特殊处理
+// macOS 特殊处理：关闭所有窗口时不退出应用（保持后端运行）
 app.on('window-all-closed', () => {
   if (process.platform !== 'darwin') {
+    // 非 macOS：关闭窗口即退出应用
     gracefulShutdown();
     app.quit();
   }
+  // macOS：仅关闭窗口，后端继续运行
+  // 用户通过 Cmd+Q 退出时触发 before-quit → gracefulShutdown
+  // 再次点击 Dock 图标时触发 activate → createMainWindow
 });
 
 app.on('activate', () => {

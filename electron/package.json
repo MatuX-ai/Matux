@@ -20,26 +20,11 @@
   "license": "GPL-3.0",
   "devDependencies": {
     "electron": "^28.0.0",
-    "electron-builder": "^24.9.1"
+    "electron-builder": "^24.9.1",
+    "js-yaml": "^4.1.0"
   },
   "dependencies": {
-    "wait-port": "^1.1.0"
-  },
-  "build": {
-    "appId": "com.imato.desktop",
-    "productName": "iMato",
-    "directories": {
-      "output": "dist"
-    },
-    "files": [
-      "main.js",
-      "preload.js",
-      "build/**/*",
-      "../dist/imatuproject/**/*"
-    ],
-    "win": {
-      "target": "nsis",
-      "icon": "icon.ico"
-    }
+    "wait-port": "^1.1.0",
+    "electron-updater": "^6.1.0"
   }
 }

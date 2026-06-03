@@ -8,6 +8,7 @@ import os
 
 from celery import Celery
 from celery.schedules import crontab
+from celery.signals import task_failure
 
 # 配置日志
 logging.basicConfig(level=logging.INFO)
@@ -21,7 +22,8 @@ celery_app.conf.update(
     # Broker配置 (使用Redis)
     broker_url=os.getenv("CELERY_BROKER_URL", "redis://localhost:6379/0"),
     # 结果后端配置
-    result_backend=os.getenv("CELERY_RESULT_BACKEND", "redis://localhost:6379/0"),
+    result_backend=os.getenv("CELERY_RESULT_BACKEND",
+                             "redis://localhost:6379/0"),
     # 任务序列化
     task_serializer="json",
     accept_content=["json"],
@@ -91,30 +93,29 @@ celery_app.conf.beat_schedule = {
 }
 
 
-# 添加任务失败和超时回调
-@celery_app.task(base=celery_app.Task)
-def on_task_failure(
+# 任务失败回调（通过 Celery 信号机制）
+@task_failure.connect
+def on_task_failure_handler(
     sender=None, task_id=None, exception=None, traceback=None, einfo=None, **kwargs
 ):
     """任务失败回调"""
     logger.error(f"Task {sender.name} failed: {exception}")
-    # 可以在这里添加额外的失败处理逻辑
 
 
 @celery_app.task(base=celery_app.Task)
 def on_task_timeout(sender=None, task_id=None, **kwargs):
     """任务超时回调"""
     logger.warning(f"Task {sender.name} timed out: {task_id}")
-    # 可以在这里添加超时处理逻辑
 
 
-# 注册事件监听器
-celery_app.events.state_handlers["task-failed"] = on_task_failure
-
-celery_app.conf.update(
-    # 添加自定义任务基类
-    task_cls="middleware.celery_circuit_breaker:CircuitBreakerTask"
-)
+# 尝试注册自定义任务基类（circuit_breaker 模块为可选，不存在时不阻塞）
+try:
+    from middleware.celery_circuit_breaker import CircuitBreakerTask  # type: ignore[import-untyped]  # noqa: F401
+    celery_app.conf.update(
+        task_cls="middleware.celery_circuit_breaker:CircuitBreakerTask"
+    )
+except (ImportError, ModuleNotFoundError):
+    logger.info("celery_circuit_breaker 模块未安装，使用默认任务基类")
 
 if __name__ == "__main__":
     celery_app.start()

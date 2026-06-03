@@ -30,9 +30,6 @@ import uvicorn
 
 from utils.database import Base, sync_engine
 
-# 启动时创建数据库表
-Base.metadata.create_all(bind=sync_engine)
-
 # 创建 FastAPI 应用
 app = FastAPI(
     title="AI-Edu-for-Kids API", description="AI 教育课程学习平台 API", version="1.0.0"
@@ -159,5 +156,8 @@ if __name__ == "__main__":
     print("   - Press Ctrl+C to stop")
     print("   - Default port: 8000")
     print("=" * 80)
+
+    # 启动时创建数据库表（在 __main__ 中执行，避免阻塞模块导入）
+    Base.metadata.create_all(bind=sync_engine)
 
     uvicorn.run(app, host="0.0.0.0", port=8000)

@@ -57,9 +57,11 @@ from routes import (  # noqa: E501
     vector_knowledge_routes,  # 向量知识库 (RAG)
 )
 from routes import ai_capabilities_routes  # XEduHub AI 能力组件
+from routes import achievement_routes  # 成就系统
 from routes import openhydra_routes  # OpenHydra AI 沙箱环境
 from routes import admin_settings_routes  # Admin 后台全局设置
 from routes import finance_routes  # 财务管理
+from routes import sensor_data_routes  # 传感器数据
 from modules.auth.auth_routes import router as unified_auth_router
 from modules.learning.aggregation_routes import (  # noqa: E501
     router as aggregation_router,
@@ -83,10 +85,7 @@ app = FastAPI(
 )
 
 # 配置 CORS 中间件
-if isinstance(settings.ALLOWED_ORIGINS, str):
-    allowed_origins = settings.ALLOWED_ORIGINS.split(",")
-else:
-    allowed_origins = settings.ALLOWED_ORIGINS
+allowed_origins = settings.ALLOWED_ORIGINS
 
 app.add_middleware(  # noqa: E501
     CORSMiddleware,
@@ -196,12 +195,19 @@ app.include_router(openhydra_routes.router, tags=["AI 实验室"])
 # 封装视觉分析、NLP 对话、ML 预测等 SOTA 模型能力
 app.include_router(ai_capabilities_routes.router, tags=["AI 能力组件"])
 
+# 成就系统 API 路由
+# 提供成就创建、查询、进度追踪、徽章展示等功能
+app.include_router(achievement_routes.router)
+
 # 财务管理 API 路由
 # 提供学费、薪酬、定价、消课等财务相关接口
 app.include_router(finance_routes.router, tags=["财务管理"])
 # Admin 后台全局设置 API 路由
 # 提供全局配置的增删改查和测试连接功能
 app.include_router(admin_settings_routes.router, tags=["Admin 设置管理"])
+
+# 传感器数据 API 路由（提供 AR 实验室模拟传感器数据）
+app.include_router(sensor_data_routes.router)
 
 # 统一认证 API 路由（手机号注册/登录、家长绑定学生、Token刷新）
 app.include_router(unified_auth_router)
@@ -265,7 +271,9 @@ async def startup_event():
 
     # 导入所有模型以确保它们被注册到 Base.metadata
     # 按依赖顺序导入：先导入基础模型，再导入依赖模型
-    from models.license import Organization, License  # noqa: F401
+    # [已废弃] models/license.py 中的 Organization/License 是 Pydantic 模型，不是 SQLAlchemy 模型
+    # 在正式迁移完成前，移除这里的 ORM 注册导入
+    # from models.license import Organization, License  # noqa: F401
     from models.sponsorship import Sponsorship  # noqa: F401
     from models.user import User  # noqa: F401
     from models.ar_vr_content import ARVRContent  # noqa: F401
@@ -306,7 +314,7 @@ async def startup_event():
     if settings.DEBUG:
         try:
             from utils.init_test_data import initialize_test_data
-            initialize_test_data()
+            await initialize_test_data()
         except Exception as e:
             logger.error(f"测试数据初始化失败：{e}")
             import traceback

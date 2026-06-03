@@ -3,6 +3,7 @@
 支持1元/个的配件租赁功能
 """
 
+from pydantic import BaseModel, Field, validator
 from datetime import datetime
 import enum
 from typing import Optional
@@ -69,7 +70,8 @@ class HardwareModule(Base):
     name = Column(String(200), nullable=False)  # 模块显示名称
 
     # 状态和价格信息
-    status = Column(Enum(HardwareModuleStatus), default=HardwareModuleStatus.AVAILABLE)
+    status = Column(Enum(HardwareModuleStatus),
+                    default=HardwareModuleStatus.AVAILABLE)
     price_per_day = Column(Float, default=1.0)  # 日租金1元
     deposit_amount = Column(Float, default=50.0)  # 押金金额
 
@@ -136,8 +138,10 @@ class ModuleRentalRecord(Base):
     __tablename__ = "module_rental_records"
 
     id = Column(Integer, primary_key=True, index=True)
-    module_id = Column(Integer, ForeignKey("hardware_modules.id"), nullable=False)
-    user_license_id = Column(Integer, ForeignKey("user_licenses.id"), nullable=False)
+    module_id = Column(Integer, ForeignKey(
+        "hardware_modules.id"), nullable=False)
+    user_license_id = Column(Integer, ForeignKey(
+        "user_licenses.id"), nullable=False)
 
     # 租赁时间信息
     rental_start_date = Column(DateTime, nullable=False)  # 租赁开始时间
@@ -157,7 +161,8 @@ class ModuleRentalRecord(Base):
     compensation_amount = Column(Float, default=0.0)  # 赔偿金额
 
     # 状态信息
-    status = Column(Enum(ModuleRentalStatus), default=ModuleRentalStatus.ACTIVE)
+    status = Column(Enum(ModuleRentalStatus),
+                    default=ModuleRentalStatus.ACTIVE)
     cancellation_reason = Column(Text)  # 取消原因
 
     # 时间戳
@@ -216,11 +221,7 @@ class ModuleRentalRecord(Base):
         return self.module.deposit_amount * rate
 
 
-from datetime import datetime
-from typing import Optional
-
 # Pydantic模型用于API请求/响应
-from pydantic import BaseModel, Field, validator
 
 
 class HardwareModuleCreate(BaseModel):
@@ -302,8 +303,7 @@ class HardwareModuleResponse(BaseModel):
     utilization_rate: float
     revenue_generated: float
 
-    class Config:
-        orm_mode = True
+    model_config = {"from_attributes": True}
 
 
 class ModuleRentalRecordResponse(BaseModel):
@@ -332,5 +332,4 @@ class ModuleRentalRecordResponse(BaseModel):
     rental_duration: int
     net_amount: float
 
-    class Config:
-        orm_mode = True
+    model_config = {"from_attributes": True}
