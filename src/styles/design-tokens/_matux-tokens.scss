@@ -5,36 +5,36 @@
 // 品牌色彩系统 - Brand Color System
 // =============================================================================
 
-// 主色调 - Mac 渐变紫色系 (Purple Gradient Primary)
-$color-primary: #667eea;           // 渐变紫起始色 - Primary Purple
-$color-primary-light: #764ba2;     // 渐变紫结束色 - Secondary Purple
-$color-primary-dark: #5a67d8;      // 深紫色 - Dark Purple
-$color-primary-50: #f5f3ff;        // 极浅紫白 - Lightest Purple
-$color-primary-100: #ede9fe;       // 浅紫白 - Very Light Purple
-$color-primary-200: #ddd6fe;       // 浅紫 - Light Purple
-$color-primary-300: #c4b5fd;       // 柔紫 - Soft Purple
-$color-primary-400: #a78bfa;       // 亮紫 - Bright Purple
-$color-primary-500: #8b5cf6;       // 标准紫 - Standard Purple
-$color-primary-600: #7c3aed;       // 钴紫 - Cobalt Purple
-$color-primary-700: #6d28d9;       // 宝紫 - Royal Purple
-$color-primary-800: #5b21b6;       // 深紫 - Deep Purple
-$color-primary-900: #4c1d9f;       // 紫罗兰 - Violet
-$color-primary-950: #2e1065;       // 深夜紫 - Midnight Purple
+// 主色调 - 藏青色 (Slate-900, 与 edu-proto 原型站一致)
+$color-primary: #0f172a;           // 藏青色 Slate-900 - Primary (PRD 标准)
+$color-primary-light: #1e293b;     // 藏青灰 Slate-800 - Light Primary
+$color-primary-dark: #020617;      // 极夜深色 Slate-950 - Dark Primary
+$color-primary-50: #f8fafc;        // 极浅灰蓝 Slate-50
+$color-primary-100: #f1f5f9;       // 浅灰蓝 Slate-100
+$color-primary-200: #e2e8f0;       // 灰蓝 Slate-200
+$color-primary-300: #cbd5e1;       // 中灰蓝 Slate-300
+$color-primary-400: #94a3b8;       // 深灰蓝 Slate-400
+$color-primary-500: #64748b;       // 石板灰 Slate-500
+$color-primary-600: #475569;       // 深石板 Slate-600
+$color-primary-700: #334155;       // 深蓝灰 Slate-700
+$color-primary-800: #1e293b;       // 藏青灰 Slate-800
+$color-primary-900: #0f172a;       // 藏青色 Slate-900
+$color-primary-950: #020617;       // 极夜黑 Slate-950
 
-// 辅助色 - 靛紫色系 (Indigo Accent)
-$color-secondary: #4f46e5;         // 靛蓝 - Indigo
-$color-secondary-light: #818cf8;   // 浅靛蓝 - Light Indigo
-$color-secondary-dark: #3730a3;    // 深靛蓝 - Dark Indigo
-$color-secondary-50: #eef2ff;
-$color-secondary-100: #e0e7ff;
-$color-secondary-200: #c7d2fe;
-$color-secondary-300: #a5b4fc;
-$color-secondary-400: #818cf8;
-$color-secondary-500: #6366f1;
-$color-secondary-600: #4f46e5;
-$color-secondary-700: #4338ca;
-$color-secondary-800: #3730a3;
-$color-secondary-900: #312e81;
+// 辅助色 - 科技蓝色系 (Blue-500, 与 edu-proto 原型站一致)
+$color-secondary: #3b82f6;         // 科技蓝 Blue-500 - Accent (PRD 标准)
+$color-secondary-light: #60a5fa;   // 浅蓝 Blue-400
+$color-secondary-dark: #2563eb;    // 深蓝 Blue-600
+$color-secondary-50: #eff6ff;      // Blue-50
+$color-secondary-100: #dbeafe;     // Blue-100
+$color-secondary-200: #bfdbfe;     // Blue-200
+$color-secondary-300: #93c5fd;     // Blue-300
+$color-secondary-400: #60a5fa;     // Blue-400
+$color-secondary-500: #3b82f6;     // Blue-500
+$color-secondary-600: #2563eb;     // Blue-600
+$color-secondary-700: #1d4ed8;     // Blue-700
+$color-secondary-800: #1e40af;     // Blue-800
+$color-secondary-900: #1e3a8a;     // Blue-900
 
 // 功能色 - Functional Colors
 $color-success: #10b981;           // 翡翠绿 - Emerald Green
@@ -49,9 +49,9 @@ $color-error: #ef4444;             // 珊瑚红 - Coral Red
 $color-error-light: #f87171;
 $color-error-dark: #dc2626;
 
-$color-info: #667eea;              // Mac 渐变紫 - Purple
-$color-info-light: #38bdf8;
-$color-info-dark: #0284c7;
+$color-info: #8b5cf6;              // Violet-500 (PRD 标准)
+$color-info-light: #a78bfa;        // Violet-400
+$color-info-dark: #7c3aed;         // Violet-600
 
 // =============================================================================
 // 中性色系统 - Neutral Color System (蓝灰调)
@@ -99,9 +99,9 @@ $color-selected: #dbeafe;          // 选中状态
 $color-focus: rgba(59, 89, 152, 0.4);       // 焦点状态
 $color-disabled: #cbd5e1;          // 禁用状态
 
-$color-brand: #667eea;             // 品牌色（Mac 渐变紫）
-$link-color: #667eea;              // 链接色
-$link-hover-color: #764ba2;        // 链接悬停
+$color-brand: #3b82f6;             // 品牌色（科技蓝，与原型站一致）
+$link-color: #3b82f6;              // 链接色
+$link-hover-color: #2563eb;        // 链接悬停
 $color-border: #e2e8f0;            // 边框色
 $color-placeholder: #94a3b8;       // 占位符
 $color-text-primary: #0f172a;      // 主文本
@@ -147,12 +147,14 @@ $border-radius-2xl: 1rem;       // 16px
 $border-radius-3xl: 1.5rem;     // 24px
 $border-radius-full: 9999px;
 
-// 组件圆角
-$border-radius-button: 0.5rem;
-$border-radius-input: 0.5rem;
-$border-radius-card: 0.75rem;
-$border-radius-badge: 9999px;
-$border-radius-avatar: 9999px;
+// 组件圆角 (与 PRD 和原型站一致)
+$border-radius-button: 9999px;     // rounded-full - 完全圆角 (PRD 标准)
+$border-radius-input: 0.75rem;     // rounded-xl - 12px (PRD 标准)
+$border-radius-card: 1rem;         // rounded-2xl - 16px (PRD 标准)
+$border-radius-modal: 1.5rem;      // rounded-3xl - 24px (PRD 标准)
+$border-radius-badge: 9999px;      // 完全圆角
+$border-radius-avatar: 9999px;     // 完全圆角
+$border-radius-label: 9999px;      // 标签完全圆角 (PRD 标准)
 
 // =============================================================================
 // 间距系统 - Spacing System (基于 4px 网格)
