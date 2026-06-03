@@ -278,3 +278,49 @@
   .control-panel, .info-panel { padding: 24px; }
   .unity-wrapper { padding: 24px; }
 }
+
+// ===== 全屏模式 =====
+.ar-lab-container.fullscreen {
+  .status-bar {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    z-index: 1000;
+    height: 40px;
+    opacity: 0;
+    transition: opacity 0.3s ease;
+    pointer-events: none;
+
+    &:hover {
+      opacity: 1;
+      pointer-events: auto;
+    }
+
+    button {
+      pointer-events: auto;
+    }
+  }
+
+  .main-content {
+    position: fixed;
+    inset: 0;
+    z-index: 999;
+    background: #1a1a1a;
+  }
+
+  .control-panel,
+  .info-panel {
+    display: none;
+  }
+
+  .unity-wrapper {
+    padding: 0;
+    background: #1a1a1a;
+  }
+
+  .unity-container {
+    border-radius: 0;
+    box-shadow: none;
+  }
+}

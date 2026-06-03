@@ -18,6 +18,7 @@ import {
 import { CreativityService } from '../../shared/services/creativity.service';
 import { ElectronService } from '../core/services/electron.service';
 import { safeJsonParse, safeJsonParseArray } from '../../shared/utils/type-safe-json.utils';
+import type { DirectoryEntry } from '../core/models/electron-api.model';
 
 @Component({
   selector: 'app-creativity-engine',
@@ -50,6 +51,11 @@ export class CreativityEngineComponent implements OnInit {
     { value: 'cartoon', label: '卡通风格' },
     { value: 'photographic', label: '摄影风格' },
   ];
+
+  // 本地项目管理
+  localProjects: DirectoryEntry[] = [];
+  isLocalProjectBrowserOpen = false;
+  currentProjectPath = '';
 
   // 分类选项
   categories: Array<{ value: string; label: string }> = [
@@ -435,6 +441,140 @@ export class CreativityEngineComponent implements OnInit {
         }
       }
     });
+  }
+
+  // ==================== 本地项目管理 (P1-4) ====================
+
+  /** 打开本地项目浏览器 */
+  openProjectBrowser(): void {
+    if (!this.electronService.isElectron) {
+      this.snackBar.open('此功能仅在桌面端可用', '关闭', { duration: 3000 });
+      return;
+    }
+
+    this.isLocalProjectBrowserOpen = !this.isLocalProjectBrowserOpen;
+    if (this.isLocalProjectBrowserOpen) {
+      this.loadLocalProjects();
+    }
+  }
+
+  /** 选择创意项目存储目录 */
+  selectProjectsDirectory(): void {
+    this.electronService.selectDirectory().subscribe((result) => {
+      if (result.success && result.path) {
+        this.currentProjectPath = result.path;
+        this.loadLocalProjects();
+      }
+    });
+  }
+
+  /** 加载本地项目列表 */
+  loadLocalProjects(): void {
+    const dir = this.currentProjectPath || '创意项目';
+    this.electronService.listDirectory(dir).subscribe({
+      next: (result) => {
+        if (result.success && result.entries) {
+          // 仅显示 .imato 文件和目录
+          this.localProjects = result.entries.filter(
+            (e) => e.isDirectory || e.name.endsWith('.imato'),
+          );
+        } else {
+          this.localProjects = [];
+        }
+      },
+      error: () => {
+        this.localProjects = [];
+      },
+    });
+  }
+
+  /** 导出创意到本地项目目录 */
+  exportToLocalProject(idea: CreativeIdeaResponse): void {
+    if (!this.electronService.isElectron) {
+      this.snackBar.open('此功能仅在桌面端可用', '关闭', { duration: 3000 });
+      return;
+    }
+
+    const exportData = {
+      title: idea.title,
+      description: idea.description,
+      ai_generated_content: idea.ai_generated_content,
+      category: idea.category,
+      scores: idea.scores,
+      images: idea.images,
+      created_at: idea.created_at,
+      _format: 'imato',
+      _version: '1.0',
+      _exportedAt: new Date().toISOString(),
+    };
+
+    const fileName = `创意想法_${idea.title}_${new Date().toISOString().slice(0, 10)}.imato`;
+    const filePath = this.currentProjectPath
+      ? `${this.currentProjectPath}/${fileName}`
+      : fileName;
+
+    this.electronService.writeFile(filePath, JSON.stringify(exportData, null, 2)).subscribe({
+      next: (result) => {
+        if (result.success) {
+          this.snackBar.open(`已保存到本地: ${fileName}`, '关闭', { duration: 3000 });
+          this.loadLocalProjects();
+        } else {
+          this.snackBar.open('保存失败', '关闭', { duration: 3000 });
+        }
+      },
+      error: () => {
+        this.snackBar.open('保存失败', '关闭', { duration: 3000 });
+      },
+    });
+  }
+
+  /** 预览本地项目内容 */
+  previewLocalProject(entry: DirectoryEntry): void {
+    if (entry.isDirectory) {
+      this.currentProjectPath = entry.path;
+      this.loadLocalProjects();
+      return;
+    }
+
+    this.electronService.readFile(entry.path).subscribe({
+      next: (result) => {
+        if (result.success && result.content) {
+          try {
+            const projectData = JSON.parse(result.content);
+            this.snackBar.open(`已加载项目: ${projectData.title}`, '关闭', { duration: 2000 });
+          } catch {
+            this.snackBar.open('文件解析失败', '关闭', { duration: 3000 });
+          }
+        }
+      },
+      error: () => {
+        this.snackBar.open('读取文件失败', '关闭', { duration: 3000 });
+      },
+    });
+  }
+
+  /** 删除本地项目 */
+  deleteLocalProject(entry: DirectoryEntry): void {
+    if (!confirm(`确定要删除 ${entry.name} 吗？`)) return;
+
+    this.electronService.deleteFile(entry.path).subscribe({
+      next: (result) => {
+        if (result.success) {
+          this.snackBar.open(`已删除: ${entry.name}`, '关闭', { duration: 2000 });
+          this.loadLocalProjects();
+        } else {
+          this.snackBar.open('删除失败', '关闭', { duration: 3000 });
+        }
+      },
+      error: () => {
+        this.snackBar.open('删除失败', '关闭', { duration: 3000 });
+      },
+    });
+  }
+
+  /** 获取本地项目列表显示状态 */
+  isLocalProjectEmpty(): boolean {
+    return this.localProjects.length === 0;
   }
 
   // 获取评分颜色

@@ -13,6 +13,8 @@ import { ActivatedRoute, Router } from '@angular/router';
 import { Subject } from 'rxjs';
 
 import { ElectronService } from '../../../core/services/electron.service';
+import { CircuitShortcutRegistrar } from '../../../core/services/circuit-shortcut-registrar.service';
+import { CircuitShortcutHelpDialogComponent } from './circuit-shortcut-help-dialog.component';
 
 interface CircuitElement {
   element_id: string;
@@ -94,6 +96,7 @@ interface WindowWithUnity extends Window {
     CommonModule,
     DecimalPipe,
     NgClass,
+    CircuitShortcutHelpDialogComponent,
   ],
 })
 export class DigitalTwinLabComponent implements OnInit, OnDestroy {
@@ -132,17 +135,20 @@ export class DigitalTwinLabComponent implements OnInit, OnDestroy {
     private snackBar: MatSnackBar,
     private dialog: MatDialog,
     private electronService: ElectronService,
+    private shortcutRegistrar: CircuitShortcutRegistrar,
   ) {}
 
   ngOnInit(): void {
     this.sessionId = this.route.snapshot.paramMap.get('id') ?? '';
     this.loadSession();
     this.initializeWebSocket();
+    this.setupKeyboardShortcuts();
   }
 
   ngOnDestroy(): void {
     this.destroy$.next();
     this.destroy$.complete();
+    this.shortcutRegistrar.unregister();
     this.cleanupConnections();
   }
 
@@ -552,6 +558,130 @@ export class DigitalTwinLabComponent implements OnInit, OnDestroy {
     return [...this.circuitState.elements]
       .sort((a, b) => Math.abs(b.power) - Math.abs(a.power))
       .slice(0, count);
+  }
+
+  /** 设置键盘快捷键 */
+  private setupKeyboardShortcuts(): void {
+    // 延时注册，确保 DOM 渲染完成
+    setTimeout(() => {
+      const element = document.querySelector('.digital-twin-lab') as HTMLElement;
+      if (!element) return;
+
+      // 设置 tabindex 以接收键盘事件
+      element.tabIndex = -1;
+      element.focus();
+
+      this.shortcutRegistrar.register(element, (action) => {
+        this.handleShortcutAction(action);
+      });
+    }, 500);
+  }
+
+  /** 处理快捷键动作 */
+  private handleShortcutAction(action: string): void {
+    switch (action) {
+      case 'rotate':
+        if (this.isUnityLoaded) {
+          const win = window as WindowWithUnity;
+          win.sendToUnity?.('CircuitManager', 'RotateSelected', '');
+          this.snackBar.open('旋转选中元件', '关闭', { duration: 1000 });
+        }
+        break;
+
+      case 'delete':
+        if (this.isUnityLoaded) {
+          const win = window as WindowWithUnity;
+          win.sendToUnity?.('CircuitManager', 'DeleteSelected', '');
+          this.snackBar.open('删除选中元件', '关闭', { duration: 1000 });
+        }
+        break;
+
+      case 'undo':
+        if (this.isUnityLoaded) {
+          const win = window as WindowWithUnity;
+          win.sendToUnity?.('CircuitManager', 'Undo', '');
+          this.snackBar.open('撤销', '关闭', { duration: 1000 });
+        }
+        break;
+
+      case 'redo':
+        if (this.isUnityLoaded) {
+          const win = window as WindowWithUnity;
+          win.sendToUnity?.('CircuitManager', 'Redo', '');
+          this.snackBar.open('重做', '关闭', { duration: 1000 });
+        }
+        break;
+
+      case 'cancel':
+        if (this.isUnityLoaded) {
+          const win = window as WindowWithUnity;
+          win.sendToUnity?.('CircuitManager', 'CancelSelection', '');
+        }
+        break;
+
+      case 'selectAll':
+        if (this.isUnityLoaded) {
+          const win = window as WindowWithUnity;
+          win.sendToUnity?.('CircuitManager', 'SelectAll', '');
+          this.snackBar.open('已全选', '关闭', { duration: 1000 });
+        }
+        break;
+
+      case 'copy':
+      case 'paste':
+        if (this.isUnityLoaded) {
+          const win = window as WindowWithUnity;
+          win.sendToUnity?.('ClipboardManager', action === 'copy' ? 'Copy' : 'Paste', '');
+        }
+        break;
+
+      case 'save':
+        this.snackBar.open('电路已保存', '关闭', { duration: 2000 });
+        if (this.isUnityLoaded) {
+          const win = window as WindowWithUnity;
+          win.sendToUnity?.('CircuitManager', 'SaveCircuit', '');
+        }
+        break;
+
+      case 'new':
+        this.resetCircuit();
+        this.snackBar.open('已新建电路', '关闭', { duration: 2000 });
+        break;
+
+      case 'zoomIn':
+        this.adjustZoom(1.2);
+        break;
+
+      case 'zoomOut':
+        this.adjustZoom(0.8);
+        break;
+
+      case 'resetZoom':
+        this.adjustZoom(1);
+        break;
+
+      case 'help':
+        this.showShortcutHelp();
+        break;
+    }
+  }
+
+  /** 调整 Unity 视图缩放 */
+  private adjustZoom(factor: number): void {
+    if (this.isUnityLoaded) {
+      const win = window as WindowWithUnity;
+      win.sendToUnity?.('CameraController', 'AdjustZoom', factor.toString());
+    }
+  }
+
+  /** 显示快捷键帮助面板 */
+  private showShortcutHelp(): void {
+    const groups = this.shortcutRegistrar.getGroupedShortcuts();
+    this.dialog.open(CircuitShortcutHelpDialogComponent, {
+      data: groups,
+      width: '480px',
+      autoFocus: false,
+    });
   }
 
   private cleanupConnections(): void {

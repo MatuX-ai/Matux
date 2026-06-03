@@ -18,13 +18,15 @@ import { MatChipsModule } from '@angular/material/chips';
 import { MatIconModule } from '@angular/material/icon';
 import { MatInputModule } from '@angular/material/input';
 import { MatProgressBarModule } from '@angular/material/progress-bar';
-import { Subscription } from 'rxjs';
+import { Subject } from 'rxjs';
+import { takeUntil } from 'rxjs/operators';
 
 import { AITeacherService } from '../../../core/services/ai-teacher.service';
 import {
   ChatMessage,
   StudentLearningProfile,
   TeacherPersona,
+  TeachingSuggestion,
 } from '../../../core/models/ai-teacher.models';
 
 @Component({
@@ -57,7 +59,8 @@ import {
             <h3>AI 老师 · {{ profile?.displayName ?? '同学' }}的学习伙伴</h3>
           </div>
           <div class="profile-chips" *ngIf="profile">
-            <span class="profile-chip">📊 画像：{{ profile.gradeLevel }} · {{ learningStyleLabel }} · Python {{ skillLevelLabel }}</span>
+            <span class="profile-chip">📊 {{ profile.gradeLevel }} · {{ learningStyleLabel }} · {{ skillLevelLabel }}</span>
+            <span class="profile-chip persona-chip" *ngIf="persona">{{ personaLabel }}</span>
           </div>
         </div>
         <div class="header-actions">
@@ -72,6 +75,23 @@ import {
 
       <!-- 消息列表 -->
       <div class="chat-messages" #messageContainer>
+        <!-- 空状态：快捷操作区 -->
+        <div class="welcome-section" *ngIf="messages.length === 0 && !isLoading">
+          <div class="welcome-avatar">🤖</div>
+          <h4 class="welcome-title">嗨，{{ profile?.displayName ?? '同学' }}！👋</h4>
+          <p class="welcome-desc">我是你的 AI 学习伙伴，有什么需要帮助的吗？</p>
+          <div class="quick-actions">
+            <button
+              *ngFor="let action of quickActions"
+              mat-stroked-button
+              class="quick-action-btn"
+              (click)="sendQuickAction(action.query)">
+              <mat-icon>{{ action.icon }}</mat-icon>
+              {{ action.label }}
+            </button>
+          </div>
+        </div>
+
         <div *ngFor="let msg of messages"
           [class.user-msg]="msg.role === 'user'"
           [class.ai-msg]="msg.role === 'assistant'"
@@ -80,14 +100,28 @@ import {
             {{ msg.role === 'user' ? '👤' : '🤖' }}
           </div>
           <div class="message-bubble">
-            <p class="message-text">{{ msg.content }}</p>
+            <div class="message-text" [innerHTML]="formatMessage(msg.content)"></div>
             <div *ngIf="msg.metadata" class="message-meta">
               <span *ngIf="msg.metadata.knowledgeUsed" class="meta-tag knowledge">📚 知识库</span>
-              <span *ngIf="msg.metadata.referencedMemories?.length" class="meta-tag memory">📌 记忆引用</span>
+              <span *ngIf="msg.metadata.referencedMemories?.length" class="meta-tag memory">📌 记忆引用·{{ msg.metadata.referencedMemories.length }}</span>
               <span *ngIf="msg.metadata.emotionDetected && msg.metadata.emotionDetected !== 'neutral'"
-                class="meta-tag emotion">{{ emotionEmoji[msg.metadata.emotionDetected] }}</span>
+                class="meta-tag emotion">{{ emotionEmoji[msg.metadata.emotionDetected] }} {{ emotionLabel(msg.metadata.emotionDetected) }}</span>
             </div>
             <span class="message-time">{{ msg.timestamp | date:'HH:mm' }}</span>
+          </div>
+        </div>
+
+        <!-- 教学建议标签 -->
+        <div class="suggestion-section" *ngIf="suggestions.length > 0">
+          <span class="suggestion-label">💡 试试问这些：</span>
+          <div class="suggestion-chips">
+            <button
+              *ngFor="let item of suggestions"
+              mat-chip
+              class="suggestion-chip"
+              (click)="sendQuickAction(item.suggestion)">
+              {{ item.suggestion }}
+            </button>
           </div>
         </div>
 
@@ -137,7 +171,7 @@ import {
       bottom: 168px;
       right: 24px;
       width: 420px;
-      max-height: 560px;
+      max-height: 600px;
       background: white;
       border-radius: 24px;
       box-shadow: 0 8px 40px rgba(0,0,0,0.15);
@@ -161,10 +195,13 @@ import {
     }
     .header-title h3 { margin: 0; font-size: 14px; font-weight: 600; }
     .header-title mat-icon { font-size: 20px; }
-    .profile-chips { margin-top: 6px; }
+    .profile-chips { margin-top: 6px; display: flex; gap: 4px; flex-wrap: wrap; }
     .profile-chip {
       font-size: 11px; background: rgba(255,255,255,0.2);
       padding: 2px 8px; border-radius: 12px;
+    }
+    .persona-chip {
+      background: rgba(253, 224, 71, 0.25);
     }
     .header-actions { display: flex; gap: 4px; }
     .header-btn { color: white; }
@@ -173,7 +210,67 @@ import {
       flex: 1;
       overflow-y: auto;
       padding: 12px;
-      max-height: 380px;
+      max-height: 400px;
+    }
+
+    /* 欢迎区 / 快捷操作 */
+    .welcome-section {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      padding: 24px 16px 16px;
+      text-align: center;
+    }
+    .welcome-avatar { font-size: 48px; margin-bottom: 8px; }
+    .welcome-title {
+      font-size: 18px; font-weight: 700; color: #0f172a; margin: 0 0 4px 0;
+    }
+    .welcome-desc {
+      font-size: 13px; color: #64748b; margin: 0 0 20px 0;
+    }
+    .quick-actions {
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+      width: 100%;
+    }
+    .quick-action-btn {
+      width: 100%;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      justify-content: center;
+      padding: 8px;
+    }
+    .quick-action-btn mat-icon {
+      font-size: 18px;
+    }
+
+    /* 教学建议标签 */
+    .suggestion-section {
+      padding: 4px 12px 12px;
+    }
+    .suggestion-label {
+      font-size: 12px;
+      color: #94a3b8;
+      margin-bottom: 6px;
+      display: block;
+    }
+    .suggestion-chips {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 6px;
+    }
+    .suggestion-chip {
+      font-size: 12px !important;
+      padding: 4px 10px !important;
+      background: #f1f5f9 !important;
+      cursor: pointer;
+      transition: background 0.2s;
+      border: none;
+    }
+    .suggestion-chip:hover {
+      background: #dbeafe !important;
     }
 
     .message-row {
@@ -209,7 +306,32 @@ import {
       border-bottom-right-radius: 4px;
     }
 
-    .message-text { margin: 0; white-space: pre-wrap; }
+    .message-text { margin: 0; white-space: pre-wrap; word-break: break-word; }
+    .message-text :deep(code) {
+      background: #e2e8f0;
+      padding: 2px 6px;
+      border-radius: 4px;
+      font-size: 12px;
+      font-family: 'Fira Code', 'Consolas', monospace;
+    }
+    .message-text :deep(pre) {
+      background: #1e293b;
+      color: #e2e8f0;
+      padding: 12px;
+      border-radius: 8px;
+      overflow-x: auto;
+      font-size: 12px;
+      font-family: 'Fira Code', 'Consolas', monospace;
+      margin: 8px 0;
+      line-height: 1.6;
+    }
+    .user-msg .message-text :deep(code) {
+      background: rgba(255,255,255,0.2);
+    }
+    .user-msg .message-text :deep(pre) {
+      background: rgba(0,0,0,0.15);
+      color: white;
+    }
     .message-meta {
       display: flex; gap: 6px; margin-top: 6px; flex-wrap: wrap;
     }
@@ -280,22 +402,31 @@ export class AITeacherChatComponent implements OnInit, OnDestroy {
 
   @ViewChild('messageContainer') messageContainer!: ElementRef;
 
-  private subs: Subscription[] = [];
+  suggestions: TeachingSuggestion[] = [];
+  quickActions = [
+    { icon: 'trending_up', label: '我的学习进度', query: '我最近学习进展如何？' },
+    { icon: 'psychology', label: '推荐学什么', query: '根据我的情况，推荐我学习什么？' },
+    { icon: 'emoji_events', label: '今天挑战', query: '给我一个今天的编程挑战' },
+    { icon: 'help', label: '解答问题', query: '我有个问题想问你' },
+  ];
+
+  private destroy$ = new Subject<void>();
 
   constructor(private aiTeacherService: AITeacherService) {}
 
   ngOnInit(): void {
-    this.subs.push(
-      this.aiTeacherService.profile$.subscribe((p) => { this.profile = p; }),
-      this.aiTeacherService.persona$.subscribe((p) => { this.persona = p; }),
-      this.aiTeacherService.session$.subscribe((s) => {
-        if (s) { this.messages = s.recentMessages; }
-      }),
-    );
+    this.aiTeacherService.profile$.pipe(takeUntil(this.destroy$)).subscribe((p) => { this.profile = p; });
+    this.aiTeacherService.persona$.pipe(takeUntil(this.destroy$)).subscribe((p) => {
+      this.persona = p;
+    });
+    this.aiTeacherService.session$.pipe(takeUntil(this.destroy$)).subscribe((s) => {
+      if (s) { this.messages = s.recentMessages; }
+    });
   }
 
   ngOnDestroy(): void {
-    this.subs.forEach((s) => s.unsubscribe());
+    this.destroy$.next();
+    this.destroy$.complete();
   }
 
   get learningStyleLabel(): string {
@@ -308,6 +439,55 @@ export class AITeacherChatComponent implements OnInit, OnDestroy {
     if (score >= 80) return '高阶';
     if (score >= 50) return '中阶';
     return '入门';
+  }
+
+  /** 根据AI教师人格显示风格标签 */
+  get personaLabel(): string {
+    const styleMap: Record<string, string> = {
+      lively: '🗣️ 活泼', formal: '🎓 专业',
+      concise: '⚡ 简洁', humorous: '😄 幽默',
+    };
+    return styleMap[this.persona?.languageStyle ?? ''] ?? '🎯 标准';
+  }
+
+  /** 格式化消息内容：支持代码块、粗体 */
+  formatMessage(content: string): string {
+    let html = this.escapeHtml(content);
+    // 代码块 ```code```
+    html = html.replace(/```(\w*)\n?([\s\S]*?)```/g, (_, lang, code) => {
+      const langLabel = lang ? `<span class="code-lang">${lang}</span>` : '';
+      return `<pre>${langLabel}${this.escapeHtml(code.trim())}</pre>`;
+    });
+    // 行内代码 `code`
+    html = html.replace(/`([^`]+)`/g, '<code>$1</code>');
+    // 粗体 **text**
+    html = html.replace(/\*\*(.+?)\*\*/g, '<strong>$1</strong>');
+    // 换行
+    html = html.replace(/\n/g, '<br>');
+    return html;
+  }
+
+  /** 发送快捷操作 */
+  sendQuickAction(query: string): void {
+    this.userInput = query;
+    this.sendMessage();
+  }
+
+  /** 情感标签中文名 */
+  emotionLabel(emotion: string): string {
+    const map: Record<string, string> = {
+      frustrated: '沮丧', confused: '困惑', excited: '兴奋',
+      anxious: '焦虑', bored: '无聊', confident: '自信',
+    };
+    return map[emotion] ?? '';
+  }
+
+  private escapeHtml(text: string): string {
+    return text
+      .replace(/&/g, '&amp;')
+      .replace(/</g, '&lt;')
+      .replace(/>/g, '&gt;')
+      .replace(/"/g, '&quot;');
   }
 
   toggleChat(): void {
@@ -328,6 +508,7 @@ export class AITeacherChatComponent implements OnInit, OnDestroy {
 
     this.userInput = '';
     this.isLoading = true;
+    this.suggestions = []; // 清除旧建议
 
     // 添加用户消息
     const userMsg: ChatMessage = {
@@ -358,6 +539,10 @@ export class AITeacherChatComponent implements OnInit, OnDestroy {
         };
         this.messages = [...this.messages, aiMsg];
         this.isLoading = false;
+        // 显示AI建议（最多3条）
+        if (response.suggestions?.length) {
+          this.suggestions = response.suggestions.slice(0, 3);
+        }
         this.scrollToBottom();
       },
       error: () => {

@@ -28,6 +28,7 @@ import { AchievementUploadComponent } from '../../../features/achievement-integr
     MatButtonModule,
     MatIconModule,
     MatTabsModule,
+    MatCardModule,
     MatProgressBarModule,
     AchievementGalleryComponent,
     AchievementProgressComponent,
@@ -38,32 +39,40 @@ import { AchievementUploadComponent } from '../../../features/achievement-integr
       <h1 class="page-title">成就系统</h1>
 
       <!-- 用户成就进度 -->
-      <div class="section">
+      <div class="section" *ngIf="hasValidUserId; else noUser">
         <app-achievement-progress [userId]="currentUserId"></app-achievement-progress>
+
+        <!-- 成就展示和上传 -->
+        <mat-tab-group animationDuration="300ms">
+          <mat-tab>
+            <ng-template mat-tab-label>
+              <mat-icon>emoji_events</mat-icon>
+              <span>我的成就</span>
+            </ng-template>
+            <div class="tab-content">
+              <app-achievement-gallery [userId]="currentUserId"></app-achievement-gallery>
+            </div>
+          </mat-tab>
+
+          <mat-tab>
+            <ng-template mat-tab-label>
+              <mat-icon>cloud_upload</mat-icon>
+              <span>上传成就</span>
+            </ng-template>
+            <div class="tab-content">
+              <app-achievement-upload [userId]="currentUserId"></app-achievement-upload>
+            </div>
+          </mat-tab>
+        </mat-tab-group>
       </div>
 
-      <!-- 成就展示和上传 -->
-      <mat-tab-group animationDuration="300ms">
-        <mat-tab>
-          <ng-template mat-tab-label>
-            <mat-icon>emoji_events</mat-icon>
-            <span>我的成就</span>
-          </ng-template>
-          <div class="tab-content">
-            <app-achievement-gallery [userId]="currentUserId"></app-achievement-gallery>
-          </div>
-        </mat-tab>
-
-        <mat-tab>
-          <ng-template mat-tab-label>
-            <mat-icon>cloud_upload</mat-icon>
-            <span>上传成就</span>
-          </ng-template>
-          <div class="tab-content">
-            <app-achievement-upload [userId]="currentUserId"></app-achievement-upload>
-          </div>
-        </mat-tab>
-      </mat-tab-group>
+      <ng-template #noUser>
+        <mat-card class="info-card">
+          <mat-card-content>
+            <p>请先登录后查看成就信息</p>
+          </mat-card-content>
+        </mat-card>
+      </ng-template>
     </div>
   `,
   styles: [
@@ -95,12 +104,17 @@ export class AchievementsComponent implements OnInit, OnDestroy {
   private destroy$ = new Subject<void>();
   currentUserId: number = 0;
 
+  get hasValidUserId(): boolean {
+    return this.currentUserId > 0 && !Number.isNaN(this.currentUserId);
+  }
+
   constructor(private authService: AuthService) {}
 
   ngOnInit(): void {
     this.authService.currentUser$.pipe(takeUntil(this.destroy$)).subscribe((user: User | null) => {
       if (user?.id) {
-        this.currentUserId = typeof user.id === 'string' ? parseInt(user.id, 10) : user.id;
+        const parsed = Number(user.id);
+        this.currentUserId = !Number.isNaN(parsed) ? parsed : 0;
       }
     });
   }

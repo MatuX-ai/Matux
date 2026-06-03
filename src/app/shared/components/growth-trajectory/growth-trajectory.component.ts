@@ -12,8 +12,9 @@ import { MatCardModule } from '@angular/material/card';
 import { MatIconModule } from '@angular/material/icon';
 import { MatSelectModule } from '@angular/material/select';
 import { MatFormFieldModule } from '@angular/material/form-field';
+import { MatTooltipModule } from '@angular/material/tooltip';
 
-import { GrowthTrajectory, LearningMilestone } from '../../../core/models/ai-teacher.models';
+import { GrowthTrajectory, LearningMilestone, PeerComparisonData } from '../../../core/models/ai-teacher.models';
 
 @Component({
   selector: 'app-growth-trajectory',
@@ -25,6 +26,7 @@ import { GrowthTrajectory, LearningMilestone } from '../../../core/models/ai-tea
     MatIconModule,
     MatSelectModule,
     MatFormFieldModule,
+    MatTooltipModule,
   ],
   changeDetection: ChangeDetectionStrategy.OnPush,
   template: `
@@ -128,6 +130,46 @@ import { GrowthTrajectory, LearningMilestone } from '../../../core/models/ai-tea
                 <span class="timeline-title">🔮 AI 预测：下个月达到 Python 中阶水平</span>
               </div>
             </div>
+          </div>
+        </mat-card-content>
+      </mat-card>
+
+      <!-- 同龄对比（P1-5） -->
+      <mat-card class="peer-card" *ngIf="trajectory?.peerComparison">
+        <mat-card-header>
+          <mat-card-title>
+            <mat-icon>group</mat-icon>
+            同龄对比
+          </mat-card-title>
+          <span class="peer-badge">{{ trajectory!.peerComparison!.beatRate }}</span>
+        </mat-card-header>
+        <mat-card-content>
+          <div class="peer-dimensions">
+            <div *ngFor="let dim of peerDimensions" class="peer-row">
+              <span class="peer-label">{{ dim.label }}</span>
+              <div class="peer-bars">
+                <div class="peer-bar-wrapper">
+                  <div class="peer-bar peer-bar-user"
+                    [style.width.%]="getPeerBarWidth(dim.key, 'user')"
+                    [matTooltip]="'你: ' + getUserValue(dim.key)">
+                  </div>
+                </div>
+                <div class="peer-bar-wrapper peer-bar-peer-wrapper">
+                  <div class="peer-bar peer-bar-peer"
+                    [style.width.%]="getPeerBarWidth(dim.key, 'peer')"
+                    [matTooltip]="'同龄平均: ' + getPeerValue(dim.key)">
+                  </div>
+                </div>
+              </div>
+              <div class="peer-values">
+                <span class="peer-user-val">{{ getUserValue(dim.key) }}</span>
+                <span class="peer-peer-val">{{ getPeerValue(dim.key) }}</span>
+              </div>
+            </div>
+          </div>
+          <div class="peer-rank">
+            <mat-icon>emoji_events</mat-icon>
+            <span>综合排名：<strong>{{ trajectory!.peerComparison!.percentileRank }}%</strong></span>
           </div>
         </mat-card-content>
       </mat-card>
@@ -273,6 +315,40 @@ import { GrowthTrajectory, LearningMilestone } from '../../../core/models/ai-tea
       font-size: 13px; color: #8b5cf6; font-weight: 500; margin-top: 8px;
     }
 
+    /* 同龄对比 */
+    .peer-card { }
+    .peer-card mat-card-header { display: flex; align-items: center; gap: 8px; }
+    .peer-card mat-card-title { display: flex; align-items: center; gap: 6px; font-size: 16px; }
+    .peer-badge {
+      margin-left: auto; padding: 4px 12px; border-radius: 12px;
+      background: linear-gradient(135deg, #dbeafe, #ede9fe);
+      color: #6366f1; font-size: 13px; font-weight: 600;
+    }
+    .peer-dimensions { display: flex; flex-direction: column; gap: 12px; }
+    .peer-row {
+      display: grid; grid-template-columns: 80px 1fr 60px; gap: 12px;
+      align-items: center;
+    }
+    .peer-label { font-size: 13px; color: #475569; font-weight: 500; }
+    .peer-bars { display: flex; flex-direction: column; gap: 3px; }
+    .peer-bar-wrapper {
+      height: 8px; background: #f1f5f9; border-radius: 4px; overflow: hidden;
+    }
+    .peer-bar { height: 100%; border-radius: 4px; transition: width 0.5s ease; min-width: 2px; }
+    .peer-bar-user { background: linear-gradient(90deg, #3b82f6, #6366f1); }
+    .peer-bar-peer { background: #cbd5e1; }
+    .peer-bar-peer-wrapper { background: transparent; }
+    .peer-values {
+      display: flex; flex-direction: column; align-items: flex-end; gap: 3px;
+    }
+    .peer-user-val { font-size: 12px; font-weight: 600; color: #3b82f6; }
+    .peer-peer-val { font-size: 11px; color: #94a3b8; }
+    .peer-rank {
+      margin-top: 16px; padding-top: 12px; border-top: 1px solid #e2e8f0;
+      display: flex; align-items: center; gap: 6px; font-size: 14px; color: #475569;
+    }
+    .peer-rank mat-icon { color: #f59e0b; }
+
     @media (max-width: 768px) {
       .bottom-row { grid-template-columns: 1fr; }
     }
@@ -325,5 +401,31 @@ export class GrowthTrajectoryComponent {
       project_master: 'rocket_launch',
     };
     return iconMap[milestone.type] ?? 'star';
+  }
+
+  // ==================== 同龄对比辅助方法 ====================
+
+  get peerDimensions(): { key: string; label: string }[] {
+    const pc = this.trajectory?.peerComparison;
+    if (!pc) return [];
+    return Object.entries(pc.dimensionLabels).map(([key, label]) => ({ key, label }));
+  }
+
+  getUserValue(key: string): number {
+    const val = this.trajectory?.peerComparison?.userAverages[key];
+    return val ?? 0;
+  }
+
+  getPeerValue(key: string): number {
+    const val = this.trajectory?.peerComparison?.peerAverages[key];
+    return val ?? 0;
+  }
+
+  getPeerBarWidth(key: string, type: 'user' | 'peer'): number {
+    const userVal = this.getUserValue(key);
+    const peerVal = this.getPeerValue(key);
+    const maxVal = Math.max(userVal, peerVal, 100);
+    const val = type === 'user' ? userVal : peerVal;
+    return Math.max(2, (val / maxVal) * 100);
   }
 }

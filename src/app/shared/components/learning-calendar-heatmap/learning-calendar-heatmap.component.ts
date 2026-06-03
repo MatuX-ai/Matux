@@ -9,12 +9,16 @@ import {
   ChangeDetectionStrategy,
   ChangeDetectorRef,
   Component,
+  EventEmitter,
   Input,
   OnChanges,
   OnDestroy,
+  Output,
   SimpleChanges,
+  HostListener,
 } from '@angular/core';
 import { MatCardModule } from '@angular/material/card';
+import { MatButtonModule } from '@angular/material/button';
 import { MatIconModule } from '@angular/material/icon';
 import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
 import { MatTooltipModule } from '@angular/material/tooltip';
@@ -44,6 +48,7 @@ export interface CalendarHeatmapConfig {
     CommonModule,
     MatCardModule,
     MatIconModule,
+    MatButtonModule,
     MatProgressSpinnerModule,
     MatTooltipModule,
   ],
@@ -52,8 +57,17 @@ export interface CalendarHeatmapConfig {
       <mat-card-header>
         <mat-card-title>
           <mat-icon>calendar_month</mat-icon>
-          学习日历 {{ config?.year }}
+          学习日历
         </mat-card-title>
+        <div class="year-nav">
+          <button mat-icon-button (click)="prevYear()" matTooltip="上一年">
+            <mat-icon>chevron_left</mat-icon>
+          </button>
+          <span class="year-display">{{ config?.year }}</span>
+          <button mat-icon-button (click)="nextYear()" matTooltip="下一年">
+            <mat-icon>chevron_right</mat-icon>
+          </button>
+        </div>
       </mat-card-header>
       <mat-card-content>
         <!-- 加载状态 -->
@@ -68,6 +82,39 @@ export interface CalendarHeatmapConfig {
           <p>{{ config?.emptyMessage || '暂无学习记录' }}</p>
         </div>
 
+        <!-- 选中日期的详情面板 -->
+        <div class="selected-day-panel" *ngIf="selectedRecord && !config?.loading && !isEmpty">
+          <div class="selected-date">
+            <strong>{{ selectedRecord.date }}</strong>
+          </div>
+          <div class="selected-stats">
+            <span class="sel-stat">
+              <mat-icon>timer</mat-icon> {{ selectedRecord.minutes }}分钟
+            </span>
+            <span class="sel-stat" *ngIf="selectedRecord.courses > 0">
+              <mat-icon>school</mat-icon> {{ selectedRecord.courses }}门课
+            </span>
+            <span class="sel-stat" *ngIf="selectedRecord.quizzes > 0">
+              <mat-icon>quiz</mat-icon> {{ selectedRecord.quizzes }}次测验
+            </span>
+            <span class="sel-stat" *ngIf="selectedRecord.score != null">
+              <mat-icon>score</mat-icon> {{ selectedRecord.score }}分
+            </span>
+          </div>
+          <button mat-icon-button class="close-sel" (click)="clearSelection()">
+            <mat-icon>close</mat-icon>
+          </button>
+        </div>
+
+        <!-- 月度统计条 -->
+        <div class="monthly-bars" *ngIf="!config?.loading && !isEmpty">
+          <div *ngFor="let m of monthlyStats" class="month-bar-item"
+               [matTooltip]="m.label + ': ' + m.minutes + '分钟'">
+            <div class="month-bar" [style.height.px]="getMonthlyBarHeight(m)"></div>
+            <span class="month-bar-label">{{ m.shortLabel }}</span>
+          </div>
+        </div>
+
         <!-- 图例 -->
         <div class="heatmap-legend" *ngIf="!config?.loading && !isEmpty">
           <span class="legend-label">学习时长（分钟）</span>
@@ -76,7 +123,9 @@ export interface CalendarHeatmapConfig {
                   [style.background]="getColorForMinutes(level.value)">
             </span>
           </div>
-          <span class="legend-label">{{ legendLevels[0].value || 0 }} - {{ legendLevels[legendLevels.length - 1].value || 240 }}</span>
+          <span class="legend-label">{{ legendLevels[0].value || 0 }} - {{ legendLevels[legendLevels.length - 1].value || 240 }}分</span>
+          <span class="legend-spacer"></span>
+          <span class="legend-summary">年均 <strong>{{ yearlyAvgMinutes }}</strong> 分钟/日</span>
         </div>
 
         <!-- 热力图网格 -->
@@ -99,7 +148,13 @@ export interface CalendarHeatmapConfig {
                 [style.background]="getCellColor(cell)"
                 [matTooltip]="getCellTooltip(cell)"
                 [class.has-data]="cell.value > 0"
+                [class.selected]="isSelectedCell(cell)"
                 [attr.data-date]="cell.date"
+                (click)="onCellClick(cell)"
+                (keydown.enter)="onCellClick(cell)"
+                tabindex="0"
+                role="gridcell"
+                [attr.aria-label]="getCellTooltip(cell)"
               >
               </div>
             </div>
@@ -116,6 +171,9 @@ export interface CalendarHeatmapConfig {
     .heatmap-card {
       mat-card-header {
         margin-bottom: 16px;
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
       }
 
       mat-card-title {
@@ -124,6 +182,73 @@ export interface CalendarHeatmapConfig {
         gap: 8px;
         font-size: 18px;
       }
+    }
+
+    /* 年份导航 */
+    .year-nav {
+      display: flex;
+      align-items: center;
+      gap: 4px;
+    }
+    .year-display {
+      font-size: 16px;
+      font-weight: 600;
+      min-width: 48px;
+      text-align: center;
+      color: #334155;
+    }
+
+    /* 选中日详情面板 */
+    .selected-day-panel {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      padding: 8px 12px;
+      margin-bottom: 12px;
+      background: #f0f9ff;
+      border: 1px solid #bae6fd;
+      border-radius: 8px;
+      font-size: 13px;
+      position: relative;
+    }
+    .selected-date { color: #0369a1; font-size: 14px; }
+    .selected-stats { display: flex; gap: 12px; flex: 1; flex-wrap: wrap; }
+    .sel-stat {
+      display: flex; align-items: center; gap: 4px; color: #475569;
+    }
+    .sel-stat mat-icon { font-size: 16px; width: 16px; height: 16px; }
+    .close-sel {
+      position: absolute; top: 4px; right: 4px;
+      --mat-icon-button-touch-target: 24px;
+    }
+    .close-sel mat-icon { font-size: 16px; }
+
+    /* 月度统计条 */
+    .monthly-bars {
+      display: flex;
+      gap: 6px;
+      margin-bottom: 12px;
+      padding: 0 32px;
+      height: 50px;
+      align-items: flex-end;
+    }
+    .month-bar-item {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 2px;
+    }
+    .month-bar {
+      width: 100%;
+      min-height: 2px;
+      background: linear-gradient(180deg, #3b82f6, #6366f1);
+      border-radius: 3px 3px 0 0;
+      transition: height 0.3s ease;
+    }
+    .month-bar-label {
+      font-size: 9px;
+      color: #94a3b8;
     }
 
     /* 加载状态 */
@@ -162,6 +287,8 @@ export interface CalendarHeatmapConfig {
       font-size: 12px;
       color: #666;
     }
+    .legend-spacer { flex: 1; }
+    .legend-summary { font-size: 12px; color: #64748b; }
 
     .legend-colors {
       display: flex;
@@ -224,11 +351,25 @@ export interface CalendarHeatmapConfig {
       aspect-ratio: 1;
       border-radius: 3px;
       background: #ebedf0;
-      transition: background 0.2s;
-      cursor: default;
+      transition: background 0.2s, transform 0.15s;
+      cursor: pointer;
 
-      &.has-data:hover {
-        outline: 2px solid #666;
+      &.has-data {
+        &:hover {
+          outline: 2px solid #6366f1;
+          outline-offset: -2px;
+          z-index: 1;
+          transform: scale(1.15);
+        }
+        &:focus-visible {
+          outline: 2px solid #6366f1;
+          outline-offset: 0;
+          z-index: 2;
+        }
+      }
+
+      &.selected {
+        outline: 2px solid #6366f1;
         outline-offset: -2px;
         z-index: 1;
       }
@@ -253,6 +394,9 @@ export interface CalendarHeatmapConfig {
         width: 22px;
         font-size: 9px;
       }
+
+      .monthly-bars { padding: 0 24px; }
+      .selected-day-panel { flex-wrap: wrap; }
     }
 
     /* 桌面大屏：增大方格 */
@@ -272,6 +416,12 @@ export class LearningCalendarHeatmapComponent implements OnChanges {
   /** 热力图配置 */
   @Input() config: CalendarHeatmapConfig | null = null;
 
+  /** 年份变更事件 */
+  @Output() yearChange = new EventEmitter<number>();
+
+  /** 日期点击事件（返回选中日的学习记录） */
+  @Output() daySelect = new EventEmitter<DailyLearningRecord | null>();
+
   /** 月份标签 */
   months: string[] = ['1月', '2月', '3月', '4月', '5月', '6月', '7月', '8月', '9月', '10月', '11月', '12月'];
 
@@ -287,17 +437,91 @@ export class LearningCalendarHeatmapComponent implements OnChanges {
   /** 所有日历方格 */
   calendarCells: Array<{ date: string; value: number; dayOfWeek: number; weekIndex: number }> = [];
 
+  /** 选中的学习记录 */
+  selectedRecord: DailyLearningRecord | null = null;
+
   /** 日期→学习记录映射 */
   private dataMap: Map<string, DailyLearningRecord> = new Map();
+
+  /** 年平均每日学习分钟 */
+  get yearlyAvgMinutes(): number {
+    const withData = this.calendarCells.filter((c) => c.value > 0);
+    if (withData.length === 0) return 0;
+    const sum = withData.reduce((s, c) => s + c.value, 0);
+    return Math.round(sum / withData.length);
+  }
+
+  /** 月度统计数据 */
+  get monthlyStats(): { index: number; label: string; shortLabel: string; minutes: number }[] {
+    if (!this.config) return [];
+    const minutesByMonth = new Array(12).fill(0);
+    for (const record of this.config.data) {
+      const month = parseInt(record.date.split('-')[1], 10) - 1;
+      minutesByMonth[month] += record.minutes;
+    }
+    const monthNames = ['1月','2月','3月','4月','5月','6月','7月','8月','9月','10月','11月','12月'];
+    const shortNames = ['1','2','3','4','5','6','7','8','9','10','11','12'];
+    const max = Math.max(...minutesByMonth, 1);
+    return minutesByMonth.map((m, i) => ({
+      index: i,
+      label: monthNames[i],
+      shortLabel: shortNames[i],
+      minutes: m,
+    }));
+  }
 
   get isEmpty(): boolean {
     return this.calendarCells.length === 0 || this.calendarCells.every((c) => c.value === 0);
   }
 
+  constructor(private cdr: ChangeDetectorRef) {}
+
   ngOnChanges(changes: SimpleChanges): void {
     if (changes['config'] && this.config) {
       this.buildCalendar();
     }
+  }
+
+  /** 上一年 */
+  prevYear(): void {
+    if (!this.config) return;
+    const newYear = this.config.year - 1;
+    this.yearChange.emit(newYear);
+  }
+
+  /** 下一年 */
+  nextYear(): void {
+    if (!this.config) return;
+    const newYear = this.config.year + 1;
+    this.yearChange.emit(newYear);
+  }
+
+  /** 点击日历方格 */
+  onCellClick(cell: { date: string; value: number }): void {
+    if (cell.value <= 0) {
+      this.clearSelection();
+      return;
+    }
+    const record = this.dataMap.get(cell.date) ?? null;
+    this.selectedRecord = record;
+    this.daySelect.emit(record);
+  }
+
+  /** 清除选择 */
+  clearSelection(): void {
+    this.selectedRecord = null;
+    this.daySelect.emit(null);
+  }
+
+  /** 判断方格是否被选中 */
+  isSelectedCell(cell: { date: string }): boolean {
+    return this.selectedRecord?.date === cell.date;
+  }
+
+  /** 获取月度条高度 */
+  getMonthlyBarHeight(m: { minutes: number }): number {
+    const max = Math.max(...this.monthlyStats.map((s) => s.minutes), 1);
+    return Math.max(2, (m.minutes / max) * 40);
   }
 
   /** 构建日历网格 */
@@ -345,6 +569,9 @@ export class LearningCalendarHeatmapComponent implements OnChanges {
         weekIndex++;
       }
     }
+
+    // 清除过期选择
+    this.clearSelection();
   }
 
   /** 获取方格颜色 */

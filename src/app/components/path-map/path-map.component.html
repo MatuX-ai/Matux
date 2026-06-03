@@ -62,6 +62,14 @@
       >
         清空
       </button>
+      <button
+        class="btn btn-mock"
+        (click)="useMockDataNow()"
+        [disabled]="isLoading"
+      >
+        <span *ngIf="!isLoading">模拟数据</span>
+        <span *ngIf="isLoading">加载中...</span>
+      </button>
     </div>
   </div>
 
@@ -102,6 +110,22 @@
       <div class="summary-item">
         <div class="label">预计完成天数</div>
         <div class="value">{{ learningPath.summary.estimated_completion_days }}天</div>
+      </div>
+    </div>
+
+    <!-- 学习进度概览 -->
+    <div class="progress-overview" *ngIf="getProgressStats() as progress">
+      <h3>学习进度</h3>
+      <div class="progress-bar-container">
+        <div class="progress-bar">
+          <div class="progress-fill completed" [style.width.%]="progress.completedPercent"></div>
+          <div class="progress-fill in-progress" [style.width.%]="progress.inProgressPercent"></div>
+        </div>
+        <div class="progress-labels">
+          <span class="prog-label">已学: {{ progress.completed }}节</span>
+          <span class="prog-label">进行中: {{ progress.inProgress }}节</span>
+          <span class="prog-label">待学: {{ progress.pending }}节</span>
+        </div>
       </div>
     </div>
 
@@ -154,6 +178,11 @@
 
           <div *ngIf="node.description" class="node-description">
             {{ node.description }}
+          </div>
+          <div class="node-status" [class.completed]="node.status === 'completed'"
+               [class.in-progress]="node.status === 'in_progress'"
+               [class.pending]="node.status === 'pending'">
+            {{ node.status === 'completed' ? '✅ 已完成' : node.status === 'in_progress' ? '⏳ 进行中' : '⏰ 待学习' }}
           </div>
         </div>
       </div>

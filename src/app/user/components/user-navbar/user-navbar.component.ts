@@ -1,7 +1,7 @@
 /**
- * 用户中心全局导航栏组件
+ * 学习端全局导航栏组件
  *
- * 全宽顶部导航，包含 Logo、首页、课程等链接
+ * 全宽顶部导航，包含 Logo、课程、实验室等链接（学生端）
  */
 
 import { CommonModule } from '@angular/common';
@@ -39,16 +39,21 @@ import { UserCenterService } from '../../services/user-center.service';
         </button>
 
         <!-- Logo -->
-        <div class="navbar-logo" (click)="navigateTo('/dashboard')">
+        <div class="navbar-logo" (click)="navigateTo('/user/dashboard')">
           <span class="logo-text">MatuX</span>
-          <span class="logo-subtitle">用户中心</span>
+          <span class="logo-subtitle">学习端</span>
         </div>
 
-        <!-- 导航菜单 - 营销页面主菜单（营销页面已解耦，暂时隐藏） -->
+        <!-- 导航菜单 - 学生端核心功能 -->
         <nav class="navbar-nav">
-          <a routerLink="/dashboard" routerLinkActive="active" class="nav-link"> 首页 </a>
+          <a routerLink="/ai-edu" routerLinkActive="active" class="nav-link">
+            AI编程课程
+          </a>
           <a routerLink="/user/dashboard" routerLinkActive="active" class="nav-link">
             学习中心
+          </a>
+          <a routerLink="/creativity-engine" routerLinkActive="active" class="nav-link">
+            创意引擎
           </a>
           <a routerLink="/ar-lab" routerLinkActive="active" class="nav-link">
             AR 实验室
@@ -298,11 +303,9 @@ export class UserNavbarComponent implements OnInit, OnDestroy {
 
     const typeMap: Record<string, string> = {
       student: '学生',
-      teacher: '教师',
-      parent: '家长',
     };
 
-    return typeMap[this.userType] || this.userType;
+    return typeMap[this.userType] || '用户';
   }
 
   navigateTo(path: string): void {

@@ -1,6 +1,6 @@
 import { CommonModule } from '@angular/common';
 import { HttpClient } from '@angular/common/http';
-import { Component, ElementRef, OnDestroy, OnInit, ViewChild } from '@angular/core';
+import { Component, ElementRef, HostListener, OnDestroy, OnInit, ViewChild } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { MatButtonModule } from '@angular/material/button';
 import { MatCardModule } from '@angular/material/card';
@@ -118,6 +118,7 @@ export class ARLabComponent implements OnInit, OnDestroy {
     this.checkARSupport();
     this.loadUnityApplication();
     this.startSensorDataPolling();
+    this.setupFullscreenListener();
   }
 
   ngOnDestroy(): void {
@@ -392,6 +393,47 @@ export class ARLabComponent implements OnInit, OnDestroy {
     this.snackBar.open(this.isTracking ? 'AR 跟踪已启用' : 'AR 跟踪已禁用', '关闭', {
       duration: 2000,
     });
+  }
+
+  /**
+   * 监听全屏变化事件，同步状态
+   */
+  private setupFullscreenListener(): void {
+    document.addEventListener('fullscreenchange', () => {
+      this.isFullscreen = !!document.fullscreenElement;
+    });
+  }
+
+  /**
+   * 键盘快捷键处理（F11 / F / Esc）
+   */
+  @HostListener('document:keydown', ['$event'])
+  handleKeyboardShortcut(event: KeyboardEvent): void {
+    // F11 → 切换全屏
+    if (event.key === 'F11') {
+      event.preventDefault();
+      this.toggleFullscreen();
+      return;
+    }
+
+    // F 键（非输入框中）→ 切换全屏
+    if ((event.key === 'f' || event.key === 'F') &&
+        !(event.target instanceof HTMLInputElement || event.target instanceof HTMLTextAreaElement)) {
+      event.preventDefault();
+      this.toggleFullscreen();
+      return;
+    }
+
+    // Esc 退出全屏时提示
+    if (event.key === 'Escape' && document.fullscreenElement) {
+      this.snackBar.open('已退出全屏模式', '关闭', { duration: 1000 });
+    }
+
+    // Ctrl+Shift+R 重置 AR 场景
+    if (event.key === 'R' && event.ctrlKey && event.shiftKey) {
+      event.preventDefault();
+      this.resetARScene();
+    }
   }
 
   /**

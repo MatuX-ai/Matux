@@ -1,38 +1,29 @@
 /**
  * 用户组/班级相关数据模型
+ *
+ * MatuX 仅有学生角色。
+ * 教师/家长/机构/学校等类型已解耦至 OpenMTEduInst 项目。
  */
 
-// 用户类型枚举
+// 用户类型枚举（MatuX 仅有学生角色）
 export enum UserType {
   STUDENT = 'student', // 学生
-  PARENT = 'parent', // 家长
-  TEACHER = 'teacher', // 教师
 }
 
 // 用户类型分组
 export enum UserTypeGroup {
   PERSONAL = 'personal', // 个人用户
-  ORGANIZATION = 'org', // 机构用户
-  EDUCATION = 'edu', // 教育机构
 }
 
 // 组/班级类型
 export enum GroupType {
-  FAMILY = 'family', // 家庭组
   CLASS = 'class', // 班级
-  ORGANIZATION = 'org', // 机构
-  SCHOOL = 'school', // 学校
-  DEPARTMENT = 'dept', // 教育局/部门
 }
 
 // 组成员角色
 export enum GroupMemberRole {
-  OWNER = 'owner', // 创建者/所有者
-  ADMIN = 'admin', // 管理员
-  TEACHER = 'teacher', // 教师/老师
   MEMBER = 'member', // 普通成员
   STUDENT = 'student', // 学生
-  PARENT = 'parent', // 家长
 }
 
 // 用户接口扩展
@@ -134,73 +125,3 @@ export interface GroupInvitation {
   acceptedAt?: Date;
   expiredAt: Date;
 }
-
-// 用户类型配置
-export const USER_TYPE_CONFIG: Record<
-  UserType,
-  {
-    label: string;
-    group: UserTypeGroup;
-    canCreateGroup: boolean;
-    canInvite: boolean;
-    defaultRoleInGroup: GroupMemberRole;
-  }
-> = {
-  [UserType.STUDENT]: {
-    label: '学生',
-    group: UserTypeGroup.PERSONAL,
-    canCreateGroup: false,
-    canInvite: false,
-    defaultRoleInGroup: GroupMemberRole.STUDENT,
-  },
-  [UserType.PARENT]: {
-    label: '家长',
-    group: UserTypeGroup.PERSONAL,
-    canCreateGroup: true,
-    canInvite: true,
-    defaultRoleInGroup: GroupMemberRole.OWNER,
-  },
-  [UserType.TEACHER]: {
-    label: '教师',
-    group: UserTypeGroup.ORGANIZATION,
-    canCreateGroup: true,
-    canInvite: true,
-    defaultRoleInGroup: GroupMemberRole.TEACHER,
-  },
-};
-
-// 用户组类型配置
-export const GROUP_TYPE_CONFIG: Record<
-  GroupType,
-  {
-    label: string;
-    requiresVerification: boolean;
-    maxMembers: number;
-  }
-> = {
-  [GroupType.FAMILY]: {
-    label: '家庭组',
-    requiresVerification: false,
-    maxMembers: 10,
-  },
-  [GroupType.CLASS]: {
-    label: '班级',
-    requiresVerification: false,
-    maxMembers: 60,
-  },
-  [GroupType.ORGANIZATION]: {
-    label: '机构',
-    requiresVerification: true,
-    maxMembers: 1000,
-  },
-  [GroupType.SCHOOL]: {
-    label: '学校',
-    requiresVerification: true,
-    maxMembers: 10000,
-  },
-  [GroupType.DEPARTMENT]: {
-    label: '教育局/部门',
-    requiresVerification: true,
-    maxMembers: -1, // 无限制
-  },
-};

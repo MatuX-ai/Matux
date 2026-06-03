@@ -1,5 +1,7 @@
-import { HttpClient } from '@angular/common/http';
+import { CommonModule } from '@angular/common';
+import { HttpClient, HttpClientModule } from '@angular/common/http';
 import { AfterViewInit, Component, ElementRef, OnDestroy, OnInit, ViewChild } from '@angular/core';
+import { FormsModule } from '@angular/forms';
 import { Subject } from 'rxjs';
 import { takeUntil } from 'rxjs/operators';
 
@@ -110,6 +112,7 @@ interface PathNode {
   difficulty: number;
   estimated_hours: number;
   description?: string;
+  status?: 'completed' | 'in_progress' | 'pending';
 }
 
 interface PathSummary {
@@ -131,7 +134,8 @@ interface LearningPath {
   selector: 'app-path-map',
   templateUrl: './path-map.component.html',
   styleUrls: ['./path-map.component.scss'],
-  standalone: false,
+  standalone: true,
+  imports: [CommonModule, FormsModule, HttpClientModule],
 })
 export class PathMapComponent implements OnInit, AfterViewInit, OnDestroy {
   @ViewChild('chartContainer') chartContainer!: ElementRef;
@@ -148,6 +152,10 @@ export class PathMapComponent implements OnInit, AfterViewInit, OnDestroy {
   learningPath: LearningPath | null = null;
   isLoading: boolean = false;
   errorMessage: string = '';
+  /** 是否使用模拟数据 */
+  useMockData: boolean = false;
+  /** 当前选中的节点ID */
+  selectedNodeId: string | null = null;
 
   // API端点
   private apiBaseUrl = 'http://localhost:8001/api/v1/path';
@@ -170,6 +178,58 @@ export class PathMapComponent implements OnInit, AfterViewInit, OnDestroy {
     if (this.chart) {
       this.chart.dispose();
     }
+  }
+
+  /**
+   * 生成模拟学习路径
+   */
+  useMockDataNow(): void {
+    this.isLoading = true;
+    this.errorMessage = '';
+    this.useMockData = true;
+
+    setTimeout(() => {
+      const mockPath = this.generateMockPath();
+      this.learningPath = mockPath;
+      this.updateChart(mockPath);
+      this.isLoading = false;
+    }, 600);
+  }
+
+  /**
+   * 生成模拟路径数据
+   */
+  private generateMockPath(): LearningPath {
+    const mockNodes: PathNode[] = [
+      { node_id: 'n1', node_type: 'course_unit', title: 'Python基础语法', difficulty: 2, estimated_hours: 8, description: '变量、数据类型、运算符、流程控制', status: 'completed' },
+      { node_id: 'n2', node_type: 'transition_project', title: '计算器小项目', difficulty: 2, estimated_hours: 4, description: '综合运用基础语法实现计算器', status: 'completed' },
+      { node_id: 'n3', node_type: 'course_unit', title: '函数与模块', difficulty: 3, estimated_hours: 10, description: '函数定义、参数传递、模块导入', status: 'completed' },
+      { node_id: 'n4', node_type: 'textbook_chapter', title: '数据结构入门', difficulty: 3, estimated_hours: 6, description: '列表、字典、集合、元组', status: 'in_progress' },
+      { node_id: 'n5', node_type: 'transition_project', title: '学生管理系统', difficulty: 3, estimated_hours: 6, description: '用列表和字典实现学生信息管理', status: 'in_progress' },
+      { node_id: 'n6', node_type: 'course_unit', title: '面向对象编程', difficulty: 4, estimated_hours: 12, description: '类与对象、继承、多态、封装', status: 'pending' },
+      { node_id: 'n7', node_type: 'course_unit', title: '文件与异常处理', difficulty: 3, estimated_hours: 6, description: '文件读写、异常捕获、调试技巧', status: 'pending' },
+      { node_id: 'n8', node_type: 'hardware_project', title: '智能温控系统', difficulty: 4, estimated_hours: 10, description: '结合传感器与Python实现温度监控', status: 'pending' },
+      { node_id: 'n9', node_type: 'course_unit', title: '算法基础', difficulty: 4, estimated_hours: 14, description: '排序、搜索、递归、动态规划入门', status: 'pending' },
+      { node_id: 'n10', node_type: 'hardware_project', title: '智能小车综合项目', difficulty: 5, estimated_hours: 16, description: '综合运用所有知识完成智能小车', status: 'pending' },
+    ];
+
+    const nodeTypes = mockNodes.reduce((acc, n) => {
+      acc[n.node_type] = (acc[n.node_type] || 0) + 1;
+      return acc;
+    }, {} as Record<string, number>);
+
+    return {
+      user_id: this.userId,
+      path_nodes: mockNodes,
+      summary: {
+        total_nodes: mockNodes.length,
+        total_hours: mockNodes.reduce((s, n) => s + n.estimated_hours, 0),
+        avg_difficulty: Math.round(mockNodes.reduce((s, n) => s + n.difficulty, 0) / mockNodes.length * 10) / 10,
+        type_distribution: nodeTypes,
+        estimated_completion_days: mockNodes.length * 5,
+      },
+      generated_at: new Date().toISOString(),
+    };
   }
 
   /**
@@ -327,8 +387,8 @@ export class PathMapComponent implements OnInit, AfterViewInit, OnDestroy {
         },
         error: (error) => {
           console.error('生成路径失败:', error);
-          this.errorMessage = '生成路径失败,请检查后端服务是否启动';
-          this.isLoading = false;
+          // 后端不可用，自动使用模拟数据
+          this.useMockDataNow();
         },
       });
   }
@@ -349,6 +409,12 @@ export class PathMapComponent implements OnInit, AfterViewInit, OnDestroy {
       symbolSize: 50 + node.difficulty * 10,
       x: index * 200,
       y: 100 + Math.sin(index) * 50,
+      // 根据完成状态设置样式
+      itemStyle: node.status === 'completed'
+        ? { color: '#52c41a', borderColor: '#389e0d', borderWidth: 2 }
+        : node.status === 'in_progress'
+        ? { color: '#1890ff', borderColor: '#096dd9', borderWidth: 2, opacity: 0.9 }
+        : { color: undefined, opacity: 0.7 },
     }));
 
     const links = [];
@@ -413,6 +479,23 @@ export class PathMapComponent implements OnInit, AfterViewInit, OnDestroy {
    */
   round(value: number): number {
     return Math.round(value);
+  }
+
+  /** 获取学习进度统计 */
+  getProgressStats(): { completed: number; inProgress: number; pending: number; completedPercent: number; inProgressPercent: number } | null {
+    if (!this.learningPath) return null;
+    const nodes = this.learningPath.path_nodes;
+    const completed = nodes.filter((n) => n.status === 'completed').length;
+    const inProgress = nodes.filter((n) => n.status === 'in_progress').length;
+    const pending = nodes.filter((n) => n.status === 'pending' || !n.status).length;
+    const total = nodes.length || 1;
+    return {
+      completed,
+      inProgress,
+      pending,
+      completedPercent: Math.round((completed / total) * 100),
+      inProgressPercent: Math.round((inProgress / total) * 100),
+    };
   }
 
   /**

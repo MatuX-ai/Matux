@@ -22,8 +22,8 @@ import { MatInputModule } from '@angular/material/input';
 import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
 import { MatSnackBar, MatSnackBarModule } from '@angular/material/snack-bar';
 import { Router } from '@angular/router';
-import { Subject } from 'rxjs';
-import { takeUntil } from 'rxjs/operators';
+import { Subject, throwError, TimeoutError } from 'rxjs';
+import { takeUntil, timeout, catchError } from 'rxjs/operators';
 
 import { UserProfile } from '../../../core/models/group.models';
 import {
@@ -132,7 +132,17 @@ export class UserProfileComponent implements OnInit, OnDestroy {
 
     this.userProfileService
       .getUserProfile()
-      .pipe(takeUntil(this.destroy$))
+      .pipe(
+        takeUntil(this.destroy$),
+        timeout(10000),
+        catchError((err) => {
+          if (err instanceof TimeoutError) {
+            console.error('加载用户资料超时');
+            return throwError(() => new Error('加载超时，请检查网络连接后重试'));
+          }
+          return throwError(() => err);
+        })
+      )
       .subscribe({
         next: (profile) => {
           this.userProfile = profile;
@@ -145,7 +155,7 @@ export class UserProfileComponent implements OnInit, OnDestroy {
           this.loading = false;
         },
         error: (error) => {
-          this.error = (error as Error).message;
+          this.error = (error as Error).message || '加载用户资料失败';
           this.loading = false;
           console.error('加载用户资料失败:', error);
         },
@@ -158,7 +168,17 @@ export class UserProfileComponent implements OnInit, OnDestroy {
   loadUserPreferences(): void {
     this.userProfileService
       .getUserPreferences()
-      .pipe(takeUntil(this.destroy$))
+      .pipe(
+        takeUntil(this.destroy$),
+        timeout(10000),
+        catchError((err) => {
+          if (err instanceof TimeoutError) {
+            console.error('加载用户偏好设置超时');
+            return throwError(() => new Error('加载超时，使用默认设置'));
+          }
+          return throwError(() => err);
+        })
+      )
       .subscribe({
         next: (preferences) => {
           this.userPreferences = preferences;

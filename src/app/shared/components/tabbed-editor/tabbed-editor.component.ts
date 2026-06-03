@@ -10,7 +10,6 @@
  * - 运行代码 (Ctrl+Enter / F5)
  */
 import { CommonModule } from '@angular/common';
-import { FormsModule } from '@angular/forms';
 import {
   ChangeDetectionStrategy,
   ChangeDetectorRef,
@@ -20,11 +19,39 @@ import {
   OnDestroy,
   Output,
 } from '@angular/core';
+import { FormsModule } from '@angular/forms';
 import { MatButtonModule } from '@angular/material/button';
 import { MatIconModule } from '@angular/material/icon';
 import { MatMenuModule } from '@angular/material/menu';
 import { MatTooltipModule } from '@angular/material/tooltip';
 import { MonacoEditorModule } from 'ngx-monaco-editor-v2';
+
+/** Electron API 桥接接口 */
+interface ElectronFileResult {
+  success: boolean;
+  content?: string;
+  filePath?: string;
+  error?: string;
+}
+
+interface ElectronDialogResult {
+  success: boolean;
+  filePath?: string;
+  error?: string;
+}
+
+interface ElectronAPI {
+  showSaveDialog: (opts?: Record<string, unknown>) => Promise<ElectronDialogResult>;
+  showOpenDialog: () => Promise<ElectronDialogResult & { filePaths?: string[] }>;
+  readFile: (filePath: string) => Promise<ElectronFileResult>;
+  writeFile: (filePath: string, content: string) => Promise<ElectronFileResult>;
+  getFileInfo: (filePath: string) => Promise<{ success: boolean; size?: number; error?: string }>;
+}
+
+function getElectronAPI(): ElectronAPI | null {
+  const api = (window as unknown as { electronAPI?: ElectronAPI }).electronAPI;
+  return api ?? null;
+}
 
 /** 编辑器标签页 */
 export interface EditorTab {
@@ -103,11 +130,31 @@ export class TabbedEditorComponent implements OnDestroy {
   /** 打开文件请求事件 */
   @Output() openFileRequest = new EventEmitter<void>();
 
+  /** 通过 Electron IPC 打开文件后发出的事件 */
+  @Output() fileOpened = new EventEmitter<EditorTab>();
+
+  /** 通过 Electron IPC 保存文件后发出的事件 */
+  @Output() fileSaved = new EventEmitter<{ tabId: string; filePath: string }>();
+
+  /** 主题切换事件 */
+  @Output() themeChange = new EventEmitter<'vs-dark' | 'vs' | 'hc-black'>();
+
   /** 是否显示输出面板 */
   showOutput = false;
 
+  /** 当前编辑器主题 */
+  @Input() editorTheme: 'vs-dark' | 'vs' | 'hc-black' = 'vs-dark';
+
   /** 键盘快捷键监听器引用 */
   private keydownHandler: ((e: KeyboardEvent) => void) | null = null;
+
+  /** Electron API 实例（仅在 Electron 环境可用） */
+  private readonly electronApi = getElectronAPI();
+
+  /** 是否运行在 Electron 环境 */
+  get isElectron(): boolean {
+    return this.electronApi !== null;
+  }
 
   constructor(private cdr: ChangeDetectorRef) {
     this.registerKeyboardShortcuts();
@@ -116,7 +163,7 @@ export class TabbedEditorComponent implements OnDestroy {
   /** 获取 Monaco 编辑器选项 */
   getEditorOptions(language: string): Record<string, unknown> {
     return {
-      theme: 'vs-dark',
+      theme: this.editorTheme,
       language,
       fontSize: 14,
       minimap: { enabled: false },
@@ -155,6 +202,11 @@ export class TabbedEditorComponent implements OnDestroy {
 
   /** 请求保存当前标签页 */
   requestSave(tabId: string): void {
+    // 优先通过 Electron IPC 保存文件
+    if (this.electronApi && tabId) {
+      this.saveActiveTabToFile(tabId);
+      return;
+    }
     this.saveRequest.emit(tabId);
   }
 
@@ -169,6 +221,96 @@ export class TabbedEditorComponent implements OnDestroy {
   /** 获取当前激活的标签页 */
   getActiveTab(): EditorTab | undefined {
     return this.tabs.find((t) => t.id === this.activeTabId);
+  }
+
+  /** 通过 Electron IPC 将当前标签页保存到本地文件 */
+  private async saveActiveTabToFile(tabId: string): Promise<void> {
+    const api = this.electronApi;
+    if (!api) return;
+
+    const tab = this.tabs.find((t) => t.id === tabId);
+    if (!tab) return;
+
+    try {
+      // 已有文件路径则直接保存，否则弹出保存对话框
+      if (tab.filePath) {
+        const result = await api.writeFile(tab.filePath, tab.content);
+        if (result.success) {
+          this.fileSaved.emit({ tabId, filePath: tab.filePath });
+        }
+      } else {
+        const ext = this.getFileExtension(tab.language);
+        const dialogResult = await api.showSaveDialog({
+          title: '保存文件',
+          defaultPath: `${tab.title}${ext}`,
+          filters: [
+            { name: '代码文件', extensions: ['py', 'js', 'ts', 'cpp', 'java', 'html', 'css', 'json'] },
+            { name: '所有文件', extensions: ['*'] },
+          ],
+        });
+
+        if (dialogResult.success && dialogResult.filePath) {
+          await api.writeFile(dialogResult.filePath, tab.content);
+          this.fileSaved.emit({ tabId, filePath: dialogResult.filePath });
+        }
+      }
+    } catch (error) {
+      console.error('[Editor] 保存文件失败:', error);
+    }
+  }
+
+  /** 通过 Electron IPC 从本地打开文件 */
+  async openFileFromDisk(): Promise<void> {
+    const api = this.electronApi;
+    if (!api) {
+      this.openFileRequest.emit();
+      return;
+    }
+
+    try {
+      const dialogResult = await api.showOpenDialog();
+      if (!dialogResult.success || !dialogResult.filePath) return;
+
+      const fileResult = await api.readFile(dialogResult.filePath);
+      if (!fileResult.success || fileResult.content === undefined) return;
+
+      const fileName = dialogResult.filePath.split(/[/\\]/).pop() || 'untitled';
+      const language = this.guessLanguage(fileName);
+
+      const tab: EditorTab = {
+        id: `file_${Date.now()}`,
+        title: fileName,
+        filePath: dialogResult.filePath,
+        content: fileResult.content,
+        language,
+        isDirty: false,
+      };
+
+      this.fileOpened.emit(tab);
+    } catch (error) {
+      console.error('[Editor] 打开文件失败:', error);
+    }
+  }
+
+  /** 根据文件名猜测编程语言 */
+  private guessLanguage(fileName: string): string {
+    const extMap: Record<string, string> = {
+      py: 'python', js: 'javascript', ts: 'typescript',
+      cpp: 'cpp', java: 'java', html: 'html',
+      css: 'css', json: 'json', md: 'markdown',
+    };
+    const ext = fileName.split('.').pop()?.toLowerCase() || '';
+    return extMap[ext] || 'plaintext';
+  }
+
+  /** 根据语言获取默认文件扩展名 */
+  private getFileExtension(language: string): string {
+    const extMap: Record<string, string> = {
+      python: '.py', javascript: '.js', typescript: '.ts',
+      cpp: '.cpp', java: '.java', html: '.html',
+      css: '.css', json: '.json', markdown: '.md',
+    };
+    return extMap[language] || '.txt';
   }
 
   /** 获取语言标签映射 */
@@ -217,10 +359,10 @@ export class TabbedEditorComponent implements OnDestroy {
         return;
       }
 
-      // Ctrl+O → 打开文件
+      // Ctrl+O → 打开文件（Electron 优先）
       if (isCtrlOrCmd && event.key === 'o') {
         event.preventDefault();
-        this.openFileRequest.emit();
+        this.openFileFromDisk();
         return;
       }
 
@@ -254,6 +396,13 @@ export class TabbedEditorComponent implements OnDestroy {
     };
 
     document.addEventListener('keydown', this.keydownHandler);
+  }
+
+  toggleTheme(): void {
+    const themes: Array<'vs-dark' | 'vs' | 'hc-black'> = ['vs-dark', 'vs', 'hc-black'];
+    const idx = themes.indexOf(this.editorTheme);
+    this.editorTheme = themes[(idx + 1) % themes.length];
+    this.themeChange.emit(this.editorTheme);
   }
 
   /** 切换到下一个标签页 */

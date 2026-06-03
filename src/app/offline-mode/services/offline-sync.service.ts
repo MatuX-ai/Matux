@@ -21,6 +21,12 @@ import {
 import { NetworkMonitorService, NetworkStatus } from '../../core/services/network-monitor.service';
 import { OfflineStorageService } from '../../core/services/offline-storage.service';
 
+/** 冲突解决策略 */
+export type ConflictStrategy = 'last_write_wins' | 'local_wins' | 'remote_wins' | 'manual';
+
+/** 队列优先级 */
+export type SyncPriority = 'high' | 'normal' | 'low';
+
 /** 同步状态 */
 export type SyncStatus = 'idle' | 'syncing' | 'error' | 'offline';
 
@@ -30,17 +36,31 @@ export interface SyncReport {
   syncedCount: number;
   failedCount: number;
   skippedCount: number;
+  conflictCount: number;
   startedAt: string;
   completedAt: string | null;
   errors: SyncError[];
+  batchInfo?: { totalBatches: number; completedBatches: number };
 }
 
 /** 同步错误 */
 export interface SyncError {
   operationId: string;
   error: string;
+  errorType: 'network' | 'server' | 'conflict' | 'timeout' | 'unknown';
   retryCount: number;
   timestamp: string;
+}
+
+/** 同步历史记录 */
+export interface SyncHistoryEntry {
+  id: string;
+  timestamp: string;
+  totalOperations: number;
+  syncedCount: number;
+  failedCount: number;
+  duration: number; // ms
+  status: 'success' | 'partial' | 'failure';
 }
 
 @Injectable({
@@ -126,6 +146,7 @@ export class OfflineSyncService {
       syncedCount: 0,
       failedCount: 0,
       skippedCount: 0,
+      conflictCount: 0,
       startedAt: new Date().toISOString(),
       completedAt: null,
       errors: [],
@@ -157,6 +178,7 @@ export class OfflineSyncService {
           report.errors.push({
             operationId: operation.id,
             error: error instanceof Error ? error.message : String(error),
+            errorType: this.categorizeError(error),
             retryCount: operation.retryCount,
             timestamp: new Date().toISOString(),
           });
@@ -267,10 +289,29 @@ export class OfflineSyncService {
       syncedCount: 0,
       failedCount: 0,
       skippedCount: 0,
+      conflictCount: 0,
       startedAt: new Date().toISOString(),
       completedAt: new Date().toISOString(),
       errors: [],
     };
+  }
+
+  /** 错误分类 */
+  private categorizeError(error: unknown): SyncError['errorType'] {
+    if (error instanceof TypeError || error instanceof DOMException) {
+      return 'network';
+    }
+    if (error instanceof Response || (typeof error === 'object' && error !== null && 'status' in error)) {
+      const status = (error as { status: number }).status;
+      if (status === 409) return 'conflict';
+      if (status >= 500) return 'server';
+    }
+    const msg = error instanceof Error ? error.message.toLowerCase() : String(error).toLowerCase();
+    if (msg.includes('network') || msg.includes('fetch') || msg.includes('abort')) return 'network';
+    if (msg.includes('timeout') || msg.includes('time out')) return 'timeout';
+    if (msg.includes('conflict') || msg.includes('conflict')) return 'conflict';
+    if (msg.includes('500') || msg.includes('server')) return 'server';
+    return 'unknown';
   }
 
   /** 清理自动同步 */
