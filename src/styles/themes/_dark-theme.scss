@@ -28,27 +28,27 @@
   --primary-color-light: #627d9e;       // 涓昏壊娴呰壊变体
   --primary-color-dark: #1e3a5f;        // 涓昏壊娣辫壊变体
   --on-primary-color: #fff;          // 涓昏壊涓婄殑鏂囧瓧
-  --secondary-color: #e8c547;           // 娆¤鍝佺墝鑹? - 閲戣壊
-  --secondary-color-light: #f0d978;     // 娆¤壊娴呰壊变体
-  --secondary-color-dark: #c9a930;      // 娆¤壊娣辫壊变体
+  --secondary-color: #60a5fa;           // 娆¤鍝佺墝鑹? - MatuX绉戞妧钃?
+  --secondary-color-light: #93c5fd;     // Blue-300
+  --secondary-color-dark: #2563eb;      // Blue-600
   --on-secondary-color: #000;        // 娆¤壊涓婄殑鏂囧瓧
 
   // 鐘舵€侀鑹?
-  --success-color: #4caf50;             // 成功鐘舵€佽壊
-  --success-color-light: #81c784;       // 成功鑹叉祬鑹插彉浣?
-  --success-color-dark: #388e3c;        // 成功鑹叉繁鑹插彉浣?
+  --success-color: #10b981;             // 成功鐘舵€佽壊
+  --success-color-light: #34d399;       // 成功鑹叉祬鑹插彉浣?
+  --success-color-dark: #059669;        // 成功鑹叉繁鑹插彉浣?
   --on-success-color: #fff;          // 成功鑹蹭笂鐨勬枃瀛?
-  --warning-color: #ff9800;             // 璀﹀憡鐘舵€佽壊
-  --warning-color-light: #ffb74d;       // 璀﹀憡鑹叉祬鑹插彉浣?
-  --warning-color-dark: #f57c00;        // 璀﹀憡鑹叉繁鑹插彉浣?
+  --warning-color: #f59e0b;             // 璀﹀憡鐘舵€佽壊
+  --warning-color-light: #fbbf24;       // 璀﹀憡鑹叉祬鑹插彉浣?
+  --warning-color-dark: #d97706;        // 璀﹀憡鑹叉繁鑹插彉浣?
   --on-warning-color: #000;          // 璀﹀憡鑹蹭笂鐨勬枃瀛?
-  --error-color: #cf6679;               // 错误鐘舵€佽壊 (Material Dark)
-  --error-color-light: #ef9a9a;         // 错误鑹叉祬鑹插彉浣?
-  --error-color-dark: #b00020;          // 错误鑹叉繁鑹插彉浣?
+  --error-color: #ef4444;               // 错误鐘舵€佽壊
+  --error-color-light: #f87171;         // 错误鑹叉祬鑹插彉浣?
+  --error-color-dark: #dc2626;          // 错误鑹叉繁鑹插彉浣?
   --on-error-color: #fff;            // 错误鑹蹭笂鐨勬枃瀛?
-  --info-color: #2196f3;                // 淇℃伅鐘舵€佽壊
-  --info-color-light: #64b5f6;          // 淇℃伅鑹叉祬鑹插彉浣?
-  --info-color-dark: #1976d2;           // 淇℃伅鑹叉繁鑹插彉浣?
+  --info-color: #3b82f6;                // 淇℃伅鐘舵€佽壊
+  --info-color-light: #60a5fa;          // 淇℃伅鑹叉祬鑹插彉浣?
+  --info-color-dark: #2563eb;           // 淇℃伅鑹叉繁鑹插彉浣?
   --on-info-color: #fff;             // 淇℃伅鑹蹭笂鐨勬枃瀛?
 
   // 鐏板害系统
@@ -105,9 +105,9 @@
   --icon-color: #e0e0e0;                        // 鏅€氬浘鏍囪壊
   --icon-color-disabled: #6f6f6f;               // 绂佺敤鍥炬爣鑹?
   --icon-color-primary: #3d5a80;                // 涓昏壊鍥炬爣 - 钘忛潚鑹？
-  --icon-color-success: #4caf50;                // 成功鍥炬爣鑹?
-  --icon-color-warning: #ff9800;                // 璀﹀憡鍥炬爣鑹?
-  --icon-color-error: #cf6679;                  // 错误鍥炬爣鑹?
+  --icon-color-success: #10b981;                // 成功鍥炬爣鑹?
+  --icon-color-warning: #f59e0b;                // 璀﹀憡鍥炬爣鑹?
+  --icon-color-error: #ef4444;                  // 错误鍥炬爣鑹?
 
   // 鍔犺浇鍜岄鏋跺睆
   --skeleton-base: #2d2d2d;
@@ -340,14 +340,14 @@
   --text-secondary-color: #b3b3b3;
   --border-color: #333;
 
-  // 鍝佺墝鑹？
+  // 鍝佺墝鑹?
   --primary-color: #3d5a80;
-  --secondary-color: #e8c547;
-  --error-color: #cf6679;
+  --secondary-color: #60a5fa;
+  --error-color: #ef4444;
 
   // 鐘舵€佽壊
-  --success-color: #4caf50;
-  --warning-color: #ff9800;
+  --success-color: #10b981;
+  --warning-color: #f59e0b;
   --info-color: #1e3a5f;
 }
 

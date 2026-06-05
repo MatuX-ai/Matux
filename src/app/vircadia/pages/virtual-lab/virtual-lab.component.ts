@@ -29,7 +29,7 @@ import { VircadiaSceneViewerComponent } from '../../../components/vircadia-scene
       </div>
 
       <div class="lab-panel">
-        <mat-tabs>
+        <mat-tab-group>
           <mat-tab label="🔬 物理实验">
             <div class="tab-content">
               <p>在虚拟环境中进行物理实验模拟</p>
@@ -52,7 +52,7 @@ import { VircadiaSceneViewerComponent } from '../../../components/vircadia-scene
               <button mat-raised-button color="primary" (click)="loadLabScene('engineering')">进入工程实验室</button>
             </div>
           </mat-tab>
-        </mat-tabs>
+        </mat-tab-group>
       </div>
     </div>
   `,

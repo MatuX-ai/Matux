@@ -304,7 +304,7 @@ const DEFAULT_TOOLBOX: Blockly.utils.toolbox.ToolboxDefinition = {
       font-size: 14px;
       font-weight: 600;
       color: #333;
-      mat-icon { color: #ff9800; }
+      mat-icon { color: #f59e0b; }
     }
 
     .toolbar-center {

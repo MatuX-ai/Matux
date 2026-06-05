@@ -160,10 +160,10 @@ export class AchievementReviewComponent implements OnInit {
    */
   getStatusColor(status: AchievementStatus): string {
     const colors: Record<AchievementStatus, string> = {
-      pending: '#ff9800',
-      approved: '#4caf50',
-      rejected: '#f44336',
-      revision: '#ff9800',
+      pending: '#f59e0b',
+      approved: '#10b981',
+      rejected: '#ef4444',
+      revision: '#f59e0b',
     };
     return colors[status] || '#757575';
   }

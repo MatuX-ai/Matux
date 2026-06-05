@@ -19,10 +19,10 @@ import {
 
 // 示例 1: 基础颜色使用
 const buttonStyles = {
-  backgroundColor: primaryColors.primary, // '#2196F3'
+  backgroundColor: primaryColors.primary, // '#0f172a'
   color: colors.textWhite,
   borderColor: colors.border,
-  hoverBackgroundColor: primaryColors.primaryDark, // '#1976D2'
+  hoverBackgroundColor: primaryColors.primaryDark, // '#020617'
 };
 
 // 示例 2: 字体系统使用
@@ -94,7 +94,7 @@ const utilsExample = {
   customShadow: shadows.utils.create('0px', '4px', '8px', '0px', 'rgba(0, 0, 0, 0.1)'),
 
   // 组合多个阴影
-  multipleShadows: shadows.utils.multiple(baseShadows.sm, '0 0 0 2px rgba(33, 150, 243, 0.2)'),
+  multipleShadows: shadows.utils.multiple(baseShadows.sm, '0 0 0 2px rgba(59, 130, 246, 0.2)'),
 
   // 应用圆角组合
   asymmetricBorderRadius: borderRadii.utils.combine('sm', 'md', 'lg', 'xl'),

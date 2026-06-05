@@ -1,81 +1,150 @@
 /**
- * Mac 风格主题变量
- * Apple-inspired design system variables
+ * MatuX 统一主题变量 (PRD v1.1 标准)
+ * 以 _matux-tokens.scss 为唯一设计标准
+ * CSS 自定义属性层 —— 供组件内联样式和动态主题使用
  */
 
-// CSS 自定义属性 (方便在组件内联样式中使用)
 :root {
-  // 品牌色 - Mac 风格中性灰
-  --color-brand-50: #f5f5f7;      // Apple 浅灰背景
-  --color-brand-100: #e8e8ed;     // 次级背景
-  --color-brand-200: #d2d2d7;     // 分隔线
-  --color-brand-300: #aeaeb2;     // 次要文本
-  --color-brand-400: #86868b;     // 辅助文本
-  --color-brand-500: #6e6e73;     // 主按钮
-  --color-brand-600: #48484a;     // 强调元素
-  --color-brand-700: #3a3a3c;     // 重要文本
-  --color-brand-800: #1d1d1f;     // 主标题
-  --color-brand-900: #000000;     // 纯黑
+  // ===== 品牌色 - 藏青色系 (Slate, PRD 标准) =====
+  --matux-color-brand-50: #f8fafc;
+  --matux-color-brand-100: #f1f5f9;
+  --matux-color-brand-200: #e2e8f0;
+  --matux-color-brand-300: #cbd5e1;
+  --matux-color-brand-400: #94a3b8;
+  --matux-color-brand-500: #64748b;
+  --matux-color-brand-600: #475569;
+  --matux-color-brand-700: #334155;
+  --matux-color-brand-800: #1e293b;
+  --matux-color-brand-900: #0f172a;
+  --matux-color-brand-950: #020617;
 
-  // 渐变主色 - 星空蓝 (Starry Blue gradient)
-  --gradient-primary-start: #0B1426;    // 深蓝（夜空）
-  --gradient-primary-end: #3B82F6;      // 亮蓝（星空）
+  // 主色 / 辅色
+  --matux-color-primary: #0f172a;
+  --matux-color-primary-light: #1e293b;
+  --matux-color-primary-dark: #020617;
+  --matux-color-secondary: #3b82f6;
+  --matux-color-secondary-light: #60a5fa;
+  --matux-color-secondary-dark: #2563eb;
 
-  // 强调色
-  --color-accent-gold: #FFD700;
-  --color-accent-orange: #FFA500;
+  // ===== 功能色 (PRD 标准) =====
+  --matux-color-success: #10b981;
+  --matux-color-success-dark: #059669;
+  --matux-color-warning: #f59e0b;
+  --matux-color-warning-dark: #d97706;
+  --matux-color-error: #ef4444;
+  --matux-color-error-dark: #dc2626;
+  --matux-color-info: #8b5cf6;
+  --matux-color-info-dark: #7c3aed;
 
-  // 成功色 - Apple 绿
-  --color-success-500: #34c759;
-  --color-success-700: #30b34e;
+  // ===== 语义色 =====
+  --matux-color-bg: #f8fafc;
+  --matux-color-surface: #ffffff;
+  --matux-color-border: #e2e8f0;
+  --matux-color-divider: #e2e8f0;
+  --matux-color-text-primary: #0f172a;
+  --matux-color-text-secondary: #475569;
+  --matux-color-text-disabled: #94a3b8;
+  --matux-color-text-inverse: #ffffff;
 
-  // 错误色
-  --color-error-500: #ff3b30;  // Apple 红
-  --color-error-700: #d70015;
+  // ===== 渐变色 =====
+  --matux-gradient-primary-start: #0f172a;
+  --matux-gradient-primary-end: #3b82f6;
 
-  // 警告色
-  --color-warning-500: #ff9500;  // Apple 橙
-  --color-warning-700: #bf6e00;
+  // ===== 间距 (基于 4px 网格) =====
+  --matux-spacing-xs: 0.25rem;
+  --matux-spacing-sm: 0.5rem;
+  --matux-spacing-md: 1rem;
+  --matux-spacing-lg: 1.5rem;
+  --matux-spacing-xl: 2rem;
+  --matux-spacing-2xl: 3rem;
 
-  // 信息色 - Mac 渐变紫
-  --color-info-500: var(--gradient-primary-start, #667eea);
-  --color-info-700: var(--gradient-primary-end, #764ba2);
+  // ===== 圆角 =====
+  --matux-radius-sm: 0.25rem;
+  --matux-radius-md: 0.5rem;
+  --matux-radius-lg: 0.75rem;
+  --matux-radius-xl: 1rem;
+  --matux-radius-2xl: 1.5rem;
+  --matux-radius-full: 9999px;
+  --matux-radius-button: 9999px;
+  --matux-radius-input: 0.75rem;
+  --matux-radius-card: 1rem;
 
-  // 间距
-  --spacing-xs: 0.25rem;   // 4px
-  --spacing-sm: 0.5rem;    // 8px
-  --spacing-md: 1rem;      // 16px
-  --spacing-lg: 1.5rem;    // 24px
-  --spacing-xl: 2rem;      // 32px
-  --spacing-2xl: 3rem;     // 48px
+  // ===== 阴影 (Tailwind 风格) =====
+  --matux-shadow-sm: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
+  --matux-shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+  --matux-shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.1);
+  --matux-shadow-xl: 0 20px 25px -5px rgba(0, 0, 0, 0.1);
 
-  // 圆角
-  --radius-sm: 0.25rem;    // 4px
-  --radius-md: 0.5rem;     // 8px
-  --radius-lg: 0.75rem;    // 12px
-  --radius-xl: 1rem;       // 16px
-  --radius-2xl: 1.5rem;    // 24px
-  --radius-full: 9999px;
+  // ===== 过渡 =====
+  --matux-transition-fast: 150ms cubic-bezier(0.4, 0, 0.2, 1);
+  --matux-transition-normal: 300ms cubic-bezier(0.4, 0, 0.2, 1);
+  --matux-transition-slow: 500ms cubic-bezier(0.4, 0, 0.2, 1);
 
-  // 阴影
-  --shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.04);
-  --shadow-md: 0 4px 8px rgba(0, 0, 0, 0.08);
-  --shadow-lg: 0 10px 20px rgba(0, 0, 0, 0.12);
-  --shadow-xl: 0 20px 40px rgba(0, 0, 0, 0.16);
+  // ===== 字体 (PRD v1.1: Geist Sans) =====
+  --matux-font-family: 'Geist Sans', 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+  --matux-font-size-xs: 0.75rem;
+  --matux-font-size-sm: 0.875rem;
+  --matux-font-size-base: 1rem;
+  --matux-font-size-lg: 1.125rem;
+  --matux-font-size-xl: 1.25rem;
+  --matux-font-size-2xl: 1.5rem;
+  --matux-font-size-3xl: 1.875rem;
+  --matux-font-size-4xl: 2.25rem;
 
-  // 过渡
-  --transition-fast: 150ms cubic-bezier(0.4, 0, 0.2, 1);
-  --transition-normal: 300ms cubic-bezier(0.4, 0, 0.2, 1);
-  --transition-slow: 500ms cubic-bezier(0.4, 0, 0.2, 1);
+  // ===== 旧版兼容别名 (逐步迁移中废弃) =====
+  --color-brand-50: var(--matux-color-brand-50);
+  --color-brand-100: var(--matux-color-brand-100);
+  --color-brand-200: var(--matux-color-brand-200);
+  --color-brand-300: var(--matux-color-brand-300);
+  --color-brand-400: var(--matux-color-brand-400);
+  --color-brand-500: var(--matux-color-brand-500);
+  --color-brand-600: var(--matux-color-brand-600);
+  --color-brand-700: var(--matux-color-brand-700);
+  --color-brand-800: var(--matux-color-brand-800);
+  --color-brand-900: var(--matux-color-brand-900);
 
-  // 字体
-  --font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
-  --font-size-xs: 0.75rem;    // 12px
-  --font-size-sm: 0.875rem;   // 14px
-  --font-size-base: 1rem;     // 16px
-  --font-size-lg: 1.125rem;   // 18px
-  --font-size-xl: 1.25rem;    // 20px
-  --font-size-2xl: 1.5rem;    // 24px
-  --font-size-3xl: 1.875rem;  // 30px
-  --font-size-4xl: 2.25rem;   // 36px
+  --gradient-primary-start: var(--matux-gradient-primary-start);
+  --gradient-primary-end: var(--matux-gradient-primary-end);
+
+  --spacing-xs: var(--matux-spacing-xs);
+  --spacing-sm: var(--matux-spacing-sm);
+  --spacing-md: var(--matux-spacing-md);
+  --spacing-lg: var(--matux-spacing-lg);
+  --spacing-xl: var(--matux-spacing-xl);
+  --spacing-2xl: var(--matux-spacing-2xl);
+
+  --radius-sm: var(--matux-radius-sm);
+  --radius-md: var(--matux-radius-md);
+  --radius-lg: var(--matux-radius-lg);
+  --radius-xl: var(--matux-radius-xl);
+  --radius-2xl: var(--matux-radius-2xl);
+  --radius-full: var(--matux-radius-full);
+
+  --shadow-sm: var(--matux-shadow-sm);
+  --shadow-md: var(--matux-shadow-md);
+  --shadow-lg: var(--matux-shadow-lg);
+  --shadow-xl: var(--matux-shadow-xl);
+
+  --transition-fast: var(--matux-transition-fast);
+  --transition-normal: var(--matux-transition-normal);
+  --transition-slow: var(--matux-transition-slow);
+
+  --font-family: var(--matux-font-family);
+  --font-size-xs: var(--matux-font-size-xs);
+  --font-size-sm: var(--matux-font-size-sm);
+  --font-size-base: var(--matux-font-size-base);
+  --font-size-lg: var(--matux-font-size-lg);
+  --font-size-xl: var(--matux-font-size-xl);
+  --font-size-2xl: var(--matux-font-size-2xl);
+  --font-size-3xl: var(--matux-font-size-3xl);
+  --font-size-4xl: var(--matux-font-size-4xl);
+
+  --color-success-500: var(--matux-color-success);
+  --color-success-700: var(--matux-color-success-dark);
+  --color-error-500: var(--matux-color-error);
+  --color-error-700: var(--matux-color-error-dark);
+  --color-warning-500: var(--matux-color-warning);
+  --color-warning-700: var(--matux-color-warning-dark);
+  --color-info-500: var(--matux-color-info);
+  --color-info-700: var(--matux-color-info-dark);
 }

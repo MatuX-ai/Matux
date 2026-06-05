@@ -195,9 +195,10 @@ $spacing-xxl: $spacing-12;
 // 字体系统 - Typography System
 // =============================================================================
 
-// 字体系列 (与原型站一致)
-$font-family-sans: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
-$font-family-mono: 'JetBrains Mono', 'Fira Code', 'Courier New', monospace;
+// 字体系列 (与 PRD 和原型站一致)
+// PRD v1.1 要求: Geist Sans（标题/正文）+ Geist Mono（代码）
+$font-family-sans: 'Geist Sans', 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+$font-family-mono: 'Geist Mono', 'JetBrains Mono', 'Fira Code', 'Courier New', monospace;
 $font-family-system: $font-family-sans;
 
 // 字体大小
@@ -269,11 +270,22 @@ $animation-scale-in: scaleIn 0.2s ease-out;
 // 响应式断点 - Responsive Breakpoints
 // =============================================================================
 
-$breakpoint-sm: 640px;    // 手机横屏
-$breakpoint-md: 768px;    // 平板
-$breakpoint-lg: 1024px;   // 小屏笔记本
-$breakpoint-xl: 1280px;   // 桌面
-$breakpoint-2xl: 1536px;  // 大屏桌面
+// 响应式断点（桌面端优先）
+$breakpoint-sm: 640px;                    // 手机横屏
+$breakpoint-md: 768px;                    // 平板竖屏
+$breakpoint-lg: 1024px;                   // 平板横屏 / 小屏笔记本
+$breakpoint-desktop-small: 1024px;        // 桌面端最小宽度
+$breakpoint-desktop-medium: 1440px;       // 桌面端中屏
+$breakpoint-xl: 1280px;                   // 桌面标屏
+$breakpoint-2xl: 1536px;                  // 大屏桌面
+$breakpoint-desktop-large: 1920px;        // 桌面端大屏
+
+// CSS 自定义属性断点（供 JS 运行时读取）
+:root {
+  --bp-desktop-small: #{$breakpoint-desktop-small};
+  --bp-desktop-medium: #{$breakpoint-desktop-medium};
+  --bp-desktop-large: #{$breakpoint-desktop-large};
+}
 
 // =============================================================================
 // Z-index 层级系统
@@ -419,13 +431,13 @@ $font-size-title: $font-size-2xl;       // 标题大小
 $font-size-headline: $font-size-3xl;    // 大标题大小
 $font-size-display: $font-size-4xl;     // 展示文字大小
 
-// h1-h6 字体大小别名（Material Design 风格）
-$font-size-h1: $font-size-6xl;          // 96px
-$font-size-h2: $font-size-5xl;          // 60px
-$font-size-h3: $font-size-4xl;          // 48px
-$font-size-h4: $font-size-3xl;          // 34px
-$font-size-h5: $font-size-xl;           // 24px
-$font-size-h6: $font-size-lg;           // 20px
+// h1-h6 字体大小（桌面端优化，使用 clamp() 响应式）
+$font-size-h1: clamp(2rem, 4vw, 2.25rem);     // 32px → 36px
+$font-size-h2: clamp(1.5rem, 3vw, 1.75rem);  // 24px → 28px
+$font-size-h3: clamp(1.25rem, 2.5vw, 1.5rem); // 20px → 24px
+$font-size-h4: clamp(1.125rem, 2vw, 1.25rem); // 18px → 20px
+$font-size-h5: $font-size-lg;                 // 18px
+$font-size-h6: $font-size-base;               // 16px
 
 // 品牌色别名
 $color-brand-primary: $color-primary;

@@ -21,6 +21,16 @@ import { UserCenterMenuItem, UserCenterService } from '../../services/user-cente
   template: `
     <div class="sub-nav-container">
       <nav class="sub-nav">
+        <!-- 面包屑导航 -->
+        <div class="breadcrumb">
+          <a routerLink="/user/dashboard" class="breadcrumb-link">
+            <mat-icon class="breadcrumb-icon">home</mat-icon>
+            <span>首页</span>
+          </a>
+          <mat-icon class="breadcrumb-separator">chevron_right</mat-icon>
+          <span class="breadcrumb-current">{{ currentPageTitle }}</span>
+        </div>
+
         <!-- 用户信息区域 -->
         <div class="user-info-section" *ngIf="currentUser">
           <div class="user-avatar-small">
@@ -48,13 +58,10 @@ import { UserCenterMenuItem, UserCenterService } from '../../services/user-cente
 
         <!-- 快捷操作 -->
         <div class="quick-actions">
-          <button mat-icon-button [matTooltip]="'刷新页面'" (click)="refreshPage()">
+          <button mat-icon-button [matTooltip]="'刷新'" (click)="refreshPage()">
             <mat-icon>refresh</mat-icon>
           </button>
-          <button mat-icon-button [matTooltip]="'返回首页'" routerLink="/dashboard">
-            <mat-icon>home</mat-icon>
-          </button>
-          <button mat-icon-button [matTooltip]="'用户设置'" routerLink="/user/profile">
+          <button mat-icon-button [matTooltip]="'设置'" routerLink="/user/profile">
             <mat-icon>settings</mat-icon>
           </button>
         </div>
@@ -64,182 +71,92 @@ import { UserCenterMenuItem, UserCenterService } from '../../services/user-cente
   styles: [
     `
       .sub-nav-container {
-        background: white;
-        border-bottom: 1px solid #e0e0e0;
-        box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
-        position: sticky;
-        top: 60px; /* 头部导航条高度 */
-        z-index: 999;
+        background: var(--matux-color-surface, #ffffff);
+        border-bottom: 1px solid var(--matux-color-border, #e2e8f0);
+        height: 48px;
       }
 
       .sub-nav {
-        max-width: 1400px;
-        margin: 0 auto;
+        height: 100%;
         padding: 0 24px;
-        height: 56px;
         display: flex;
         align-items: center;
         justify-content: space-between;
       }
 
-      /* 用户信息区域 */
-      .user-info-section {
+      .breadcrumb {
         display: flex;
         align-items: center;
-        gap: 12px;
-        flex-shrink: 0;
-        margin-right: 24px;
+        gap: 4px;
+        font-size: 13px;
+        color: var(--matux-color-text-secondary, #475569);
       }
 
-      .user-avatar-small {
+      .breadcrumb-link {
+        display: flex;
+        align-items: center;
+        gap: 4px;
+        color: var(--matux-color-text-secondary, #475569);
+        text-decoration: none;
+        border-radius: 4px;
+        padding: 2px 6px;
+        transition: all 0.15s;
+      }
+
+      .breadcrumb-link:hover {
+        background: var(--matux-color-brand-100, #f1f5f9);
+        color: var(--matux-color-secondary, #3b82f6);
+      }
+
+      .breadcrumb-icon {
+        font-size: 16px;
+        width: 16px;
+        height: 16px;
+      }
+
+      .breadcrumb-separator {
+        font-size: 16px;
+        width: 16px;
+        height: 16px;
+        color: var(--matux-color-text-disabled, #94a3b8);
+      }
+
+      .breadcrumb-current {
+        font-weight: 600;
+        color: var(--matux-color-text-primary, #0f172a);
+        padding: 2px 6px;
+      }
+
+      .quick-actions {
+        display: flex;
+        gap: 4px;
+        flex-shrink: 0;
+      }
+
+      .quick-actions button {
+        color: var(--matux-color-text-secondary, #475569);
         width: 32px;
         height: 32px;
-        border-radius: 50%;
-        overflow: hidden;
-        background: #f5f5f5;
+        line-height: 32px;
       }
 
-      .user-avatar-small img {
-        width: 100%;
-        height: 100%;
-        object-fit: cover;
+      .quick-actions button:hover {
+        color: var(--matux-color-secondary, #3b82f6);
+        background: var(--matux-color-brand-100, #f1f5f9);
       }
 
-      .user-details-small {
-        display: flex;
-        flex-direction: column;
-      }
-
-      .username {
-        font-size: 14px;
-        font-weight: 600;
-        color: #333;
-        line-height: 1.2;
-      }
-
-      .user-type-badge {
-        font-size: 11px;
-        color: #666;
-        background: #f0f0f0;
-        padding: 1px 6px;
-        border-radius: 10px;
-        display: inline-block;
-        margin-top: 2px;
-      }
-
-      /* 导航链接 */
-      .nav-links {
-        flex: 1;
-        display: flex;
-        gap: 8px;
-        overflow-x: auto;
-        padding: 0 16px;
-        scrollbar-width: thin;
-      }
-
-      .nav-links::-webkit-scrollbar {
-        height: 4px;
-      }
-
-      .nav-links::-webkit-scrollbar-track {
-        background: #f1f1f1;
-      }
-
-      .nav-links::-webkit-scrollbar-thumb {
-        background: #ccc;
-        border-radius: 2px;
-      }
-
-      .nav-link {
-        display: flex;
-        align-items: center;
-        gap: 8px;
-        padding: 8px 16px;
-        color: #666;
-        text-decoration: none;
-        border-radius: 8px;
-        transition: all 0.2s ease;
-        white-space: nowrap;
-        border: 1px solid transparent;
-      }
-
-      .nav-link:hover {
-        background: #f5f5f5;
-        color: #333;
-      }
-
-      .nav-link.active {
-        background: #e3f2fd;
-        color: #1976d2;
-        border-color: #1976d2;
-      }
-
-      .nav-icon {
+      .quick-actions mat-icon {
         font-size: 18px;
         width: 18px;
         height: 18px;
       }
 
-      .nav-label {
-        font-size: 14px;
-        font-weight: 500;
-      }
-
-      /* 快捷操作 */
-      .quick-actions {
-        display: flex;
-        gap: 8px;
-        flex-shrink: 0;
-        margin-left: 16px;
-      }
-
-      .quick-actions button {
-        color: #666;
-      }
-
-      .quick-actions button:hover {
-        color: #1976d2;
-      }
-
-      @media (max-width: 768px) {
+      @media (max-width: 767px) {
         .sub-nav {
           padding: 0 16px;
-          height: 48px;
         }
 
-        .user-info-section {
-          display: none;
-        }
-
-        .nav-links {
-          padding: 0;
-          gap: 4px;
-        }
-
-        .nav-link {
-          padding: 8px 12px;
-        }
-
-        .nav-label {
-          display: none;
-        }
-
-        .nav-icon {
-          margin: 0;
-        }
-
-        .quick-actions {
-          margin-left: 8px;
-        }
-
-        .quick-actions button {
-          width: 32px;
-          height: 32px;
-        }
-      }
-
-      @media (max-width: 480px) {
-        .quick-actions {
+        .breadcrumb-link span {
           display: none;
         }
       }
@@ -249,6 +166,7 @@ import { UserCenterMenuItem, UserCenterService } from '../../services/user-cente
 export class UserSubNavComponent {
   currentUser: any = null;
   menuItems: UserCenterMenuItem[] = [];
+  currentPageTitle = '仪表板';
 
   constructor(
     private userCenterService: UserCenterService,
@@ -258,10 +176,7 @@ export class UserSubNavComponent {
   }
 
   private loadUserData(): void {
-    // 获取当前用户
     this.currentUser = this.userCenterService.getCurrentUser();
-
-    // 获取菜单项
     this.menuItems = this.userCenterService.getSidebarMenu();
   }
 
@@ -269,16 +184,14 @@ export class UserSubNavComponent {
    * 获取用户类型标签
    */
   getUserTypeLabel(): string {
-    const userType = this.currentUser?.userType;
-    if (!userType) return '用户';
-
+    const user = this.currentUser;
+    if (!user?.userType) return '用户';
     const typeMap: Record<string, string> = {
       student: '学生',
       teacher: '教师',
       parent: '家长',
     };
-
-    return typeMap[userType] || userType;
+    return typeMap[user.userType] || user.userType;
   }
 
   /**

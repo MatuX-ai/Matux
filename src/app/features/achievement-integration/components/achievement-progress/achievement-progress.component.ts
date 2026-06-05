@@ -59,10 +59,10 @@ export class AchievementProgressComponent implements OnInit {
    */
   getProgressColor(): string {
     const percentage = this.getCompletionPercentage();
-    if (percentage < 30) return '#f44336';
-    if (percentage < 60) return '#ff9800';
-    if (percentage < 90) return '#2196f3';
-    return '#4caf50';
+    if (percentage < 30) return '#ef4444';
+    if (percentage < 60) return '#f59e0b';
+    if (percentage < 90) return '#3b82f6';
+    return '#10b981';
   }
 
   /**

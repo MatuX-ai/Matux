@@ -3,17 +3,17 @@
 @import './buttons';
 @import './hero-section-mixin'; // 首焦图统一样式 Mixin
 
-// 引入设计 Token - Mac 风格
-$color-brand-50:  #f5f5f7;      // Apple 浅灰背景
-$color-brand-100: #e8e8ed;     // 次级背景
-$color-brand-300: #aeaeb2;     // 次要文本
-$color-brand-500: #667eea;     // Mac 渐变紫起始色
-$color-brand-700: #764ba2;     // Mac 渐变紫结束色
-$color-brand-900: #1d1d1f;     // 主标题
+// 引入设计 Token - MatuX 品牌色
+$color-brand-50:  #f8fafc;      // Slate-50
+$color-brand-100: #f1f5f9;     // Slate-100
+$color-brand-300: #cbd5e1;     // Slate-300
+$color-brand-500: #3b82f6;     // 科技蓝 Blue-500 - MatuX 辅助色
+$color-brand-700: #2563eb;     // 深蓝 Blue-600
+$color-brand-900: #0f172a;     // 藏青色 Slate-900 - MatuX 主色
 
-$color-accent-cyan-500: #667eea; // 使用 Mac 渐变紫替代青色
-$color-accent-cyan-300: #a78bfa; // 亮紫色
-$color-accent-cyan-700: #5a67d8; // 深紫色
+$color-accent-cyan-500: #3b82f6; // 科技蓝
+$color-accent-cyan-300: #60a5fa; // 浅蓝
+$color-accent-cyan-700: #2563eb; // 深蓝
 
 $color-neutral-100: #FFFFFF;
 $color-neutral-150: #F7F8FA;

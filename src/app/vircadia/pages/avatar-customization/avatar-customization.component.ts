@@ -102,7 +102,7 @@ interface AvatarOption {
       .option-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-bottom: 16px; }
       .option-card { display: flex; flex-direction: column; align-items: center; gap: 4px; padding: 12px 8px; border: 2px solid rgba(255,255,255,0.1); border-radius: 8px; cursor: pointer; transition: all 0.2s; font-size: 12px; color: rgba(255,255,255,0.7); }
       .option-card:hover { border-color: rgba(102,126,234,0.5); background: rgba(102,126,234,0.1); }
-      .option-card.selected { border-color: #667eea; background: rgba(102,126,234,0.2); color: white; }
+      .option-card.selected { border-color: #3b82f6; background: rgba(102,126,234,0.2); color: white; }
       .option-preview { font-size: 32px; line-height: 1; }
       .action-row { display: flex; gap: 12px; margin-top: 16px; }
       .action-row button { flex: 1; }

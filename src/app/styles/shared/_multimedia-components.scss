@@ -150,7 +150,7 @@
   cursor: pointer;
 
   &.selected {
-    border: 2px solid var(--primary-color, #2196f3);
+    border: 2px solid var(--primary-color, #3b82f6);
   }
 }
 
@@ -166,7 +166,7 @@
     justify-content: center;
     align-items: center;
     height: 100%;
-    background: var(--gradient-primary, linear-gradient(135deg, #667eea 0%, #764ba2 100%));
+    background: var(--gradient-primary, linear-gradient(135deg, #3b82f6 0%, #2563eb 100%));
 
     .media-icon {
       width: 3rem;
@@ -268,7 +268,7 @@
 
       &.status-uploaded {
         background: var(--info-bg, #e3f2fd);
-        color: var(--info-color, #1976d2);
+        color: var(--info-color, #3b82f6);
       }
 
       &.status-default {

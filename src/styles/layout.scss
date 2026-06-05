@@ -12,20 +12,20 @@
 /// 标准固定宽度容器
 .container {
   @include container(false, $container-max-width);
-  
+
   // 容器淇グ绫?
   &--small {
     @include container(false, 800px);
   }
-  
+
   &--large {
     @include container(false, 1400px);
   }
-  
+
   &--fluid {
     @include container(true);
   }
-  
+
   &--full {
     @include container(true);
 
@@ -45,52 +45,52 @@
 /// 网格容器
 .grid {
   @include grid-container;
-  
+
   // 网格淇グ绫?
   &--gutter-sm {
     margin: 0 (-$spacing-sm / 2);
-    
+
     > .grid-col {
       padding: 0 ($spacing-sm / 2);
     }
   }
-  
+
   &--gutter-lg {
     margin: 0 (-$spacing-lg / 2);
-    
+
     > .grid-col {
       padding: 0 ($spacing-lg / 2);
     }
   }
-  
+
   &--align-start {
     align-items: flex-start;
   }
-  
+
   &--align-center {
     align-items: center;
   }
-  
+
   &--align-end {
     align-items: flex-end;
   }
-  
+
   &--justify-start {
     justify-content: flex-start;
   }
-  
+
   &--justify-center {
     justify-content: center;
   }
-  
+
   &--justify-end {
     justify-content: flex-end;
   }
-  
+
   &--justify-between {
     justify-content: space-between;
   }
-  
+
   &--justify-around {
     justify-content: space-around;
   }
@@ -99,7 +99,7 @@
 /// 网格鍒?
 .grid-col {
   @include grid-column(12); // 默认鍗犳弧鏁磋
-  
+
   // 响应式忓垪瀹?
   &--1 { @include grid-column(1); }
   &--2 { @include grid-column(2); }
@@ -113,7 +113,7 @@
   &--10 { @include grid-column(10); }
   &--11 { @include grid-column(11); }
   &--12 { @include grid-column(12); }
-  
+
   // 鍋忕Щ閲忕被
   &--offset-1 { margin-left: grid-width(1); }
   &--offset-2 { margin-left: grid-width(2); }
@@ -137,11 +137,11 @@
   &--mobile {
     @include hidden-at(mobile);
   }
-  
+
   &--tablet {
     @include hidden-at(tablet);
   }
-  
+
   &--desktop {
     @include hidden-at(desktop);
   }
@@ -153,13 +153,13 @@
 
     display: none;
   }
-  
+
   &--tablet {
     @include visible-at(tablet);
 
     display: none;
   }
-  
+
   &--desktop {
     @include visible-at(desktop);
 
@@ -174,32 +174,32 @@
 /// Flex 容器
 .flex {
   display: flex;
-  
+
   // 方向
   &--row { flex-direction: row; }
   &--row-reverse { flex-direction: row-reverse; }
   &--column { flex-direction: column; }
   &--column-reverse { flex-direction: column-reverse; }
-  
+
   // 鎹㈣
   &--wrap { flex-wrap: wrap; }
   &--nowrap { flex-wrap: nowrap; }
   &--wrap-reverse { flex-wrap: wrap-reverse; }
-  
+
   // 对齐方式
   &--items-start { align-items: flex-start; }
   &--items-center { align-items: center; }
   &--items-end { align-items: flex-end; }
   &--items-baseline { align-items: baseline; }
   &--items-stretch { align-items: stretch; }
-  
+
   &--justify-start { justify-content: flex-start; }
   &--justify-center { justify-content: center; }
   &--justify-end { justify-content: flex-end; }
   &--justify-between { justify-content: space-between; }
   &--justify-around { justify-content: space-around; }
   &--justify-evenly { justify-content: space-evenly; }
-  
+
   // 鍐呭对齐
   &--content-start { align-content: flex-start; }
   &--content-center { align-content: center; }
@@ -216,12 +216,12 @@
   &--no-grow { flex-grow: 0; }
   &--shrink { flex-shrink: 1; }
   &--no-shrink { flex-shrink: 0; }
-  
+
   // 基础澶у皬
   &--basis-auto { flex-basis: auto; }
   &--basis-0 { flex-basis: 0; }
   &--basis-full { flex-basis: 100%; }
-  
+
   // 对齐
   &--self-auto { align-self: auto; }
   &--self-start { align-self: flex-start; }
@@ -244,7 +244,7 @@
   &--4 { padding: $spacing-lg; }    // 16px
   &--5 { padding: $spacing-xl; }    // 24px
   &--6 { padding: $spacing-xxl; }   // 32px
-  
+
   // 方向鎬у唴杈硅窛
   &y--1 { padding-top: $spacing-xs; padding-bottom: $spacing-xs; }
   &y--2 { padding-top: $spacing-sm; padding-bottom: $spacing-sm; }
@@ -252,7 +252,7 @@
   &y--4 { padding-top: $spacing-lg; padding-bottom: $spacing-lg; }
   &y--5 { padding-top: $spacing-xl; padding-bottom: $spacing-xl; }
   &y--6 { padding-top: $spacing-xxl; padding-bottom: $spacing-xxl; }
-  
+
   &x--1 { padding-right: $spacing-xs; padding-left: $spacing-xs; }
   &x--2 { padding-right: $spacing-sm; padding-left: $spacing-sm; }
   &x--3 { padding-right: $spacing-md; padding-left: $spacing-md; }
@@ -271,7 +271,7 @@
   &--5 { margin: $spacing-xl; }     // 24px
   &--6 { margin: $spacing-xxl; }    // 32px
   &--auto { margin: auto; }
-  
+
   // 方向鎬у杈硅窛
   &y--1 { margin-top: $spacing-xs; margin-bottom: $spacing-xs; }
   &y--2 { margin-top: $spacing-sm; margin-bottom: $spacing-sm; }
@@ -280,7 +280,7 @@
   &y--5 { margin-top: $spacing-xl; margin-bottom: $spacing-xl; }
   &y--6 { margin-top: $spacing-xxl; margin-bottom: $spacing-xxl; }
   &y--auto { margin-top: auto; margin-bottom: auto; }
-  
+
   &x--1 { margin-right: $spacing-xs; margin-left: $spacing-xs; }
   &x--2 { margin-right: $spacing-sm; margin-left: $spacing-sm; }
   &x--3 { margin-right: $spacing-md; margin-left: $spacing-md; }
@@ -299,7 +299,7 @@
   .container\@tablet {
     @include container(false, $container-max-width);
   }
-  
+
   .container-fluid\@tablet {
     @include container(true);
   }
@@ -309,7 +309,7 @@
   .container\@desktop {
     @include container(false, $container-max-width);
   }
-  
+
   .container-fluid\@desktop {
     @include container(true);
   }
@@ -322,11 +322,11 @@
 /// 居中对齐
 .center {
   text-align: center;
-  
+
   &--block {
     margin: 0 auto;
   }
-  
+
   &--flex {
     display: flex;
     justify-content: center;
@@ -350,31 +350,26 @@
   text-overflow: ellipsis;
 }
 
-/// 澶氳鏂囨湰鎴柇
+/// 多行文本截断
 .line-clamp {
   &--2 {
-    displ{
-  display: -webkit-box;
-  overflow: hidden;
-  -webkit-box-orient: vertical;
-  -webkit-line-clamp: 2;
-} {
-    display: -webkit-box{
-  display: -webkit-box;
-  overflow: hidden;
-  -webkit-box-orient: vertical;
-  -webkit-line-clamp: 3;
-}: -webkit-box;
-    overflow{
-  display: -webkit-box;
-  overflow: hidden;
-  -webkit-box-orient: vertical;
-  -webkit-line-clamp: 4;
-}
-  -ms-overflow-style: none;
-  scrollbar-width: none;
-  
-  &::-webkit-scrollbar {
-    display: none;
+    display: -webkit-box;
+    overflow: hidden;
+    -webkit-box-orient: vertical;
+    -webkit-line-clamp: 2;
+  }
+
+  &--3 {
+    display: -webkit-box;
+    overflow: hidden;
+    -webkit-box-orient: vertical;
+    -webkit-line-clamp: 3;
+  }
+
+  &--4 {
+    display: -webkit-box;
+    overflow: hidden;
+    -webkit-box-orient: vertical;
+    -webkit-line-clamp: 4;
   }
 }

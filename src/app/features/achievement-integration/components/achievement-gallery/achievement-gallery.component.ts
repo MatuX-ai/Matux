@@ -50,10 +50,10 @@ export class AchievementGalleryComponent implements OnInit {
   ];
 
   statusOptions: { value: AchievementStatus; label: string; color: string }[] = [
-    { value: 'pending', label: '待审核', color: '#ff9800' },
-    { value: 'approved', label: '已通过', color: '#4caf50' },
-    { value: 'rejected', label: '已拒绝', color: '#f44336' },
-    { value: 'revision', label: '需修改', color: '#ff9800' },
+    { value: 'pending', label: '待审核', color: '#f59e0b' },
+    { value: 'approved', label: '已通过', color: '#10b981' },
+    { value: 'rejected', label: '已拒绝', color: '#ef4444' },
+    { value: 'revision', label: '需修改', color: '#f59e0b' },
   ];
 
   selectedAchievement: Achievement | null = null;

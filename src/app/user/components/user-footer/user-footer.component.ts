@@ -47,8 +47,8 @@ import { RouterModule } from '@angular/router';
   styles: [
     `
       .user-footer {
-        background: #fff;
-        border-top: 1px solid #e0e0e0;
+        background: var(--color-surface);
+        border-top: 1px solid var(--color-divider);
         padding: 16px 24px;
         margin-top: auto;
       }
@@ -71,7 +71,7 @@ import { RouterModule } from '@angular/router';
 
       .footer-links a {
         font-size: 13px;
-        color: #666;
+        color: var(--color-text-secondary);
       }
 
       .footer-links mat-icon {
@@ -83,14 +83,14 @@ import { RouterModule } from '@angular/router';
 
       .footer-copyright {
         font-size: 12px;
-        color: #999;
+        color: var(--color-text-disabled);
         display: flex;
         align-items: center;
         gap: 8px;
       }
 
       .divider {
-        color: #ddd;
+        color: var(--color-divider);
       }
 
       @media (max-width: 768px) {

@@ -269,11 +269,11 @@ interface UnreadCount {
       .stat-value {
         font-size: 32px;
         font-weight: 600;
-        color: #2196f3;
+        color: #3b82f6;
       }
 
       .stat-item.urgent .stat-value {
-        color: #f44336;
+        color: #ef4444;
       }
 
       .stat-label {
@@ -310,11 +310,11 @@ interface UnreadCount {
 
       .notification-item.unread {
         background-color: #e3f2fd;
-        border-left: 4px solid #2196f3;
+        border-left: 4px solid #3b82f6;
       }
 
       .notification-item.urgent {
-        border-left: 4px solid #f44336;
+        border-left: 4px solid #ef4444;
       }
 
       .notification-avatar {
@@ -392,7 +392,7 @@ interface UnreadCount {
         font-size: 64px;
         width: 64px;
         height: 64px;
-        color: #9e9e9e;
+        color: #94a3b8;
       }
 
       .empty-state p {

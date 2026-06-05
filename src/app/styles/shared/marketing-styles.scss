@@ -45,11 +45,11 @@
     transition: color 0.3s ease;
 
     &:hover {
-      color: var(--gradient-primary-start, #667eea); // Mac 渐变紫 hover
+      color: var(--gradient-primary-start, #3b82f6); // Mac 渐变紫 hover
     }
 
     &.active {
-      color: var(--gradient-primary-start, #667eea);
+      color: var(--gradient-primary-start, #3b82f6);
       font-weight: 600;
     }
   }

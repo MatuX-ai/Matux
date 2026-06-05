@@ -231,7 +231,7 @@ import type { User } from '../../../core/models/auth.models';
     .page-title {
       font-size: 28px;
       font-weight: 700;
-      color: #0f172a;
+      color: var(--color-text-primary);
       margin: 0;
     }
     .header-actions {
@@ -241,8 +241,8 @@ import type { User } from '../../../core/models/auth.models';
     }
     .report-period {
       font-size: 14px;
-      color: #64748b;
-      background: #f1f5f9;
+      color: var(--color-text-secondary);
+      background: var(--color-background);
       padding: 6px 14px;
       border-radius: 20px;
     }
@@ -277,10 +277,10 @@ import type { User } from '../../../core/models/auth.models';
       justify-content: center;
       border-radius: 12px;
     }
-    .clock-icon { background: #dbeafe; color: #3b82f6; }
-    .book-icon { background: #dcfce7; color: #22c55e; }
-    .score-icon { background: #fef3c7; color: #f59e0b; }
-    .streak-icon { background: #fce7f3; color: #ec4899; }
+    .clock-icon { background: var(--color-selected); color: var(--color-accent); }
+    .book-icon { background: #dcfce7; color: var(--color-success); }
+    .score-icon { background: #fef3c7; color: var(--color-warning); }
+    .streak-icon { background: #fce7f3; color: var(--color-info); }
     .overview-content {
       display: flex;
       flex-direction: column;
@@ -288,12 +288,12 @@ import type { User } from '../../../core/models/auth.models';
     .overview-value {
       font-size: 24px;
       font-weight: 700;
-      color: #0f172a;
+      color: var(--color-text-primary);
       line-height: 1.2;
     }
     .overview-label {
       font-size: 13px;
-      color: #64748b;
+      color: var(--color-text-secondary);
     }
 
     /* 课程成绩 */
@@ -302,7 +302,7 @@ import type { User } from '../../../core/models/auth.models';
     }
     .grade-row {
       padding: 12px 0;
-      border-bottom: 1px solid #f1f5f9;
+      border-bottom: 1px solid var(--color-divider);
     }
     .grade-row:last-child { border-bottom: none; }
     .grade-info {
@@ -314,13 +314,13 @@ import type { User } from '../../../core/models/auth.models';
     .grade-name {
       font-size: 15px;
       font-weight: 600;
-      color: #0f172a;
+      color: var(--color-text-primary);
     }
     .grade-status {
       font-size: 12px;
-      color: #64748b;
+      color: var(--color-text-secondary);
     }
-    .grade-status.completed { color: #22c55e; }
+    .grade-status.completed { color: var(--color-success); }
     .grade-score-row {
       display: flex;
       align-items: center;
@@ -332,16 +332,16 @@ import type { User } from '../../../core/models/auth.models';
       font-weight: 700;
       min-width: 48px;
       text-align: right;
-      color: #64748b;
+      color: var(--color-text-secondary);
     }
-    .grade-score.high { color: #22c55e; }
-    .grade-score.medium { color: #f59e0b; }
+    .grade-score.high { color: var(--color-success); }
+    .grade-score.medium { color: var(--color-warning); }
     .grade-comment {
       font-size: 13px;
-      color: #64748b;
+      color: var(--color-text-secondary);
       margin: 8px 0 0 0;
       padding: 8px 12px;
-      background: #f8fafc;
+      background: var(--color-background);
       border-radius: 8px;
     }
 
@@ -456,7 +456,7 @@ import type { User } from '../../../core/models/auth.models';
         padding: 0;
         max-width: none;
       }
-      .page-title { font-size: 22px; color: #000; }
+      .page-title { font-size: 22px; color: var(--color-text-primary); }
       .overview-card { break-inside: avoid; }
       .section-card { break-inside: avoid; box-shadow: none !important; border: 1px solid #e2e8f0; }
       .grade-row, .competency-row { break-inside: avoid; }

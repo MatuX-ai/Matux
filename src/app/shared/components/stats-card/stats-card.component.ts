@@ -109,19 +109,19 @@ export interface StatsCardConfig {
         }
 
         &.color-primary {
-          background-color: #3f51b5;
+          background-color: #0f172a;
         }
 
         &.color-accent {
-          background-color: #ff4081;
+          background-color: #3b82f6;
         }
 
         &.color-warn {
-          background-color: #f44336;
+          background-color: #ef4444;
         }
 
         &.color-success {
-          background-color: #4caf50;
+          background-color: #10b981;
         }
 
         &.color-default {
@@ -175,11 +175,11 @@ export interface StatsCardConfig {
         }
 
         .positive {
-          color: #4caf50;
+          color: #10b981;
         }
 
         .negative {
-          color: #f44336;
+          color: #ef4444;
         }
       }
 

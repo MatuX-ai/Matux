@@ -15,6 +15,7 @@ import {
   UnifiedTokenResponse,
   User,
 } from '../models/auth.models';
+import { environment } from '../../../environments/environment';
 import { ElectronService } from './electron.service';
 
 /**
@@ -650,19 +651,18 @@ export class AuthService {
 
   /**
    * 根据用户角色获取默认跳转路径
+   * MatuX 桌面端仅有学生角色，其他角色已解耦至 OpenMTEduInst 项目
    */
   getRoleDefaultPath(userType: string | undefined): string {
     if (!userType) return '/';
 
-    const rolePaths: Record<string, string> = {
-      student: '/ai-edu',
-      teacher: '/teacher/dashboard',
-      parent: '/parent/dashboard',
-      admin: '/admin/dashboard',
-      super_admin: '/admin/dashboard',
-    };
+    // 学生端直接跳转到学习仪表板
+    if (userType === 'student') {
+      return '/user/dashboard';
+    }
 
-    return rolePaths[userType] || '/';
+    // 其他角色已解耦，统一跳转到欢迎页
+    return '/';
   }
 
   /**
@@ -713,14 +713,14 @@ export class AuthService {
    * 获取GitHub客户端ID
    */
   private getGithubClientId(): string {
-    return 'your_github_client_id';
+    return environment.oauth.github.clientId;
   }
 
   /**
    * 获取Google客户端ID
    */
   private getGoogleClientId(): string {
-    return 'your_google_client_id';
+    return environment.oauth.google.clientId;
   }
 
   /**
@@ -728,7 +728,7 @@ export class AuthService {
    * 需要在微信开放平台 (open.weixin.qq.com) 注册应用获取
    */
   private getWechatAppId(): string {
-    return 'your_wechat_app_id';
+    return environment.oauth.wechat.appId;
   }
 
   /**
@@ -736,7 +736,7 @@ export class AuthService {
    * 需要在QQ互联 (connect.qq.com) 注册应用获取
    */
   private getQQAppId(): string {
-    return 'your_qq_app_id';
+    return environment.oauth.qq.appId;
   }
 
   // ==================== 离线登录 ====================

@@ -60,7 +60,7 @@ import { Exam, ExamService } from '../../services/exam.service';
       .page-header { margin-bottom: 32px; }
       .page-header h1 { font-size: 28px; color: #1d1d1f; margin-bottom: 8px; }
       .page-header p { color: #86868b; font-size: 16px; }
-      .spinner { width: 40px; height: 40px; border: 3px solid #e0e0e0; border-top-color: #667eea; border-radius: 50%; animation: spin 0.8s linear infinite; margin: 40px auto; }
+      .spinner { width: 40px; height: 40px; border: 3px solid #e0e0e0; border-top-color: #3b82f6; border-radius: 50%; animation: spin 0.8s linear infinite; margin: 40px auto; }
       @keyframes spin { to { transform: rotate(360deg); } }
       .loading-state, .error-state, .empty-state { text-align: center; padding: 60px 0; color: #86868b; }
       .exam-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(320px, 1fr)); gap: 20px; }
@@ -75,8 +75,8 @@ import { Exam, ExamService } from '../../services/exam.service';
       .exam-title { font-size: 18px; font-weight: 600; margin-bottom: 8px; color: #1d1d1f; }
       .exam-desc { font-size: 14px; color: #86868b; margin-bottom: 16px; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; }
       .exam-meta { display: flex; gap: 16px; font-size: 13px; color: #666; margin-bottom: 12px; }
-      .attempt-info { font-size: 12px; color: #667eea; margin-bottom: 12px; }
-      .start-button { width: 100%; padding: 12px; background: #667eea; color: white; border: none; border-radius: 8px; font-size: 15px; font-weight: 500; cursor: pointer; transition: background 0.2s; }
+      .attempt-info { font-size: 12px; color: #3b82f6; margin-bottom: 12px; }
+      .start-button { width: 100%; padding: 12px; background: #3b82f6; color: white; border: none; border-radius: 8px; font-size: 15px; font-weight: 500; cursor: pointer; transition: background 0.2s; }
       .start-button:hover { background: #5a6fd6; }
     `,
   ],

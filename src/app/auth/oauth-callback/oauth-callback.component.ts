@@ -49,7 +49,7 @@ import { AuthService } from '../../core/services/auth.service';
         display: flex;
         align-items: center;
         justify-content: center;
-        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        background: linear-gradient(135deg, #3b82f6 0%, #2563eb 100%);
         padding: 16px;
       }
 
@@ -67,7 +67,7 @@ import { AuthService } from '../../core/services/auth.service';
         width: 48px;
         height: 48px;
         border: 4px solid #e0e0e0;
-        border-top-color: #667eea;
+        border-top-color: #3b82f6;
         border-radius: 50%;
         animation: spin 0.8s linear infinite;
         margin: 0 auto 24px;
@@ -126,7 +126,7 @@ import { AuthService } from '../../core/services/auth.service';
       .retry-button {
         display: inline-block;
         padding: 12px 32px;
-        background: #667eea;
+        background: #3b82f6;
         color: white;
         border: none;
         border-radius: 8px;
@@ -141,7 +141,7 @@ import { AuthService } from '../../core/services/auth.service';
 
       .back-link {
         display: block;
-        color: #667eea;
+        color: #3b82f6;
         text-decoration: none;
         font-size: 14px;
       }

@@ -1,4 +1,6 @@
 <div class="app-container">
-  <router-outlet></router-outlet>
+  <div [@routeTransition]="(o ? $any(o)?.activatedRouteData?.['key'] : undefined) || ''">
+    <router-outlet #o="outlet"></router-outlet>
+  </div>
   <app-status-bar></app-status-bar>
 </div>

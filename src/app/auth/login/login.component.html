@@ -1,0 +1,121 @@
+<div class="login-container">
+  <mat-card class="login-card">
+    <mat-card-header class="login-header">
+      <div class="logo-icon">
+        <mat-icon class="logo-mat-icon">school</mat-icon>
+      </div>
+      <mat-card-title class="login-title">登录 MatuX</mat-card-title>
+      <mat-card-subtitle class="login-subtitle">
+        欢迎回来，继续你的 AI 学习之旅
+      </mat-card-subtitle>
+    </mat-card-header>
+
+    <mat-card-content>
+      <form class="login-form" (ngSubmit)="onLogin()" #loginForm="ngForm">
+        <mat-form-field appearance="outline" class="full-width">
+          <mat-label>邮箱地址</mat-label>
+          <input
+            matInput
+            type="email"
+            name="email"
+            [(ngModel)]="credentials.email"
+            #emailModel="ngModel"
+            required
+            email
+            placeholder="请输入邮箱地址"
+          />
+          <mat-icon matSuffix>email</mat-icon>
+          <mat-error *ngIf="emailModel.invalid && emailModel.touched">
+            <span *ngIf="emailModel.errors?.['required']">邮箱地址不能为空</span>
+            <span *ngIf="emailModel.errors?.['email']">请输入有效的邮箱地址</span>
+          </mat-error>
+        </mat-form-field>
+
+        <mat-form-field appearance="outline" class="full-width">
+          <mat-label>密码</mat-label>
+          <input
+            matInput
+            [type]="hidePassword ? 'password' : 'text'"
+            name="password"
+            [(ngModel)]="credentials.password"
+            #passwordModel="ngModel"
+            required
+            minlength="6"
+            placeholder="请输入密码"
+          />
+          <button
+            mat-icon-button
+            matSuffix
+            type="button"
+            (click)="hidePassword = !hidePassword"
+          >
+            <mat-icon>{{ hidePassword ? 'visibility_off' : 'visibility' }}</mat-icon>
+          </button>
+          <mat-error *ngIf="passwordModel.invalid && passwordModel.touched">
+            <span *ngIf="passwordModel.errors?.['required']">密码不能为空</span>
+            <span *ngIf="passwordModel.errors?.['minlength']">密码至少6个字符</span>
+          </mat-error>
+        </mat-form-field>
+
+        <div class="form-options">
+          <mat-checkbox [(ngModel)]="rememberMe" name="rememberMe" color="primary">
+            记住我
+          </mat-checkbox>
+        </div>
+
+        <div class="error-alert" *ngIf="errorMessage">
+          <mat-icon color="warn">error</mat-icon>
+          <span>{{ errorMessage }}</span>
+        </div>
+
+        <button
+          mat-flat-button
+          color="primary"
+          type="submit"
+          class="full-width login-button"
+          [disabled]="loginForm.invalid || loading"
+        >
+          <mat-spinner *ngIf="loading" diameter="20" class="btn-spinner"></mat-spinner>
+          <span *ngIf="!loading">登录</span>
+        </button>
+      </form>
+
+      <div class="oauth-divider">
+        <div class="divider-line"></div>
+        <span class="divider-text">或使用第三方登录</span>
+        <div class="divider-line"></div>
+      </div>
+
+      <div class="oauth-buttons">
+        <button mat-stroked-button class="oauth-btn" (click)="loginWithQQ()">
+          <mat-icon>chat</mat-icon>
+          <span>QQ</span>
+        </button>
+        <button mat-stroked-button class="oauth-btn" (click)="loginWithWechat()">
+          <mat-icon>wechat</mat-icon>
+          <span>微信</span>
+        </button>
+        <button mat-stroked-button class="oauth-btn" (click)="loginWithGoogle()">
+          <svg class="oauth-icon" viewBox="0 0 24 24">
+            <path fill="currentColor" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"/>
+            <path fill="currentColor" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"/>
+            <path fill="currentColor" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z"/>
+            <path fill="currentColor" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z"/>
+          </svg>
+          <span>Google</span>
+        </button>
+        <button mat-stroked-button class="oauth-btn" (click)="loginWithGithub()">
+          <svg class="oauth-icon" viewBox="0 0 24 24">
+            <path fill="currentColor" d="M12 0c-6.626 0-12 5.373-12 12 0 5.302 3.438 9.8 8.207 11.387.599.111.793-.261.793-.577v-2.234c-3.338.726-4.033-1.416-4.033-1.416-.546-1.387-1.333-1.756-1.333-1.756-1.089-.745.083-.729.083-.729 1.205.084 1.839 1.237 1.839 1.237 1.07 1.834 2.807 1.304 3.492.997.107-.775.418-1.305.762-1.604-2.665-.305-5.467-1.334-5.467-5.931 0-1.311.469-2.381 1.236-3.221-.124-.303-.535-1.524.117-3.176 0 0 1.008-.322 2.95-.322 2.479 0 4.465 1.513 4.465 3.378 0 .653-.124 1.277-.352 1.853.889.265 1.839.398 2.808.398 3.856 0 6.638-3.748 6.638-8.381 0-1.279-.261-2.494-.754-3.598 2.705-.324 5.145-2.055 5.145-4.498 0-.995-.356-1.912-.934-2.614 0 0-1.205-.295-3.953 1.036-1.149-.319-2.383-.489-3.627-.495 1.054.745 1.767 1.897 1.767 3.218 0 2.283-1.39 4.191-3.315 4.191-.643 0-1.269-.063-1.874-.188.889 1.745 2.486 3.018 4.385 3.018 3.186 0 5.797-2.574 5.797-5.797 0-.901-.185-1.76-.534-2.554z"/>
+          </svg>
+          <span>GitHub</span>
+        </button>
+      </div>
+    </mat-card-content>
+
+    <mat-card-footer class="login-footer">
+      <span>还没有账号？</span>
+      <a mat-button color="primary" routerLink="/auth/register">立即注册</a>
+    </mat-card-footer>
+  </mat-card>
+</div>

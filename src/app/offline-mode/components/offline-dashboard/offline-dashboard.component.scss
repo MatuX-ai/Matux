@@ -12,7 +12,7 @@
 
     h1 {
       margin: 0 0 $spacing-sm;
-      color: #1976d2;
+      color: #3b82f6;
       font-size: 2rem;
       font-weight: 300;
 
@@ -116,7 +116,7 @@
             &:last-child { border-bottom: none; }
 
             .item-label { color: $text-secondary; }
-            .item-count { color: #1976d2; font-weight: 600; }
+            .item-count { color: #3b82f6; font-weight: 600; }
           }
         }
       }
@@ -193,7 +193,7 @@
 
       .action-icon {
         margin-bottom: $spacing-lg;
-        color: #1976d2;
+        color: #3b82f6;
         font-size: 3rem;
       }
 

@@ -30,6 +30,20 @@ export type DiagnosisDimension =
   | 'efficiency'      // 学习效率
   | 'independence';   // 独立学习
 
+/** 诊断评分常量 */
+const DIAGNOSIS_DEFAULT_SCORE = 50;          // 默认中等分数
+const DIAGNOSIS_MAX_SCORE = 100;             // 最高分
+const DIAGNOSIS_MIN_SCORE = 0;               // 最低分
+const DIAGNOSIS_NOT_STARTED_PENALTY = 20;    // 未开始知识点扣分权重
+const DIAGNOSIS_BALANCE_PENALTY_MAX = 30;    // 技能均衡最大惩罚分
+const DIAGNOSIS_DISTRACTION_PENALTY_FACTOR = 10; // 分心惩罚因子
+const DIAGNOSIS_COURSE_EFFICIENCY_FACTOR = 20;   // 课程效率因子
+const DIAGNOSIS_QUESTION_EFFICIENCY_MAX = 50;    // 题目效率最高分
+const DIAGNOSIS_QUESTION_EFFICIENCY_FACTOR = 10; // 题目效率因子
+const DIAGNOSIS_BASE_EFFICIENCY_SCORE = 20;      // 效率基础分
+const DIAGNOSIS_HISTORY_MAX_LENGTH = 20;     // 最大历史记录数
+const DIAGNOSIS_TREND_THRESHOLD = 5;         // 趋势变化阈值
+
 /** 诊断报告 */
 export interface DiagnosisReport {
   userId: string;
@@ -150,7 +164,7 @@ export class DiagnosisService {
     );
 
     // 严重问题（高优先级）
-    const criticalIssues = suggestions.filter((s) => s.severity === 'warning');
+    const criticalIssues = suggestions.filter((s) => s.severity === 'critical');
 
     // 趋势分析
     const trends = this.analyzeTrends(growth);
@@ -167,18 +181,18 @@ export class DiagnosisService {
   }
 
   private scoreKnowledgeDimension(state: KnowledgeStateItem[]): number {
-    if (state.length === 0) return 50; // 默认中等
+    if (state.length === 0) return DIAGNOSIS_DEFAULT_SCORE;
     const mastered = state.filter((k) => k.status === 'mastered').length;
     const notStarted = state.filter((k) => k.status === 'not_started').length;
-    const score = ((mastered / state.length) * 100) - (notStarted / state.length * 20);
-    return Math.max(0, Math.min(100, Math.round(score)));
+    const score = ((mastered / state.length) * DIAGNOSIS_MAX_SCORE) - (notStarted / state.length * DIAGNOSIS_NOT_STARTED_PENALTY);
+    return Math.max(DIAGNOSIS_MIN_SCORE, Math.min(DIAGNOSIS_MAX_SCORE, Math.round(score)));
   }
 
   private scoreSkillDimension(
     profile: StudentLearningProfile | null,
     growth: any,
   ): number {
-    if (!growth?.abilityTrend?.length) return 50;
+    if (!growth?.abilityTrend?.length) return DIAGNOSIS_DEFAULT_SCORE;
     const latest = growth.abilityTrend[growth.abilityTrend.length - 1] as AbilityTrendPoint;
     const values = [
       latest.programmingThinking,
@@ -189,15 +203,15 @@ export class DiagnosisService {
     ];
     const avg = values.reduce((s, v) => s + v, 0) / values.length;
     const variance = values.reduce((s, v) => s + Math.pow(v - avg, 2), 0) / values.length;
-    const balancePenalty = Math.min(30, Math.sqrt(variance));
-    return Math.max(0, Math.min(100, Math.round(avg - balancePenalty)));
+    const balancePenalty = Math.min(DIAGNOSIS_BALANCE_PENALTY_MAX, Math.sqrt(variance));
+    return Math.max(DIAGNOSIS_MIN_SCORE, Math.min(DIAGNOSIS_MAX_SCORE, Math.round(avg - balancePenalty)));
   }
 
   private scoreEngagementDimension(profile: StudentLearningProfile | null): number {
-    if (!profile?.attentionProfile) return 50;
+    if (!profile?.attentionProfile) return DIAGNOSIS_DEFAULT_SCORE;
     const { averageFocusDurationMinutes, tabSwitchFrequency } = profile.attentionProfile;
-    const focus = Math.min(100, (averageFocusDurationMinutes / 60) * 100);
-    const distraction = Math.max(0, 100 - tabSwitchFrequency * 10);
+    const focus = Math.min(DIAGNOSIS_MAX_SCORE, (averageFocusDurationMinutes / 60) * DIAGNOSIS_MAX_SCORE);
+    const distraction = Math.max(DIAGNOSIS_MIN_SCORE, DIAGNOSIS_MAX_SCORE - tabSwitchFrequency * DIAGNOSIS_DISTRACTION_PENALTY_FACTOR);
     return Math.round((focus + distraction) / 2);
   }
 
@@ -205,31 +219,67 @@ export class DiagnosisService {
     profile: StudentLearningProfile | null,
     growth: any,
   ): number {
-    if (!growth?.statistics) return 50;
+    if (!growth?.statistics) return DIAGNOSIS_DEFAULT_SCORE;
     const { totalStudyHours, completedCourses, totalQuestions } = growth.statistics;
-    if (totalStudyHours === 0) return 50;
-    const courseEfficiency = (completedCourses / Math.max(1, totalStudyHours / 10)) * 20;
-    const questionEfficiency = Math.min(50, (totalQuestions / Math.max(1, totalStudyHours)) * 10);
-    return Math.min(100, Math.round(courseEfficiency + questionEfficiency + 20));
+    if (totalStudyHours === 0) return DIAGNOSIS_DEFAULT_SCORE;
+    const courseEfficiency = (completedCourses / Math.max(1, totalStudyHours / 10)) * DIAGNOSIS_COURSE_EFFICIENCY_FACTOR;
+    const questionEfficiency = Math.min(DIAGNOSIS_QUESTION_EFFICIENCY_MAX, (totalQuestions / Math.max(1, totalStudyHours)) * DIAGNOSIS_QUESTION_EFFICIENCY_FACTOR);
+    return Math.min(DIAGNOSIS_MAX_SCORE, Math.round(courseEfficiency + questionEfficiency + DIAGNOSIS_BASE_EFFICIENCY_SCORE));
   }
 
+  /**
+   * 独立学习能力评分
+   *
+   * 使用 abilityDimensions.independentCompletion：独立完成率越高，说明独立学习能力越强
+   */
   private scoreIndependenceDimension(profile: StudentLearningProfile | null): number {
-    if (!profile?.weakPoints?.length) return 50;
-    const avgMastery = profile.weakPoints.reduce((s, w) => s + w.mastery, 0) / profile.weakPoints.length;
-    return Math.round(avgMastery * 100);
+    if (!profile?.abilityDimensions) return DIAGNOSIS_DEFAULT_SCORE;
+    return Math.round(profile.abilityDimensions.independentCompletion);
   }
 
   private analyzeTrends(growth: any): { improving: string[]; declining: string[]; stable: string[] } {
     const result = { improving: [] as string[], declining: [] as string[], stable: [] as string[] };
     if (!growth?.abilityTrend?.length || growth.abilityTrend.length < 2) return result;
+
+    const first = growth.abilityTrend[0] as AbilityTrendPoint;
+    const last = growth.abilityTrend[growth.abilityTrend.length - 1] as AbilityTrendPoint;
+
+    const dimensions: { key: keyof AbilityTrendPoint; label: string }[] = [
+      { key: 'programmingThinking', label: '编程思维' },
+      { key: 'algorithmAbility', label: '算法能力' },
+      { key: 'debuggingSkill', label: '调试技能' },
+      { key: 'projectPractice', label: '项目实践' },
+      { key: 'stemExperiment', label: 'STEM实验' },
+      { key: 'independentCompletion', label: '独立完成' },
+    ];
+
+    for (const dim of dimensions) {
+      const diff = (last[dim.key] as number) - (first[dim.key] as number);
+      if (diff > DIAGNOSIS_TREND_THRESHOLD) {
+        result.improving.push(dim.label);
+      } else if (diff < -DIAGNOSIS_TREND_THRESHOLD) {
+        result.declining.push(dim.label);
+      } else {
+        result.stable.push(dim.label);
+      }
+    }
+
     return result;
   }
 
   private saveToHistory(report: DiagnosisReport): void {
-    const history = this.getHistory();
-    history.push(report);
-    if (history.length > 20) history.shift();
+    const history = [...this.getHistory(), report];
+    if (history.length > DIAGNOSIS_HISTORY_MAX_LENGTH) {
+      const truncated = history.slice(history.length - DIAGNOSIS_HISTORY_MAX_LENGTH);
+      this.historySubject.next(truncated);
+      this.persistHistory(truncated);
+      return;
+    }
     this.historySubject.next(history);
+    this.persistHistory(history);
+  }
+
+  private persistHistory(history: DiagnosisReport[]): void {
     try {
       localStorage.setItem(this.STORAGE_KEY, JSON.stringify(history));
     } catch {

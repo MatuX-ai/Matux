@@ -208,13 +208,13 @@ export class AIEduService {
    */
   getRarityColor(rarity: string): string {
     const colors: Record<string, string> = {
-      common: '#4CAF50', // 绿色
-      rare: '#2196F3', // 蓝色
-      epic: '#9C27B0', // 紫色
-      legendary: '#FF9800', // 橙色
-      mythic: '#F44336', // 红色
+      common: '#10b981', // 绿色
+      rare: '#3b82f6', // 蓝色
+      epic: '#8b5cf6', // 紫色
+      legendary: '#f59e0b', // 橙色
+      mythic: '#ef4444', // 红色
     };
-    return colors[rarity] || '#9E9E9E';
+    return colors[rarity] || '#94a3b8';
   }
 
   /**
@@ -234,10 +234,10 @@ export class AIEduService {
    */
   getStatusColor(status: string): string {
     const colors: Record<string, string> = {
-      not_started: '#9E9E9E',
-      in_progress: '#2196F3',
-      completed: '#4CAF50',
+      not_started: '#94a3b8',
+      in_progress: '#3b82f6',
+      completed: '#10b981',
     };
-    return colors[status] || '#9E9E9E';
+    return colors[status] || '#94a3b8';
   }
 }

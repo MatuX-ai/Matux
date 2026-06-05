@@ -162,6 +162,24 @@ contextBridge.exposeInMainWorld('electronAPI', {
   removeAllListeners: (channel) => {
     ipcRenderer.removeAllListeners(channel);
   },
+
+  // ==================== 窗口控制（frame:false 自定义标题栏） ====================
+  minimizeWindow: () => ipcRenderer.invoke('window-minimize'),
+  maximizeWindow: () => ipcRenderer.invoke('window-maximize'),
+  closeWindow: () => ipcRenderer.invoke('window-close'),
+  isWindowMaximized: () => ipcRenderer.invoke('window-is-maximized'),
+
+  /** 监听最大化状态变化 */
+  onMaximizeChange: (callback) => {
+    ipcRenderer.on('app-event', (_event, data) => {
+      if (data.type === 'window-resize') callback(data);
+    });
+  },
+
+  /** 监听快捷键事件 */
+  onShortcut: (callback) => {
+    ipcRenderer.on('shortcut', (_event, action) => callback(action));
+  },
 });
 
 console.log('[Preload] Electron 预加载脚本已加载');

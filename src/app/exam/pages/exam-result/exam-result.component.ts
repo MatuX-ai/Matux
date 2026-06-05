@@ -36,7 +36,7 @@ import { ExamAttempt, ExamService } from '../../services/exam.service';
         </div>
 
         <div *ngIf="attempt.cheat_events?.length" class="cheat-warning">
-          ⚠️ 检测到 {{ attempt.cheat_events.length }} 次可疑操作
+          ⚠️ 检测到 {{ attempt.cheat_events?.length }} 次可疑操作
         </div>
 
         <div class="action-buttons">
@@ -59,7 +59,7 @@ import { ExamAttempt, ExamService } from '../../services/exam.service';
       .passed h2 { color: #2e7d32; }
       .failed h2 { color: #c62828; }
       .score-section { display: flex; align-items: center; justify-content: center; gap: 24px; margin-bottom: 32px; }
-      .score-circle { width: 120px; height: 120px; border-radius: 50%; display: flex; align-items: center; justify-content: center; background: linear-gradient(135deg, #667eea, #764ba2); }
+      .score-circle { width: 120px; height: 120px; border-radius: 50%; display: flex; align-items: center; justify-content: center; background: linear-gradient(135deg, #3b82f6, #2563eb); }
       .score-value { font-size: 28px; font-weight: 700; color: white; }
       .score-detail { text-align: left; }
       .score-detail p { margin: 4px 0; color: #666; font-size: 15px; }
@@ -69,9 +69,9 @@ import { ExamAttempt, ExamService } from '../../services/exam.service';
       .stat-value { font-size: 16px; font-weight: 600; color: #1d1d1f; }
       .cheat-warning { padding: 12px; background: #fff3e0; border-radius: 8px; color: #ef6c00; font-size: 14px; margin-bottom: 24px; }
       .action-buttons { display: flex; gap: 12px; justify-content: center; }
-      .btn-secondary { padding: 12px 32px; border: 2px solid #667eea; background: white; color: #667eea; border-radius: 8px; font-size: 15px; cursor: pointer; transition: all 0.2s; }
+      .btn-secondary { padding: 12px 32px; border: 2px solid #3b82f6; background: white; color: #3b82f6; border-radius: 8px; font-size: 15px; cursor: pointer; transition: all 0.2s; }
       .btn-secondary:hover { background: #f5f7ff; }
-      .spinner { width: 40px; height: 40px; border: 3px solid #e0e0e0; border-top-color: #667eea; border-radius: 50%; animation: spin 0.8s linear infinite; margin: 40px auto; }
+      .spinner { width: 40px; height: 40px; border: 3px solid #e0e0e0; border-top-color: #3b82f6; border-radius: 50%; animation: spin 0.8s linear infinite; margin: 40px auto; }
       @keyframes spin { to { transform: rotate(360deg); } }
       .loading-state, .error-state { text-align: center; padding: 60px 0; }
     `,

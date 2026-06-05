@@ -6,7 +6,7 @@ import { CustomPreloadingStrategy } from './core/services/custom-preloading.stra
 const routes: Routes = [
   {
     path: '',
-    redirectTo: '/user/dashboard',
+    redirectTo: '/dashboard',
     pathMatch: 'full',
   },
   // 开发调试用最小化仪表板

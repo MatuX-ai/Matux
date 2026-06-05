@@ -48,32 +48,37 @@ import { StudentDashboardComponent } from './student/student-dashboard.component
     // ParentDashboardComponent 已移除
   ],
   template: `
-    <div class="user-center-container">
+    <div class="user-center-container" [class.desktop-layout]="!isMobile">
       <!-- 全局导航栏 -->
       <app-user-navbar></app-user-navbar>
 
-      <!-- 水平子导航（头部导航条下方） -->
+      <!-- 桌面端侧边栏（持久可见） -->
+      <app-user-sidebar
+        *ngIf="!isMobile"
+        [opened]="true"
+        [isMobile]="false"
+        class="desktop-sidebar"
+      ></app-user-sidebar>
+
+      <!-- 水平子导航 -->
       <app-user-sub-nav></app-user-sub-nav>
 
-      <!-- 移动端遮罩（保留用于移动端侧边栏） -->
+      <!-- 移动端遮罩 -->
       <div class="overlay" [class.show]="isMobile && sidebarOpen" (click)="closeSidebar()"></div>
 
-      <!-- 移动端侧边栏（仅移动端显示） -->
+      <!-- 移动端侧边栏 -->
       <app-user-sidebar
+        *ngIf="isMobile"
         [opened]="sidebarOpen"
-        [isMobile]="isMobile"
+        [isMobile]="true"
         (menuClick)="handleMenuClick()"
-        class="mobile-sidebar-only"
+        class="mobile-sidebar"
       ></app-user-sidebar>
 
       <!-- 主内容区 -->
-      <div class="main-content">
-        <!-- 页面内容 -->
+      <div class="main-content" [class.with-sidebar]="!isMobile">
         <main class="content-area">
-          <!-- 学生仪表板（MatuX 仅有学生角色） -->
           <app-student-dashboard></app-student-dashboard>
-
-          <!-- 底部导航 -->
           <app-user-footer></app-user-footer>
         </main>
       </div>
@@ -86,6 +91,35 @@ import { StudentDashboardComponent } from './student/student-dashboard.component
         display: flex;
         flex-direction: column;
         position: relative;
+      }
+
+      /* 桌面端 Grid 布局：侧边栏 + 内容区 */
+      .user-center-container.desktop-layout {
+        display: grid;
+        grid-template-columns: 260px 1fr;
+        grid-template-rows: 64px auto 1fr;
+        min-height: 100vh;
+      }
+
+      .user-center-container.desktop-layout app-user-navbar {
+        grid-column: 1 / -1;
+        grid-row: 1;
+      }
+
+      .user-center-container.desktop-layout .desktop-sidebar {
+        grid-column: 1;
+        grid-row: 2 / -1;
+        z-index: 100;
+      }
+
+      .user-center-container.desktop-layout app-user-sub-nav {
+        grid-column: 2;
+        grid-row: 2;
+      }
+
+      .user-center-container.desktop-layout .main-content {
+        grid-column: 2;
+        grid-row: 3;
       }
 
       app-user-navbar {
@@ -102,7 +136,7 @@ import { StudentDashboardComponent } from './student/student-dashboard.component
         flex: 1;
         padding: 24px;
         overflow-y: auto;
-        background-color: #f5f5f5;
+        background-color: var(--color-background);
         min-height: 0;
         display: flex;
         flex-direction: column;
@@ -131,19 +165,12 @@ import { StudentDashboardComponent } from './student/student-dashboard.component
         visibility: visible;
       }
 
-      /* 移动端侧边栏样式 */
-      .mobile-sidebar-only {
-        display: none;
-      }
-
-      @media (max-width: 767px) {
-        .mobile-sidebar-only {
-          display: block;
-        }
-
-        .content-area {
-          padding: 16px;
-        }
+      /* 移动端侧边栏 */
+      .mobile-sidebar {
+        position: fixed;
+        top: 0;
+        left: 0;
+        z-index: 999;
       }
 
       .redirect-notice {
@@ -152,7 +179,7 @@ import { StudentDashboardComponent } from './student/student-dashboard.component
         align-items: center;
         justify-content: center;
         height: 400px;
-        color: #666;
+        color: var(--color-text-secondary);
       }
 
       .redirect-notice mat-icon {
@@ -164,6 +191,17 @@ import { StudentDashboardComponent } from './student/student-dashboard.component
 
       .redirect-notice p {
         font-size: 16px;
+      }
+
+      @media (max-width: 767px) {
+        .user-center-container.desktop-layout {
+          display: flex;
+          flex-direction: column;
+        }
+
+        .content-area {
+          padding: 16px;
+        }
       }
     `,
   ],

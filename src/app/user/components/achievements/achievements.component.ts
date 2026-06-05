@@ -87,7 +87,7 @@ import { AchievementUploadComponent } from '../../../features/achievement-integr
         font-size: 28px;
         font-weight: 700;
         margin-bottom: 24px;
-        color: #333;
+        color: var(--color-text-primary);
       }
 
       .section {

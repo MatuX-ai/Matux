@@ -1,0 +1,146 @@
+// MinimalDashboard 样式 — MatuX PRD v1.1 标准
+@use '../../styles/variables' as vars;
+
+.welcome-container {
+  min-height: 100vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: linear-gradient(135deg, vars.$primary-color 0%, #1e293b 50%, vars.$primary-color 100%);
+  padding: 24px;
+}
+
+.welcome-content {
+  max-width: 800px;
+  width: 100%;
+  text-align: center;
+}
+
+// 品牌区域
+.brand-section {
+  margin-bottom: 48px;
+}
+
+.logo-icon {
+  width: 64px;
+  height: 64px;
+  background: linear-gradient(135deg, #3b82f6, #2563eb);
+  border-radius: 16px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin: 0 auto 20px;
+  box-shadow: 0 8px 32px rgba(59, 130, 246, 0.35);
+}
+
+.logo-icon mat-icon {
+  font-size: 36px;
+  width: 36px;
+  height: 36px;
+  color: #fff;
+}
+
+.brand-name {
+  font-size: 36px;
+  font-weight: 700;
+  color: #f1f5f9;
+  margin: 0 0 8px;
+  letter-spacing: -0.5px;
+}
+
+.tagline {
+  font-size: 16px;
+  color: #94a3b8;
+  margin: 0;
+  letter-spacing: 0.3px;
+}
+
+// 特色卡片网格
+.features-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+  gap: 16px;
+  margin-bottom: 48px;
+}
+
+.feature-card {
+  background: rgba(255, 255, 255, 0.06);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 16px;
+  padding: 24px 16px;
+  text-align: center;
+  transition: all 0.3s ease;
+  backdrop-filter: blur(4px);
+
+  &:hover {
+    background: rgba(255, 255, 255, 0.1);
+    border-color: rgba(59, 130, 246, 0.3);
+    transform: translateY(-4px) scale(1.03);
+    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.2);
+  }
+
+  .feature-icon {
+    font-size: 36px;
+    width: 36px;
+    height: 36px;
+    margin-bottom: 12px;
+  }
+
+  h3 {
+    font-size: 16px;
+    font-weight: 600;
+    color: #f1f5f9;
+    margin: 0 0 8px;
+  }
+
+  p {
+    font-size: 13px;
+    color: #94a3b8;
+    margin: 0;
+    line-height: 1.5;
+  }
+}
+
+.code-icon { color: #60a5fa; }
+.lab-icon { color: #34d399; }
+.ai-icon { color: #f472b6; }
+.offline-icon { color: #fbbf24; }
+
+// 行动号召
+.cta-section {
+  margin-bottom: 48px;
+}
+
+.cta-button {
+  font-size: 16px;
+  padding: 8px 32px;
+  border-radius: 9999px;
+  background: #3b82f6 !important;
+  color: white !important;
+
+  &:hover {
+    background: #2563eb !important;
+  }
+
+  mat-icon {
+    margin-left: 4px;
+  }
+}
+
+.cta-hint {
+  font-size: 13px;
+  color: #64748b;
+  margin: 12px 0 0;
+}
+
+// 页脚
+.welcome-footer {
+  padding-top: 24px;
+  border-top: 1px solid rgba(255, 255, 255, 0.08);
+
+  p {
+    font-size: 12px;
+    color: #475569;
+    margin: 0;
+  }
+}

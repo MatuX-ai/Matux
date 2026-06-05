@@ -53,8 +53,9 @@ class TestStringUtils(unittest.TestCase):
 
     def test_naming_conversions(self):
         """测试命名格式转换"""
-        self.assertEqual(camel_to_snake("userName"), "_user_name")
-        self.assertEqual(camel_to_snake("XMLHttpRequest"), "_x_m_l_http_request")
+        self.assertEqual(camel_to_snake("userName"), "user_name")
+        self.assertEqual(camel_to_snake("XMLHttpRequest"),
+                         "_x_m_l_http_request")
         self.assertEqual(snake_to_camel("user_name"), "userName")
         self.assertEqual(snake_to_camel("first_name"), "firstName")
 

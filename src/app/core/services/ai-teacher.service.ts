@@ -20,6 +20,8 @@ import { Injectable } from '@angular/core';
 import { BehaviorSubject, Observable, of } from 'rxjs';
 import { catchError, switchMap, tap } from 'rxjs/operators';
 
+import { EmotionalCompanionService } from './emotional-companion.service';
+
 import {
   AITeacherChatRequest,
   AITeacherChatResponse,
@@ -80,6 +82,7 @@ export class AITeacherService {
   constructor(
     private http: HttpClient,
     private vectorKnowledge: VectorKnowledgeService,
+    private emotionCompanion: EmotionalCompanionService,
   ) {}
 
   // ==================== 学习画像 ====================
@@ -136,6 +139,16 @@ export class AITeacherService {
     ].filter(Boolean).join('。');
   }
 
+  /** 注入情绪上下文到画像摘要 */
+  private injectEmotionContext(seed: string): string {
+    if (!this.emotionCompanion.companionModeEnabled) return seed;
+    const emotion = this.emotionCompanion.currentEmotion;
+    if (!emotion || emotion === 'neutral') return seed;
+    const emoji = this.emotionCompanion.getEmotionEmoji(emotion);
+    const label = this.emotionCompanion.getEmotionLabel(emotion);
+    return `${seed}。当前情绪状态：${emoji}${label}`;
+  }
+
   // ==================== 上下文记忆 ====================
 
   /** 获取长期记忆 */
@@ -185,9 +198,12 @@ export class AITeacherService {
     const persona = this.personaSubject.value;
 
     // 注入画像和人格到请求
+    const profileSeed = this.injectEmotionContext(
+      profile ? this.generatePersonaSeed(profile) : ''
+    );
     const enhancedRequest = {
       ...request,
-      profileSeed: profile ? this.generatePersonaSeed(profile) : '',
+      profileSeed,
       persona: {
         addressMode: persona.addressMode,
         languageStyle: persona.languageStyle,
@@ -202,7 +218,7 @@ export class AITeacherService {
       ? this.vectorKnowledge.ragRetrieve(
           request.message,
           request.userId,
-          profile ? this.generatePersonaSeed(profile) : '',
+          profile ? this.injectEmotionContext(this.generatePersonaSeed(profile)) : '',
           this.inferStage(profile?.gradeLevel),
         )
       : of(null);
@@ -218,6 +234,19 @@ export class AITeacherService {
 
         return this.http.post<AITeacherChatResponse>(`${this.API_BASE}/chat`, requestWithContext).pipe(
           tap((response) => {
+            // 自动记录AI检测到的情绪到情感陪伴日志（跳过 neutral 避免淹没日志）
+            if (response.emotionDetected && response.emotionDetected !== 'neutral') {
+              // EmotionLog.emotion 与 EmotionState 有交集但不是同一类型
+              const detected = response.emotionDetected;
+              const validEmotions: readonly string[] = ['frustrated', 'anxious', 'confused', 'bored'];
+              if (validEmotions.includes(detected)) {
+                this.emotionCompanion.logEmotion(
+                  detected as any,
+                  'AI对话检测',
+                  3
+                );
+              }
+            }
             // 更新会话记忆
             const session = this.sessionSubject.value;
             if (session) {
@@ -865,6 +894,22 @@ export class AITeacherService {
         suggestedAction: '遇到问题先自己思考 2 分钟，借助提示尝试独立解决',
         relatedKnowledgePoints: ['问题拆解', '独立调试'],
         recommendedCourses: ['independent_debug_practice'],
+        createdAt: new Date().toISOString(), isRead: false,
+      },
+      {
+        id: 'sug_7', diagnosisType: 'skill_imbalance', severity: 'critical',
+        title: '编程能力严重失衡', description: '你的调试技能(25)远低于编程思维(75)，差距超过30分',
+        suggestedAction: '建议暂停新知识学习，集中进行调试专项练习，完成「调试大师」挑战',
+        relatedKnowledgePoints: ['断点调试', '错误追踪', '日志分析'],
+        recommendedCourses: ['debugging_master', 'error_analysis_101'],
+        createdAt: new Date().toISOString(), isRead: false,
+      },
+      {
+        id: 'sug_8', diagnosisType: 'prerequisite_missing', severity: 'critical',
+        title: '关键前置知识缺失', description: '函数章节前置知识(变量作用域)掌握率仅 15%，严重阻碍后续学习',
+        suggestedAction: '立即暂停函数学习，退回至变量作用域章节完成所有练习并通过测试',
+        relatedKnowledgePoints: ['变量作用域', '函数', '闭包'],
+        recommendedCourses: ['python_scope_fundamentals', 'scope_quiz'],
         createdAt: new Date().toISOString(), isRead: false,
       },
     ];

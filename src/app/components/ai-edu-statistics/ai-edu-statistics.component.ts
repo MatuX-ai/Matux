@@ -101,7 +101,7 @@ import { LearningStatistics } from '../../models/ai-edu.models';
       .stat-item {
         text-align: center;
         padding: 16px;
-        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        background: linear-gradient(135deg, #3b82f6 0%, #2563eb 100%);
         border-radius: 8px;
         color: white;
       }
@@ -130,7 +130,7 @@ import { LearningStatistics } from '../../models/ai-edu.models';
       }
 
       .error {
-        color: #f44336;
+        color: #ef4444;
       }
     `,
   ],

@@ -4,10 +4,10 @@
 @use 'variables' as *;
 @use 'mixins' as *;
 
-// 引入设计 Token - Mac 风格
-$color-brand-300: #aeaeb2;     // Apple 中性灰
-$color-brand-500: #667eea;     // Mac 渐变紫起始色
-$color-brand-700: #764ba2;     // Mac 渐变紫结束色
+// 引入设计 Token - MatuX 品牌色
+$color-brand-300: #cbd5e1;     // Slate-300
+$color-brand-500: #3b82f6;     // 科技蓝 Blue-500 - MatuX 辅助色
+$color-brand-700: #2563eb;     // 深蓝 Blue-600
 $color-neutral-100: #FFFFFF;
 $color-neutral-150: #F7F8FA;
 $color-neutral-200: #E5E6EB;
@@ -274,7 +274,7 @@ $color-neutral-800: #1D2129;
   width: 120px;
   height: 120px;
   border-radius: 50%;
-  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  background: linear-gradient(135deg, #3b82f6 0%, #2563eb 100%);
   display: flex;
   align-items: center;
   justify-content: center;
@@ -393,7 +393,7 @@ $color-neutral-800: #1D2129;
       color: #444;
 
       mat-icon {
-        color: #667eea;
+        color: #3b82f6;
         font-size: 24px;
         width: 24px;
         height: 24px;
@@ -857,7 +857,7 @@ $color-neutral-800: #1D2129;
 }
 
 .gradient-text {
-  background: linear-gradient(-45deg, var(--gradient-primary-start, #667eea), var(--gradient-primary-end, #764ba2), #f093fb, #f5576c);
+  background: linear-gradient(-45deg, var(--gradient-primary-start, #3b82f6), var(--gradient-primary-end, #2563eb), #60a5fa, #1e40af);
   background-size: 400% 400%;
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;

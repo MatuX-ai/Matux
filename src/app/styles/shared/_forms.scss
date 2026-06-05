@@ -10,25 +10,25 @@
 // 表单组
 .form-group {
   margin-bottom: 20px;
-  
+
   .form-label {
     display: block;
     margin-bottom: 8px;
     font-weight: 500;
     color: #333;
-    
+
     &.required::after {
       content: ' *';
       color: #f44336;
     }
   }
-  
+
   .form-hint {
     margin-top: 4px;
     font-size: 0.8rem;
     color: #666;
   }
-  
+
   .form-error {
     margin-top: 4px;
     font-size: 0.8rem;
@@ -45,26 +45,26 @@
   font-size: 16px;
   transition: all 0.3s ease;
   background: white;
-  
+
   &:focus {
     outline: none;
-    border-color: #667eea;
-    box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+    border-color: #3b82f6;
+    box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
   }
-  
+
   &.form-control-error {
     border-color: #f44336;
-    
+
     &:focus {
       box-shadow: 0 0 0 3px rgba(244, 67, 54, 0.1);
     }
   }
-  
+
   &:disabled {
     background: #f5f5f5;
     cursor: not-allowed;
   }
-  
+
   // 文本域
   &.form-textarea {
     min-height: 120px;
@@ -72,7 +72,7 @@
     font-family: inherit;
     line-height: 1.5;
   }
-  
+
   // 选择框
   &.form-select {
     cursor: pointer;
@@ -88,7 +88,7 @@
 // 输入框组（带前缀/后缀）
 .input-group {
   display: flex;
-  
+
   .input-group-prepend,
   .input-group-append {
     display: flex;
@@ -98,26 +98,26 @@
     border: 2px solid #e0e0e0;
     color: #666;
     font-weight: 500;
-    
+
     &:first-child {
       border-right: none;
       border-radius: 8px 0 0 8px;
     }
-    
+
     &:last-child {
       border-left: none;
       border-radius: 0 8px 8px 0;
     }
   }
-  
+
   .form-control {
     flex: 1;
-    
+
     &:not(:first-child) {
       border-left: none;
       border-radius: 0 8px 8px 0;
     }
-    
+
     &:not(:last-child) {
       border-right: none;
       border-radius: 8px 0 0 8px;
@@ -130,11 +130,11 @@
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
   gap: 16px;
-  
+
   .form-group {
     margin-bottom: 0;
   }
-  
+
   @media (max-width: 768px) {
     grid-template-columns: 1fr;
   }
@@ -147,18 +147,18 @@
   gap: 12px;
   margin-bottom: 12px;
   cursor: pointer;
-  
+
   .form-check-input {
     margin-top: 4px;
     cursor: pointer;
   }
-  
+
   .form-check-label {
     cursor: pointer;
     color: #333;
-    
+
     &:hover {
-      color: #667eea;
+      color: #3b82f6;
     }
   }
 }
@@ -168,7 +168,7 @@
   display: flex;
   align-items: center;
   gap: 12px;
-  
+
   .switch {
     position: relative;
     width: 50px;
@@ -177,11 +177,11 @@
     border-radius: 13px;
     cursor: pointer;
     transition: all 0.3s;
-    
+
     &.switch-active {
-      background: #667eea;
+      background: #3b82f6;
     }
-    
+
     .switch-slider {
       position: absolute;
       top: 3px;
@@ -193,7 +193,7 @@
       transition: all 0.3s;
       box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
     }
-    
+
     &.switch-active .switch-slider {
       left: 27px;
     }
@@ -209,7 +209,7 @@
     font-size: 0.9rem;
     color: #666;
   }
-  
+
   .range-input {
     width: 100%;
     height: 6px;
@@ -218,22 +218,22 @@
     outline: none;
     appearance: none;
     cursor: pointer;
-    
+
     &::-webkit-slider-thumb {
       appearance: none;
       width: 20px;
       height: 20px;
       border-radius: 50%;
-      background: #667eea;
+      background: #3b82f6;
       cursor: pointer;
       box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
     }
-    
+
     &::-moz-range-thumb {
       width: 20px;
       height: 20px;
       border-radius: 50%;
-      background: #667eea;
+      background: #3b82f6;
       cursor: pointer;
       border: none;
       box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
@@ -248,26 +248,26 @@
   margin-top: 24px;
   padding-top: 24px;
   border-top: 1px solid #f0f0f0;
-  
+
   .btn {
     flex: 1;
   }
-  
+
   &.form-actions-right {
     justify-content: flex-end;
-    
+
     .btn {
       flex: 0;
     }
   }
-  
+
   &.form-actions-center {
     justify-content: center;
   }
-  
+
   @media (max-width: 768px) {
     flex-direction: column;
-    
+
     .btn {
       flex: 1;
     }
@@ -279,7 +279,7 @@
   .file-input {
     display: none;
   }
-  
+
   .file-label {
     display: flex;
     align-items: center;
@@ -289,13 +289,13 @@
     border-radius: 8px;
     cursor: pointer;
     transition: all 0.3s;
-    
+
     &:hover {
-      border-color: #667eea;
-      background: rgba(102, 126, 234, 0.05);
+      border-color: #3b82f6;
+      background: rgba(59, 130, 246, 0.05);
     }
   }
-  
+
   .file-name {
     margin-top: 8px;
     font-size: 0.9rem;
@@ -306,7 +306,7 @@
 // 搜索框
 .form-search {
   position: relative;
-  
+
   .search-icon {
     position: absolute;
     left: 16px;
@@ -315,7 +315,7 @@
     color: #999;
     pointer-events: none;
   }
-  
+
   .form-control {
     padding-left: 48px;
   }

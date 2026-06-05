@@ -66,14 +66,14 @@ class StringValidator(BaseValidator):
         super().__init__(field_name)
         self.min_length: Optional[int] = None
         self.max_length: Optional[int] = None
-        self.pattern: Optional[re.Pattern] = None
+        self._pattern: Optional[re.Pattern] = None
         self.pattern_error_code: Optional[str] = None
-        self.required: bool = False
+        self._required: bool = False
         self.trim: bool = True
 
     def required(self) -> "StringValidator":
         """设置必填"""
-        self.required = True
+        self._required = True
         return self
 
     def min(self, length: int) -> "StringValidator":
@@ -90,7 +90,7 @@ class StringValidator(BaseValidator):
         self, regex: str, error_code: Optional[str] = None
     ) -> "StringValidator":
         """设置正则表达式模式"""
-        self.pattern = re.compile(regex)
+        self._pattern = re.compile(regex)
         self.pattern_error_code = error_code
         return self
 
@@ -111,11 +111,11 @@ class StringValidator(BaseValidator):
             str_value = str_value.strip()
 
         # 必填验证
-        if self.required and len(str_value) == 0:
+        if self._required and len(str_value) == 0:
             return ValidationResult(False, f"{self.field_name}不能为空", "REQUIRED")
 
         # 空值且非必填，验证通过
-        if not self.required and len(str_value) == 0:
+        if not self._required and len(str_value) == 0:
             return ValidationResult(True)
 
         # 最小长度验证
@@ -135,7 +135,7 @@ class StringValidator(BaseValidator):
             )
 
         # 正则表达式验证
-        if self.pattern and not self.pattern.match(str_value):
+        if self._pattern and not self._pattern.match(str_value):
             return ValidationResult(
                 False,
                 f"{self.field_name}格式不正确",
@@ -153,11 +153,11 @@ class NumberValidator(BaseValidator):
         self.min_value: Optional[float] = None
         self.max_value: Optional[float] = None
         self.integer_only: bool = False
-        self.required: bool = False
+        self._required: bool = False
 
     def required(self) -> "NumberValidator":
         """设置必填"""
-        self.required = True
+        self._required = True
         return self
 
     def min(self, value: float) -> "NumberValidator":
@@ -178,7 +178,7 @@ class NumberValidator(BaseValidator):
     def validate(self, value: Any) -> ValidationResult:
         # 处理空值
         if value is None:
-            if self.required:
+            if self._required:
                 return ValidationResult(False, f"{self.field_name}不能为空", "REQUIRED")
             return ValidationResult(True)
 
@@ -226,7 +226,7 @@ class EmailValidator(StringValidator):
 
         # 空值且非必填，验证通过
         str_value = str(value).strip() if value is not None else ""
-        if not self.required and len(str_value) == 0:
+        if not self._required and len(str_value) == 0:
             return ValidationResult(True)
 
         # 邮箱格式验证
@@ -243,7 +243,8 @@ class UsernameValidator(StringValidator):
 
     def __init__(self, field_name: str = "用户名"):
         super().__init__(field_name)
-        self.min(3).max(50).pattern(r"^[a-zA-Z0-9_\u4e00-\u9fa5]+$", "INVALID_USERNAME")
+        self.min(3).max(50).pattern(
+            r"^[a-zA-Z0-9_\u4e00-\u9fa5]+$", "INVALID_USERNAME")
 
     def validate(self, value: Any) -> ValidationResult:
         parent_result = super().validate(value)
@@ -251,7 +252,7 @@ class UsernameValidator(StringValidator):
             return parent_result
 
         str_value = str(value).strip() if value is not None else ""
-        if not self.required and len(str_value) == 0:
+        if not self._required and len(str_value) == 0:
             return ValidationResult(True)
 
         # 额外的用户名规则验证
@@ -305,7 +306,7 @@ class PasswordValidator(StringValidator):
             return parent_result
 
         str_value = str(value) if value is not None else ""
-        if not self.required and len(str_value) == 0:
+        if not self._required and len(str_value) == 0:
             return ValidationResult(True)
 
         errors: List[str] = []

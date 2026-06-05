@@ -44,27 +44,39 @@ import { UserCenterService } from '../../services/user-center.service';
           <span class="logo-subtitle">学习端</span>
         </div>
 
-        <!-- 导航菜单 - 学生端核心功能 -->
-        <nav class="navbar-nav">
-          <a routerLink="/ai-edu" routerLinkActive="active" class="nav-link">
-            AI编程课程
-          </a>
+        <!-- 导航菜单（仅移动端显示，桌面端由侧边栏接管） -->
+        <nav class="navbar-nav" *ngIf="isMobile">
           <a routerLink="/user/dashboard" routerLinkActive="active" class="nav-link">
-            学习中心
+            首页
           </a>
-          <a routerLink="/creativity-engine" routerLinkActive="active" class="nav-link">
-            创意引擎
+          <a routerLink="/ai-edu" routerLinkActive="active" class="nav-link">
+            课程
           </a>
           <a routerLink="/ar-lab" routerLinkActive="active" class="nav-link">
-            AR 实验室
-          </a>
-          <a routerLink="/content-store" routerLinkActive="active" class="nav-link">
-            内容商店
-          </a>
-          <a routerLink="/offline-mode" routerLinkActive="active" class="nav-link">
-            离线模式
+            AR实验室
           </a>
         </nav>
+
+        <!-- 桌面端快捷导航（精简版，侧边栏已有完整导航） -->
+        <nav class="navbar-nav desktop-nav" *ngIf="!isMobile">
+          <a routerLink="/user/dashboard" routerLinkActive="active" class="nav-link">
+            首页
+          </a>
+          <a routerLink="/ai-edu" routerLinkActive="active" class="nav-link">
+            课程
+          </a>
+        </nav>
+
+        <!-- 搜索和通知 -->
+        <div class="navbar-actions">
+          <button mat-icon-button class="action-btn" title="搜索 (Ctrl+K)">
+            <mat-icon>search</mat-icon>
+          </button>
+          <button mat-icon-button class="action-btn notification-btn" title="通知">
+            <mat-icon>notifications</mat-icon>
+            <span class="notification-badge" *ngIf="unreadNotifications > 0">{{ unreadNotifications }}</span>
+          </button>
+        </div>
 
         <!-- 用户菜单 -->
         <div class="navbar-user">
@@ -111,14 +123,16 @@ import { UserCenterService } from '../../services/user-center.service';
   styles: [
     `
       .user-navbar {
-        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        background: #0f172a;
         color: white;
         padding: 0 24px;
-        height: 60px;
+        height: 64px;
         position: sticky;
         top: 0;
         z-index: 1000;
         box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+        border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+        backdrop-filter: blur(10px);
       }
 
       .navbar-container {
@@ -196,6 +210,40 @@ import { UserCenterService } from '../../services/user-center.service';
       .navbar-user {
         display: flex;
         align-items: center;
+        gap: 8px;
+      }
+
+      /* 搜索和通知按钮 */
+      .navbar-actions {
+        display: flex;
+        align-items: center;
+        gap: 4px;
+      }
+
+      .action-btn {
+        color: rgba(255, 255, 255, 0.85);
+        position: relative;
+      }
+
+      .action-btn:hover {
+        color: white;
+        background: rgba(255, 255, 255, 0.15);
+      }
+
+      .notification-badge {
+        position: absolute;
+        top: 4px;
+        right: 4px;
+        min-width: 18px;
+        height: 18px;
+        padding: 0 4px;
+        background: #ef4444;
+        color: white;
+        font-size: 11px;
+        font-weight: 600;
+        line-height: 18px;
+        text-align: center;
+        border-radius: 9999px;
       }
 
       .user-menu-btn {
@@ -214,7 +262,7 @@ import { UserCenterService } from '../../services/user-center.service';
         padding: 16px;
         display: flex;
         align-items: center;
-        background: #f5f5f5;
+        background: var(--color-background);
       }
 
       .user-avatar {
@@ -223,7 +271,7 @@ import { UserCenterService } from '../../services/user-center.service';
         border-radius: 50%;
         overflow: hidden;
         margin-right: 12px;
-        background: #e0e0e0;
+        background: var(--color-divider);
       }
 
       .user-avatar img {
@@ -235,13 +283,13 @@ import { UserCenterService } from '../../services/user-center.service';
       .user-info .username {
         font-size: 16px;
         font-weight: 600;
-        color: #333;
+        color: var(--color-text-primary);
         margin: 0;
       }
 
       .user-info .user-type {
         font-size: 14px;
-        color: #666;
+        color: var(--color-text-secondary);
       }
 
       @media (max-width: 768px) {
@@ -265,6 +313,7 @@ export class UserNavbarComponent implements OnInit, OnDestroy {
   currentUser: any = null;
   userType: string | undefined;
   isMobile = false;
+  unreadNotifications = 0; // 未读通知数量
 
   private destroy$ = new Subject<void>();
 

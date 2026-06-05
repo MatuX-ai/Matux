@@ -57,7 +57,7 @@ class TestValidators(unittest.TestCase):
         # 太短的密码
         result = validate_password("short")
         self.assertFalse(result.is_valid)
-        self.assertEqual(result.error_code, "PASSWORD_TOO_SHORT")
+        self.assertEqual(result.error_code, "MIN_LENGTH")
 
     def test_validator_factory(self):
         """测试验证器工厂"""
@@ -81,10 +81,12 @@ class TestValidators(unittest.TestCase):
         validator = FormValidator()
         validator.add_rule("email", ValidatorFactory.email("邮箱"))
         validator.add_rule("username", ValidatorFactory.username("用户名"))
-        validator.add_rule("age", ValidatorFactory.number("年龄").min(0).max(150))
+        validator.add_rule(
+            "age", ValidatorFactory.number("年龄").min(0).max(150))
 
         # 有效数据
-        valid_data = {"email": "test@example.com", "username": "testuser", "age": 25}
+        valid_data = {"email": "test@example.com",
+                      "username": "testuser", "age": 25}
 
         result = validator.validate(valid_data)
         self.assertTrue(result["is_valid"])

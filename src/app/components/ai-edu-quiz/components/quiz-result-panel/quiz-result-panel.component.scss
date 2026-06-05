@@ -25,10 +25,10 @@
 .result-icon {
   font-size: 64px;
   margin-bottom: 24px;
-  
-  &.success { color: #4caf50; }
-  &.warning { color: #ff9800; }
-  &.danger { color: #f44336; }
+
+  &.success { color: #10b981; }
+  &.warning { color: #f59e0b; }
+  &.danger { color: #ef4444; }
 }
 
 .result-content h2 {
@@ -49,12 +49,12 @@
     font-size: 2rem;
     font-weight: bold;
     margin-bottom: 8px;
-    
-    .success & { color: #4caf50; }
-    .warning & { color: #ff9800; }
-    .danger & { color: #f44336; }
+
+    .success & { color: #10b981; }
+    .warning & { color: #f59e0b; }
+    .danger & { color: #ef4444; }
   }
-  
+
   .stat-label {
     font-size: 0.9rem;
     color: #666;
@@ -72,11 +72,11 @@
   border-radius: 8px;
   border-left: 4px solid #ffc107;
   margin-bottom: 24px;
-  
+
   mat-icon {
     color: #856404;
   }
-  
+
   p {
     margin: 0;
     color: #856404;
@@ -88,7 +88,7 @@
   display: flex;
   gap: 12px;
   justify-content: center;
-  
+
   @media (max-width: 768px) {
     flex-direction: column;
   }

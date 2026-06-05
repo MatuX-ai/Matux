@@ -72,6 +72,20 @@ const routes: Routes = [
           ),
       },
       {
+        path: 'teaching-suggestions',
+        loadComponent: () =>
+          import('./components/teaching-suggestions/teaching-suggestions.component').then(
+            (m) => m.TeachingSuggestionsComponent
+          ),
+      },
+      {
+        path: 'emotional-companion',
+        loadComponent: () =>
+          import('./components/emotional-companion/emotional-companion.component').then(
+            (m) => m.EmotionalCompanionComponent
+          ),
+      },
+      {
         path: 'ai-teacher-settings',
         loadComponent: () =>
           import('./components/ai-teacher-settings/ai-teacher-settings.component').then(

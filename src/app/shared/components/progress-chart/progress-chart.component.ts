@@ -255,7 +255,7 @@ export interface ProgressChartConfig {
           .overall-value {
             font-size: 18px;
             font-weight: 700;
-            color: #3f51b5;
+            color: #0f172a;
           }
         }
       }
@@ -339,11 +339,11 @@ export interface ProgressChartConfig {
             flex-shrink: 0;
             margin-left: 12px;
 
-            &.color-primary { color: #3f51b5; }
-            &.color-accent { color: #ff4081; }
-            &.color-warn { color: #f44336; }
-            &.color-success { color: #4caf50; }
-            &.color-info { color: #2196f3; }
+            &.color-primary { color: #0f172a; }
+            &.color-accent { color: #3b82f6; }
+            &.color-warn { color: #ef4444; }
+            &.color-success { color: #10b981; }
+            &.color-info { color: #3b82f6; }
           }
         }
 
@@ -420,11 +420,11 @@ export interface ProgressChartConfig {
             }
           }
 
-          &.color-primary .circle { stroke: #3f51b5; }
-          &.color-accent .circle { stroke: #ff4081; }
-          &.color-warn .circle { stroke: #f44336; }
-          &.color-success .circle { stroke: #4caf50; }
-          &.color-info .circle { stroke: #2196f3; }
+          &.color-primary .circle { stroke: #0f172a; }
+          &.color-accent .circle { stroke: #3b82f6; }
+          &.color-warn .circle { stroke: #ef4444; }
+          &.color-success .circle { stroke: #10b981; }
+          &.color-info .circle { stroke: #3b82f6; }
         }
 
         .compact-info {
@@ -529,11 +529,11 @@ export interface ProgressChartConfig {
             border-radius: 50%;
             flex-shrink: 0;
 
-            &.color-primary { background-color: #3f51b5; }
-            &.color-accent { background-color: #ff4081; }
-            &.color-warn { background-color: #f44336; }
-            &.color-success { background-color: #4caf50; }
-            &.color-info { background-color: #2196f3; }
+            &.color-primary { background-color: #0f172a; }
+            &.color-accent { background-color: #3b82f6; }
+            &.color-warn { background-color: #ef4444; }
+            &.color-success { background-color: #10b981; }
+            &.color-info { background-color: #3b82f6; }
           }
 
           .legend-label {

@@ -150,17 +150,17 @@ export class OfflineDashboardComponent implements OnInit, OnDestroy {
   getNetworkQualityColor(quality: NetworkQuality | null | undefined): string {
     switch (quality) {
       case NetworkQuality.OFFLINE:
-        return '#f44336';
+        return '#ef4444';
       case NetworkQuality.SLOW_2G:
-        return '#ff9800';
+        return '#f59e0b';
       case NetworkQuality.SLOW_3G:
-        return '#ffc107';
+        return '#f59e0b';
       case NetworkQuality.FAST_4G:
-        return '#4caf50';
+        return '#10b981';
       case NetworkQuality.FAST_WIFI:
-        return '#2196f3';
+        return '#3b82f6';
       default:
-        return '#9e9e9e';
+        return '#94a3b8';
     }
   }
 

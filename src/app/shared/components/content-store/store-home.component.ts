@@ -205,7 +205,7 @@ interface SubscriptionPlan {
       }
 
       .hero-banner {
-        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        background: linear-gradient(135deg, #3b82f6 0%, #2563eb 100%);
         color: white;
         padding: 60px 40px;
         border-radius: 12px;
@@ -261,7 +261,7 @@ interface SubscriptionPlan {
       }
 
       .plan-card.popular {
-        border-color: #667eea;
+        border-color: #3b82f6;
         box-shadow: 0 4px 16px rgba(102, 126, 234, 0.2);
       }
 
@@ -269,7 +269,7 @@ interface SubscriptionPlan {
         position: absolute;
         top: -12px;
         right: 24px;
-        background: #667eea;
+        background: #3b82f6;
         color: white;
         padding: 4px 12px;
         border-radius: 20px;
@@ -324,7 +324,7 @@ interface SubscriptionPlan {
         position: absolute;
         top: 12px;
         right: 12px;
-        background: #4caf50;
+        background: #10b981;
         color: white;
         padding: 4px 8px;
         border-radius: 4px;
@@ -358,7 +358,7 @@ interface SubscriptionPlan {
       }
 
       .price.free {
-        color: #4caf50;
+        color: #10b981;
         font-weight: bold;
       }
 

@@ -91,6 +91,11 @@ export class UserCenterService {
         route: '/user/reports',
       },
       {
+        icon: 'tips_and_updates',
+        label: '教学建议',
+        route: '/user/teaching-suggestions',
+      },
+      {
         icon: 'emoji_events',
         label: '成就系统',
         route: '/user/achievements',
@@ -109,6 +114,11 @@ export class UserCenterService {
         icon: 'smart_toy',
         label: 'AI教师设置',
         route: '/user/ai-teacher-settings',
+      },
+      {
+        icon: 'favorite',
+        label: '情感陪伴',
+        route: '/user/emotional-companion',
       },
     ];
   }

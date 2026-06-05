@@ -157,12 +157,12 @@ export class TokenStatsChartComponent implements OnInit, OnChanges {
           data: consumedTokens,
           smooth: true,
           itemStyle: {
-            color: '#f44336',
+            color: '#ef4444',
           },
           areaStyle: {
             color: new echarts.graphic.LinearGradient(0, 0, 0, 1, [
-              { offset: 0, color: 'rgba(244, 67, 54, 0.3)' },
-              { offset: 1, color: 'rgba(244, 67, 54, 0.1)' },
+              { offset: 0, color: 'rgba(239, 68, 68, 0.3)' },
+              { offset: 1, color: 'rgba(239, 68, 68, 0.1)' },
             ]),
           },
         },
@@ -172,12 +172,12 @@ export class TokenStatsChartComponent implements OnInit, OnChanges {
           data: purchasedTokens,
           smooth: true,
           itemStyle: {
-            color: '#4caf50',
+            color: '#10b981',
           },
           areaStyle: {
             color: new echarts.graphic.LinearGradient(0, 0, 0, 1, [
-              { offset: 0, color: 'rgba(76, 175, 80, 0.3)' },
-              { offset: 1, color: 'rgba(76, 175, 80, 0.1)' },
+              { offset: 0, color: 'rgba(16, 185, 129, 0.3)' },
+              { offset: 1, color: 'rgba(16, 185, 129, 0.1)' },
             ]),
           },
         },

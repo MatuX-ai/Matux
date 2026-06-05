@@ -25,10 +25,10 @@
   font-weight: bold;
   color: white;
 
-  &.type-choice { background: #2196f3; }
-  &.type-fill { background: #ff9800; }
-  &.type-code { background: #4caf50; }
-  &.type-matching { background: #9c27b0; }
+  &.type-choice { background: #3b82f6; }
+  &.type-fill { background: #f59e0b; }
+  &.type-code { background: #10b981; }
+  &.type-matching { background: #7c3aed; }
 }
 
 .question-points {
@@ -56,25 +56,25 @@
     gap: 12px;
 
     &:hover:not(.selected):not(.correct):not(.incorrect) {
-      border-color: #667eea;
+      border-color: #3b82f6;
       background: #f0f4ff;
       transform: translateX(5px);
     }
 
     &.selected {
-      border-color: #667eea;
-      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      border-color: #3b82f6;
+      background: linear-gradient(135deg, #3b82f6 0%, #2563eb 100%);
       color: white;
     }
 
     &.correct {
-      border-color: #4caf50;
-      background: #e8f5e9;
+      border-color: #10b981;
+      background: #ecfdf5;
       cursor: default;
     }
 
     &.incorrect {
-      border-color: #f44336;
+      border-color: #ef4444;
       background: #ffebee;
       cursor: default;
     }
@@ -106,7 +106,7 @@
 
     &:focus {
       outline: none;
-      border-color: #667eea;
+      border-color: #3b82f6;
     }
   }
 

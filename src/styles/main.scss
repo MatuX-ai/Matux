@@ -1,17 +1,28 @@
 @charset "UTF-8";
 
-// Mac 风格主题 (必须在最前面，定义 CSS 变量)
+// ===== MatuX 统一设计系统 (PRD v1.1 唯一标准) =====
+// CSS 自定义属性层 (--matux-* 变量)
 @use '../app/styles/mac-theme';
 
 // Mac 风格共享组件样式
 @use '../app/styles/shared/mac-index';
 
-// 设计令牌
+// SCSS 设计令牌
 @use 'design-tokens/index';
-@use 'design-tokens/matux-tokens';
 
-// 主题（只保留一个主要的）
+// Angular Material 主题
 @use 'themes/matux-material-theme';
 
 // 暗黑主题
 @use 'themes/dark-theme';
+
+// ===== PRD v1.1 动效规范 =====
+.mat-mdc-card:hover {
+  transform: translateY(-4px) scale(1.01);
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.12);
+}
+
+.mat-mdc-card {
+  transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1),
+              box-shadow 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}

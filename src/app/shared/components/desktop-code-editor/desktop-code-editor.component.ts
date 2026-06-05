@@ -1,6 +1,6 @@
 /**
  * 桌面端代码编辑器组件
- * 
+ *
  * 基于 Monaco Editor 封装，支持：
  * - Ctrl+S / Ctrl+Shift+S 保存文件
  * - Ctrl+Enter / F5 运行代码
@@ -201,7 +201,7 @@ export interface DesktopEditorConfig {
         }
 
         &[color="primary"] {
-          color: #4caf50;
+          color: #10b981;
         }
       }
     }
@@ -251,8 +251,8 @@ export interface DesktopEditorConfig {
         width: 16px;
         height: 16px;
 
-        &.success { color: #4caf50; }
-        &.error { color: #f44336; }
+        &.success { color: #10b981; }
+        &.error { color: #ef4444; }
       }
 
       .exec-time {

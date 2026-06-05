@@ -412,35 +412,35 @@ export class AIEduErrorHandlerService implements ErrorHandler {
       }
 
       .ai-edu-toast-NETWORK {
-        border-left: 4px solid #f44336;
+        border-left: 4px solid #ef4444;
       }
 
       .ai-edu-toast-HTTP {
-        border-left: 4px solid #ff9800;
+        border-left: 4px solid #f59e0b;
       }
 
       .ai-edu-toast-VALIDATION {
-        border-left: 4px solid #ff9800;
+        border-left: 4px solid #f59e0b;
       }
 
       .ai-edu-toast-AUTH {
-        border-left: 4px solid #f44336;
+        border-left: 4px solid #ef4444;
       }
 
       .ai-edu-toast-PERMISSION {
-        border-left: 4px solid #ff9800;
+        border-left: 4px solid #f59e0b;
       }
 
       .ai-edu-toast-NOT_FOUND {
-        border-left: 4px solid #2196f3;
+        border-left: 4px solid #3b82f6;
       }
 
       .ai-edu-toast-SERVER {
-        border-left: 4px solid #f44336;
+        border-left: 4px solid #ef4444;
       }
 
       .ai-edu-toast-UNKNOWN {
-        border-left: 4px solid #9e9e9e;
+        border-left: 4px solid #94a3b8;
       }
 
       .toast-content {
@@ -482,7 +482,7 @@ export class AIEduErrorHandlerService implements ErrorHandler {
 
       .toast-progress {
         height: 3px;
-        background: linear-gradient(90deg, #667eea 0%, #764ba2 100%);
+        background: linear-gradient(90deg, #3b82f6 0%, #2563eb 100%);
         animation: progress 5s linear;
       }
     `;

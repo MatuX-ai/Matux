@@ -100,7 +100,7 @@ import { UserSubNavComponent } from '../user-sub-nav/user-sub-nav.component';
         flex: 1;
         padding: 24px;
         overflow-y: auto;
-        background-color: #f5f5f5;
+        background-color: var(--color-background);
         min-height: 0;
         display: flex;
         flex-direction: column;

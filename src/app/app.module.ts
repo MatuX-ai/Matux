@@ -1,4 +1,4 @@
-import { HttpClientModule } from '@angular/common/http';
+import { HttpClientModule, HTTP_INTERCEPTORS } from '@angular/common/http';
 import { NgModule } from '@angular/core';
 import { ReactiveFormsModule } from '@angular/forms';
 import { MatButtonModule } from '@angular/material/button';
@@ -23,6 +23,7 @@ import { SharedModule } from './shared/shared.module';
 import { AppComponent } from './app.component';
 import { AppRoutingModule } from './app-routing.module';
 import { StatusBarComponent } from './shared/components/status-bar/status-bar.component';
+import { HttpTimeoutInterceptor } from './core/interceptors/http-timeout.interceptor';
 
 @NgModule({
   declarations: [AppComponent],
@@ -56,7 +57,13 @@ import { StatusBarComponent } from './shared/components/status-bar/status-bar.co
     // }),
     MonacoEditorModule.forRoot(),
   ],
-  providers: [],
+  providers: [
+    {
+      provide: HTTP_INTERCEPTORS,
+      useClass: HttpTimeoutInterceptor,
+      multi: true,
+    },
+  ],
   bootstrap: [AppComponent],
 })
 export class AppModule {}

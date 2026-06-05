@@ -85,9 +85,9 @@ import { UserCenterService } from '../../services/user-center.service';
   styles: [
     `
       .header-toolbar {
-        background: white;
-        color: #333;
-        border-bottom: 1px solid #e0e0e0;
+        background: var(--color-surface);
+        color: var(--color-text-primary);
+        border-bottom: 1px solid var(--color-divider);
         height: 64px;
         padding: 0 16px;
         position: sticky;
@@ -113,7 +113,7 @@ import { UserCenterService } from '../../services/user-center.service';
         padding: 16px;
         display: flex;
         align-items: center;
-        background: #f5f5f5;
+        background: var(--color-background);
       }
 
       .user-avatar {
@@ -122,7 +122,7 @@ import { UserCenterService } from '../../services/user-center.service';
         border-radius: 50%;
         overflow: hidden;
         margin-right: 12px;
-        background: #e0e0e0;
+        background: var(--color-divider);
         display: flex;
         align-items: center;
         justify-content: center;
@@ -146,7 +146,7 @@ import { UserCenterService } from '../../services/user-center.service';
 
       .user-type {
         font-size: 14px;
-        color: #666;
+        color: var(--color-text-secondary);
       }
 
       ::ng-deep .mat-divider {

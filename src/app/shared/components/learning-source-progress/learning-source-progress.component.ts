@@ -387,27 +387,27 @@ export interface LearningSourceDisplayItem {
 
       /* 来源类型颜色 */
       .source-school {
-        border-left: 4px solid #4caf50;
+        border-left: 4px solid #10b981;
       }
 
       .source-school_interest {
-        border-left: 4px solid #ff9800;
+        border-left: 4px solid #f59e0b;
       }
 
       .source-institution {
-        border-left: 4px solid #2196f3;
+        border-left: 4px solid #3b82f6;
       }
 
       .source-online_platform {
-        border-left: 4px solid #9c27b0;
+        border-left: 4px solid #8b5cf6;
       }
 
       .source-competition {
-        border-left: 4px solid #f44336;
+        border-left: 4px solid #ef4444;
       }
 
       .source-self_study {
-        border-left: 4px solid #607d8b;
+        border-left: 4px solid #64748b;
       }
 
       /* 来源统计 */
@@ -438,19 +438,19 @@ export interface LearningSourceDisplayItem {
           color: #333;
 
           &.completed {
-            color: #4caf50;
+            color: #10b981;
           }
 
           &.score-high {
-            color: #4caf50;
+            color: #10b981;
           }
 
           &.score-good {
-            color: #ff9800;
+            color: #f59e0b;
           }
 
           &.score-low {
-            color: #f44336;
+            color: #ef4444;
           }
         }
       }

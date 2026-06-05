@@ -6,7 +6,7 @@
  */
 
 import { CommonModule } from '@angular/common';
-import { ChangeDetectionStrategy, ChangeDetectorRef, Component, OnDestroy, OnInit, inject } from '@angular/core';
+import { ChangeDetectionStrategy, ChangeDetectorRef, Component, OnDestroy, OnInit } from '@angular/core';
 import { MatButtonModule } from '@angular/material/button';
 import { MatCardModule } from '@angular/material/card';
 import { MatChipsModule } from '@angular/material/chips';
@@ -18,7 +18,8 @@ import { MatTabsModule } from '@angular/material/tabs';
 import { MatTooltipModule } from '@angular/material/tooltip';
 import { Router } from '@angular/router';
 import { forkJoin, Observable, of, Subject } from 'rxjs';
-import { catchError, filter, map, switchMap, takeUntil } from 'rxjs/operators';
+import { catchError, map, switchMap, takeUntil } from 'rxjs/operators';
+import { trigger, state, style, animate, transition } from '@angular/animations';
 
 import type { User } from '../../core/models/auth.models';
 import {
@@ -36,7 +37,11 @@ import type {
 } from '../../models/multi-source-learning.models';
 import { LearningSourceTypeLabels } from '../../models/multi-source-learning.models';
 import type { CourseEnrollment, UnifiedCourse } from '../../models/unified-course.models';
-import { LearningCalendarHeatmapComponent, type CalendarHeatmapConfig, type DailyLearningRecord } from '../../shared/components/learning-calendar-heatmap/learning-calendar-heatmap.component';
+import {
+  LearningCalendarHeatmapComponent,
+  type CalendarHeatmapConfig,
+  type DailyLearningRecord,
+} from '../../shared/components/learning-calendar-heatmap/learning-calendar-heatmap.component';
 import { LearningSourceProgressComponent } from '../../shared/components/learning-source-progress/learning-source-progress.component';
 import {
   StatsCardComponent,
@@ -46,6 +51,14 @@ import { StudentMaterialDashboardComponent } from '../../shared/components/stude
 import { UnifiedCourseCardComponent } from '../../shared/components/unified-course-card/unified-course-card.component';
 import { DashboardLayoutService } from '../../core/services/dashboard-layout.service';
 import { DashboardLayoutDialogComponent } from '../../shared/components/dashboard-layout-dialog/dashboard-layout-dialog.component';
+import { AITeacherChatComponent } from '../../shared/components/ai-teacher-chat/ai-teacher-chat.component';
+
+interface QuickTool {
+  icon: string;
+  label: string;
+  color: string;
+  bgClass: string;
+}
 
 interface RecentCourse {
   title: string;
@@ -78,6 +91,12 @@ interface AchievementBadge {
   selector: 'app-student-dashboard',
   standalone: true,
   changeDetection: ChangeDetectionStrategy.OnPush,
+  animations: [
+    trigger('fadeInUp', [
+      state('void', style({ opacity: 0, transform: 'translateY(16px)' })),
+      transition('void => *', animate('0.4s ease-out')),
+    ]),
+  ],
   imports: [
     CommonModule,
     MatCardModule,
@@ -95,589 +114,16 @@ interface AchievementBadge {
     StudentMaterialDashboardComponent,
     UnifiedCourseCardComponent,
     DashboardLayoutDialogComponent,
+    AITeacherChatComponent,
   ],
-  template: `
-    <div class="student-dashboard">
-      <div class="page-header">
-        <h1 class="page-title">学习仪表板</h1>
-        <button mat-stroked-button (click)="openLayoutDialog()" matTooltip="自定义仪表盘布局">
-          <mat-icon>dashboard_customize</mat-icon>
-          布局
-        </button>
-      </div>
-
-      <!-- 统计卡片 -->
-      <div class="stats-grid" *ngIf="layout.isVisible('stats')">
-        <app-stats-card [config]="statsConfig.inProgressCourses"></app-stats-card>
-        <app-stats-card [config]="statsConfig.achievements"></app-stats-card>
-        <app-stats-card [config]="statsConfig.learningPoints"></app-stats-card>
-        <app-stats-card [config]="statsConfig.tokenBalance"></app-stats-card>
-      </div>
-
-      <!-- 我的学习来源（原跨机构学习进度） -->
-      <div class="section" *ngIf="layout.isVisible('learning_sources')">
-        <h2 class="section-title">
-          <mat-icon>hub</mat-icon>
-          我的学习来源
-        </h2>
-
-        <app-learning-source-progress
-          [stats]="progressStats"
-          [loading]="loadingProgress"
-          [showOverallStats]="true"
-          [showTabs]="true"
-          [showSectionTitle]="false"
-          userType="student"
-        >
-        </app-learning-source-progress>
-      </div>
-
-      <!-- 学习来源概览 -->
-      <div class="section" *ngIf="layout.isVisible('source_details') && learningSources.length > 0">
-        <h2 class="section-title">
-          <mat-icon>account_balance</mat-icon>
-          学习来源详情
-        </h2>
-        <div class="sources-grid">
-          <mat-card
-            *ngFor="let source of learningSources"
-            [class.primary-source]="source.is_primary"
-          >
-            <mat-card-content>
-              <div class="source-header">
-                <mat-icon [matTooltip]="getSourceTypeLabel(source.source_type)">
-                  {{ getSourceIcon(source.source_type) }}
-                </mat-icon>
-                <span class="source-name">{{ source.name }}</span>
-                <mat-chip *ngIf="source.is_primary" color="primary" selected>主来源</mat-chip>
-              </div>
-              <div class="source-meta">
-                <span class="source-type">{{ getSourceTypeLabel(source.source_type) }}</span>
-                <span class="source-status" [class]="'status-' + source.status">
-                  {{ getStatusLabel(source.status) }}
-                </span>
-              </div>
-              <div class="source-dates" *ngIf="source.start_date || source.end_date">
-                <mat-icon>date_range</mat-icon>
-                <span>{{ source.start_date || '待开始' }} ~ {{ source.end_date || '长期' }}</span>
-              </div>
-            </mat-card-content>
-          </mat-card>
-        </div>
-      </div>
-
-      <!-- 学习日历热力图 + 成就墙 双栏 -->
-      <div class="dual-column-section" *ngIf="layout.isVisible('heatmap') || layout.isVisible('achievements')">
-        <!-- 学习日历热力图 -->
-        <div class="section section-heatmap" *ngIf="layout.isVisible('heatmap')">
-          <app-learning-calendar-heatmap [config]="heatmapConfig"></app-learning-calendar-heatmap>
-        </div>
-
-        <!-- 成就墙 -->
-        <div class="section section-achievements" *ngIf="layout.isVisible('achievements')">
-          <div class="achievements-card">
-            <h2 class="section-title">
-              <mat-icon>emoji_events</mat-icon>
-              成就墙
-            </h2>
-            <div class="achievements-grid">
-              <div
-                *ngFor="let badge of achievementBadges"
-                class="achievement-badge"
-                [class.locked]="!badge.unlocked"
-                [matTooltip]="badge.name + (badge.unlocked ? ' - ' + badge.description : ' - 未解锁')"
-              >
-                <span class="badge-icon">{{ badge.icon }}</span>
-                <span class="badge-name">{{ badge.name }}</span>
-              </div>
-            </div>
-            <div class="achievements-summary">
-              <span>已解锁 {{ unlockedAchievementsCount }}/{{ achievementBadges.length }}</span>
-              <mat-progress-bar
-                mode="determinate"
-                [value]="achievementProgress"
-              ></mat-progress-bar>
-            </div>
-          </div>
-        </div>
-      </div>
-
-      <!-- 正在学习的课程（使用统一课程卡片） -->
-      <div class="section" *ngIf="layout.isVisible('enrolled_courses')">
-        <h2 class="section-title">正在学习</h2>
-        <div class="course-grid" *ngIf="enrolledCourses$ | async as enrolledCourses">
-          <ng-container *ngIf="enrolledCourses.length > 0; else noEnrolledCourses">
-            <app-unified-course-card
-              *ngFor="let item of enrolledCourses"
-              [config]="{
-                course: item.course,
-                showEnrollButton: false,
-                showProgress: true,
-                enrollmentStatus: 'enrolled',
-                enrollmentProgress: item.progress || 0,
-                orgName: getOrgName(item.course.org_id),
-              }"
-              (detail)="onContinueLearning(item.course.id)"
-            >
-            </app-unified-course-card>
-          </ng-container>
-          <ng-template #noEnrolledCourses>
-            <div class="empty-state">
-              <mat-icon>menu_book</mat-icon>
-              <p>暂无正在学习的课程</p>
-              <button mat-raised-button color="primary" (click)="navigateToCourseLibrary()">
-                浏览课程库
-              </button>
-            </div>
-          </ng-template>
-        </div>
-      </div>
-
-      <!-- 推荐课程（使用统一课程卡片） -->
-      <div class="section" *ngIf="layout.isVisible('recommended_courses')">
-        <div class="section-header">
-          <h2 class="section-title">推荐课程</h2>
-          <button mat-button color="primary" (click)="navigateToCourseLibrary()">
-            查看更多
-            <mat-icon>arrow_forward</mat-icon>
-          </button>
-        </div>
-        <div class="course-grid" *ngIf="recommendedCourses$ | async as recommendedCourses">
-          <ng-container *ngIf="recommendedCourses.length > 0; else noRecommendedCourses">
-            <app-unified-course-card
-              *ngFor="let course of recommendedCourses"
-              [config]="{
-                course: course,
-                showEnrollButton: true,
-                showProgress: false,
-                enrollmentStatus: 'not_enrolled',
-                orgName: getOrgName(course.org_id),
-                compact: false,
-              }"
-              (enroll)="onEnrollCourse(course.id)"
-              (detail)="onViewCourseDetail(course.id)"
-            >
-            </app-unified-course-card>
-          </ng-container>
-          <ng-template #noRecommendedCourses>
-            <div class="empty-state">
-              <mat-icon>explore</mat-icon>
-              <p>暂无推荐课程</p>
-            </div>
-          </ng-template>
-        </div>
-      </div>
-
-      <!-- 课件库模块 -->
-      <div class="section" *ngIf="layout.isVisible('materials')">
-        <app-student-material-dashboard></app-student-material-dashboard>
-      </div>
-    </div>
-  `,
-  styles: [
-    `
-      :host {
-        --dash-max-width: 1400px;
-        --dash-padding: 32px;
-        --stats-card-min: 260px;
-        --course-card-min: 320px;
-        --source-card-min: 300px;
-        --section-gap: 48px;
-      }
-
-      .student-dashboard {
-        max-width: var(--dash-max-width);
-        margin: 0 auto;
-        padding: 0 var(--dash-padding);
-      }
-
-      .page-header {
-        display: flex;
-        align-items: center;
-        justify-content: space-between;
-        margin-bottom: 24px;
-      }
-
-      .page-title {
-        font-size: 28px;
-        font-weight: 700;
-        color: #333;
-        margin: 0;
-      }
-
-      /* ===== 统计卡片网格 ===== */
-      .stats-grid {
-        display: grid;
-        grid-template-columns: repeat(auto-fit, minmax(var(--stats-card-min), 1fr));
-        gap: 20px;
-        margin-bottom: var(--section-gap);
-      }
-
-      /* ===== 区块 ===== */
-      .section {
-        margin-bottom: var(--section-gap);
-      }
-
-      .section-header {
-        display: flex;
-        justify-content: space-between;
-        align-items: center;
-        margin-bottom: 20px;
-      }
-
-      .section-title {
-        display: flex;
-        align-items: center;
-        gap: 8px;
-        font-size: 24px;
-        font-weight: 600;
-        margin-bottom: 20px;
-        color: #333;
-
-        mat-icon {
-          color: #666;
-        }
-      }
-
-      .section-header .section-title {
-        margin-bottom: 0;
-      }
-
-      /* ===== 课程网格 ===== */
-      .course-grid {
-        display: grid;
-        grid-template-columns: repeat(auto-fill, minmax(var(--course-card-min), 1fr));
-        gap: 20px;
-      }
-
-      .course-card {
-        mat-card-header {
-          margin-bottom: 12px;
-        }
-
-        mat-card-title {
-          font-size: 18px;
-          font-weight: 600;
-        }
-
-        mat-card-subtitle {
-          font-size: 14px;
-          color: #666;
-          display: flex;
-          align-items: center;
-          gap: 8px;
-          flex-wrap: wrap;
-        }
-      }
-
-      .source-chip {
-        font-size: 11px;
-        min-height: 24px;
-        padding: 0 8px;
-
-        mat-icon {
-          font-size: 14px;
-          width: 14px;
-          height: 14px;
-          margin-right: 4px;
-        }
-      }
-
-      .progress-info {
-        margin-bottom: 12px;
-
-        span {
-          display: block;
-          margin-bottom: 8px;
-          font-size: 14px;
-          color: #666;
-        }
-      }
-
-      .course-description {
-        font-size: 14px;
-        line-height: 1.6;
-        color: #666;
-        margin-bottom: 12px;
-      }
-
-      .course-meta {
-        display: flex;
-        gap: 16px;
-        font-size: 13px;
-        color: #999;
-
-        span {
-          display: flex;
-          align-items: center;
-          gap: 4px;
-        }
-
-        mat-icon {
-          font-size: 16px;
-          width: 16px;
-          height: 16px;
-        }
-      }
-
-      /* ===== 学习来源卡片网格 ===== */
-      .sources-grid {
-        display: grid;
-        grid-template-columns: repeat(auto-fill, minmax(var(--source-card-min), 1fr));
-        gap: 16px;
-      }
-
-      /* ===== 双栏布局（热力图+成就墙） ===== */
-      .dual-column-section {
-        display: grid;
-        grid-template-columns: 1.5fr 1fr;
-        gap: 20px;
-        margin-bottom: var(--section-gap);
-      }
-
-      .section-heatmap, .section-achievements {
-        margin-bottom: 0;
-      }
-
-      .achievements-card {
-        background: #fff;
-        border-radius: 12px;
-        padding: 20px;
-        border: 1px solid #e0e0e0;
-        box-shadow: 0 2px 4px rgba(0,0,0,0.04);
-      }
-
-      .achievements-grid {
-        display: grid;
-        grid-template-columns: repeat(3, 1fr);
-        gap: 12px;
-        margin-bottom: 16px;
-      }
-
-      .achievement-badge {
-        display: flex;
-        flex-direction: column;
-        align-items: center;
-        gap: 4px;
-        padding: 12px 8px;
-        border-radius: 12px;
-        background: linear-gradient(135deg, #f0f7ff 0%, #e8f0fe 100%);
-        border: 1px solid #d0e3ff;
-        cursor: default;
-        transition: transform 0.2s, box-shadow 0.2s;
-
-        &:hover {
-          transform: translateY(-2px);
-          box-shadow: 0 4px 12px rgba(59, 130, 246, 0.15);
-        }
-
-        &.locked {
-          background: #f5f5f5;
-          border-color: #e0e0e0;
-          opacity: 0.5;
-          filter: grayscale(0.8);
-        }
-      }
-
-      .badge-icon {
-        font-size: 28px;
-        line-height: 1;
-      }
-
-      .badge-name {
-        font-size: 11px;
-        font-weight: 600;
-        color: #333;
-        text-align: center;
-        white-space: nowrap;
-        overflow: hidden;
-        text-overflow: ellipsis;
-        max-width: 100%;
-      }
-
-      .achievements-summary {
-        display: flex;
-        flex-direction: column;
-        gap: 6px;
-        font-size: 13px;
-        color: #666;
-      }
-
-      .source-chip-card {
-        transition:
-          transform 0.2s,
-          box-shadow 0.2s;
-
-        &:hover {
-          transform: translateY(-2px);
-          box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
-        }
-
-        &.primary-source {
-          border-left: 4px solid #4caf50;
-          background: linear-gradient(135deg, #f1f8e9 0%, #ffffff 100%);
-        }
-
-        mat-card-content {
-          padding: 16px;
-        }
-      }
-
-      .source-header {
-        display: flex;
-        align-items: center;
-        gap: 8px;
-        margin-bottom: 12px;
-
-        mat-icon {
-          color: #666;
-        }
-
-        .source-name {
-          font-size: 16px;
-          font-weight: 600;
-          color: #333;
-          flex: 1;
-        }
-      }
-
-      .source-meta {
-        display: flex;
-        justify-content: space-between;
-        align-items: center;
-        margin-bottom: 8px;
-
-        .source-type {
-          font-size: 13px;
-          color: #666;
-        }
-
-        .source-status {
-          font-size: 12px;
-          padding: 2px 8px;
-          border-radius: 10px;
-
-          &.status-active {
-            background: #e8f5e9;
-            color: #4caf50;
-          }
-
-          &.status-inactive {
-            background: #f5f5f5;
-            color: #999;
-          }
-
-          &.status-completed {
-            background: #e3f2fd;
-            color: #2196f3;
-          }
-        }
-      }
-
-      .source-dates {
-        display: flex;
-        align-items: center;
-        gap: 4px;
-        font-size: 12px;
-        color: #999;
-
-        mat-icon {
-          font-size: 14px;
-          width: 14px;
-          height: 14px;
-        }
-      }
-
-      /* ===== 空状态 ===== */
-      .empty-state {
-        grid-column: 1 / -1;
-        display: flex;
-        flex-direction: column;
-        align-items: center;
-        justify-content: center;
-        padding: 48px;
-        text-align: center;
-        color: #666;
-
-        mat-icon {
-          font-size: 64px;
-          width: 64px;
-          height: 64px;
-          margin-bottom: 16px;
-          opacity: 0.5;
-        }
-
-        p {
-          font-size: 16px;
-          margin-bottom: 16px;
-        }
-      }
-
-      /* ===== 响应式：移动端 ===== */
-      @media (max-width: 768px) {
-        :host {
-          --dash-padding: 16px;
-          --stats-card-min: 1fr;
-          --course-card-min: 1fr;
-          --source-card-min: 1fr;
-          --section-gap: 32px;
-        }
-
-        .page-title {
-          font-size: 22px;
-        }
-
-        .section-title {
-          font-size: 18px;
-        }
-
-        .dual-column-section {
-          grid-template-columns: 1fr;
-        }
-
-        .achievements-grid {
-          grid-template-columns: repeat(4, 1fr);
-        }
-      }
-
-      /* ===== 响应式：大屏桌面（≥ 1600px）===== */
-      @media (min-width: 1600px) {
-        :host {
-          --dash-max-width: 100%;
-          --dash-padding: 48px;
-          --stats-card-min: 280px;
-          --course-card-min: 360px;
-          --source-card-min: 320px;
-        }
-
-        .stats-grid {
-          grid-template-columns: repeat(4, 1fr);
-        }
-
-        .course-grid {
-          grid-template-columns: repeat(3, 1fr);
-        }
-      }
-
-      /* ===== 响应式：超宽屏（≥ 2000px）===== */
-      @media (min-width: 2000px) {
-        :host {
-          --stats-card-min: 300px;
-          --course-card-min: 380px;
-          --source-card-min: 340px;
-        }
-
-        .course-grid {
-          grid-template-columns: repeat(4, 1fr);
-        }
-      }
-    `,
-  ],
+  templateUrl: './student-dashboard.component.html',
+  styleUrls: ['./student-dashboard.component.scss'],
 })
 export class StudentDashboardComponent implements OnInit, OnDestroy {
   private destroy$ = new Subject<void>();
 
   currentUser: User | null = null;
+  currentDate: string = '';
   progressStats: UnifiedProgressStats | null = null;
   learningSources: LearningSource[] = [];
   loadingProgress = false;
@@ -749,6 +195,41 @@ export class StudentDashboardComponent implements OnInit, OnDestroy {
       sourceName: '校内兴趣班',
     },
   ];
+
+  // 常用工具列表
+  quickTools: QuickTool[] = [
+    { icon: 'code', label: '代码', color: '#3b82f6', bgClass: 'bg-blue' },
+    { icon: 'view_in_ar', label: '3D模型', color: '#f97316', bgClass: 'bg-orange' },
+    { icon: 'camera_alt', label: 'AR扫描', color: '#22c55e', bgClass: 'bg-green' },
+    { icon: 'smart_toy', label: 'AI助手', color: '#8b5cf6', bgClass: 'bg-purple' },
+  ];
+
+  // AI 推荐项目
+  aiRecommendations = [
+    {
+      title: '智能感应小夜灯',
+      description: '利用光敏电阻实现环境光自适应控制。',
+      gradient: 'linear-gradient(135deg, #6366f1 0%, #9333ea 100%)',
+    },
+    {
+      title: 'PWM 舵机控制',
+      description: '使用 PWM 信号控制舵机转动到指定角度。',
+      gradient: 'linear-gradient(135deg, #f97316 0%, #ef4444 100%)',
+    },
+    {
+      title: 'AI 视觉识别入门',
+      description: '掌握图像处理和模式识别的基础概念。',
+      gradient: 'linear-gradient(135deg, #ec4899 0%, #8b5cf6 100%)',
+    },
+  ];
+
+  // 硬件设备信息
+  hardwareInfo = {
+    name: 'ESP32 开发板',
+    status: '在线',
+    battery: 85,
+    wifi: '-42dBm',
+  };
 
   recommendedCourses: RecommendedCourse[] = [
     {
@@ -822,6 +303,7 @@ export class StudentDashboardComponent implements OnInit, OnDestroy {
 
   ngOnInit(): void {
     this.loadCurrentUser();
+    this.updateCurrentDate();
   }
 
   /** 打开仪表盘布局设置对话框 */
@@ -830,6 +312,22 @@ export class StudentDashboardComponent implements OnInit, OnDestroy {
       width: '480px',
       maxWidth: '90vw',
     });
+  }
+
+  /** 更新当前日期 */
+  private updateCurrentDate(): void {
+    const now = new Date();
+    const days = ['星期日', '星期一', '星期二', '星期三', '星期四', '星期五', '星期六'];
+    const year = now.getFullYear();
+    const month = now.getMonth() + 1;
+    const date = now.getDate();
+    const day = days[now.getDay()];
+    this.currentDate = `${year}年${month}月${date}日${day}`;
+  }
+
+  /** 导航到指定路由 */
+  navigateTo(path: string): void {
+    void this.router.navigate([path]);
   }
 
   private loadCurrentUser(): void {

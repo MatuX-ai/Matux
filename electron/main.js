@@ -47,6 +47,31 @@ let isQuitting = false;
 let isStarting = false; // 防止 startBackend 并发调用
 let tray = null;
 
+// ==================== 窗口状态持久化 ====================
+
+const WINDOW_STATE_FILE = path.join(app.getPath('userData'), 'window-state.json');
+
+function loadWindowState() {
+  try {
+    if (fs.existsSync(WINDOW_STATE_FILE)) {
+      return JSON.parse(fs.readFileSync(WINDOW_STATE_FILE, 'utf-8'));
+    }
+  } catch (_) { /* 忽略解析错误 */ }
+  return { width: 1400, height: 900 };
+}
+
+function saveWindowState() {
+  if (!mainWindow || mainWindow.isDestroyed()) return;
+  try {
+    const bounds = mainWindow.getBounds();
+    const isMaximized = mainWindow.isMaximized();
+    fs.writeFileSync(WINDOW_STATE_FILE, JSON.stringify({
+      ...bounds,
+      isMaximized,
+    }, null, 2));
+  } catch (_) { /* 忽略写入错误 */ }
+}
+
 // ==================== 工具函数 ====================
 
 /**
@@ -262,11 +287,15 @@ function createSplashWindow() {
  * 创建主应用窗口
  */
 function createMainWindow() {
+  const savedState = loadWindowState();
+
   mainWindow = new BrowserWindow({
-    width: 1400,
-    height: 900,
+    width: savedState.width || 1400,
+    height: savedState.height || 900,
     minWidth: 1024,
     minHeight: 768,
+    x: savedState.x,
+    y: savedState.y,
     show: false,
     webPreferences: {
       preload: APP_PATHS.preload,
@@ -277,6 +306,11 @@ function createMainWindow() {
     titleBarStyle: 'default',
     title: 'MatuX',
   });
+
+  // 恢复最大化状态
+  if (savedState.isMaximized) {
+    mainWindow.maximize();
+  }
 
   // 加载前端应用
   if (isDev) {
@@ -328,11 +362,20 @@ function createMainWindow() {
         width: w,
         height: h,
       });
+      saveWindowState();
     }, 200);
+  });
+
+  // 窗口移动时保存位置（防抖）
+  let moveTimeout;
+  mainWindow.on('move', () => {
+    clearTimeout(moveTimeout);
+    moveTimeout = setTimeout(() => { saveWindowState(); }, 500);
   });
 
   // 最小化到托盘而非关闭
   mainWindow.on('close', (event) => {
+    saveWindowState();
     if (!isQuitting && tray) {
       event.preventDefault();
       mainWindow.hide();
@@ -513,6 +556,22 @@ function registerGlobalShortcuts() {
   } else {
     console.log('[INFO] 全局快捷键 Ctrl+Shift+M 已注册（显示/隐藏窗口）');
   }
+
+  // Ctrl+K → 全局命令面板
+  globalShortcut.register('CommandOrControl+K', () => {
+    if (mainWindow && mainWindow.isVisible()) {
+      mainWindow.webContents.send('shortcut', 'command-palette');
+    }
+  });
+
+  // Ctrl+N → 新建项目
+  globalShortcut.register('CommandOrControl+N', () => {
+    if (mainWindow && mainWindow.isVisible()) {
+      mainWindow.webContents.send('shortcut', 'new-project');
+    }
+  });
+
+  console.log('[INFO] 快捷键 Ctrl+K（命令面板）、Ctrl+N（新建项目）已注册');
 }
 
 /**
@@ -1111,6 +1170,30 @@ function registerIpcHandlers() {
   ipcMain.handle('show-notification', async (_event, title, body, category) => {
     showNotification(title, body, category);
     return { success: true };
+  });
+
+  // ===== 窗口控制 IPC（支持 frame:false 自定义标题栏）=====
+  ipcMain.handle('window-minimize', () => {
+    mainWindow?.minimize();
+    return { success: true };
+  });
+
+  ipcMain.handle('window-maximize', () => {
+    if (mainWindow?.isMaximized()) {
+      mainWindow.unmaximize();
+    } else {
+      mainWindow?.maximize();
+    }
+    return { success: true };
+  });
+
+  ipcMain.handle('window-close', () => {
+    mainWindow?.close();
+    return { success: true };
+  });
+
+  ipcMain.handle('window-is-maximized', () => {
+    return { success: true, isMaximized: mainWindow?.isMaximized() || false };
   });
 
   // 检查更新
