@@ -1,0 +1,232 @@
+.updates-container {
+  padding: 24px;
+  max-width: 1000px;
+  margin: 0 auto;
+
+  .header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 24px;
+
+    h3 {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      margin: 0;
+      font-size: 20px;
+      font-weight: 600;
+      color: #333;
+
+      .section-icon {
+        color: #667eea;
+      }
+
+      .badge {
+        background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+        color: white;
+        padding: 4px 12px;
+        border-radius: 12px;
+        font-size: 14px;
+        font-weight: 600;
+      }
+    }
+
+    .header-actions {
+      display: flex;
+      gap: 8px;
+
+      button {
+        mat-icon {
+          margin-right: 4px;
+        }
+      }
+    }
+  }
+
+  .loading-container,
+  .error-container {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: 60px 20px;
+    text-align: center;
+
+    p {
+      margin-top: 16px;
+      color: #666;
+      font-size: 14px;
+    }
+  }
+
+  .error-container {
+    mat-icon {
+      font-size: 64px;
+      width: 64px;
+      height: 64px;
+      margin-bottom: 16px;
+    }
+  }
+
+  .updates-list {
+    .empty-state {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      padding: 60px 20px;
+      text-align: center;
+
+      mat-icon {
+        font-size: 64px;
+        width: 64px;
+        height: 64px;
+        color: #4caf50;
+        margin-bottom: 16px;
+      }
+
+      p {
+        margin: 0;
+        color: #666;
+        font-size: 16px;
+      }
+    }
+
+    .update-card {
+      margin-bottom: 16px;
+      transition: transform 0.2s, box-shadow 0.2s;
+
+      &:hover {
+        transform: translateX(4px);
+        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+      }
+
+      mat-card-header {
+        margin-bottom: 16px;
+
+        .update-header {
+          width: 100%;
+          display: flex;
+          justify-content: space-between;
+          align-items: flex-start;
+
+          .plugin-info {
+            h4 {
+              margin: 0 0 8px;
+              font-size: 18px;
+              font-weight: 600;
+              color: #333;
+            }
+
+            .version-info {
+              display: flex;
+              align-items: center;
+              gap: 8px;
+              font-size: 14px;
+
+              .current-version {
+                color: #999;
+              }
+
+              .new-version {
+                color: #4caf50;
+                font-weight: 600;
+              }
+
+              mat-icon {
+                font-size: 16px;
+                width: 16px;
+                height: 16px;
+                color: #666;
+              }
+            }
+          }
+
+          .severity-badge {
+            display: flex;
+            align-items: center;
+            gap: 4px;
+            padding: 6px 12px;
+            border-radius: 16px;
+            color: white;
+            font-size: 12px;
+            font-weight: 600;
+
+            mat-icon {
+              font-size: 16px;
+              width: 16px;
+              height: 16px;
+            }
+          }
+        }
+      }
+
+      mat-card-content {
+        .release-notes {
+          margin-bottom: 12px;
+
+          strong {
+            display: block;
+            margin-bottom: 4px;
+            color: #333;
+          }
+
+          p {
+            margin: 0;
+            color: #666;
+            font-size: 14px;
+            line-height: 1.5;
+          }
+        }
+
+        .notified-date {
+          display: flex;
+          align-items: center;
+          gap: 4px;
+          font-size: 12px;
+          color: #999;
+
+          mat-icon {
+            font-size: 14px;
+            width: 14px;
+            height: 14px;
+          }
+        }
+      }
+
+      mat-card-actions {
+        display: flex;
+        gap: 8px;
+        margin-top: 16px;
+
+        button {
+          mat-icon {
+            margin-right: 4px;
+          }
+
+          mat-spinner {
+            margin-right: 4px;
+          }
+        }
+      }
+    }
+  }
+}
+
+@media (max-width: 768px) {
+  .updates-container {
+    padding: 16px;
+
+    .header {
+      flex-direction: column;
+      align-items: flex-start;
+      gap: 12px;
+
+      .header-actions {
+        width: 100%;
+        justify-content: space-between;
+      }
+    }
+  }
+}

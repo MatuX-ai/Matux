@@ -84,7 +84,7 @@
   <div class="package-section">
     <h2 class="section-title">选择 Token 套餐</h2>
     <p class="section-subtitle">灵活多样的套餐，满足不同使用需求</p>
-    
+
     <div class="package-grid">
       <div class="package-card" *ngFor="let pkg of packages">
         <div class="package-header">
@@ -96,7 +96,12 @@
           <span class="amount">{{ pkg.price }}</span>
         </div>
         <div class="package-tokens">{{ pkg.tokens }} Tokens</div>
-        <button mat-flat-button color="primary" class="package-buy-btn" (click)="selectPackage(pkg)">
+        <button
+          mat-flat-button
+          color="primary"
+          class="package-buy-btn"
+          (click)="selectPackage(pkg)"
+        >
           立即购买
         </button>
       </div>

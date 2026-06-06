@@ -116,12 +116,12 @@ export class SEOService {
    * @param image 图片URL
    */
   setOGTags(title: string, description: string, image?: string): void {
-    const ogImage = image || this.defaultConfig.ogImage;
+    const ogImage = image ?? this.defaultConfig.ogImage;
     const url = window.location.href;
 
     this.meta.updateTag({ property: 'og:title', content: title });
     this.meta.updateTag({ property: 'og:description', content: description });
-    this.meta.updateTag({ property: 'og:image', content: ogImage || '' });
+    this.meta.updateTag({ property: 'og:image', content: ogImage ?? '' });
     this.meta.updateTag({ property: 'og:url', content: url });
     this.meta.updateTag({ property: 'og:type', content: 'website' });
     this.meta.updateTag({ property: 'og:site_name', content: 'MatuX' });
@@ -135,12 +135,12 @@ export class SEOService {
    * @param image 图片URL
    */
   setTwitterCardTags(title: string, description: string, image?: string): void {
-    const twitterImage = image || this.defaultConfig.ogImage;
+    const twitterImage = image ?? this.defaultConfig.ogImage;
 
     this.meta.updateTag({ name: 'twitter:card', content: 'summary_large_image' });
     this.meta.updateTag({ name: 'twitter:title', content: title });
     this.meta.updateTag({ name: 'twitter:description', content: description });
-    this.meta.updateTag({ name: 'twitter:image', content: twitterImage || '' });
+    this.meta.updateTag({ name: 'twitter:image', content: twitterImage ?? '' });
     this.meta.updateTag({ name: 'twitter:site', content: '@MatuX' });
   }
 
@@ -150,7 +150,7 @@ export class SEOService {
    * @param url 规范化URL
    */
   setCanonicalURL(url?: string): void {
-    const canonicalUrl = url || window.location.href;
+    const canonicalUrl = url ?? window.location.href;
     const existing = this.meta.getTag('rel="canonical"');
 
     if (existing) {

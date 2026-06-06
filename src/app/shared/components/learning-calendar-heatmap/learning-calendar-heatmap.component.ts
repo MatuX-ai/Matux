@@ -1,6 +1,6 @@
 /**
  * 学习日历热力图组件
- * 
+ *
  * 基于 ECharts 展示学习活跃度的日历热力图
  * 桌面端适配：支持大屏渲染、键盘导航
  */
@@ -12,24 +12,22 @@ import {
   EventEmitter,
   Input,
   OnChanges,
-  OnDestroy,
   Output,
   SimpleChanges,
-  HostListener,
 } from '@angular/core';
-import { MatCardModule } from '@angular/material/card';
 import { MatButtonModule } from '@angular/material/button';
+import { MatCardModule } from '@angular/material/card';
 import { MatIconModule } from '@angular/material/icon';
 import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
 import { MatTooltipModule } from '@angular/material/tooltip';
 
 /** 每日学习记录 */
 export interface DailyLearningRecord {
-  date: string;          // YYYY-MM-DD
-  minutes: number;       // 学习时长（分钟）
-  courses: number;       // 参与课程数
-  quizzes: number;       // 完成测验数
-  score?: number;        // 平均得分
+  date: string; // YYYY-MM-DD
+  minutes: number; // 学习时长（分钟）
+  courses: number; // 参与课程数
+  quizzes: number; // 完成测验数
+  score?: number; // 平均得分
 }
 
 /** 日历热力图配置 */
@@ -38,7 +36,7 @@ export interface CalendarHeatmapConfig {
   data: DailyLearningRecord[];
   loading?: boolean;
   emptyMessage?: string;
-  maxValue?: number;     // 色阶最大值（分钟），默认 240
+  maxValue?: number; // 色阶最大值（分钟），默认 240
 }
 
 @Component({
@@ -108,8 +106,11 @@ export interface CalendarHeatmapConfig {
 
         <!-- 月度统计条 -->
         <div class="monthly-bars" *ngIf="!config?.loading && !isEmpty">
-          <div *ngFor="let m of monthlyStats" class="month-bar-item"
-               [matTooltip]="m.label + ': ' + m.minutes + '分钟'">
+          <div
+            *ngFor="let m of monthlyStats"
+            class="month-bar-item"
+            [matTooltip]="m.label + ': ' + m.minutes + '分钟'"
+          >
             <div class="month-bar" [style.height.px]="getMonthlyBarHeight(m)"></div>
             <span class="month-bar-label">{{ m.shortLabel }}</span>
           </div>
@@ -119,13 +120,21 @@ export interface CalendarHeatmapConfig {
         <div class="heatmap-legend" *ngIf="!config?.loading && !isEmpty">
           <span class="legend-label">学习时长（分钟）</span>
           <div class="legend-colors">
-            <span class="legend-item" *ngFor="let level of legendLevels; let i = index"
-                  [style.background]="getColorForMinutes(level.value)">
+            <span
+              class="legend-item"
+              *ngFor="let level of legendLevels; let i = index"
+              [style.background]="getColorForMinutes(level.value)"
+            >
             </span>
           </div>
-          <span class="legend-label">{{ legendLevels[0].value || 0 }} - {{ legendLevels[legendLevels.length - 1].value || 240 }}分</span>
+          <span class="legend-label"
+            >{{ legendLevels[0].value || 0 }} -
+            {{ legendLevels[legendLevels.length - 1].value || 240 }}分</span
+          >
           <span class="legend-spacer"></span>
-          <span class="legend-summary">年均 <strong>{{ yearlyAvgMinutes }}</strong> 分钟/日</span>
+          <span class="legend-summary"
+            >年均 <strong>{{ yearlyAvgMinutes }}</strong> 分钟/日</span
+          >
         </div>
 
         <!-- 热力图网格 -->
@@ -155,261 +164,292 @@ export interface CalendarHeatmapConfig {
                 tabindex="0"
                 role="gridcell"
                 [attr.aria-label]="getCellTooltip(cell)"
-              >
-              </div>
+              ></div>
             </div>
           </div>
         </div>
       </mat-card-content>
     </mat-card>
   `,
-  styles: [`
-    :host {
-      display: block;
-    }
-
-    .heatmap-card {
-      mat-card-header {
-        margin-bottom: 16px;
-        display: flex;
-        align-items: center;
-        justify-content: space-between;
+  styles: [
+    `
+      :host {
+        display: block;
       }
 
-      mat-card-title {
+      .heatmap-card {
+        mat-card-header {
+          margin-bottom: 16px;
+          display: flex;
+          align-items: center;
+          justify-content: space-between;
+        }
+
+        mat-card-title {
+          display: flex;
+          align-items: center;
+          gap: 8px;
+          font-size: 18px;
+        }
+      }
+
+      /* 年份导航 */
+      .year-nav {
+        display: flex;
+        align-items: center;
+        gap: 4px;
+      }
+      .year-display {
+        font-size: 16px;
+        font-weight: 600;
+        min-width: 48px;
+        text-align: center;
+        color: #334155;
+      }
+
+      /* 选中日详情面板 */
+      .selected-day-panel {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        padding: 8px 12px;
+        margin-bottom: 12px;
+        background: #f0f9ff;
+        border: 1px solid #bae6fd;
+        border-radius: 8px;
+        font-size: 13px;
+        position: relative;
+      }
+      .selected-date {
+        color: #0369a1;
+        font-size: 14px;
+      }
+      .selected-stats {
+        display: flex;
+        gap: 12px;
+        flex: 1;
+        flex-wrap: wrap;
+      }
+      .sel-stat {
+        display: flex;
+        align-items: center;
+        gap: 4px;
+        color: #475569;
+      }
+      .sel-stat mat-icon {
+        font-size: 16px;
+        width: 16px;
+        height: 16px;
+      }
+      .close-sel {
+        position: absolute;
+        top: 4px;
+        right: 4px;
+        --mat-icon-button-touch-target: 24px;
+      }
+      .close-sel mat-icon {
+        font-size: 16px;
+      }
+
+      /* 月度统计条 */
+      .monthly-bars {
+        display: flex;
+        gap: 6px;
+        margin-bottom: 12px;
+        padding: 0 32px;
+        height: 50px;
+        align-items: flex-end;
+      }
+      .month-bar-item {
+        flex: 1;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        gap: 2px;
+      }
+      .month-bar {
+        width: 100%;
+        min-height: 2px;
+        background: linear-gradient(180deg, #3b82f6, #2563eb);
+        border-radius: 3px 3px 0 0;
+        transition: height 0.3s ease;
+      }
+      .month-bar-label {
+        font-size: 9px;
+        color: #94a3b8;
+      }
+
+      /* 加载状态 */
+      .loading-state {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 12px;
+        padding: 32px;
+        color: #666;
+      }
+
+      /* 空状态 */
+      .empty-state {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        padding: 32px;
+        color: #999;
+
+        mat-icon {
+          font-size: 48px;
+          width: 48px;
+          height: 48px;
+          margin-bottom: 8px;
+          opacity: 0.5;
+        }
+      }
+
+      /* 图例 */
+      .heatmap-legend {
         display: flex;
         align-items: center;
         gap: 8px;
-        font-size: 18px;
+        margin-bottom: 12px;
+        font-size: 12px;
+        color: #666;
       }
-    }
-
-    /* 年份导航 */
-    .year-nav {
-      display: flex;
-      align-items: center;
-      gap: 4px;
-    }
-    .year-display {
-      font-size: 16px;
-      font-weight: 600;
-      min-width: 48px;
-      text-align: center;
-      color: #334155;
-    }
-
-    /* 选中日详情面板 */
-    .selected-day-panel {
-      display: flex;
-      align-items: center;
-      gap: 12px;
-      padding: 8px 12px;
-      margin-bottom: 12px;
-      background: #f0f9ff;
-      border: 1px solid #bae6fd;
-      border-radius: 8px;
-      font-size: 13px;
-      position: relative;
-    }
-    .selected-date { color: #0369a1; font-size: 14px; }
-    .selected-stats { display: flex; gap: 12px; flex: 1; flex-wrap: wrap; }
-    .sel-stat {
-      display: flex; align-items: center; gap: 4px; color: #475569;
-    }
-    .sel-stat mat-icon { font-size: 16px; width: 16px; height: 16px; }
-    .close-sel {
-      position: absolute; top: 4px; right: 4px;
-      --mat-icon-button-touch-target: 24px;
-    }
-    .close-sel mat-icon { font-size: 16px; }
-
-    /* 月度统计条 */
-    .monthly-bars {
-      display: flex;
-      gap: 6px;
-      margin-bottom: 12px;
-      padding: 0 32px;
-      height: 50px;
-      align-items: flex-end;
-    }
-    .month-bar-item {
-      flex: 1;
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      gap: 2px;
-    }
-    .month-bar {
-      width: 100%;
-      min-height: 2px;
-      background: linear-gradient(180deg, #3b82f6, #6366f1);
-      border-radius: 3px 3px 0 0;
-      transition: height 0.3s ease;
-    }
-    .month-bar-label {
-      font-size: 9px;
-      color: #94a3b8;
-    }
-
-    /* 加载状态 */
-    .loading-state {
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      gap: 12px;
-      padding: 32px;
-      color: #666;
-    }
-
-    /* 空状态 */
-    .empty-state {
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      padding: 32px;
-      color: #999;
-
-      mat-icon {
-        font-size: 48px;
-        width: 48px;
-        height: 48px;
-        margin-bottom: 8px;
-        opacity: 0.5;
+      .legend-spacer {
+        flex: 1;
       }
-    }
-
-    /* 图例 */
-    .heatmap-legend {
-      display: flex;
-      align-items: center;
-      gap: 8px;
-      margin-bottom: 12px;
-      font-size: 12px;
-      color: #666;
-    }
-    .legend-spacer { flex: 1; }
-    .legend-summary { font-size: 12px; color: #64748b; }
-
-    .legend-colors {
-      display: flex;
-      gap: 2px;
-    }
-
-    .legend-item {
-      width: 16px;
-      height: 12px;
-      border-radius: 2px;
-    }
-
-    /* 月份标签 */
-    .month-labels {
-      display: grid;
-      grid-template-columns: repeat(12, 1fr);
-      gap: 2px;
-      margin-bottom: 4px;
-      padding-left: 32px;
-    }
-
-    .month-label {
-      font-size: 11px;
-      color: #999;
-      text-align: center;
-      white-space: nowrap;
-      overflow: hidden;
-    }
-
-    /* 热力图主体 */
-    .heatmap-body {
-      display: flex;
-      gap: 4px;
-    }
-
-    .week-labels {
-      display: flex;
-      flex-direction: column;
-      justify-content: space-around;
-      width: 28px;
-      font-size: 10px;
-      color: #999;
-      text-align: center;
-    }
-
-    .week-label {
-      line-height: 16px;
-    }
-
-    /* 热力图方格容器 */
-    .heatmap-cells {
-      display: grid;
-      grid-template-columns: repeat(53, 1fr);
-      grid-template-rows: repeat(7, 1fr);
-      gap: 2px;
-      flex: 1;
-    }
-
-    .heatmap-cell {
-      aspect-ratio: 1;
-      border-radius: 3px;
-      background: #ebedf0;
-      transition: background 0.2s, transform 0.15s;
-      cursor: pointer;
-
-      &.has-data {
-        &:hover {
-          outline: 2px solid #6366f1;
-          outline-offset: -2px;
-          z-index: 1;
-          transform: scale(1.15);
-        }
-        &:focus-visible {
-          outline: 2px solid #6366f1;
-          outline-offset: 0;
-          z-index: 2;
-        }
+      .legend-summary {
+        font-size: 12px;
+        color: #64748b;
       }
 
-      &.selected {
-        outline: 2px solid #6366f1;
-        outline-offset: -2px;
-        z-index: 1;
-      }
-    }
-
-    /* 响应式：移动端缩小 */
-    @media (max-width: 768px) {
-      .heatmap-cells {
-        gap: 1px;
+      .legend-colors {
+        display: flex;
+        gap: 2px;
       }
 
-      .heatmap-cell {
+      .legend-item {
+        width: 16px;
+        height: 12px;
         border-radius: 2px;
       }
 
+      /* 月份标签 */
       .month-labels {
-        gap: 1px;
-        padding-left: 24px;
+        display: grid;
+        grid-template-columns: repeat(12, 1fr);
+        gap: 2px;
+        margin-bottom: 4px;
+        padding-left: 32px;
+      }
+
+      .month-label {
+        font-size: 11px;
+        color: #999;
+        text-align: center;
+        white-space: nowrap;
+        overflow: hidden;
+      }
+
+      /* 热力图主体 */
+      .heatmap-body {
+        display: flex;
+        gap: 4px;
       }
 
       .week-labels {
-        width: 22px;
-        font-size: 9px;
+        display: flex;
+        flex-direction: column;
+        justify-content: space-around;
+        width: 28px;
+        font-size: 10px;
+        color: #999;
+        text-align: center;
       }
 
-      .monthly-bars { padding: 0 24px; }
-      .selected-day-panel { flex-wrap: wrap; }
-    }
-
-    /* 桌面大屏：增大方格 */
-    @media (min-width: 1600px) {
-      .heatmap-cell {
-        border-radius: 4px;
+      .week-label {
+        line-height: 16px;
       }
 
+      /* 热力图方格容器 */
       .heatmap-cells {
-        gap: 3px;
+        display: grid;
+        grid-template-columns: repeat(53, 1fr);
+        grid-template-rows: repeat(7, 1fr);
+        gap: 2px;
+        flex: 1;
       }
-    }
-  `],
+
+      .heatmap-cell {
+        aspect-ratio: 1;
+        border-radius: 3px;
+        background: #ebedf0;
+        transition:
+          background 0.2s,
+          transform 0.15s;
+        cursor: pointer;
+
+        &.has-data {
+          &:hover {
+            outline: 2px solid #2563eb;
+            outline-offset: -2px;
+            z-index: 1;
+            transform: scale(1.15);
+          }
+          &:focus-visible {
+            outline: 2px solid #2563eb;
+            outline-offset: 0;
+            z-index: 2;
+          }
+        }
+
+        &.selected {
+          outline: 2px solid #2563eb;
+          outline-offset: -2px;
+          z-index: 1;
+        }
+      }
+
+      /* 响应式：移动端缩小 */
+      @media (max-width: 768px) {
+        .heatmap-cells {
+          gap: 1px;
+        }
+
+        .heatmap-cell {
+          border-radius: 2px;
+        }
+
+        .month-labels {
+          gap: 1px;
+          padding-left: 24px;
+        }
+
+        .week-labels {
+          width: 22px;
+          font-size: 9px;
+        }
+
+        .monthly-bars {
+          padding: 0 24px;
+        }
+        .selected-day-panel {
+          flex-wrap: wrap;
+        }
+      }
+
+      /* 桌面大屏：增大方格 */
+      @media (min-width: 1600px) {
+        .heatmap-cell {
+          border-radius: 4px;
+        }
+
+        .heatmap-cells {
+          gap: 3px;
+        }
+      }
+    `,
+  ],
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class LearningCalendarHeatmapComponent implements OnChanges {
@@ -423,7 +463,20 @@ export class LearningCalendarHeatmapComponent implements OnChanges {
   @Output() daySelect = new EventEmitter<DailyLearningRecord | null>();
 
   /** 月份标签 */
-  months: string[] = ['1月', '2月', '3月', '4月', '5月', '6月', '7月', '8月', '9月', '10月', '11月', '12月'];
+  months: string[] = [
+    '1月',
+    '2月',
+    '3月',
+    '4月',
+    '5月',
+    '6月',
+    '7月',
+    '8月',
+    '9月',
+    '10月',
+    '11月',
+    '12月',
+  ];
 
   /** 图例等级 */
   legendLevels = [
@@ -454,14 +507,27 @@ export class LearningCalendarHeatmapComponent implements OnChanges {
   /** 月度统计数据 */
   get monthlyStats(): { index: number; label: string; shortLabel: string; minutes: number }[] {
     if (!this.config) return [];
-    const minutesByMonth = new Array(12).fill(0);
+    const minutesByMonth = Array.from({ length: 12 }, () => 0);
     for (const record of this.config.data) {
       const month = parseInt(record.date.split('-')[1], 10) - 1;
       minutesByMonth[month] += record.minutes;
     }
-    const monthNames = ['1月','2月','3月','4月','5月','6月','7月','8月','9月','10月','11月','12月'];
-    const shortNames = ['1','2','3','4','5','6','7','8','9','10','11','12'];
-    const max = Math.max(...minutesByMonth, 1);
+    const monthNames = [
+      '1月',
+      '2月',
+      '3月',
+      '4月',
+      '5月',
+      '6月',
+      '7月',
+      '8月',
+      '9月',
+      '10月',
+      '11月',
+      '12月',
+    ];
+    const shortNames = ['1', '2', '3', '4', '5', '6', '7', '8', '9', '10', '11', '12'];
+    const _max = Math.max(...minutesByMonth, 1);
     return minutesByMonth.map((m, i) => ({
       index: i,
       label: monthNames[i],

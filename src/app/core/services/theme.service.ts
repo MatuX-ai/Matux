@@ -259,7 +259,9 @@ export class ThemeService {
   private storeTheme(theme: 'light' | 'dark'): void {
     try {
       localStorage.setItem(this.THEME_STORAGE_KEY, theme);
-    } catch (error) {}
+    } catch {
+      /* 存储失败不阻塞 */
+    }
   }
 
   /**
@@ -268,7 +270,9 @@ export class ThemeService {
   clearStoredTheme(): void {
     try {
       localStorage.removeItem(this.THEME_STORAGE_KEY);
-    } catch (error) {}
+    } catch {
+      /* 清除失败不阻塞 */
+    }
   }
 
   /**
@@ -278,7 +282,7 @@ export class ThemeService {
   listenToSystemPreference(): () => void {
     const mediaQuery = window.matchMedia('(prefers-color-scheme: dark)');
 
-    const handleChange = (e: MediaQueryListEvent) => {
+    const handleChange = (e: MediaQueryListEvent): void => {
       const systemTheme: 'light' | 'dark' = e.matches ? 'dark' : 'light';
       const savedTheme = this.getStoredTheme();
 
@@ -300,7 +304,10 @@ export class ThemeService {
   /**
    * 获取主题相关的工具方法
    */
-  getThemeUtils() {
+  getThemeUtils(): {
+    getContrastColor: (backgroundColor: string) => 'light' | 'dark';
+    mixColors: (color1: string, color2: string, ratio: number) => string;
+  } {
     return {
       // 获取对比色
       getContrastColor: (backgroundColor: string): 'light' | 'dark' => {

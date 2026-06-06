@@ -1,10 +1,10 @@
+﻿import { CommonModule } from '@angular/common';
 import { Component, OnDestroy, OnInit } from '@angular/core';
-import { CommonModule } from '@angular/common';
+import { MatButtonModule } from '@angular/material/button';
 import { MatCardModule } from '@angular/material/card';
 import { MatIconModule } from '@angular/material/icon';
-import { MatButtonModule } from '@angular/material/button';
 import { MatProgressBarModule } from '@angular/material/progress-bar';
-import { Subject, takeUntil } from 'rxjs';
+import { Subject } from 'rxjs';
 
 import { VircadiaSceneViewerComponent } from '../../../components/vircadia-scene-viewer/vircadia-scene-viewer.component';
 import { createVircadiaSdk, VircadiaSdkService } from '../../../core/services/vircadia-sdk.service';
@@ -39,20 +39,20 @@ import { SceneInfo, UserInfo, VircadiaSDKConfig } from '../../../models/vircadia
         <mat-card>
           <mat-card-header>
             <mat-icon mat-card-avatar>school</mat-icon>
-            <mat-card-title>{{ currentScene.name || '虚拟教室' }}</mat-card-title>
-            <mat-card-subtitle>在线人数: {{ onlineUsers }}</mat-card-subtitle>
+            <mat-card-title>{{ currentScene.name || '铏氭嫙鏁欏' }}</mat-card-title>
+            <mat-card-subtitle>鍦ㄧ嚎浜烘暟: {{ onlineUsers }}</mat-card-subtitle>
           </mat-card-header>
           <mat-card-content>
-            <p>{{ currentScene.description || '沉浸式虚拟学习空间' }}</p>
+            <p>{{ currentScene.description || '娌夋蹈寮忚櫄鎷熷涔犵┖闂? }}</p>
             <div class="scene-actions">
               <button mat-raised-button color="primary" (click)="loadClassroomScene()">
-                <mat-icon>class</mat-icon> 标准教室
+                <mat-icon>class</mat-icon> 鏍囧噯鏁欏
               </button>
               <button mat-raised-button color="accent" (click)="loadLectureScene()">
-                <mat-icon>present_to_all</mat-icon> 演讲厅
+                <mat-icon>present_to_all</mat-icon> 婕旇鍘?
               </button>
               <button mat-raised-button (click)="loadGroupScene()">
-                <mat-icon>groups</mat-icon> 讨论室
+                <mat-icon>groups</mat-icon> 璁ㄨ瀹?
               </button>
             </div>
           </mat-card-content>
@@ -62,11 +62,29 @@ import { SceneInfo, UserInfo, VircadiaSDKConfig } from '../../../models/vircadia
   `,
   styles: [
     `
-      .virtual-classroom { height: 100%; display: flex; }
-      .scene-panel { flex: 1; position: relative; }
-      .info-panel { width: 320px; padding: 16px; overflow-y: auto; background: rgba(255,255,255,0.05); }
-      .scene-actions { display: flex; flex-direction: column; gap: 8px; margin-top: 16px; }
-      .scene-actions button { width: 100%; }
+      .virtual-classroom {
+        height: 100%;
+        display: flex;
+      }
+      .scene-panel {
+        flex: 1;
+        position: relative;
+      }
+      .info-panel {
+        width: 320px;
+        padding: 16px;
+        overflow-y: auto;
+        background: rgba(255, 255, 255, 0.05);
+      }
+      .scene-actions {
+        display: flex;
+        flex-direction: column;
+        gap: 8px;
+        margin-top: 16px;
+      }
+      .scene-actions button {
+        width: 100%;
+      }
     `,
   ],
 })
@@ -79,7 +97,7 @@ export class VirtualClassroomComponent implements OnInit, OnDestroy {
   private destroy$ = new Subject<void>();
 
   ngOnInit(): void {
-    this.accessToken = localStorage.getItem('vircadia_token') || '';
+    this.accessToken = localStorage.getItem('vircadia_token') ?? '';
   }
 
   ngOnDestroy(): void {
@@ -87,7 +105,7 @@ export class VirtualClassroomComponent implements OnInit, OnDestroy {
     this.destroy$.complete();
   }
 
-  onConnected(user: UserInfo): void {
+  onConnected(_user: UserInfo): void {
     const config: VircadiaSDKConfig = { serverUrl: this.serverUrl };
     this.sdk = createVircadiaSdk(config);
     this.loadClassroomScene();

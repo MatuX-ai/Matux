@@ -15,7 +15,9 @@ const routes: Routes = [
   {
     path: 'dashboard',
     loadComponent: () =>
-      import('./ai-edu-dashboard/ai-edu-dashboard.component').then((m) => m.AIEduDashboardComponent),
+      import('./ai-edu-dashboard/ai-edu-dashboard.component').then(
+        (m) => m.AIEduDashboardComponent
+      ),
   },
 ];
 

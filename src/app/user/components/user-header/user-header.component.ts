@@ -13,6 +13,7 @@ import { MatMenuModule } from '@angular/material/menu';
 import { MatToolbarModule } from '@angular/material/toolbar';
 import { RouterModule } from '@angular/router';
 
+import { User } from '../../../core/models/auth.models';
 import { AuthService } from '../../../core/services/auth.service';
 import { UserCenterService } from '../../services/user-center.service';
 
@@ -160,7 +161,7 @@ export class UserHeaderComponent {
   @Input() isMobile = false;
   @Output() toggleSidebar = new EventEmitter<void>();
 
-  currentUser: any = null;
+  currentUser: User | null = null;
 
   constructor(
     private userCenterService: UserCenterService,

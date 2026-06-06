@@ -12,18 +12,12 @@ import { MatIconModule } from '@angular/material/icon';
 import { MatProgressBarModule } from '@angular/material/progress-bar';
 import { MatSnackBar } from '@angular/material/snack-bar';
 
-import { OfflineSyncService, SyncReport, SyncStatus } from '../../services/offline-sync.service';
+import { OfflineSyncService, SyncStatus } from '../../services/offline-sync.service';
 
 @Component({
   selector: 'app-offline-sync-panel',
   standalone: true,
-  imports: [
-    CommonModule,
-    MatCardModule,
-    MatButtonModule,
-    MatIconModule,
-    MatProgressBarModule,
-  ],
+  imports: [CommonModule, MatCardModule, MatButtonModule, MatIconModule, MatProgressBarModule],
   template: `
     <mat-card class="sync-panel-card">
       <mat-card-header>
@@ -47,38 +41,66 @@ import { OfflineSyncService, SyncReport, SyncStatus } from '../../services/offli
         <mat-progress-bar
           *ngIf="(syncService.syncStatus$ | async) === 'syncing'"
           mode="determinate"
-          [value]="syncService.syncProgress$ | async">
+          [value]="syncService.syncProgress$ | async"
+        >
         </mat-progress-bar>
 
         <!-- 同步报告 -->
         <div *ngIf="syncService.syncReport$ | async as report" class="sync-report">
           <div class="report-row" *ngIf="report.totalOperations > 0">
             <span>已同步: {{ report.syncedCount }}/{{ report.totalOperations }}</span>
-            <span *ngIf="report.failedCount > 0" class="failed">失败: {{ report.failedCount }}</span>
+            <span *ngIf="report.failedCount > 0" class="failed"
+              >失败: {{ report.failedCount }}</span
+            >
           </div>
         </div>
 
         <!-- 手动同步按钮 -->
-        <button mat-raised-button color="primary"
-                (click)="manualSync()"
-                [disabled]="(syncService.syncStatus$ | async) === 'syncing' || (syncService.syncStatus$ | async) === 'offline'">
+        <button
+          mat-raised-button
+          color="primary"
+          (click)="manualSync()"
+          [disabled]="
+            (syncService.syncStatus$ | async) === 'syncing' ||
+            (syncService.syncStatus$ | async) === 'offline'
+          "
+        >
           <mat-icon>sync</mat-icon> 立即同步
         </button>
       </mat-card-content>
     </mat-card>
   `,
-  styles: [`
-    .sync-panel-card { margin: 16px; }
-    .sync-info { display: flex; align-items: center; gap: 8px; margin-bottom: 12px; color: #f59e0b; }
-    .sync-report { margin: 12px 0; }
-    .report-row { display: flex; align-items: center; gap: 16px; font-size: 14px; }
-    .failed { color: #ef4444; }
-  `],
+  styles: [
+    `
+      .sync-panel-card {
+        margin: 16px;
+      }
+      .sync-info {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        margin-bottom: 12px;
+        color: #f59e0b;
+      }
+      .sync-report {
+        margin: 12px 0;
+      }
+      .report-row {
+        display: flex;
+        align-items: center;
+        gap: 16px;
+        font-size: 14px;
+      }
+      .failed {
+        color: #ef4444;
+      }
+    `,
+  ],
 })
 export class OfflineSyncPanelComponent implements OnInit {
   constructor(
     public syncService: OfflineSyncService,
-    private snackBar: MatSnackBar,
+    private snackBar: MatSnackBar
   ) {}
 
   ngOnInit(): void {
@@ -99,10 +121,14 @@ export class OfflineSyncPanelComponent implements OnInit {
 
   getStatusIcon(status: SyncStatus | null): string {
     switch (status) {
-      case 'syncing': return 'sync';
-      case 'error': return 'error_outline';
-      case 'offline': return 'cloud_off';
-      default: return 'cloud_done';
+      case 'syncing':
+        return 'sync';
+      case 'error':
+        return 'error_outline';
+      case 'offline':
+        return 'cloud_off';
+      default:
+        return 'cloud_done';
     }
   }
 }

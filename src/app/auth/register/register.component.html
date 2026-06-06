@@ -19,8 +19,8 @@
           placeholder="请输入用户名（至少3个字符）"
         />
         <div class="error-message" *ngIf="username.invalid && username.touched">
-          <span *ngIf="username.errors?.['required']">用户名不能为空</span>
-          <span *ngIf="username.errors?.['minlength']">用户名至少3个字符</span>
+          <span *ngIf="username.errors['required']">用户名不能为空</span>
+          <span *ngIf="username.errors['minlength']">用户名至少3个字符</span>
         </div>
       </div>
 
@@ -37,8 +37,8 @@
           placeholder="请输入邮箱地址"
         />
         <div class="error-message" *ngIf="email.invalid && email.touched">
-          <span *ngIf="email.errors?.['required']">邮箱地址不能为空</span>
-          <span *ngIf="email.errors?.['email']">请输入有效的邮箱地址</span>
+          <span *ngIf="email.errors['required']">邮箱地址不能为空</span>
+          <span *ngIf="email.errors['email']">请输入有效的邮箱地址</span>
         </div>
       </div>
 
@@ -65,8 +65,8 @@
           </button>
         </div>
         <div class="error-message" *ngIf="password.invalid && password.touched">
-          <span *ngIf="password.errors?.['required']">密码不能为空</span>
-          <span *ngIf="password.errors?.['minlength']">密码至少6个字符</span>
+          <span *ngIf="password.errors['required']">密码不能为空</span>
+          <span *ngIf="password.errors['minlength']">密码至少6个字符</span>
         </div>
       </div>
 

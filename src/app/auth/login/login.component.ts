@@ -1,14 +1,14 @@
 import { CommonModule } from '@angular/common';
 import { Component } from '@angular/core';
 import { FormsModule } from '@angular/forms';
-import { Router, RouterModule } from '@angular/router';
-import { MatCardModule } from '@angular/material/card';
-import { MatFormFieldModule } from '@angular/material/form-field';
-import { MatInputModule } from '@angular/material/input';
 import { MatButtonModule } from '@angular/material/button';
+import { MatCardModule } from '@angular/material/card';
 import { MatCheckboxModule } from '@angular/material/checkbox';
+import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatIconModule } from '@angular/material/icon';
+import { MatInputModule } from '@angular/material/input';
 import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
+import { Router, RouterModule } from '@angular/router';
 
 import { LoginRequest } from '../../core/models/auth.models';
 import { AuthService } from '../../core/services/auth.service';
@@ -62,8 +62,7 @@ export class LoginComponent {
         void this.router.navigate(['/user/dashboard']);
       },
       error: (error: unknown) => {
-        const errMsg =
-          (error as { message?: string })?.message ?? '登录失败，请检查邮箱和密码';
+        const errMsg = (error as { message?: string })?.message ?? '登录失败，请检查邮箱和密码';
         this.errorMessage = errMsg;
         this.loading = false;
       },

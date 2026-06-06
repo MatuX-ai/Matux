@@ -38,15 +38,15 @@ export class RegisterComponent {
     return this.confirmPassword !== this.userData.password;
   }
 
-  get username() {
+  get username(): { invalid: boolean; touched: boolean; errors: Record<string, unknown> } {
     return { invalid: false, touched: false, errors: {} as Record<string, unknown> };
   }
 
-  get email() {
+  get email(): { invalid: boolean; touched: boolean; errors: Record<string, unknown> } {
     return { invalid: false, touched: false, errors: {} as Record<string, unknown> };
   }
 
-  get password() {
+  get password(): { invalid: boolean; touched: boolean; errors: Record<string, unknown> } {
     return { invalid: false, touched: false, errors: {} as Record<string, unknown> };
   }
 

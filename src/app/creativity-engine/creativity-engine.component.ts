@@ -16,9 +16,9 @@ import {
   PromptTemplateResponse,
 } from '../../shared/models/creative-idea.interface';
 import { CreativityService } from '../../shared/services/creativity.service';
-import { ElectronService } from '../core/services/electron.service';
 import { safeJsonParse, safeJsonParseArray } from '../../shared/utils/type-safe-json.utils';
 import type { DirectoryEntry } from '../core/models/electron-api.model';
+import { ElectronService } from '../core/services/electron.service';
 
 @Component({
   selector: 'app-creativity-engine',
@@ -72,7 +72,7 @@ export class CreativityEngineComponent implements OnInit {
     private fb: FormBuilder,
     private creativityService: CreativityService,
     private snackBar: MatSnackBar,
-    private electronService: ElectronService,
+    private electronService: ElectronService
   ) {
     /* eslint-disable @typescript-eslint/unbound-method */
     this.ideaForm = this.fb.group({
@@ -268,7 +268,7 @@ export class CreativityEngineComponent implements OnInit {
         images: JSON.stringify(
           this.generatedImages.map((url) => ({ url, generated_at: new Date().toISOString() }))
         ),
-      } as any);
+      } as any); // eslint-disable-line @typescript-eslint/no-explicit-any
     } catch (error) {
       console.error('图像生成失败:', error);
       this.snackBar.open('图像生成失败', '关闭', { duration: 3000 });
@@ -389,16 +389,15 @@ export class CreativityEngineComponent implements OnInit {
             const filePath = result.filePath.endsWith('.imato')
               ? result.filePath
               : result.filePath + '.imato';
-            this.electronService.writeFile(
-              filePath,
-              JSON.stringify(exportData, null, 2),
-            ).subscribe((writeResult) => {
-              if (writeResult.success) {
-                this.snackBar.open('已保存为 .imato 文件', '关闭', { duration: 3000 });
-              } else {
-                this.snackBar.open('保存失败', '关闭', { duration: 3000 });
-              }
-            });
+            this.electronService
+              .writeFile(filePath, JSON.stringify(exportData, null, 2))
+              .subscribe((writeResult) => {
+                if (writeResult.success) {
+                  this.snackBar.open('已保存为 .imato 文件', '关闭', { duration: 3000 });
+                } else {
+                  this.snackBar.open('保存失败', '关闭', { duration: 3000 });
+                }
+              });
           }
         });
       } else {
@@ -476,7 +475,7 @@ export class CreativityEngineComponent implements OnInit {
         if (result.success && result.entries) {
           // 仅显示 .imato 文件和目录
           this.localProjects = result.entries.filter(
-            (e) => e.isDirectory || e.name.endsWith('.imato'),
+            (e) => e.isDirectory || e.name.endsWith('.imato')
           );
         } else {
           this.localProjects = [];
@@ -509,9 +508,7 @@ export class CreativityEngineComponent implements OnInit {
     };
 
     const fileName = `创意想法_${idea.title}_${new Date().toISOString().slice(0, 10)}.imato`;
-    const filePath = this.currentProjectPath
-      ? `${this.currentProjectPath}/${fileName}`
-      : fileName;
+    const filePath = this.currentProjectPath ? `${this.currentProjectPath}/${fileName}` : fileName;
 
     this.electronService.writeFile(filePath, JSON.stringify(exportData, null, 2)).subscribe({
       next: (result) => {

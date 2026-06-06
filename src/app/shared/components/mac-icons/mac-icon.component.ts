@@ -146,11 +146,12 @@ export class MacIconComponent {
     return '';
   }
 
-  onImageError(event: any): void {
+  onImageError(event: Event): void {
     console.error(`MacIcon: Failed to load icon "${this.name}" from path: ${this.iconPath}`);
     // 尝试使用绝对路径作为fallback
-    if (!this.iconPath.startsWith('/')) {
-      event.target.src = `/${this.iconPath}`;
+    const target = event.target as HTMLImageElement;
+    if (!this.iconPath.startsWith('/') && target) {
+      target.src = `/${this.iconPath}`;
     }
   }
 }

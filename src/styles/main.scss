@@ -8,7 +8,7 @@
 @use '../app/styles/shared/mac-index';
 
 // SCSS 设计令牌
-@use 'design-tokens/index';
+@use 'design-tokens/index' as dt;
 
 // Angular Material 主题
 @use 'themes/matux-material-theme';
@@ -17,12 +17,55 @@
 @use 'themes/dark-theme';
 
 // ===== PRD v1.1 动效规范 =====
-.mat-mdc-card:hover {
-  transform: translateY(-4px) scale(1.01);
-  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.12);
+.mat-mdc-card {
+  transition:
+    transform dt.$transition-slow,
+    box-shadow dt.$transition-slow;
 }
 
-.mat-mdc-card {
-  transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1),
-              box-shadow 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+.mat-mdc-card:hover {
+  box-shadow: 0 8px 24px rgb(0 0 0 / 12%);
+  transform: translateY(-4px) scale(1.01);
+}
+
+// ===== 模块状态 Snackbar 样式 =====
+// 由 ModuleActiveGuard 和 MatSnackBar 使用
+
+.module-loading-snackbar {
+  .mdc-snackbar__surface {
+    background: #1976d2 !important;
+  }
+
+  .mat-mdc-snack-bar-label {
+    color: #fff;
+    font-weight: 500;
+  }
+}
+
+.module-degraded-snackbar {
+  .mdc-snackbar__surface {
+    background: #ff9800 !important;
+  }
+
+  .mat-mdc-snack-bar-label {
+    color: #fff;
+  }
+
+  .mat-mdc-button.mat-mdc-snack-bar-action {
+    color: #fff;
+  }
+}
+
+.module-unavailable-snackbar {
+  .mdc-snackbar__surface {
+    background: #d32f2f !important;
+  }
+
+  .mat-mdc-snack-bar-label {
+    color: #fff;
+  }
+
+  .mat-mdc-button.mat-mdc-snack-bar-action {
+    color: #fff;
+  }
 }

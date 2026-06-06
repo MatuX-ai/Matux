@@ -10,8 +10,7 @@
 
 import { HttpClient } from '@angular/common/http';
 import { Injectable } from '@angular/core';
-import { BehaviorSubject, from, of } from 'rxjs';
-import { catchError, map, switchMap, timeout } from 'rxjs/operators';
+import { BehaviorSubject } from 'rxjs';
 
 import { ElectronService } from '../../core/services/electron.service';
 
@@ -62,7 +61,7 @@ export class OfflineCodeExecutionService {
 
   constructor(
     private http: HttpClient,
-    private electronService: ElectronService,
+    private electronService: ElectronService
   ) {
     if (this.electronService.isElectron) {
       this.backendUrl = this.electronService.getBackendUrl() || 'http://localhost:8000/api/v1';
@@ -125,7 +124,7 @@ export class OfflineCodeExecutionService {
         signal: AbortSignal.timeout(timeoutMs + 5000),
       });
 
-      const data = await response.json() as {
+      const data = (await response.json()) as {
         success: boolean;
         output: string;
         error: string | null;

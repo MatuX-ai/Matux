@@ -11,7 +11,7 @@
  * @version 1.0.0
  */
 
-import { HttpClient } from '@angular/common/http';
+import { HttpClient, HttpParams } from '@angular/common/http';
 import { Injectable } from '@angular/core';
 import { delay, Observable, of, throwError } from 'rxjs';
 import { catchError } from 'rxjs/operators';
@@ -181,6 +181,7 @@ export class LearningReportsService {
    * 获取学习报告列表
    * @param params 查询参数
    */
+  // eslint-disable-next-line max-lines-per-function
   getReports(params: ReportQueryParams): Observable<ReportListResponse> {
     if (USE_MOCK_DATA) {
       const mockReports: LearningReport[] = [
@@ -353,13 +354,20 @@ export class LearningReportsService {
       return of({
         data: filteredReports,
         total: filteredReports.length,
-        page: params.page || 1,
-        limit: params.limit || 20,
+        page: params.page ?? 1,
+        limit: params.limit ?? 20,
         totalPages: 1,
       }).pipe(delay(100));
     }
     return this.http
-      .get<ReportListResponse>(`${this.API_BASE_URL}`, { params: params as any })
+      .get<ReportListResponse>(`${this.API_BASE_URL}`, {
+        params: Object.entries(params ?? {}).reduce((p, [key, value]) => {
+          if (value !== undefined && value !== null) {
+            return p.set(key, String(value));
+          }
+          return p;
+        }, new HttpParams()),
+      })
       .pipe(catchError(this.handleError));
   }
 
@@ -505,9 +513,9 @@ export class LearningReportsService {
     reportId: string,
     expiresIn?: number
   ): Observable<{ shareUrl: string; shareCode: string }> {
-    const params: any = {};
+    const params: { [key: string]: number } = {};
     if (expiresIn) {
-      params.expiresIn = expiresIn;
+      params['expiresIn'] = expiresIn;
     }
 
     return this.http
@@ -532,30 +540,32 @@ export class LearningReportsService {
    * 错误处理
    * @param error HTTP 错误响应
    */
-  private handleError(error: any): Observable<never> {
+  // eslint-disable-next-line complexity
+  private handleError = (error: unknown): Observable<never> => {
+    const httpError = error as { error?: ErrorEvent | { message?: string }; status?: number };
     let errorMessage = '操作失败';
 
-    if (error.error instanceof ErrorEvent) {
-      errorMessage = `客户端错误: ${error.error.message}`;
+    if (httpError.error instanceof ErrorEvent) {
+      errorMessage = `客户端错误: ${httpError.error.message}`;
     } else {
-      if (error.status === 400) {
-        errorMessage = error.error?.message || '请求参数错误';
-      } else if (error.status === 401) {
+      if (httpError.status === 400) {
+        errorMessage = httpError.error?.message ?? '请求参数错误';
+      } else if (httpError.status === 401) {
         errorMessage = '未授权，请重新登录';
-      } else if (error.status === 403) {
+      } else if (httpError.status === 403) {
         errorMessage = '无权查看此报告';
-      } else if (error.status === 404) {
+      } else if (httpError.status === 404) {
         errorMessage = '学习报告不存在';
-      } else if (error.status === 422) {
-        errorMessage = error.error?.message || '数据验证失败';
-      } else if (error.status === 500) {
+      } else if (httpError.status === 422) {
+        errorMessage = httpError.error?.message ?? '数据验证失败';
+      } else if (httpError.status === 500) {
         errorMessage = '服务器错误，请稍后重试';
       } else {
-        errorMessage = error.error?.message || `错误码: ${error.status}`;
+        errorMessage = httpError.error?.message ?? `错误码: ${httpError.status}`;
       }
     }
 
     console.error('LearningReportsService Error:', error);
     return throwError(() => new Error(errorMessage));
-  }
+  };
 }

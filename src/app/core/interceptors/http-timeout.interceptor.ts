@@ -1,9 +1,4 @@
-import {
-  HttpEvent,
-  HttpHandler,
-  HttpInterceptor,
-  HttpRequest,
-} from '@angular/common/http';
+import { HttpEvent, HttpHandler, HttpInterceptor, HttpRequest } from '@angular/common/http';
 import { Injectable } from '@angular/core';
 import { Observable, throwError, TimeoutError } from 'rxjs';
 import { catchError, timeout } from 'rxjs/operators';
@@ -22,7 +17,7 @@ export class HttpTimeoutInterceptor implements HttpInterceptor {
 
     return next.handle(request).pipe(
       timeout(timeoutMs),
-      catchError((error) => {
+      catchError((error: Error) => {
         if (error instanceof TimeoutError) {
           console.warn(`[HTTP Timeout] 请求超时 (${timeoutMs}ms): ${request.url}`);
           return throwError(() => new Error(`请求超时，已等待 ${timeoutMs}ms`));

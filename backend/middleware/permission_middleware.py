@@ -29,6 +29,7 @@ class PermissionMiddleware(BaseHTTPMiddleware):
             "/api/v1/auth/token",
             "/api/v1/auth/register",
             "/health",
+            "/api/v1/system/",  # 系统模块状态 API（懒加载架构）
         ]
 
     async def dispatch(
@@ -177,7 +178,8 @@ class LicensePermissionValidator:
             user_licenses = await user_license_service.get_user_active_licenses(
                 user.id, db
             )
-            org_ids = {ul.license.organization_id for ul in user_licenses if ul.license}
+            org_ids = {
+                ul.license.organization_id for ul in user_licenses if ul.license}
 
             if organization_id in org_ids:
                 return {"allowed": True, "reason": "用户关联的组织"}
@@ -195,7 +197,8 @@ def require_permission(permission: str):
     def decorator(func):
         async def wrapper(*args, **kwargs):
             # 获取当前用户（从依赖注入或其他方式）
-            current_user = kwargs.get("current_user") or args[0] if args else None
+            current_user = kwargs.get(
+                "current_user") or args[0] if args else None
 
             if not current_user:
                 raise HTTPException(
@@ -236,7 +239,8 @@ def require_role(required_roles: List[UserRole]):
 
     def decorator(func):
         async def wrapper(*args, **kwargs):
-            current_user = kwargs.get("current_user") or args[0] if args else None
+            current_user = kwargs.get(
+                "current_user") or args[0] if args else None
 
             if not current_user:
                 raise HTTPException(
@@ -259,4 +263,5 @@ def require_role(required_roles: List[UserRole]):
 # 预定义的权限装饰器
 require_admin = require_role([UserRole.ADMIN])
 require_org_admin = require_role([UserRole.ADMIN, UserRole.ORG_ADMIN])
-require_premium = require_role([UserRole.ADMIN, UserRole.ORG_ADMIN, UserRole.PREMIUM])
+require_premium = require_role(
+    [UserRole.ADMIN, UserRole.ORG_ADMIN, UserRole.PREMIUM])

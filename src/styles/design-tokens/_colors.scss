@@ -2,6 +2,8 @@
 // 所有核心颜色变量请使用 _matux-tokens.scss（单一来源）
 // 本文件仅保留 unique 内容：颜色获取函数和向后兼容别名
 
+@use 'sass:map';
+
 // ===== Unique: 颜色获取函数 =====
 @function get-primary-color($variant: base) {
   @if $variant == light {
@@ -21,18 +23,27 @@
   } @else if $state == error {
     @return #ef4444;
   } @else {
-    @return #8b5cf6;
+    @return #60a5fa;
   }
 }
 
 @function get-gray-color($level) {
   $grays: (
-    50: #f8fafc, 100: #f1f5f9, 200: #e2e8f0, 300: #cbd5e1,
-    400: #94a3b8, 500: #64748b, 600: #475569, 700: #334155,
-    800: #1e293b, 900: #0f172a
+    50: #f8fafc,
+    100: #f1f5f9,
+    200: #e2e8f0,
+    300: #cbd5e1,
+    400: #94a3b8,
+    500: #64748b,
+    600: #475569,
+    700: #334155,
+    800: #1e293b,
+    900: #0f172a,
   );
-  @if map-has-key($grays, $level) {
-    @return map-get($grays, $level);
+
+  @if map.has-key($grays, $level) {
+    @return map.get($grays, $level);
   }
+
   @return #0f172a;
 }

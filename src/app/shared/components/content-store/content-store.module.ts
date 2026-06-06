@@ -13,9 +13,9 @@ import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
 import { MatSnackBarModule } from '@angular/material/snack-bar';
 import { RouterModule, Routes } from '@angular/router';
 
+import { StoreContentDetailComponent } from './store-content-detail.component';
 import { StoreHomeComponent } from './store-home.component';
 import { StoreSearchComponent } from './store-search.component';
-import { StoreContentDetailComponent } from './store-content-detail.component';
 
 const routes: Routes = [
   {

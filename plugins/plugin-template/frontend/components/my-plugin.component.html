@@ -1,0 +1,112 @@
+<div class="my-plugin-container">
+  <!-- 头部 -->
+  <header class="plugin-header">
+    <h1>
+      <mat-icon>extension</mat-icon>
+      我的插件
+    </h1>
+    <p class="plugin-description">这是一个示例插件，展示如何创建 iMato 插件</p>
+  </header>
+  
+  <!-- 内容区域 -->
+  <main class="plugin-content">
+    <!-- Hello World 卡片 -->
+    <mat-card class="info-card">
+      <mat-card-header>
+        <mat-card-title>
+          <mat-icon>info</mat-icon>
+          插件信息
+        </mat-card-title>
+      </mat-card-header>
+      <mat-card-content>
+        <div *ngIf="loading" class="loading-state">
+          <mat-spinner diameter="32"></mat-spinner>
+          <p>加载中...</p>
+        </div>
+        
+        <div *ngIf="error" class="error-state">
+          <mat-icon color="warn">error</mat-icon>
+          <p>{{ error }}</p>
+          <button mat-raised-button color="primary" (click)="loadHello()">
+            <mat-icon>refresh</mat-icon>
+            重试
+          </button>
+        </div>
+        
+        <div *ngIf="!loading && !error" class="success-state">
+          <mat-icon color="primary">check_circle</mat-icon>
+          <p class="message">{{ message }}</p>
+          <pre *ngIf="responseData" class="data-preview">{{ responseData | json }}</pre>
+        </div>
+      </mat-card-content>
+    </mat-card>
+    
+    <!-- 数据处理卡片 -->
+    <mat-card class="form-card">
+      <mat-card-header>
+        <mat-card-title>
+          <mat-icon>edit</mat-icon>
+          数据处理
+        </mat-card-title>
+      </mat-card-header>
+      <mat-card-content>
+        <form (ngSubmit)="processData()" class="data-form">
+          <mat-form-field appearance="outline" class="full-width">
+            <mat-label>名称</mat-label>
+            <input
+              matInput
+              [(ngModel)]="inputName"
+              name="name"
+              placeholder="请输入名称"
+              required
+            />
+          </mat-form-field>
+          
+          <mat-form-field appearance="outline" class="full-width">
+            <mat-label>值（可选）</mat-label>
+            <input
+              matInput
+              [(ngModel)]="inputValue"
+              name="value"
+              placeholder="请输入值"
+            />
+          </mat-form-field>
+          
+          <div class="form-actions">
+            <button
+              mat-raised-button
+              color="primary"
+              type="submit"
+              [disabled]="loading || !inputName.trim()"
+            >
+              <mat-icon>play_arrow</mat-icon>
+              处理数据
+            </button>
+            
+            <button
+              mat-stroked-button
+              type="button"
+              (click)="clearForm()"
+            >
+              <mat-icon>clear</mat-icon>
+              清除
+            </button>
+          </div>
+        </form>
+      </mat-card-content>
+    </mat-card>
+    
+    <!-- 结果展示卡片 -->
+    <mat-card *ngIf="responseData" class="result-card">
+      <mat-card-header>
+        <mat-card-title>
+          <mat-icon>output</mat-icon>
+          处理结果
+        </mat-card-title>
+      </mat-card-header>
+      <mat-card-content>
+        <pre class="result-data">{{ responseData | json }}</pre>
+      </mat-card-content>
+    </mat-card>
+  </main>
+</div>

@@ -1,10 +1,10 @@
-import { HttpClient } from '@angular/common/http';
+﻿import { HttpClient } from '@angular/common/http';
 import { Injectable } from '@angular/core';
 import { BehaviorSubject, Observable } from 'rxjs';
 import { catchError, tap } from 'rxjs/operators';
 
 /**
- * 缓存配置
+ * 缂撳瓨閰嶇疆
  */
 interface CacheConfig {
   ttl: number; // 缓存时间 (毫秒)
@@ -22,24 +22,35 @@ interface CacheEntry<T> {
 }
 
 /**
- * AI-Edu 缓存服务
- * 提供内存缓存、IndexedDB 持久化缓存
+ * 缓存统计信息
  */
+interface CacheStats {
+  hits: number;
+  misses: number;
+  sets: number;
+  deletes: number;
+  memoryCacheSize: number;
+  hitRate: number;
+}
+
+/**
+ * AI-Edu 缓存服务
+ * 提供内存缓存、IndexedDB 持久化缓存 */
 @Injectable({
   providedIn: 'root',
 })
 export class AIEduCacheService {
-  private readonly DEFAULT_TTL = 5 * 60 * 1000; // 5 分钟
+  private readonly DEFAULT_TTL = 5 * 60 * 1000; // 5 鍒嗛挓
   private readonly DEFAULT_MAX_SIZE = 100;
 
-  // 内存缓存
-  private memoryCache = new Map<string, CacheEntry<any>>();
+  // 鍐呭瓨缂撳瓨
+  private memoryCache = new Map<string, CacheEntry<unknown>>();
 
-  // IndexedDB 缓存 (异步)
+  // IndexedDB 缂撳瓨 (寮傛)
   private indexedDB: IDBDatabase | null = null;
   private dbReady = new BehaviorSubject<boolean>(false);
 
-  // 缓存统计
+  // 缂撳瓨缁熻
   private stats = {
     hits: 0,
     misses: 0,
@@ -52,7 +63,7 @@ export class AIEduCacheService {
   }
 
   /**
-   * 初始化 IndexedDB
+   * 鍒濆鍖?IndexedDB
    */
   private initIndexedDB(): void {
     if (typeof window === 'undefined' || !window.indexedDB) {
@@ -83,10 +94,10 @@ export class AIEduCacheService {
   }
 
   /**
-   * 获取缓存 (优先内存，其次 IndexedDB)
+   * 鑾峰彇缂撳瓨 (浼樺厛鍐呭瓨锛屽叾娆?IndexedDB)
    */
-  get<T>(key: string, config: CacheConfig = this.getDefaultConfig()): Observable<T | null> {
-    // 尝试内存缓存
+  get<T>(key: string, _config: CacheConfig = this.getDefaultConfig()): Observable<T | null> {
+    // 灏濊瘯鍐呭瓨缂撳瓨
     const memoryEntry = this.memoryCache.get(key);
     if (memoryEntry && Date.now() < memoryEntry.expiresAt) {
       this.stats.hits++;
@@ -96,7 +107,7 @@ export class AIEduCacheService {
       });
     }
 
-    // 尝试 IndexedDB
+    // 灏濊瘯 IndexedDB
     return new Observable((observer) => {
       if (this.indexedDB) {
         const transaction = this.indexedDB.transaction(['cache'], 'readonly');
@@ -107,8 +118,7 @@ export class AIEduCacheService {
           const entry = request.result as CacheEntry<T>;
           if (entry && Date.now() < entry.expiresAt) {
             this.stats.hits++;
-            // 回填到内存缓存
-            this.memoryCache.set(key, entry);
+            // 鍥炲～鍒板唴瀛樼紦瀛?            this.memoryCache.set(key, entry);
             observer.next(entry.data);
           } else {
             this.stats.misses++;
@@ -131,7 +141,7 @@ export class AIEduCacheService {
   }
 
   /**
-   * 设置缓存 (同时写入内存和 IndexedDB)
+   * 璁剧疆缂撳瓨 (鍚屾椂鍐欏叆鍐呭瓨鍜?IndexedDB)
    */
   set<T>(key: string, data: T, config: CacheConfig = this.getDefaultConfig()): void {
     const entry: CacheEntry<T> = {
@@ -140,9 +150,9 @@ export class AIEduCacheService {
       expiresAt: Date.now() + config.ttl,
     };
 
-    // 写入内存缓存
+    // 鍐欏叆鍐呭瓨缂撳瓨
     if (this.memoryCache.size >= config.maxSize) {
-      // 清理最旧的条目
+      // 娓呯悊鏈€鏃х殑鏉＄洰
       const oldestKey = this.memoryCache.keys().next().value;
       if (oldestKey) {
         this.memoryCache.delete(oldestKey);
@@ -150,7 +160,7 @@ export class AIEduCacheService {
     }
     this.memoryCache.set(key, entry);
 
-    // 写入 IndexedDB
+    // 鍐欏叆 IndexedDB
     if (this.indexedDB) {
       const transaction = this.indexedDB.transaction(['cache'], 'readwrite');
       const store = transaction.objectStore('cache');
@@ -161,7 +171,7 @@ export class AIEduCacheService {
   }
 
   /**
-   * 删除缓存
+   * 鍒犻櫎缂撳瓨
    */
   delete(key: string): void {
     this.memoryCache.delete(key);
@@ -203,7 +213,7 @@ export class AIEduCacheService {
         };
       }
     } else {
-      // 清除全部
+      // 娓呴櫎鍏ㄩ儴
       this.memoryCache.clear();
 
       if (this.indexedDB) {
@@ -215,22 +225,21 @@ export class AIEduCacheService {
   }
 
   /**
-   * 检查缓存是否有效
-   */
+   * 妫€鏌ョ紦瀛樻槸鍚︽湁鏁?   */
   isValid(key: string): boolean {
     const entry = this.memoryCache.get(key);
     if (entry && Date.now() < entry.expiresAt) {
       return true;
     }
 
-    // 检查 IndexedDB (同步方式简化处理)
+    // 妫€鏌?IndexedDB (鍚屾鏂瑰紡绠€鍖栧鐞?
     return false;
   }
 
   /**
-   * 获取缓存统计信息
+   * 鑾峰彇缂撳瓨缁熻淇℃伅
    */
-  getStats(): any {
+  getStats(): CacheStats {
     return {
       ...this.stats,
       memoryCacheSize: this.memoryCache.size,
@@ -239,7 +248,7 @@ export class AIEduCacheService {
   }
 
   /**
-   * 预加载数据到缓存
+   * 棰勫姞杞芥暟鎹埌缂撳瓨
    */
   preload<T>(
     key: string,
@@ -255,7 +264,7 @@ export class AIEduCacheService {
   }
 
   /**
-   * 带缓存的 HTTP GET 请求
+   * 甯︾紦瀛樼殑 HTTP GET 璇锋眰
    */
   httpGet<T>(url: string, config: CacheConfig = this.getDefaultConfig()): Observable<T> {
     const cacheKey = `http:${url}`;
@@ -287,7 +296,7 @@ export class AIEduCacheService {
   }
 
   /**
-   * 获取默认配置
+   * 鑾峰彇榛樿閰嶇疆
    */
   private getDefaultConfig(): CacheConfig {
     return {
@@ -297,10 +306,10 @@ export class AIEduCacheService {
   }
 
   /**
-   * 导出缓存数据
+   * 瀵煎嚭缂撳瓨鏁版嵁
    */
-  exportCache(): Promise<any> {
-    const exportData: any = {};
+  exportCache(): Promise<Record<string, unknown>> {
+    const exportData: Record<string, unknown> = {};
 
     this.memoryCache.forEach((entry, key) => {
       exportData[key] = entry.data;
@@ -310,9 +319,9 @@ export class AIEduCacheService {
   }
 
   /**
-   * 导入缓存数据
+   * 瀵煎叆缂撳瓨鏁版嵁
    */
-  importCache(data: any, config: CacheConfig = this.getDefaultConfig()): void {
+  importCache(data: Record<string, unknown>, config: CacheConfig = this.getDefaultConfig()): void {
     Object.entries(data).forEach(([key, value]) => {
       this.set(key, value, config);
     });

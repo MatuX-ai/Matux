@@ -13,8 +13,9 @@
       <mat-card-title>
         <mat-icon
           [style.color]="getNetworkQualityColor(networkStatus?.quality)"
-          matTooltip="{{getQualityDescription(networkStatus?.quality)}}">
-          {{getNetworkQualityIcon(networkStatus?.quality)}}
+          matTooltip="{{ getQualityDescription(networkStatus?.quality) }}"
+        >
+          {{ getNetworkQualityIcon(networkStatus?.quality) }}
         </mat-icon>
         网络状态
       </mat-card-title>
@@ -26,21 +27,25 @@
       <div class="status-info">
         <div class="status-item">
           <span class="label">连接状态:</span>
-          <span class="value" [class.online]="networkStatus?.isOnline" [class.offline]="!networkStatus?.isOnline">
-            {{networkStatus?.isOnline ? '在线' : '离线'}}
+          <span
+            class="value"
+            [class.online]="networkStatus?.isOnline"
+            [class.offline]="!networkStatus?.isOnline"
+          >
+            {{ networkStatus?.isOnline ? '在线' : '离线' }}
           </span>
         </div>
         <div class="status-item">
           <span class="label">网络质量:</span>
-          <span class="value">{{getQualityDescription(networkStatus?.quality)}}</span>
+          <span class="value">{{ getQualityDescription(networkStatus?.quality) }}</span>
         </div>
         <div class="status-item" *ngIf="networkStatus?.rtt">
           <span class="label">网络延迟:</span>
-          <span class="value">{{networkStatus?.rtt || 0}} ms</span>
+          <span class="value">{{ networkStatus?.rtt || 0 }} ms</span>
         </div>
         <div class="status-item" *ngIf="networkStatus?.downlink">
           <span class="label">下行速度:</span>
-          <span class="value">{{networkStatus?.downlink || 0}} Mbps</span>
+          <span class="value">{{ networkStatus?.downlink || 0 }} Mbps</span>
         </div>
       </div>
     </mat-card-content>
@@ -53,7 +58,12 @@
         <mat-icon>storage</mat-icon>
         本地存储
       </mat-card-title>
-      <button mat-icon-button (click)="cleanupCache()" [disabled]="isCleaningUp" matTooltip="清理过期缓存">
+      <button
+        mat-icon-button
+        (click)="cleanupCache()"
+        [disabled]="isCleaningUp"
+        matTooltip="清理过期缓存"
+      >
         <mat-icon>{{ isCleaningUp ? 'hourglass_top' : 'cleaning_services' }}</mat-icon>
       </button>
     </mat-card-header>
@@ -62,12 +72,12 @@
         <div class="storage-summary">
           <div class="size-info">
             <span class="label">已使用空间:</span>
-            <span class="value">{{formatStorageSize(storageStats.totalSize)}}</span>
+            <span class="value">{{ formatStorageSize(storageStats.totalSize) }}</span>
           </div>
           <div class="pending-info">
             <span class="label">待同步操作:</span>
             <span class="value badge" [class.warning]="storageStats.pendingOperations > 0">
-              {{storageStats.pendingOperations}}
+              {{ storageStats.pendingOperations }}
             </span>
           </div>
         </div>
@@ -76,8 +86,8 @@
 
         <div class="item-counts">
           <div class="count-item" *ngFor="let entry of storageStats.itemCounts | keyvalue">
-            <span class="item-label">{{getItemTypeName(entry.key)}}:</span>
-            <span class="item-count">{{entry.value}}</span>
+            <span class="item-label">{{ getItemTypeName(entry.key) }}:</span>
+            <span class="item-count">{{ entry.value }}</span>
           </div>
         </div>
 
@@ -86,15 +96,15 @@
         <div class="extra-stats" *ngIf="courseCacheStats">
           <div class="stat-row">
             <span class="label">📚 缓存课程数:</span>
-            <span class="value">{{courseCacheStats.courseCount}}</span>
+            <span class="value">{{ courseCacheStats.courseCount }}</span>
           </div>
           <div class="stat-row">
             <span class="label">📦 缓存资源数:</span>
-            <span class="value">{{courseCacheStats.resourceCount}}</span>
+            <span class="value">{{ courseCacheStats.resourceCount }}</span>
           </div>
           <div class="stat-row">
             <span class="label">💾 资源占用:</span>
-            <span class="value">{{formatStorageSize(courseCacheStats.totalSize)}}</span>
+            <span class="value">{{ formatStorageSize(courseCacheStats.totalSize) }}</span>
           </div>
         </div>
 
@@ -103,15 +113,19 @@
         <div class="extra-stats" *ngIf="progressSyncStats">
           <div class="stat-row">
             <span class="label">📊 已同步进度:</span>
-            <span class="value" [class.success]="progressSyncStats.synced > 0">{{progressSyncStats.synced}}</span>
+            <span class="value" [class.success]="progressSyncStats.synced > 0">{{
+              progressSyncStats.synced
+            }}</span>
           </div>
           <div class="stat-row">
             <span class="label">⏳ 未同步进度:</span>
-            <span class="value" [class.warning]="progressSyncStats.unsynced > 0">{{progressSyncStats.unsynced}}</span>
+            <span class="value" [class.warning]="progressSyncStats.unsynced > 0">{{
+              progressSyncStats.unsynced
+            }}</span>
           </div>
           <div class="stat-row" *ngIf="progressSyncStats.conflicts > 0">
             <span class="label">⚠️ 同步冲突:</span>
-            <span class="value conflict">{{progressSyncStats.conflicts}}</span>
+            <span class="value conflict">{{ progressSyncStats.conflicts }}</span>
           </div>
         </div>
       </div>
@@ -127,7 +141,12 @@
         </mat-icon>
         数据同步
       </mat-card-title>
-      <button mat-icon-button (click)="triggerSync()" [disabled]="isSyncing()" matTooltip="手动触发同步">
+      <button
+        mat-icon-button
+        (click)="triggerSync()"
+        [disabled]="isSyncing()"
+        matTooltip="手动触发同步"
+      >
         <mat-icon>refresh</mat-icon>
       </button>
     </mat-card-header>
@@ -135,11 +154,14 @@
       <div class="sync-info">
         <div class="status-item">
           <span class="label">同步状态:</span>
-          <span class="value" [class.syncing]="isSyncing()">{{getSyncStatusText()}}</span>
+          <span class="value" [class.syncing]="isSyncing()">{{ getSyncStatusText() }}</span>
         </div>
         <div class="progress-wrapper" *ngIf="isSyncing()">
-          <mat-progress-bar mode="determinate" [value]="getSyncProgressPercent()"></mat-progress-bar>
-          <span class="progress-text">{{getSyncProgressPercent()}}%</span>
+          <mat-progress-bar
+            mode="determinate"
+            [value]="getSyncProgressPercent()"
+          ></mat-progress-bar>
+          <span class="progress-text">{{ getSyncProgressPercent() }}%</span>
         </div>
       </div>
     </mat-card-content>
@@ -179,9 +201,7 @@
           <mat-icon class="action-icon">sync</mat-icon>
           <h3>数据同步</h3>
           <p>管理离线数据与云端的同步</p>
-          <button mat-raised-button color="warn" disabled>
-            同步管理
-          </button>
+          <button mat-raised-button color="warn" disabled>同步管理</button>
         </mat-card-content>
       </mat-card>
     </mat-grid-tile>
@@ -192,9 +212,7 @@
           <mat-icon class="action-icon">settings</mat-icon>
           <h3>离线设置</h3>
           <p>配置离线模式相关选项</p>
-          <button mat-raised-button routerLink="/offline-mode/sync">
-            系统设置
-          </button>
+          <button mat-raised-button routerLink="/offline-mode/sync">系统设置</button>
         </mat-card-content>
       </mat-card>
     </mat-grid-tile>

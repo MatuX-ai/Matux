@@ -1,4 +1,4 @@
-@import 'src/styles/design-tokens';
+@use 'src/styles/design-tokens' as *;
 
 .token-purchase-dialog {
   min-width: 600px;
@@ -17,20 +17,20 @@
   padding: $spacing-6; // 24px
   border: 2px solid #e0e0e0;
   border-radius: $border-radius-lg;
+  background: white;
   cursor: pointer;
   transition: all 0.3s ease;
-  background: white;
 
   &:hover {
     border-color: #3b82f6;
-    box-shadow: 0 4px 8px rgba(59, 130, 246, 0.2);
+    box-shadow: 0 4px 8px rgb(59 130 246 / 20%);
     transform: translateY(-2px);
   }
 
   &.selected {
     border-color: #3b82f6;
-    background: linear-gradient(135deg, rgba(59, 130, 246, 0.05) 0%, rgba(37, 99, 235, 0.05) 100%);
-    box-shadow: 0 6px 12px rgba(59, 130, 246, 0.3);
+    background: linear-gradient(135deg, rgb(59 130 246 / 5%) 0%, rgb(37 99 235 / 5%) 100%);
+    box-shadow: 0 6px 12px rgb(59 130 246 / 30%);
   }
 
   &.popular {
@@ -40,21 +40,21 @@
       position: absolute;
       top: -$spacing-sm;
       right: $spacing-md;
-      background: linear-gradient(135deg, #ff6b6b 0%, #ff8e53 100%);
-      color: white;
-      padding: $spacing-xs $spacing-sm;
-      border-radius: $border-radius-full;
-      font-size: $font-size-xs;
-      font-weight: $font-weight-bold;
       display: flex;
       align-items: center;
       gap: 4px;
-      box-shadow: 0 2px 4px rgba(255, 107, 107, 0.3);
+      padding: $spacing-xs $spacing-sm;
+      border-radius: $border-radius-full;
+      background: linear-gradient(135deg, #ff6b6b 0%, #ff8e53 100%);
+      box-shadow: 0 2px 4px rgb(255 107 107 / 30%);
+      color: white;
+      font-size: $font-size-xs;
+      font-weight: $font-weight-bold;
 
       mat-icon {
-        font-size: 14px;
         width: 14px;
         height: 14px;
+        font-size: 14px;
       }
     }
   }
@@ -63,21 +63,21 @@
     position: absolute;
     top: -$spacing-sm;
     left: $spacing-md;
-    background: linear-gradient(135deg, #10b981 0%, #34d399 100%);
-    color: white;
-    padding: $spacing-xs $spacing-sm;
-    border-radius: $border-radius-full;
-    font-size: $font-size-xs;
-    font-weight: $font-weight-bold;
     display: flex;
     align-items: center;
     gap: 4px;
-    box-shadow: 0 2px 4px rgba(76, 175, 80, 0.3);
+    padding: $spacing-xs $spacing-sm;
+    border-radius: $border-radius-full;
+    background: linear-gradient(135deg, #10b981 0%, #34d399 100%);
+    box-shadow: 0 2px 4px rgb(76 175 80 / 30%);
+    color: white;
+    font-size: $font-size-xs;
+    font-weight: $font-weight-bold;
 
     mat-icon {
-      font-size: 14px;
       width: 14px;
       height: 14px;
+      font-size: 14px;
     }
   }
 }
@@ -89,10 +89,10 @@
 }
 
 .package-name {
+  margin: 0 0 $spacing-sm;
+  color: #333;
   font-size: $font-size-h4;
   font-weight: $font-weight-bold;
-  color: #333;
-  margin: 0 0 $spacing-sm 0;
 }
 
 .package-price {
@@ -101,22 +101,22 @@
   gap: $spacing-sm;
 
   .price-current {
+    color: #3b82f6;
     font-size: $font-size-h3;
     font-weight: $font-weight-bold;
-    color: #3b82f6;
   }
 
   .price-original {
-    font-size: $font-size-sm;
     color: #999;
+    font-size: $font-size-sm;
     text-decoration: line-through;
   }
 
   .discount-tag {
-    background: #ffebee;
-    color: #f44336;
     padding: 2px $spacing-xs;
     border-radius: $border-radius-sm;
+    background: #ffebee;
+    color: #f44336;
     font-size: $font-size-xs;
     font-weight: $font-weight-bold;
   }
@@ -130,44 +130,44 @@
   display: flex;
   align-items: center;
   gap: $spacing-sm;
-  padding: $spacing-sm;
-  background: linear-gradient(135deg, rgba(102, 126, 234, 0.1) 0%, rgba(118, 75, 162, 0.1) 100%);
-  border-radius: $border-radius-md;
   margin-bottom: $spacing-md;
+  padding: $spacing-sm;
+  border-radius: $border-radius-md;
+  background: linear-gradient(135deg, rgb(102 126 234 / 10%) 0%, rgb(118 75 162 / 10%) 100%);
 
   mat-icon {
-    color: #3b82f6;
-    font-size: 20px;
     width: 20px;
     height: 20px;
+    color: #3b82f6;
+    font-size: 20px;
   }
 
   .amount {
+    color: #3b82f6;
     font-size: $font-size-h4;
     font-weight: $font-weight-bold;
-    color: #3b82f6;
   }
 }
 
 .package-features {
   list-style: none;
-  padding: 0;
   margin: 0;
+  padding: 0;
 
   li {
     display: flex;
     align-items: flex-start;
     gap: $spacing-xs;
     margin-bottom: $spacing-sm;
-    font-size: $font-size-sm;
     color: #666;
+    font-size: $font-size-sm;
 
     mat-icon {
-      color: #10b981;
-      font-size: 16px;
+      flex-shrink: 0;
       width: 16px;
       height: 16px;
-      flex-shrink: 0;
+      color: #10b981;
+      font-size: 16px;
     }
   }
 }
@@ -179,10 +179,10 @@
 
 .payment-method-section {
   h4 {
-    font-size: $font-size-base;
-    font-weight: $font-weight-bold;
     margin-bottom: $spacing-md;
     color: #333;
+    font-size: $font-size-base;
+    font-weight: $font-weight-bold;
   }
 }
 
@@ -204,47 +204,49 @@
 
     &:hover {
       border-color: #3b82f6;
-      background: rgba(59, 130, 246, 0.05);
+      background: rgb(59 130 246 / 5%);
     }
 
     &.selected {
       border-color: #3b82f6;
-      background: rgba(59, 130, 246, 0.1);
+      background: rgb(59 130 246 / 10%);
       color: #3b82f6;
     }
 
-    img, mat-icon {
+    img,
+    mat-icon {
       margin-bottom: $spacing-xs;
     }
   }
 }
 
-.loading-state, .empty-state {
+.loading-state,
+.empty-state {
   display: flex;
   flex-direction: column;
-  align-items: center;
   justify-content: center;
+  align-items: center;
   padding: $spacing-xxl;
   color: #999;
 
   mat-icon {
-    font-size: 48px;
     width: 48px;
     height: 48px;
     margin-bottom: $spacing-md;
+    font-size: 48px;
   }
 
   p {
-    font-size: $font-size-base;
     margin: 0;
+    font-size: $font-size-base;
   }
 }
 
 // 响应式设计
 @media (max-width: $breakpoint-mobile-max) {
   .token-purchase-dialog {
-    min-width: auto;
     width: 90%;
+    min-width: auto;
     max-width: 90%;
   }
 

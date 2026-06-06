@@ -19,16 +19,16 @@ import { Component } from '@angular/core';
     `
       .material-dashboard {
         padding: 16px;
-        background: #f9f9f9;
-        border-radius: 8px;
+        background: var(--matux-color-bg, #f8fafc);
+        border-radius: var(--matux-radius-lg, 8px);
       }
       h3 {
         margin: 0 0 8px 0;
-        color: #333;
+        color: var(--matux-color-text-primary, #0f172a);
       }
       .placeholder {
-        color: #999;
-        font-size: 14px;
+        color: var(--matux-color-text-disabled, #94a3b8);
+        font-size: var(--matux-typo-body-size, 14px);
       }
     `,
   ],

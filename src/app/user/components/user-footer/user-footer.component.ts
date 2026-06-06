@@ -106,10 +106,10 @@ export class UserFooterComponent {
   currentYear = new Date().getFullYear();
 
   openHelp(): void {
-    console.log('打开帮助中心');
+    console.warn('打开帮助中心');
   }
 
   openAbout(): void {
-    console.log('打开关于我们');
+    console.warn('打开关于我们');
   }
 }

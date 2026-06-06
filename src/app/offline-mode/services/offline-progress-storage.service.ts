@@ -108,7 +108,7 @@ export class OfflineProgressStorageService {
    */
   async getProgress(userId: string, courseId: string): Promise<LearningProgress | undefined> {
     const allProgress = await this.offlineStorage.getAllData<LearningProgress>(
-      OfflineStorageKey.PROGRESS,
+      OfflineStorageKey.PROGRESS
     );
     return allProgress.find((p) => p.userId === userId && p.courseId === courseId);
   }
@@ -118,7 +118,7 @@ export class OfflineProgressStorageService {
    */
   async getUserProgress(userId: string): Promise<LearningProgress[]> {
     const allProgress = await this.offlineStorage.getAllData<LearningProgress>(
-      OfflineStorageKey.PROGRESS,
+      OfflineStorageKey.PROGRESS
     );
     return allProgress.filter((p) => p.userId === userId);
   }
@@ -128,7 +128,7 @@ export class OfflineProgressStorageService {
    */
   async getCourseProgresses(courseId: string): Promise<LearningProgress[]> {
     const allProgress = await this.offlineStorage.getAllData<LearningProgress>(
-      OfflineStorageKey.PROGRESS,
+      OfflineStorageKey.PROGRESS
     );
     return allProgress.filter((p) => p.courseId === courseId);
   }
@@ -140,7 +140,7 @@ export class OfflineProgressStorageService {
     userId: string,
     courseId: string,
     lessonId: string,
-    updates: Partial<LessonProgress>,
+    updates: Partial<LessonProgress>
   ): Promise<void> {
     const progress = await this.getProgress(userId, courseId);
     if (!progress) return;
@@ -159,10 +159,10 @@ export class OfflineProgressStorageService {
 
     // 重新计算总体进度
     progress.completedLessons = Object.values(progress.lessonProgress).filter(
-      (lp) => lp.status === 'completed',
+      (lp) => lp.status === 'completed'
     ).length;
     progress.overallProgress = Math.round(
-      (progress.completedLessons / progress.totalLessons) * 100,
+      (progress.completedLessons / progress.totalLessons) * 100
     );
 
     await this.offlineStorage.setData(OfflineStorageKey.PROGRESS, progress);
@@ -174,7 +174,7 @@ export class OfflineProgressStorageService {
   async addQuizScore(
     userId: string,
     courseId: string,
-    quizScore: Omit<QuizScore, 'synced'>,
+    quizScore: Omit<QuizScore, 'synced'>
   ): Promise<void> {
     const progress = await this.getProgress(userId, courseId);
     if (!progress) return;
@@ -229,7 +229,7 @@ export class OfflineProgressStorageService {
    */
   async getUnsyncedProgress(): Promise<LearningProgress[]> {
     const allProgress = await this.offlineStorage.getAllData<LearningProgress>(
-      OfflineStorageKey.PROGRESS,
+      OfflineStorageKey.PROGRESS
     );
     return allProgress.filter((p) => !p.synced);
   }
@@ -241,7 +241,7 @@ export class OfflineProgressStorageService {
     userId: string,
     courseId: string,
     fetchRemoteProgress: () => Promise<LearningProgress | null>,
-    pushLocalProgress: (progress: LearningProgress) => Promise<boolean>,
+    pushLocalProgress: (progress: LearningProgress) => Promise<boolean>
   ): Promise<'synced' | 'conflict' | 'error'> {
     const local = await this.getProgress(userId, courseId);
     if (!local) return 'synced';
@@ -297,7 +297,7 @@ export class OfflineProgressStorageService {
     userId: string,
     courseId: string,
     strategy: 'local_wins' | 'remote_wins' | 'merged',
-    remote?: LearningProgress,
+    remote?: LearningProgress
   ): Promise<void> {
     const local = await this.getProgress(userId, courseId);
     if (!local) return;
@@ -307,7 +307,7 @@ export class OfflineProgressStorageService {
         ? local
         : strategy === 'remote_wins' && remote
           ? remote
-          : this.mergeProgress(local, remote) ?? local;
+          : (this.mergeProgress(local, remote) ?? local);
 
     resolved.version++;
     resolved.synced = false;
@@ -318,7 +318,7 @@ export class OfflineProgressStorageService {
 
     // 从冲突列表中移除
     const remaining = this.conflictsSubject.value.filter(
-      (c) => !(c.local.userId === userId && c.local.courseId === courseId),
+      (c) => !(c.local.userId === userId && c.local.courseId === courseId)
     );
     this.conflictsSubject.next(remaining);
   }
@@ -328,7 +328,7 @@ export class OfflineProgressStorageService {
    */
   async getSyncStats(): Promise<{ synced: number; unsynced: number; conflicts: number }> {
     const allProgress = await this.offlineStorage.getAllData<LearningProgress>(
-      OfflineStorageKey.PROGRESS,
+      OfflineStorageKey.PROGRESS
     );
     const unsynced = allProgress.filter((p) => !p.synced).length;
     return {
@@ -353,7 +353,7 @@ export class OfflineProgressStorageService {
    */
   private mergeProgress(
     local: LearningProgress,
-    remote?: LearningProgress | null,
+    remote?: LearningProgress | null
   ): LearningProgress | null {
     if (!remote) return local;
 
@@ -388,7 +388,9 @@ export class OfflineProgressStorageService {
 
   private async updateSyncStats(): Promise<void> {
     const stats = await this.getSyncStats();
-    this.syncedProgressSubject.next(Math.round((stats.synced / (stats.synced + stats.unsynced || 1)) * 100));
+    this.syncedProgressSubject.next(
+      Math.round((stats.synced / (stats.synced + stats.unsynced || 1)) * 100)
+    );
   }
 
   private generateId(): string {

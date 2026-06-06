@@ -1,5 +1,10 @@
 // 认证系统样式文件
-@import '../../styles/design-tokens/tokens';
+@use 'design-tokens' as *;
+
+// 动画变量
+$animation-slide-up: slide-up 0.3s ease-out;
+$animation-spin: spin 1s ease-in-out infinite;
+$animation-fade-in: fade-in 0.3s ease-out;
 
 // 认证页面基础样式
 .auth-page {
@@ -25,7 +30,7 @@
   border-radius: $border-radius-xl;
   background: var(--surface-color, $color-surface);
   box-shadow: $shadow-xl;
-  animation: slideUp 0.3s ease-out;
+  animation: $animation-slide-up;
 
   @include respond-to('mobile') {
     max-width: 100%;
@@ -34,7 +39,7 @@
 }
 
 // 动画效果
-@keyframes slideUp {
+@keyframes slide-up {
   from {
     opacity: 0;
     transform: translateY(20px);
@@ -301,11 +306,13 @@
   border: 3px solid rgb(255 255 255 / 30%);
   border-top-color: #fff;
   border-radius: 50%;
-  animation: spin 1s ease-in-out infinite;
+  animation: $animation-spin;
 }
 
 @keyframes spin {
-  to { transform: rotate(360deg); }
+  to {
+    transform: rotate(360deg);
+  }
 }
 
 // 消息提示
@@ -318,13 +325,13 @@
 
   &.success {
     border: 1px solid $color-success;
-    background: var(--success-bg-color, #{lighten($color-success, 45%)});
+    background: var(--success-bg-color, #{color-mix(in srgb, $color-success, white 45%)});
     color: $color-success;
   }
 
   &.error {
     border: 1px solid $color-error;
-    background: var(--error-bg-color, #{lighten($color-error, 45%)});
+    background: var(--error-bg-color, #{color-mix(in srgb, $color-error, white 45%)});
     color: $color-error;
   }
 
@@ -339,27 +346,32 @@
 
   &.active {
     display: block;
-    animation: fadeIn 0.3s ease-out;
+    animation: $animation-fade-in;
   }
 }
 
-@keyframes fadeIn {
-  from { opacity: 0; }
-  to { opacity: 1; }
+@keyframes fade-in {
+  from {
+    opacity: 0;
+  }
+
+  to {
+    opacity: 1;
+  }
 }
 
 // 响应式断点混合（统一使用 Design Tokens 标准）
 @mixin respond-to($breakpoint) {
   @if $breakpoint == 'mobile' {
-    @media (max-width: 767px) {
+    @media (width <= 767px) {
       @content;
     }
   } @else if $breakpoint == 'tablet' {
-    @media (min-width: 768px) and (max-width: 1023px) {
+    @media (width >= 768px) and (width <= 1023px) {
       @content;
     }
   } @else if $breakpoint == 'desktop' {
-    @media (min-width: 1024px) {
+    @media (width >= 1024px) {
       @content;
     }
   }

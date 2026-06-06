@@ -63,6 +63,7 @@ export class UserCenterService {
   /**
    * 获取侧边栏菜单（学生端固定菜单）
    */
+  // eslint-disable-next-line max-lines-per-function
   getSidebarMenu(): UserCenterMenuItem[] {
     return [
       {

@@ -5,6 +5,8 @@ import { catchError, tap } from 'rxjs/operators';
 
 import { environment } from '../../../environments/environment';
 
+import { AuthService } from './auth.service';
+
 export interface ContainerConfig {
   cpu?: number;
   memory?: string;
@@ -50,7 +52,7 @@ export interface ContainerStatusResponse {
 export interface HealthCheckResponse {
   status: 'healthy' | 'unhealthy';
   service: string;
-  details?: any;
+  details?: unknown;
   error?: string;
 }
 
@@ -63,18 +65,29 @@ export interface HealthCheckResponse {
 })
 export class OpenHydraService {
   private readonly apiUrl = `${environment.apiUrl}/api/v1`;
-  private readonly orgId = 1; // TODO: 从用户上下文获取
 
-  constructor(private http: HttpClient) {}
+  constructor(
+    private http: HttpClient,
+    private authService: AuthService
+  ) {}
+
+  /**
+   * 获取当前用户所属组织ID
+   * 优先从用户上下文获取，若用户未登录则默认使用1
+   */
+  private getOrgId(): number {
+    const user = this.authService.getCurrentUser();
+    return user?.orgIds?.[0] ?? 1;
+  }
 
   /**
    * 进入 AI 实验室
    * 一键创建或恢复专属 AI 实训环境
    */
   enterLab(config?: ContainerConfig): Observable<EnterLabResponse> {
-    const url = `${this.apiUrl}/org/${this.orgId}/ai-lab/enter`;
+    const url = `${this.apiUrl}/org/${this.getOrgId()}/ai-lab/enter`;
 
-    return this.http.post<EnterLabResponse>(url, config || {}).pipe(
+    return this.http.post<EnterLabResponse>(url, config ?? {}).pipe(
       tap((response) => {
         // 保存访问令牌到本地存储
         if (response.access_token) {
@@ -92,7 +105,7 @@ export class OpenHydraService {
    * 获取容器状态
    */
   getContainerStatus(): Observable<ContainerStatusResponse> {
-    const url = `${this.apiUrl}/org/${this.orgId}/ai-lab/container/status`;
+    const url = `${this.apiUrl}/org/${this.getOrgId()}/ai-lab/container/status`;
 
     return this.http.get<ContainerStatusResponse>(url).pipe(
       catchError((error) => {
@@ -105,12 +118,12 @@ export class OpenHydraService {
    * 停止容器
    */
   stopContainer(): Observable<{ success: boolean; message: string; container_id: string }> {
-    const url = `${this.apiUrl}/org/${this.orgId}/ai-lab/container/stop`;
+    const url = `${this.apiUrl}/org/${this.getOrgId()}/ai-lab/container/stop`;
 
     return this.http
       .post<{ success: boolean; message: string; container_id: string }>(url, {})
       .pipe(
-        tap((response) => {
+        tap(() => {
           // 清除本地存储
           localStorage.removeItem('jupyter_access_token');
           localStorage.removeItem('jupyter_container_id');
@@ -131,7 +144,7 @@ export class OpenHydraService {
     new_expiry: string;
     container_id: string;
   }> {
-    const url = `${this.apiUrl}/org/${this.orgId}/ai-lab/container/extend?hours=${hours}`;
+    const url = `${this.apiUrl}/org/${this.getOrgId()}/ai-lab/container/extend?hours=${hours}`;
 
     return this.http
       .post<{
@@ -141,7 +154,9 @@ export class OpenHydraService {
         container_id: string;
       }>(url, {})
       .pipe(
-        tap((response) => {}),
+        tap(() => {
+          /* 预留给扩展容器后的清理逻辑 */
+        }),
         catchError((error) => {
           throw error;
         })
@@ -154,10 +169,10 @@ export class OpenHydraService {
   healthCheck(): Observable<
     HealthCheckResponse | { status: string; service: string; error: string }
   > {
-    const url = `${this.apiUrl}/org/${this.orgId}/ai-lab/health`;
+    const url = `${this.apiUrl}/org/${this.getOrgId()}/ai-lab/health`;
 
     return this.http.get<HealthCheckResponse>(url).pipe(
-      catchError((error) => {
+      catchError((error: Error) => {
         return of({
           status: 'unhealthy' as const,
           service: 'openhydra',

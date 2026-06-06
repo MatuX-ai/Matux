@@ -5,6 +5,32 @@ import { filter, fromEvent, interval, map, Observable, startWith, switchMap } fr
 
 import { AppStateService } from './app-state.service';
 
+/** Electron API 接口 */
+interface ElectronAPI {
+  healthCheck(): Promise<{ success: boolean; version?: string }>;
+}
+
+/** 安装提示事件 */
+interface BeforeInstallPromptEvent extends Event {
+  prompt(): Promise<{ outcome: 'accepted' | 'dismissed' }>;
+}
+
+/** Service Worker 后台同步 */
+interface ServiceWorkerSyncRegistration {
+  sync: {
+    register(tag: string): Promise<void>;
+  };
+}
+
+/** Navigator Network Information */
+interface NetworkConnection {
+  effectiveType: string;
+  type: string;
+  downlink: number;
+  rtt: number;
+  downlinkMax: number;
+}
+
 @Injectable({
   providedIn: 'root',
 })
@@ -17,7 +43,10 @@ export class PwaService {
     private snackBar: MatSnackBar,
     private appState: AppStateService
   ) {
-    this.isElectron = !!(typeof window !== 'undefined' && (window as any).electronAPI);
+    this.isElectron = !!(
+      typeof window !== 'undefined' &&
+      (window as unknown as { electronAPI?: ElectronAPI }).electronAPI
+    );
     if (!this.isElectron) {
       this.initPwa();
     }
@@ -44,7 +73,7 @@ export class PwaService {
    */
   private checkForUpdates(): void {
     if (!this.swUpdate.isEnabled) {
-      console.log('Service Worker 未启用');
+      console.warn('Service Worker 未启用');
       return;
     }
 
@@ -61,7 +90,7 @@ export class PwaService {
     this.swUpdate.versionUpdates
       .pipe(filter((event) => event.type === 'VERSION_READY'))
       .subscribe((event) => {
-        console.log('新版本已准备就绪:', event);
+        console.warn('新版本已准备就绪:', event);
         this.showUpdateSuccess();
       });
   }
@@ -79,7 +108,7 @@ export class PwaService {
     });
 
     snackBarRef.onAction().subscribe(() => {
-      this.activateUpdate();
+      void this.activateUpdate();
     });
   }
 
@@ -195,14 +224,11 @@ export class PwaService {
   /**
    * 添加安装提示监听器
    */
-  public addInstallListener(): Observable<any> {
-    return new Observable((observer) => {
-      let deferredPrompt: any;
-
-      const handleBeforeInstall = (e: Event) => {
+  public addInstallListener(): Observable<BeforeInstallPromptEvent> {
+    return new Observable<BeforeInstallPromptEvent>((observer) => {
+      const handleBeforeInstall = (e: Event): void => {
         e.preventDefault();
-        deferredPrompt = e;
-        observer.next(deferredPrompt);
+        observer.next(e as BeforeInstallPromptEvent);
       };
 
       window.addEventListener('beforeinstallprompt', handleBeforeInstall);
@@ -216,7 +242,7 @@ export class PwaService {
   /**
    * 提示用户安装PWA
    */
-  public async promptInstall(prompt: any): Promise<boolean> {
+  public async promptInstall(prompt: BeforeInstallPromptEvent): Promise<boolean> {
     if (!prompt) {
       return false;
     }
@@ -246,7 +272,7 @@ export class PwaService {
    */
   public getAppVersion(): string {
     const versionElement = document.querySelector('meta[name="version"]');
-    return versionElement?.getAttribute('content') || '1.0.0';
+    return versionElement?.getAttribute('content') ?? '1.0.0';
   }
 
   /**
@@ -263,10 +289,7 @@ export class PwaService {
         // 发送消息给Service Worker预缓存资源
         registration.active.postMessage({
           type: 'PRECACHE',
-          resources: [
-            '/',
-            '/dashboard',
-          ],
+          resources: ['/', '/dashboard'],
         });
       }
     } catch (error) {
@@ -279,12 +302,13 @@ export class PwaService {
    */
   public getNetworkStatus(): Observable<'online' | 'offline' | 'slow'> {
     return new Observable((observer) => {
-      const checkStatus = () => {
+      const checkStatus = (): void => {
         if (!navigator.onLine) {
           observer.next('offline');
         } else {
           // 使用navigator.connection检测网络质量(如果支持)
-          const connection = (navigator as any).connection;
+          const connection = (navigator as unknown as { connection?: NetworkConnection })
+            .connection;
           if (connection?.effectiveType) {
             const slowTypes = ['slow-2g', '2g'];
             observer.next(slowTypes.includes(connection.effectiveType) ? 'slow' : 'online');
@@ -296,8 +320,8 @@ export class PwaService {
 
       checkStatus();
 
-      const handleOnline = () => checkStatus();
-      const handleOffline = () => checkStatus();
+      const handleOnline = (): void => checkStatus();
+      const handleOffline = (): void => checkStatus();
 
       window.addEventListener('online', handleOnline);
       window.addEventListener('offline', handleOffline);
@@ -313,8 +337,8 @@ export class PwaService {
    * 添加离线监听器
    */
   public addOfflineListener(callback: (isOffline: boolean) => void): () => void {
-    const handleOnline = () => callback(false);
-    const handleOffline = () => callback(true);
+    const handleOnline = (): void => callback(false);
+    const handleOffline = (): void => callback(true);
 
     window.addEventListener('online', handleOnline);
     window.addEventListener('offline', handleOffline);
@@ -338,6 +362,7 @@ export class PwaService {
         let totalSize = 0;
         let count = 0;
 
+        /* eslint-disable max-depth */
         for (const cacheName of cacheNames) {
           const cache = await caches.open(cacheName);
           const keys = await cache.keys();
@@ -351,6 +376,7 @@ export class PwaService {
             }
           }
         }
+        /* eslint-enable max-depth */
 
         return {
           size: totalSize,
@@ -392,7 +418,7 @@ export class PwaService {
   public isStandalone(): boolean {
     return (
       window.matchMedia('(display-mode: standalone)').matches ||
-      (window.navigator as any).standalone === true
+      (window.navigator as unknown as { standalone?: boolean }).standalone === true
     );
   }
 
@@ -419,7 +445,7 @@ export class PwaService {
   /**
    * 检查后台同步支持
    */
-  public async checkBackgroundSyncSupport(): Promise<boolean> {
+  public checkBackgroundSyncSupport(): boolean {
     return 'serviceWorker' in navigator && 'SyncManager' in window;
   }
 
@@ -430,7 +456,7 @@ export class PwaService {
     try {
       const registration = await navigator.serviceWorker.ready;
       // 使用类型断言避免 TypeScript 错误
-      const syncRegistration = registration as any;
+      const syncRegistration = registration as unknown as ServiceWorkerSyncRegistration;
       if (syncRegistration.sync) {
         await syncRegistration.sync.register(tag);
         return true;

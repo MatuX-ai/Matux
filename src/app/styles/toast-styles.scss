@@ -9,10 +9,10 @@
   color: white !important;
 
   .mat-mdc-snack-bar-action {
-    color: rgba(255, 255, 255, 0.87) !important;
+    color: rgb(255 255 255 / 87%) !important;
 
     &:hover {
-      background-color: rgba(255, 255, 255, 0.1) !important;
+      background-color: rgb(255 255 255 / 10%) !important;
     }
   }
 }
@@ -22,10 +22,10 @@
   color: white !important;
 
   .mat-mdc-snack-bar-action {
-    color: rgba(255, 255, 255, 0.87) !important;
+    color: rgb(255 255 255 / 87%) !important;
 
     &:hover {
-      background-color: rgba(255, 255, 255, 0.1) !important;
+      background-color: rgb(255 255 255 / 10%) !important;
     }
   }
 }
@@ -35,10 +35,10 @@
   color: white !important;
 
   .mat-mdc-snack-bar-action {
-    color: rgba(255, 255, 255, 0.87) !important;
+    color: rgb(255 255 255 / 87%) !important;
 
     &:hover {
-      background-color: rgba(255, 255, 255, 0.1) !important;
+      background-color: rgb(255 255 255 / 10%) !important;
     }
   }
 }
@@ -48,10 +48,10 @@
   color: white !important;
 
   .mat-mdc-snack-bar-action {
-    color: rgba(255, 255, 255, 0.87) !important;
+    color: rgb(255 255 255 / 87%) !important;
 
     &:hover {
-      background-color: rgba(255, 255, 255, 0.1) !important;
+      background-color: rgb(255 255 255 / 10%) !important;
     }
   }
 }
@@ -62,23 +62,23 @@
   font-weight: 500;
 
   .mat-mdc-snack-bar-action {
-    color: rgba(255, 255, 255, 0.87) !important;
+    color: rgb(255 255 255 / 87%) !important;
 
     &:hover {
-      background-color: rgba(255, 255, 255, 0.1) !important;
+      background-color: rgb(255 255 255 / 10%) !important;
     }
   }
 }
 
 // 响应式设计
-@media (max-width: 599px) {
+@media (width <= 599px) {
   .success-toast,
   .error-toast,
   .warning-toast,
   .info-toast,
   .notification-toast {
-    left: 16px !important;
     right: 16px !important;
+    left: 16px !important;
     width: auto !important;
   }
 }

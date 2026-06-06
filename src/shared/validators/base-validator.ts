@@ -39,21 +39,21 @@ export abstract class BaseValidator<T = any> {
    * 组合验证器（AND关系）
    */
   and(other: BaseValidator<T>): BaseValidator<T> {
-    return new CompositeValidator.And(this, other);
+    return new AndValidator(this, other);
   }
 
   /**
    * 或者验证器（OR关系）
    */
   or(other: BaseValidator<T>): BaseValidator<T> {
-    return new CompositeValidator.Or(this, other);
+    return new OrValidator(this, other);
   }
 
   /**
    * 非验证器（NOT关系）
    */
   not(): BaseValidator<T> {
-    return new CompositeValidator.Not(this);
+    return new NotValidator(this);
   }
 }
 
@@ -73,56 +73,60 @@ export class ValidationError extends Error {
 }
 
 /**
- * 组合验证器
+ * AND 组合验证器
  */
-export namespace CompositeValidator {
-  export class And<T> extends BaseValidator<T> {
-    constructor(
-      private validator1: BaseValidator<T>,
-      private validator2: BaseValidator<T>
-    ) {
-      super();
-    }
-
-    validate(value: T): ValidationResult {
-      const result1 = this.validator1.validate(value);
-      if (!result1.isValid) {
-        return result1;
-      }
-      return this.validator2.validate(value);
-    }
+export class AndValidator<T> extends BaseValidator<T> {
+  constructor(
+    private validator1: BaseValidator<T>,
+    private validator2: BaseValidator<T>
+  ) {
+    super();
   }
 
-  export class Or<T> extends BaseValidator<T> {
-    constructor(
-      private validator1: BaseValidator<T>,
-      private validator2: BaseValidator<T>
-    ) {
-      super();
+  validate(value: T): ValidationResult {
+    const result1 = this.validator1.validate(value);
+    if (!result1.isValid) {
+      return result1;
     }
+    return this.validator2.validate(value);
+  }
+}
 
-    validate(value: T): ValidationResult {
-      const result1 = this.validator1.validate(value);
-      if (result1.isValid) {
-        return result1;
-      }
-      return this.validator2.validate(value);
-    }
+/**
+ * OR 组合验证器
+ */
+export class OrValidator<T> extends BaseValidator<T> {
+  constructor(
+    private validator1: BaseValidator<T>,
+    private validator2: BaseValidator<T>
+  ) {
+    super();
   }
 
-  export class Not<T> extends BaseValidator<T> {
-    constructor(private validator: BaseValidator<T>) {
-      super();
+  validate(value: T): ValidationResult {
+    const result1 = this.validator1.validate(value);
+    if (result1.isValid) {
+      return result1;
     }
+    return this.validator2.validate(value);
+  }
+}
 
-    validate(value: T): ValidationResult {
-      const result = this.validator.validate(value);
-      return {
-        isValid: !result.isValid,
-        errorMessage: result.isValid ? '验证应该失败' : undefined,
-        errorCode: result.isValid ? 'NOT_VALIDATION_FAILED' : undefined,
-      };
-    }
+/**
+ * NOT 组合验证器
+ */
+export class NotValidator<T> extends BaseValidator<T> {
+  constructor(private validator: BaseValidator<T>) {
+    super();
+  }
+
+  validate(value: T): ValidationResult {
+    const result = this.validator.validate(value);
+    return {
+      isValid: !result.isValid,
+      errorMessage: result.isValid ? '验证应该失败' : undefined,
+      errorCode: result.isValid ? 'NOT_VALIDATION_FAILED' : undefined,
+    };
   }
 }
 
@@ -489,7 +493,7 @@ export class PasswordValidator extends StringValidator {
     }
 
     // 特殊字符验证
-    if (this.requireSpecialChars && !/[!@#$%^&*()_+\-=\[\]{};':"\\|,.<>\/?]/.test(strValue)) {
+    if (this.requireSpecialChars && !/[!@#$%^&*()_+\-=[\]{};':"\\|,.<>/?]/.test(strValue)) {
       errors.push('必须包含特殊字符');
     }
 

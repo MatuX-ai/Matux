@@ -1,5 +1,5 @@
-/**
- * Mac 风格按钮组件
+﻿/**
+ * Mac 椋庢牸鎸夐挳缁勪欢
  * Apple-inspired button component for Angular marketing pages
  */
 import { Component, HostBinding, Input } from '@angular/core';
@@ -34,8 +34,7 @@ export type ButtonSize = 'sm' | 'md' | 'lg';
 
         &:hover {
           transform: scale(1.02);
-          box-shadow: 0 4px 12px rgba(102, 126, 234, 0.25); // Mac 渐变紫阴影
-        }
+          box-shadow: 0 4px 12px rgba(102, 126, 234, 0.25); // Mac 娓愬彉绱槾褰?        }
 
         &:active {
           transform: scale(0.98);
@@ -48,7 +47,7 @@ export type ButtonSize = 'sm' | 'md' | 'lg';
         }
       }
 
-      /* Primary variant - 星空蓝 (Starry Blue) */
+      /* Primary variant - 鏄熺┖钃?(Starry Blue) */
       .mac-btn-primary {
         background: linear-gradient(
           135deg,
@@ -77,25 +76,25 @@ export type ButtonSize = 'sm' | 'md' | 'lg';
         }
       }
 
-      /* Outline variant - Mac 渐变紫边框 */
+      /* Outline variant - Mac 娓愬彉绱竟妗?*/
       .mac-btn-outline {
         background: transparent;
-        color: var(--gradient-primary-start, #667eea);
-        border: 2px solid var(--gradient-primary-start, #667eea);
+        color: var(--gradient-primary-start, #0f172a);
+        border: 2px solid var(--gradient-primary-start, #0f172a);
 
         &:hover:not(:disabled) {
-          background: rgba(102, 126, 234, 0.08);
+          background: rgba(15, 23, 42, 0.08);
         }
       }
 
-      /* Ghost variant - Mac 渐变紫文字 */
+      /* Ghost variant - Mac 娓愬彉绱枃瀛?*/
       .mac-btn-ghost {
         background: transparent;
-        color: var(--gradient-primary-start, #667eea);
+        color: var(--gradient-primary-start, #0f172a);
         border: none;
 
         &:hover:not(:disabled) {
-          background: rgba(102, 126, 234, 0.08);
+          background: rgba(15, 23, 42, 0.08);
         }
       }
 
@@ -135,7 +134,7 @@ export class MacButtonComponent {
     return this.fullWidth ? `${baseClasses} mac-btn-fullwidth` : baseClasses;
   }
 
-  onClick(event: MouseEvent): void {
+  onClick(_event: MouseEvent): void {
     if (!this.disabled) {
       // Event emission logic can be added here
     }

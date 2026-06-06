@@ -3,8 +3,8 @@
  * 从 shared/models/ 重新导出
  */
 export type {
+  CourseEnrollment,
   CourseStatus,
   LearningSourceType,
-  CourseEnrollment,
   UnifiedCourse,
 } from '../../shared/models/course.models';

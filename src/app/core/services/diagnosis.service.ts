@@ -11,44 +11,46 @@
  */
 
 import { Injectable } from '@angular/core';
-import { BehaviorSubject, Observable, combineLatest, of } from 'rxjs';
-import { map, switchMap, catchError } from 'rxjs/operators';
+import { BehaviorSubject, combineLatest, Observable, of } from 'rxjs';
+import { catchError, map } from 'rxjs/operators';
+
+import type {
+  AbilityTrendPoint,
+  GrowthTrajectory,
+  KnowledgeStateItem,
+  StudentLearningProfile,
+  TeachingSuggestion,
+} from '../models/ai-teacher.models';
 
 import { AITeacherService } from './ai-teacher.service';
-import type {
-  StudentLearningProfile,
-  KnowledgeStateItem,
-  TeachingSuggestion,
-  AbilityTrendPoint,
-} from '../models/ai-teacher.models';
 
 /** 诊断维度 */
 export type DiagnosisDimension =
-  | 'knowledge'       // 知识掌握
-  | 'skill'           // 技能均衡
-  | 'engagement'      // 学习投入
-  | 'efficiency'      // 学习效率
-  | 'independence';   // 独立学习
+  | 'knowledge' // 知识掌握
+  | 'skill' // 技能均衡
+  | 'engagement' // 学习投入
+  | 'efficiency' // 学习效率
+  | 'independence'; // 独立学习
 
 /** 诊断评分常量 */
-const DIAGNOSIS_DEFAULT_SCORE = 50;          // 默认中等分数
-const DIAGNOSIS_MAX_SCORE = 100;             // 最高分
-const DIAGNOSIS_MIN_SCORE = 0;               // 最低分
-const DIAGNOSIS_NOT_STARTED_PENALTY = 20;    // 未开始知识点扣分权重
-const DIAGNOSIS_BALANCE_PENALTY_MAX = 30;    // 技能均衡最大惩罚分
+const DIAGNOSIS_DEFAULT_SCORE = 50; // 默认中等分数
+const DIAGNOSIS_MAX_SCORE = 100; // 最高分
+const DIAGNOSIS_MIN_SCORE = 0; // 最低分
+const DIAGNOSIS_NOT_STARTED_PENALTY = 20; // 未开始知识点扣分权重
+const DIAGNOSIS_BALANCE_PENALTY_MAX = 30; // 技能均衡最大惩罚分
 const DIAGNOSIS_DISTRACTION_PENALTY_FACTOR = 10; // 分心惩罚因子
-const DIAGNOSIS_COURSE_EFFICIENCY_FACTOR = 20;   // 课程效率因子
-const DIAGNOSIS_QUESTION_EFFICIENCY_MAX = 50;    // 题目效率最高分
+const DIAGNOSIS_COURSE_EFFICIENCY_FACTOR = 20; // 课程效率因子
+const DIAGNOSIS_QUESTION_EFFICIENCY_MAX = 50; // 题目效率最高分
 const DIAGNOSIS_QUESTION_EFFICIENCY_FACTOR = 10; // 题目效率因子
-const DIAGNOSIS_BASE_EFFICIENCY_SCORE = 20;      // 效率基础分
-const DIAGNOSIS_HISTORY_MAX_LENGTH = 20;     // 最大历史记录数
-const DIAGNOSIS_TREND_THRESHOLD = 5;         // 趋势变化阈值
+const DIAGNOSIS_BASE_EFFICIENCY_SCORE = 20; // 效率基础分
+const DIAGNOSIS_HISTORY_MAX_LENGTH = 20; // 最大历史记录数
+const DIAGNOSIS_TREND_THRESHOLD = 5; // 趋势变化阈值
 
 /** 诊断报告 */
 export interface DiagnosisReport {
   userId: string;
   timestamp: string;
-  overallHealth: number;           // 0-100
+  overallHealth: number; // 0-100
   dimensionScores: Record<DiagnosisDimension, number>;
   suggestions: TeachingSuggestion[];
   criticalIssues: TeachingSuggestion[];
@@ -83,9 +85,9 @@ export class DiagnosisService {
   /** 执行完整诊断分析 */
   runFullDiagnosis(userId: string): Observable<DiagnosisReport> {
     return combineLatest([
-      this.aiTeacher.getProfile(userId).pipe(catchError(() => of({} as StudentLearningProfile))),
+      this.aiTeacher.getProfile(userId).pipe(catchError(() => of(null))),
       this.aiTeacher.getKnowledgeState(userId).pipe(catchError(() => of([]))),
-      this.aiTeacher.getGrowthTrajectory(userId).pipe(catchError(() => of({} as any))),
+      this.aiTeacher.getGrowthTrajectory(userId).pipe(catchError(() => of(null))),
       this.aiTeacher.getTeachingSuggestions(userId).pipe(catchError(() => of([]))),
     ]).pipe(
       map(([profile, knowledgeState, growth, suggestions]) => {
@@ -93,7 +95,7 @@ export class DiagnosisService {
         this.reportSubject.next(report);
         this.saveToHistory(report);
         return report;
-      }),
+      })
     );
   }
 
@@ -147,8 +149,8 @@ export class DiagnosisService {
     userId: string,
     profile: StudentLearningProfile | null,
     knowledgeState: KnowledgeStateItem[],
-    growth: any,
-    suggestions: TeachingSuggestion[],
+    growth: GrowthTrajectory | null,
+    suggestions: TeachingSuggestion[]
   ): DiagnosisReport {
     // 各维度评分
     const dimensionScores = {
@@ -160,14 +162,14 @@ export class DiagnosisService {
     };
 
     const overallHealth = Math.round(
-      Object.values(dimensionScores).reduce((sum, s) => sum + s, 0) / 5,
+      Object.values(dimensionScores).reduce((sum, s) => sum + s, 0) / 5
     );
 
     // 严重问题（高优先级）
     const criticalIssues = suggestions.filter((s) => s.severity === 'critical');
 
     // 趋势分析
-    const trends = this.analyzeTrends(growth);
+    const trends = this.analyzeTrends(growth as unknown as GrowthTrajectory);
 
     return {
       userId,
@@ -184,16 +186,18 @@ export class DiagnosisService {
     if (state.length === 0) return DIAGNOSIS_DEFAULT_SCORE;
     const mastered = state.filter((k) => k.status === 'mastered').length;
     const notStarted = state.filter((k) => k.status === 'not_started').length;
-    const score = ((mastered / state.length) * DIAGNOSIS_MAX_SCORE) - (notStarted / state.length * DIAGNOSIS_NOT_STARTED_PENALTY);
+    const score =
+      (mastered / state.length) * DIAGNOSIS_MAX_SCORE -
+      (notStarted / state.length) * DIAGNOSIS_NOT_STARTED_PENALTY;
     return Math.max(DIAGNOSIS_MIN_SCORE, Math.min(DIAGNOSIS_MAX_SCORE, Math.round(score)));
   }
 
   private scoreSkillDimension(
     profile: StudentLearningProfile | null,
-    growth: any,
+    growth: GrowthTrajectory | null
   ): number {
     if (!growth?.abilityTrend?.length) return DIAGNOSIS_DEFAULT_SCORE;
-    const latest = growth.abilityTrend[growth.abilityTrend.length - 1] as AbilityTrendPoint;
+    const latest = growth.abilityTrend[growth.abilityTrend.length - 1];
     const values = [
       latest.programmingThinking,
       latest.algorithmAbility,
@@ -204,27 +208,44 @@ export class DiagnosisService {
     const avg = values.reduce((s, v) => s + v, 0) / values.length;
     const variance = values.reduce((s, v) => s + Math.pow(v - avg, 2), 0) / values.length;
     const balancePenalty = Math.min(DIAGNOSIS_BALANCE_PENALTY_MAX, Math.sqrt(variance));
-    return Math.max(DIAGNOSIS_MIN_SCORE, Math.min(DIAGNOSIS_MAX_SCORE, Math.round(avg - balancePenalty)));
+    return Math.max(
+      DIAGNOSIS_MIN_SCORE,
+      Math.min(DIAGNOSIS_MAX_SCORE, Math.round(avg - balancePenalty))
+    );
   }
 
   private scoreEngagementDimension(profile: StudentLearningProfile | null): number {
     if (!profile?.attentionProfile) return DIAGNOSIS_DEFAULT_SCORE;
     const { averageFocusDurationMinutes, tabSwitchFrequency } = profile.attentionProfile;
-    const focus = Math.min(DIAGNOSIS_MAX_SCORE, (averageFocusDurationMinutes / 60) * DIAGNOSIS_MAX_SCORE);
-    const distraction = Math.max(DIAGNOSIS_MIN_SCORE, DIAGNOSIS_MAX_SCORE - tabSwitchFrequency * DIAGNOSIS_DISTRACTION_PENALTY_FACTOR);
+    const focus = Math.min(
+      DIAGNOSIS_MAX_SCORE,
+      (averageFocusDurationMinutes / 60) * DIAGNOSIS_MAX_SCORE
+    );
+    const distraction = Math.max(
+      DIAGNOSIS_MIN_SCORE,
+      DIAGNOSIS_MAX_SCORE - tabSwitchFrequency * DIAGNOSIS_DISTRACTION_PENALTY_FACTOR
+    );
     return Math.round((focus + distraction) / 2);
   }
 
   private scoreEfficiencyDimension(
     profile: StudentLearningProfile | null,
-    growth: any,
+    growth: GrowthTrajectory | null
   ): number {
     if (!growth?.statistics) return DIAGNOSIS_DEFAULT_SCORE;
-    const { totalStudyHours, completedCourses, totalQuestions } = growth.statistics;
+    const stats = growth.statistics;
+    const { totalStudyHours, completedCourses, totalQuestions } = stats;
     if (totalStudyHours === 0) return DIAGNOSIS_DEFAULT_SCORE;
-    const courseEfficiency = (completedCourses / Math.max(1, totalStudyHours / 10)) * DIAGNOSIS_COURSE_EFFICIENCY_FACTOR;
-    const questionEfficiency = Math.min(DIAGNOSIS_QUESTION_EFFICIENCY_MAX, (totalQuestions / Math.max(1, totalStudyHours)) * DIAGNOSIS_QUESTION_EFFICIENCY_FACTOR);
-    return Math.min(DIAGNOSIS_MAX_SCORE, Math.round(courseEfficiency + questionEfficiency + DIAGNOSIS_BASE_EFFICIENCY_SCORE));
+    const courseEfficiency =
+      (completedCourses / Math.max(1, totalStudyHours / 10)) * DIAGNOSIS_COURSE_EFFICIENCY_FACTOR;
+    const questionEfficiency = Math.min(
+      DIAGNOSIS_QUESTION_EFFICIENCY_MAX,
+      (totalQuestions / Math.max(1, totalStudyHours)) * DIAGNOSIS_QUESTION_EFFICIENCY_FACTOR
+    );
+    return Math.min(
+      DIAGNOSIS_MAX_SCORE,
+      Math.round(courseEfficiency + questionEfficiency + DIAGNOSIS_BASE_EFFICIENCY_SCORE)
+    );
   }
 
   /**
@@ -237,12 +258,16 @@ export class DiagnosisService {
     return Math.round(profile.abilityDimensions.independentCompletion);
   }
 
-  private analyzeTrends(growth: any): { improving: string[]; declining: string[]; stable: string[] } {
+  private analyzeTrends(growth: GrowthTrajectory | null): {
+    improving: string[];
+    declining: string[];
+    stable: string[];
+  } {
     const result = { improving: [] as string[], declining: [] as string[], stable: [] as string[] };
     if (!growth?.abilityTrend?.length || growth.abilityTrend.length < 2) return result;
 
-    const first = growth.abilityTrend[0] as AbilityTrendPoint;
-    const last = growth.abilityTrend[growth.abilityTrend.length - 1] as AbilityTrendPoint;
+    const first = growth.abilityTrend[0];
+    const last = growth.abilityTrend[growth.abilityTrend.length - 1];
 
     const dimensions: { key: keyof AbilityTrendPoint; label: string }[] = [
       { key: 'programmingThinking', label: '编程思维' },

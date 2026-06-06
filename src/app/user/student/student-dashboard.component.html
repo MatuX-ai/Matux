@@ -18,28 +18,28 @@
 
     <div class="quick-entry-grid">
       <mat-card class="quick-entry-card" (click)="navigateTo('/student/courses')">
-        <div class="quick-entry-icon" style="background: var(--gradient-blue);">
+        <div class="quick-entry-icon" style="background: var(--gradient-blue)">
           <mat-icon>auto_stories</mat-icon>
         </div>
         <span class="quick-entry-label">我的课程</span>
       </mat-card>
 
       <mat-card class="quick-entry-card" (click)="navigateTo('/ar-lab')">
-        <div class="quick-entry-icon" style="background: var(--gradient-purple);">
+        <div class="quick-entry-icon" style="background: var(--gradient-blue-alt)">
           <mat-icon>view_in_ar</mat-icon>
         </div>
         <span class="quick-entry-label">AR 实验室</span>
       </mat-card>
 
       <mat-card class="quick-entry-card" (click)="navigateTo('/projects')">
-        <div class="quick-entry-icon" style="background: var(--gradient-green);">
+        <div class="quick-entry-icon" style="background: var(--gradient-green)">
           <mat-icon>rocket_launch</mat-icon>
         </div>
         <span class="quick-entry-label">实战项目</span>
       </mat-card>
 
       <mat-card class="quick-entry-card" (click)="navigateTo('/achievements')">
-        <div class="quick-entry-icon" style="background: var(--gradient-orange);">
+        <div class="quick-entry-icon" style="background: var(--gradient-orange)">
           <mat-icon>emoji_events</mat-icon>
         </div>
         <span class="quick-entry-label">学习成就</span>
@@ -125,11 +125,12 @@
         常用工具
       </h2>
       <div class="quick-tools-grid">
-        <div
-          *ngFor="let tool of quickTools"
-          class="quick-tool-item"
-        >
-          <div class="quick-tool-icon-wrapper" [style.background]="tool.color + '20'" [style.color]="tool.color">
+        <div *ngFor="let tool of quickTools" class="quick-tool-item">
+          <div
+            class="quick-tool-icon-wrapper"
+            [style.background]="tool.color + '20'"
+            [style.color]="tool.color"
+          >
             <mat-icon>{{ tool.icon }}</mat-icon>
           </div>
           <span class="quick-tool-label">{{ tool.label }}</span>
@@ -162,10 +163,7 @@
       学习来源详情
     </h2>
     <div class="sources-grid">
-      <mat-card
-        *ngFor="let source of learningSources"
-        [class.primary-source]="source.is_primary"
-      >
+      <mat-card *ngFor="let source of learningSources" [class.primary-source]="source.is_primary">
         <mat-card-content>
           <div class="source-header">
             <mat-icon [matTooltip]="getSourceTypeLabel(source.source_type)">
@@ -190,7 +188,10 @@
   </div>
 
   <!-- 学习日历热力图 + 成就墙 双栏 -->
-  <div class="dual-column-section" *ngIf="layout.isVisible('heatmap') || layout.isVisible('achievements')">
+  <div
+    class="dual-column-section"
+    *ngIf="layout.isVisible('heatmap') || layout.isVisible('achievements')"
+  >
     <div class="section section-heatmap" *ngIf="layout.isVisible('heatmap')">
       <app-learning-calendar-heatmap [config]="heatmapConfig"></app-learning-calendar-heatmap>
     </div>
@@ -214,10 +215,7 @@
         </div>
         <div class="achievements-summary">
           <span>已解锁 {{ unlockedAchievementsCount }}/{{ achievementBadges.length }}</span>
-          <mat-progress-bar
-            mode="determinate"
-            [value]="achievementProgress"
-          ></mat-progress-bar>
+          <mat-progress-bar mode="determinate" [value]="achievementProgress"></mat-progress-bar>
         </div>
       </div>
     </div>
@@ -236,7 +234,7 @@
             showProgress: true,
             enrollmentStatus: 'enrolled',
             enrollmentProgress: item.progress || 0,
-            orgName: getOrgName(item.course.org_id)
+            orgName: getOrgName(item.course.org_id),
           }"
           (detail)="onContinueLearning(item.course.id)"
         >
@@ -273,7 +271,7 @@
             showProgress: false,
             enrollmentStatus: 'not_enrolled',
             orgName: getOrgName(course.org_id),
-            compact: false
+            compact: false,
           }"
           (enroll)="onEnrollCourse(course.id)"
           (detail)="onViewCourseDetail(course.id)"
@@ -293,7 +291,4 @@
   <div class="section" *ngIf="layout.isVisible('materials')">
     <app-student-material-dashboard></app-student-material-dashboard>
   </div>
-
-  <!-- AI 教师聊天悬浮组件 -->
-  <app-ai-teacher-chat></app-ai-teacher-chat>
 </div>

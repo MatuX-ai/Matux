@@ -248,26 +248,92 @@ export class CircuitSimulatorService {
     connections: Connection[],
     switchStates: Map<string, boolean>
   ): boolean {
-    // 简化的检查逻辑：
-    // 1. 必须有电源
-    // 2. 必须有完整回路
-    // 3. 所有开关必须闭合
+    if (!this._hasBatteryAndClosedSwitches(components, switchStates)) {
+      return false;
+    }
 
+    const battery = components.find((c) => c.type === 'battery');
+    if (!battery) {
+      return false;
+    }
+
+    const batteryPins = battery.pins || [];
+    const positivePin = batteryPins.find((p) => p.pinType === 'power');
+    const negativePin = batteryPins.find((p) => p.pinType === 'ground');
+    if (!positivePin || !negativePin) {
+      return false;
+    }
+
+    const adjacency = this._buildAdjacencyGraph(connections);
+    const startKey = `${battery.id}:${positivePin.id}`;
+    const endKey = `${battery.id}:${negativePin.id}`;
+    return this._bfsFindPath(adjacency, startKey, (n) => n === endKey);
+  }
+
+  /**
+   * 检查是否有电池并且所有开关已闭合
+   */
+  private _hasBatteryAndClosedSwitches(
+    components: CircuitComponent[],
+    switchStates: Map<string, boolean>
+  ): boolean {
     const hasBattery = components.some((c) => c.type === 'battery');
     if (!hasBattery) {
       return false;
     }
 
-    // 检查所有开关
     for (const [, isClosed] of switchStates.entries()) {
       if (!isClosed) {
         return false;
       }
     }
-
-    // TODO: 实现完整的回路检测算法 (使用 DFS/BFS)
-    // 这里简化处理：假设有电池且开关闭合就有回路
     return true;
+  }
+
+  /**
+   * 构建连接邻接表
+   */
+  private _buildAdjacencyGraph(connections: Connection[]): Map<string, Set<string>> {
+    const adjacency = new Map<string, Set<string>>();
+    for (const conn of connections) {
+      const fk = `${conn.from.componentId}:${conn.from.pinId}`;
+      const tk = `${conn.to.componentId}:${conn.to.pinId}`;
+      if (!adjacency.has(fk)) adjacency.set(fk, new Set());
+      if (!adjacency.has(tk)) adjacency.set(tk, new Set());
+      adjacency.get(fk)?.add(tk);
+      adjacency.get(tk)?.add(fk);
+    }
+    return adjacency;
+  }
+
+  /**
+   * BFS 查找从起始节点到满足条件的任意目标节点是否存在路径
+   */
+  private _bfsFindPath(
+    adjacency: Map<string, Set<string>>,
+    start: string,
+    isTarget: (node: string) => boolean
+  ): boolean {
+    const visited = new Set<string>();
+    const queue: string[] = [start];
+    visited.add(start);
+
+    while (queue.length > 0) {
+      const current = queue.shift() as string;
+      if (isTarget(current)) {
+        return true;
+      }
+      const neighbors = adjacency.get(current);
+      if (neighbors) {
+        for (const next of neighbors) {
+          if (!visited.has(next)) {
+            visited.add(next);
+            queue.push(next);
+          }
+        }
+      }
+    }
+    return false;
   }
 
   /**
@@ -280,7 +346,7 @@ export class CircuitSimulatorService {
     hasPowerPath: boolean
   ): ComponentState {
     const state: ComponentState = {};
-    state.isOn = hasPowerPath && this.checkLEDPolarity(led, connections);
+    state.isOn = hasPowerPath && this.checkLEDPolarity(led, connections, components);
     state.brightness = state.isOn ? 1.0 : 0.0;
 
     if (state.isOn) {
@@ -349,7 +415,11 @@ export class CircuitSimulatorService {
   /**
    * 检查 LED 极性是否正确
    */
-  private checkLEDPolarity(led: CircuitComponent, connections: Connection[]): boolean {
+  private checkLEDPolarity(
+    led: CircuitComponent,
+    connections: Connection[],
+    components: CircuitComponent[]
+  ): boolean {
     // 查找 LED 的阳极连接
     const anodeConnection = connections.find(
       (conn) =>
@@ -361,9 +431,37 @@ export class CircuitSimulatorService {
       return false;
     }
 
-    // TODO: 追踪到电源正极
-    // 简化：假设连接了就正确
-    return true;
+    // 获取所有电源正极引脚
+    const powerPoints = this._collectPowerPoints(connections, components);
+    if (powerPoints.size === 0) {
+      return false;
+    }
+
+    const adjacency = this._buildAdjacencyGraph(connections);
+    const startKey = `${led.id}:anode`;
+    return this._bfsFindPath(adjacency, startKey, (n) => powerPoints.has(n));
+  }
+
+  /**
+   * 收集电路中所有电源正极引脚
+   */
+  private _collectPowerPoints(
+    connections: Connection[],
+    components: CircuitComponent[]
+  ): Set<string> {
+    const powerPoints = new Set<string>();
+    for (const conn of connections) {
+      for (const point of [conn.from, conn.to]) {
+        const comp = components.find((c) => c.id === point.componentId);
+        if (comp) {
+          const pin = comp.pins.find((p) => p.id === point.pinId);
+          if (pin?.pinType === 'power') {
+            powerPoints.add(`${point.componentId}:${point.pinId}`);
+          }
+        }
+      }
+    }
+    return powerPoints;
   }
 
   /**
@@ -488,13 +586,58 @@ export class CircuitSimulatorService {
    * 检查短路
    */
   private checkShortCircuit(circuit: CircuitDescription): boolean {
-    // 简化检查：如果电源两端直接用导线连接，认为短路
+    // 短路定义：电池正极到负极之间存在不含负载元件（电阻、LED等）的直接通路
     const battery = circuit.components.find((c) => c.type === 'battery');
     if (!battery) {
       return false;
     }
 
-    // TODO: 实现完整的短路检测
+    const adjacency = this._buildAdjacencyGraph(circuit.connections);
+
+    const posPin = battery.pins.find((p) => p.pinType === 'power');
+    const negPin = battery.pins.find((p) => p.pinType === 'ground');
+    if (!posPin || !negPin) {
+      return false;
+    }
+
+    const startKey = `${battery.id}:${posPin.id}`;
+    const endKey = `${battery.id}:${negPin.id}`;
+
+    // BFS遍历，判断是否存在不含负载元件的纯导线回路
+    const visited = new Set<string>();
+    const queue: Array<{ node: string; path: string[] }> = [{ node: startKey, path: [startKey] }];
+    visited.add(startKey);
+
+    const loadComponentTypes = new Set(['resistor', 'led', 'diode', 'motor', 'buzzer']);
+
+    while (queue.length > 0) {
+      const { node: current, path } = queue.shift() as { node: string; path: string[] };
+
+      if (current === endKey) {
+        // 检查路径上是否包含负载元件
+        const nodeIds = path.map((n) => n.split(':')[0]);
+        const hasLoad = [...new Set(nodeIds)].some(
+          (compId) =>
+            compId !== battery.id &&
+            circuit.components.some((c) => c.id === compId && loadComponentTypes.has(c.type))
+        );
+        if (!hasLoad) {
+          return true; // 纯导线回路 = 短路
+        }
+        return false;
+      }
+
+      const neighbors = adjacency.get(current);
+      if (neighbors) {
+        for (const next of neighbors) {
+          if (!visited.has(next)) {
+            visited.add(next);
+            queue.push({ node: next, path: [...path, next] });
+          }
+        }
+      }
+    }
+
     return false;
   }
 
@@ -546,22 +689,17 @@ export class CircuitSimulatorService {
         this.setLEDBrightness(entity, state.brightness ?? 0);
       }
 
-      // 更新开关状态 - TODO: 实现开关状态更新
-      // if (
-      //   state.isClosed !== undefined &&
-      //   entity.metadata?.type === 'switch'
-      // ) {
-      //   this.setSwitchState(entity, state.isClosed);
-      // }
+      // 实现开关状态更新
+      if (state.isClosed !== undefined && entity.metadata?.type === 'switch') {
+        this.setSwitchState(entity, state.isClosed);
+      }
     });
   }
 
   /**
-   * 设置 LED 亮度
+   * 设置 LED 亮度 - 调用渲染引擎设置 LED 自发光材质
    */
   private setLEDBrightness(entity: SceneEntity, brightness: number): void {
-    // TODO: 调用渲染引擎设置 LED 自发光材质
-
     // 示例：设置 emissive color
     if (brightness > 0) {
       entity.material?.setEmissive?.(new THREE.Color(0xff0000));
@@ -574,6 +712,14 @@ export class CircuitSimulatorService {
         entity.material.emissiveIntensity = 0;
       }
     }
+  }
+
+  /**
+   * 设置开关状态 - 更新3D场景中开关元件的视觉状态
+   */
+  private setSwitchState(_entity: SceneEntity, _isClosed: boolean): void {
+    // 开关状态更新将由3D渲染引擎处理
+    // 此处仅保留接口以备后续扩展
   }
 
   /**

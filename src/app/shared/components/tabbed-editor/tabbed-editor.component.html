@@ -37,15 +37,28 @@
 
     <!-- 标签栏操作按钮 -->
     <div class="tab-actions">
-      <button class="tab-action-btn" (click)="newTabRequest.emit()" title="新建标签页 (Ctrl+N)" aria-label="新建标签页">
+      <button
+        class="tab-action-btn"
+        (click)="newTabRequest.emit()"
+        title="新建标签页 (Ctrl+N)"
+        aria-label="新建标签页"
+      >
         <i class="ri-add-line"></i>
       </button>
-      <button class="tab-action-btn" (click)="openFileRequest.emit()" title="打开文件 (Ctrl+O)" aria-label="打开文件">
+      <button
+        class="tab-action-btn"
+        (click)="openFileRequest.emit()"
+        title="打开文件 (Ctrl+O)"
+        aria-label="打开文件"
+      >
         <i class="ri-folder-open-line"></i>
       </button>
-      <button class="tab-action-btn" (click)="toggleTheme()"
+      <button
+        class="tab-action-btn"
+        (click)="toggleTheme()"
         [title]="editorTheme === 'vs-dark' ? '切换亮色主题' : '切换暗色主题'"
-        aria-label="切换编辑器主题">
+        aria-label="切换编辑器主题"
+      >
         <i [class]="editorTheme === 'vs-dark' ? 'ri-sun-line' : 'ri-moon-line'"></i>
       </button>
     </div>
@@ -79,7 +92,11 @@
     <div class="output-panel">
       <div class="output-header">
         <span class="output-title">
-          <i [class]="lastRunResult.success ? 'ri-check-line success' : 'ri-error-warning-line error'"></i>
+          <i
+            [class]="
+              lastRunResult.success ? 'ri-check-line success' : 'ri-error-warning-line error'
+            "
+          ></i>
           运行结果
           @if (lastRunResult.executionTime != null) {
             <span class="exec-time">({{ lastRunResult.executionTime }}ms)</span>
@@ -89,7 +106,9 @@
           <i class="ri-close-line"></i>
         </button>
       </div>
-      <pre class="output-content" [class.error-output]="!lastRunResult.success">{{ lastRunResult.output || '' }}</pre>
+      <pre class="output-content" [class.error-output]="!lastRunResult.success">{{
+        lastRunResult.output || ''
+      }}</pre>
     </div>
   }
 

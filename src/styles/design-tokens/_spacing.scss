@@ -2,17 +2,17 @@
 // 间距变量请使用 _matux-tokens.scss（单一来源）
 // 本文件仅保留 unique 内容：padding/margin/gap mixins、响应式间距变量、间距函数
 
+@use 'sass:map';
+
 // ===== Unique: 方向性间距变量（不在 matux-tokens 中） =====
 $spacing-mobile-sm: 0.25rem;
 $spacing-mobile-md: 0.5rem;
 $spacing-mobile-lg: 0.75rem;
 $spacing-mobile-xl: 1rem;
-
 $spacing-tablet-sm: 0.5rem;
 $spacing-tablet-md: 0.75rem;
 $spacing-tablet-lg: 1rem;
 $spacing-tablet-xl: 1.5rem;
-
 $spacing-desktop-sm: 0.75rem;
 $spacing-desktop-md: 1rem;
 $spacing-desktop-lg: 1.5rem;
@@ -23,12 +23,10 @@ $padding-sm: 0.5rem;
 $padding-md: 0.75rem;
 $padding-lg: 1rem;
 $padding-xl: 1.5rem;
-
 $margin-sm: 0.5rem;
 $margin-md: 0.75rem;
 $margin-lg: 1rem;
 $margin-xl: 1.5rem;
-
 $gap-sm: 0.5rem;
 $gap-md: 0.75rem;
 $gap-lg: 1rem;
@@ -36,47 +34,82 @@ $gap-xl: 1.5rem;
 
 // ===== Unique Mixins =====
 @mixin padding($size: md) {
-  @if $size == sm { padding: $padding-sm; }
-  @else if $size == md { padding: $padding-md; }
-  @else if $size == lg { padding: $padding-lg; }
-  @else if $size == xl { padding: $padding-xl; }
-  @else if $size == xxl { padding: 2rem; }
-  @else { padding: $padding-md; }
+  @if $size == sm {
+    padding: $padding-sm;
+  } @else if $size == md {
+    padding: $padding-md;
+  } @else if $size == lg {
+    padding: $padding-lg;
+  } @else if $size == xl {
+    padding: $padding-xl;
+  } @else if $size == xxl {
+    padding: 2rem;
+  } @else {
+    padding: $padding-md;
+  }
 }
 
 @mixin margin($size: md) {
-  @if $size == sm { margin: $margin-sm; }
-  @else if $size == md { margin: $margin-md; }
-  @else if $size == lg { margin: $margin-lg; }
-  @else if $size == xl { margin: $margin-xl; }
-  @else if $size == xxl { margin: 2rem; }
-  @else { margin: $margin-md; }
+  @if $size == sm {
+    margin: $margin-sm;
+  } @else if $size == md {
+    margin: $margin-md;
+  } @else if $size == lg {
+    margin: $margin-lg;
+  } @else if $size == xl {
+    margin: $margin-xl;
+  } @else if $size == xxl {
+    margin: 2rem;
+  } @else {
+    margin: $margin-md;
+  }
 }
 
 @mixin gap($size: md) {
-  @if $size == sm { gap: $gap-sm; }
-  @else if $size == md { gap: $gap-md; }
-  @else if $size == lg { gap: $gap-lg; }
-  @else if $size == xl { gap: $gap-xl; }
-  @else { gap: $gap-md; }
+  @if $size == sm {
+    gap: $gap-sm;
+  } @else if $size == md {
+    gap: $gap-md;
+  } @else if $size == lg {
+    gap: $gap-lg;
+  } @else if $size == xl {
+    gap: $gap-xl;
+  } @else {
+    gap: $gap-md;
+  }
 }
 
 @mixin responsive-padding($breakpoint: mobile, $size: md) {
   @if $breakpoint == mobile {
-    padding: map-get((
-      sm: $spacing-mobile-sm, md: $spacing-mobile-md,
-      lg: $spacing-mobile-lg, xl: $spacing-mobile-xl
-    ), $size);
+    padding: map.get(
+      (
+        sm: $spacing-mobile-sm,
+        md: $spacing-mobile-md,
+        lg: $spacing-mobile-lg,
+        xl: $spacing-mobile-xl,
+      ),
+      $size
+    );
   } @else if $breakpoint == tablet {
-    padding: map-get((
-      sm: $spacing-tablet-sm, md: $spacing-tablet-md,
-      lg: $spacing-tablet-lg, xl: $spacing-tablet-xl
-    ), $size);
+    padding: map.get(
+      (
+        sm: $spacing-tablet-sm,
+        md: $spacing-tablet-md,
+        lg: $spacing-tablet-lg,
+        xl: $spacing-tablet-xl,
+      ),
+      $size
+    );
   } @else if $breakpoint == desktop {
-    padding: map-get((
-      sm: $spacing-desktop-sm, md: $spacing-desktop-md,
-      lg: $spacing-desktop-lg, xl: $spacing-desktop-xl
-    ), $size);
+    padding: map.get(
+      (
+        sm: $spacing-desktop-sm,
+        md: $spacing-desktop-md,
+        lg: $spacing-desktop-lg,
+        xl: $spacing-desktop-xl,
+      ),
+      $size
+    );
   }
 }
 

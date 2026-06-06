@@ -83,12 +83,12 @@ export class TokenUsageHistoryComponent implements OnInit {
 
     this.tokenService.getTransactions(this.currentPage, this.pageSize).subscribe({
       next: (response) => {
-        this.dataSource.data = response.data.map(this.formatTransaction);
+        this.dataSource.data = response.data.map((t) => this.formatTransaction(t));
         this.totalRecords = response.total;
         this.totalPages = response.totalPages;
         this.loading = false;
       },
-      error: (error) => {
+      error: (error: Error) => {
         console.error('加载交易记录失败:', error);
         this.error = error.message || '加载失败，请稍后重试';
         this.loading = false;
@@ -106,7 +106,7 @@ export class TokenUsageHistoryComponent implements OnInit {
       amount: transaction.amount,
       balanceAfter: transaction.balanceAfter,
       source: transaction.source,
-      description: transaction.description || '-',
+      description: transaction.description ?? '-',
       createdAt: new Date(transaction.createdAt).toLocaleString('zh-CN'),
     };
   }
@@ -114,7 +114,7 @@ export class TokenUsageHistoryComponent implements OnInit {
   /**
    * 分页变化
    */
-  onPageChange(event: any): void {
+  onPageChange(event: { pageIndex: number; pageSize: number }): void {
     this.currentPage = event.pageIndex + 1;
     this.pageSize = event.pageSize;
     this.loadTransactions();

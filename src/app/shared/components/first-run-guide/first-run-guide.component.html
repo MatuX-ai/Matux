@@ -1,0 +1,245 @@
+<div class="first-run-guide-container">
+  <mat-card class="guide-card">
+    <mat-card-header class="guide-header">
+      <mat-card-title>
+        <mat-icon class="title-icon">rocket_launch</mat-icon>
+        首次设置向导
+      </mat-card-title>
+      <mat-card-subtitle>
+        步骤 {{ currentStep + 1 }} / {{ steps.length }}
+      </mat-card-subtitle>
+    </mat-card-header>
+
+    <mat-card-content>
+      <!-- 步骤指示器 -->
+      <div class="step-indicator">
+        <div *ngFor="let step of steps; let i = index" 
+             class="step-dot" 
+             [class.active]="i === currentStep"
+             [class.completed]="i < currentStep">
+          <mat-icon *ngIf="i < currentStep">check</mat-icon>
+          <span *ngIf="i >= currentStep">{{ i + 1 }}</span>
+        </div>
+      </div>
+
+      <!-- 当前步骤内容 -->
+      <div class="step-content">
+        <!-- 步骤 1: 欢迎 -->
+        <ng-container *ngIf="steps[currentStep]?.id === 'welcome'">
+          <div class="welcome-content">
+            <mat-icon class="welcome-icon">waving_hand</mat-icon>
+            <h2>欢迎使用 iMato</h2>
+            <p>让我们为您配置最佳的学习环境</p>
+            <div class="feature-list">
+              <div class="feature-item">
+                <mat-icon color="primary">check_circle</mat-icon>
+                <span>智能设备评估</span>
+              </div>
+              <div class="feature-item">
+                <mat-icon color="primary">check_circle</mat-icon>
+                <span>个性化插件推荐</span>
+              </div>
+              <div class="feature-item">
+                <mat-icon color="primary">check_circle</mat-icon>
+                <span>一键安装优化</span>
+              </div>
+            </div>
+          </div>
+        </ng-container>
+
+        <!-- 步骤 2: 设备评估 -->
+        <ng-container *ngIf="steps[currentStep]?.id === 'device-assessment'">
+          <div class="device-assessment-content">
+            <mat-icon class="section-icon">memory</mat-icon>
+            <h3>设备能力评估</h3>
+            <p>检测您的硬件配置以推荐合适的插件</p>
+            
+            <div *ngIf="deviceAssessing" class="assessing-state">
+              <mat-spinner diameter="40"></mat-spinner>
+              <p>正在检测设备配置...</p>
+            </div>
+
+            <div *ngIf="!deviceAssessing && deviceClass" class="device-result">
+              <mat-card class="device-card">
+                <mat-card-content>
+                  <div class="device-info">
+                    <div class="device-class">
+                      <span class="label">设备等级:</span>
+                      <span class="value">{{ deviceClass | uppercase }}</span>
+                    </div>
+                    <div class="device-score">
+                      <span class="label">设备评分:</span>
+                      <span class="value">{{ deviceScore }} / 100</span>
+                    </div>
+                  </div>
+                </mat-card-content>
+              </mat-card>
+            </div>
+
+            <button mat-raised-button color="primary" 
+                    (click)="assessDevice()" 
+                    [disabled]="deviceAssessing">
+              <mat-icon>memory</mat-icon>
+              {{ deviceAssessing ? '评估中...' : '开始评估' }}
+            </button>
+          </div>
+        </ng-container>
+
+        <!-- 步骤 3: 插件选择 -->
+        <ng-container *ngIf="steps[currentStep]?.id === 'plugin-selection'">
+          <div class="plugin-selection-content">
+            <mat-icon class="section-icon">extension</mat-icon>
+            <h3>选择插件</h3>
+            <p>基于设备评级为您推荐插件组合</p>
+
+            <div *ngIf="modulesLoading" class="loading-state">
+              <mat-spinner diameter="40"></mat-spinner>
+              <p>正在加载推荐插件...</p>
+            </div>
+
+            <div *ngIf="!modulesLoading" class="modules-list">
+              <div *ngFor="let module of availableModules" class="module-item">
+                <mat-checkbox 
+                  [checked]="selectedModules.has(module.id)"
+                  (change)="toggleModule(module.id)">
+                  <div class="module-info">
+                    <div class="module-name">
+                      {{ module.name }}
+                      <span *ngIf="module.recommended" class="recommended-badge">推荐</span>
+                    </div>
+                    <div class="module-description">{{ module.description }}</div>
+                    <div class="module-size">{{ module.size }}</div>
+                  </div>
+                </mat-checkbox>
+              </div>
+
+              <div class="selection-summary">
+                已选择 {{ selectedModules.size }} / {{ availableModules.length }} 个插件
+              </div>
+            </div>
+          </div>
+        </ng-container>
+
+        <!-- 步骤 4: 捆绑包选择 -->
+        <ng-container *ngIf="steps[currentStep]?.id === 'bundle-selection'">
+          <div class="bundle-selection-content">
+            <mat-icon class="section-icon">inventory_2</mat-icon>
+            <h3>选择捆绑包（可选）</h3>
+            <p>一键安装常用插件组合，享受折扣</p>
+
+            <div *ngIf="bundlesLoading" class="loading-state">
+              <mat-spinner diameter="40"></mat-spinner>
+              <p>正在加载捆绑包...</p>
+            </div>
+
+            <div *ngIf="!bundlesLoading && bundles.length === 0" class="empty-state">
+              <mat-icon>info</mat-icon>
+              <p>没有适用的捆绑包</p>
+              <button mat-button (click)="skipStep()">跳过此步骤</button>
+            </div>
+
+            <div *ngIf="!bundlesLoading && bundles.length > 0" class="bundles-list">
+              <div *ngFor="let bundle of bundles" class="bundle-item">
+                <mat-checkbox 
+                  [checked]="selectedBundles.has(bundle.id)"
+                  (change)="toggleBundle(bundle.id)">
+                  <div class="bundle-info">
+                    <div class="bundle-header">
+                      <span class="bundle-name">{{ bundle.name }}</span>
+                      <span class="bundle-discount">{{ bundle.discount * 100 }}% 折扣</span>
+                    </div>
+                    <div class="bundle-description">{{ bundle.description }}</div>
+                    <div class="bundle-plugins">{{ bundle.plugins.length }} 个插件</div>
+                  </div>
+                </mat-checkbox>
+              </div>
+
+              <div class="selection-summary">
+                已选择 {{ selectedBundles.size }} 个捆绑包
+              </div>
+            </div>
+          </div>
+        </ng-container>
+
+        <!-- 步骤 5: 下载安装 -->
+        <ng-container *ngIf="steps[currentStep]?.id === 'download-install'">
+          <div class="download-install-content">
+            <mat-icon class="section-icon">download</mat-icon>
+            <h3>下载和安装</h3>
+            <p>开始下载选中的插件</p>
+
+            <div *ngIf="!installing" class="install-summary">
+              <mat-card>
+                <mat-card-content>
+                  <div class="summary-item">
+                    <span class="label">选中插件:</span>
+                    <span class="value">{{ selectedModules.size }} 个</span>
+                  </div>
+                  <div class="summary-item">
+                    <span class="label">选中捆绑包:</span>
+                    <span class="value">{{ selectedBundles.size }} 个</span>
+                  </div>
+                </mat-card-content>
+              </mat-card>
+
+              <button mat-raised-button color="primary" (click)="startInstallation()">
+                <mat-icon>download</mat-icon>
+                开始安装
+              </button>
+            </div>
+
+            <div *ngIf="installing" class="installing-state">
+              <mat-spinner diameter="60"></mat-spinner>
+              <div class="install-progress">
+                <p>正在安装: {{ installCurrent }}</p>
+                <div class="progress-bar">
+                  <div class="progress-fill" [style.width.%]="installProgress"></div>
+                </div>
+                <p class="progress-text">{{ installProgress | number:'1.0-0' }}% ({{ installCurrent }} / {{ installTotal }})</p>
+              </div>
+            </div>
+          </div>
+        </ng-container>
+
+        <!-- 步骤 6: 完成 -->
+        <ng-container *ngIf="steps[currentStep]?.id === 'complete'">
+          <div class="complete-content">
+            <mat-icon class="complete-icon">check_circle</mat-icon>
+            <h2>设置完成！</h2>
+            <p>开始您的学习之旅</p>
+            <button mat-raised-button color="primary" (click)="completeGuide()">
+              <mat-icon>rocket_launch</mat-icon>
+              开始使用
+            </button>
+          </div>
+        </ng-container>
+      </div>
+    </mat-card-content>
+
+    <mat-card-actions class="guide-actions">
+      <button mat-button 
+              (click)="prevStep()" 
+              [disabled]="currentStep === 0 || installing">
+        <mat-icon>arrow_back</mat-icon>
+        上一步
+      </button>
+
+      <span class="spacer"></span>
+
+      <button *ngIf="steps[currentStep]?.optional" 
+              mat-button 
+              (click)="skipStep()">
+        跳过
+      </button>
+
+      <button *ngIf="steps[currentStep]?.id !== 'complete'"
+              mat-raised-button 
+              color="primary" 
+              (click)="nextStep()"
+              [disabled]="installing">
+        下一步
+        <mat-icon>arrow_forward</mat-icon>
+      </button>
+    </mat-card-actions>
+  </mat-card>
+</div>

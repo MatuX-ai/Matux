@@ -180,7 +180,7 @@ export class SimpleFormValidator {
     const errors: Record<string, string> = {};
 
     for (const [field, validator] of Object.entries(this.rules)) {
-      if (data.hasOwnProperty(field)) {
+      if (Object.prototype.hasOwnProperty.call(data, field)) {
         const result = validator(data[field]);
         if (!result.isValid && result.errorMessage) {
           errors[field] = result.errorMessage;

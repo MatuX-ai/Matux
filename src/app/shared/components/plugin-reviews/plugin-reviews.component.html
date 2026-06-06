@@ -1,0 +1,211 @@
+<div class="reviews-container">
+  <!-- 头部：评分统计 -->
+  <div class="rating-header">
+    <div class="rating-summary">
+      <div class="average-rating">
+        <span class="rating-value">{{ ratingStats?.average || 0 | number:'1.1-1' }}</span>
+        <div class="stars">
+          <mat-icon *ngFor="let i of [1,2,3,4,5]"
+                    [class.filled]="i <= Math.round(ratingStats?.average || 0)">
+            {{ getStarIcon(ratingStats?.average || 0) }}
+          </mat-icon>
+        </div>
+        <span class="rating-count">{{ ratingStats?.count || 0 }} 条评论</span>
+      </div>
+      
+      <div class="rating-distribution">
+        <div *ngFor="let star of [5,4,3,2,1]" class="rating-bar">
+          <span class="star-label">{{ star }} 星</span>
+          <div class="bar-container">
+            <div class="bar-fill" [style.width.%]="getRatingPercentage(star)"></div>
+          </div>
+          <span class="bar-count">{{ ratingStats?.distribution[star] || 0 }}</span>
+        </div>
+      </div>
+    </div>
+    
+    <button mat-raised-button color="primary" (click)="openAddForm()">
+      <mat-icon>rate_review</mat-icon>
+      撰写评论
+    </button>
+  </div>
+
+  <!-- 添加评论表单 -->
+  <div *ngIf="showAddForm" class="add-review-form">
+    <mat-card>
+      <mat-card-header>
+        <mat-card-title>撰写评论</mat-card-title>
+      </mat-card-header>
+      <mat-card-content>
+        <!-- 评分 -->
+        <div class="form-group">
+          <label>评分</label>
+          <div class="star-rating">
+            <mat-icon *ngFor="let i of [1,2,3,4,5]"
+                      (click)="newRating = i"
+                      [class.filled]="i <= newRating">
+              star
+            </mat-icon>
+          </div>
+        </div>
+        
+        <!-- 标题 -->
+        <div class="form-group">
+          <mat-form-field appearance="outline" class="full-width">
+            <mat-label>标题</mat-label>
+            <input matInput [(ngModel)]="newTitle" placeholder="简要概括您的体验">
+          </mat-form-field>
+        </div>
+        
+        <!-- 内容 -->
+        <div class="form-group">
+          <mat-form-field appearance="outline" class="full-width">
+            <mat-label>评论内容</mat-label>
+            <textarea matInput [(ngModel)]="newContent" rows="4" 
+                      placeholder="分享您对该插件的使用体验..."></textarea>
+          </mat-form-field>
+        </div>
+        
+        <!-- 优点 -->
+        <div class="form-group">
+          <label>优点</label>
+          <div class="tags-input">
+            <mat-chip-listbox>
+              <mat-chip *ngFor="let pro of newPros; let i = index"
+                        (removed)="removePro(i)">
+                {{ pro }}
+                <button matChipRemove>
+                  <mat-icon>cancel</mat-icon>
+                </button>
+              </mat-chip>
+            </mat-chip-listbox>
+            <input placeholder="添加优点..."
+                   [(ngModel)]="newProInput"
+                   (keyup.enter)="addPro()">
+          </div>
+        </div>
+        
+        <!-- 缺点 -->
+        <div class="form-group">
+          <label>缺点</label>
+          <div class="tags-input">
+            <mat-chip-listbox>
+              <mat-chip *ngFor="let con of newCons; let i = index"
+                        (removed)="removeCon(i)">
+                {{ con }}
+                <button matChipRemove>
+                  <mat-icon>cancel</mat-icon>
+                </button>
+              </mat-chip>
+            </mat-chip-listbox>
+            <input placeholder="添加缺点..."
+                   [(ngModel)]="newConInput"
+                   (keyup.enter)="addCon()">
+          </div>
+        </div>
+      </mat-card-content>
+      <mat-card-actions>
+        <button mat-raised-button color="primary" (click)="submitReview()">
+          <mat-icon>check</mat-icon>
+          提交评论
+        </button>
+        <button mat-button (click)="closeAddForm()">
+          <mat-icon>close</mat-icon>
+          取消
+        </button>
+      </mat-card-actions>
+    </mat-card>
+  </div>
+
+  <!-- 排序控制 -->
+  <div class="sort-controls">
+    <span class="sort-label">排序:</span>
+    <mat-form-field appearance="outline" class="sort-select">
+      <mat-select [(ngModel)]="sortBy" (selectionChange)="onSortChange()">
+        <mat-option value="createdAt">最新发布</mat-option>
+        <mat-option value="rating">评分高低</mat-option>
+        <mat-option value="helpfulCount">最有帮助</mat-option>
+      </mat-select>
+    </mat-form-field>
+  </div>
+
+  <!-- 加载状态 -->
+  <div *ngIf="loading" class="loading-container">
+    <mat-spinner diameter="40"></mat-spinner>
+    <p>正在加载评论...</p>
+  </div>
+
+  <!-- 错误状态 -->
+  <div *ngIf="error && !loading" class="error-container">
+    <mat-icon color="warn">error_outline</mat-icon>
+    <p>{{ error }}</p>
+    <button mat-raised-button color="primary" (click)="loadReviews()">
+      重试
+    </button>
+  </div>
+
+  <!-- 评论列表 -->
+  <div *ngIf="!loading && !error" class="reviews-list">
+    <div *ngIf="reviews.length === 0" class="empty-state">
+      <mat-icon>rate_review</mat-icon>
+      <p>暂无评论，成为第一个评论的人吧！</p>
+    </div>
+
+    <mat-card *ngFor="let review of reviews" class="review-card">
+      <mat-card-header>
+        <div class="review-header">
+          <div class="reviewer-info">
+            <div class="reviewer-name">{{ review.userName }}</div>
+            <div class="review-date">{{ formatDate(review.createdAt) }}</div>
+          </div>
+          <div class="review-rating">
+            <mat-icon *ngFor="let i of [1,2,3,4,5]"
+                      [class.filled]="i <= review.rating">
+              star
+            </mat-icon>
+            <span *ngIf="review.verified" class="verified-badge" matTooltip="已验证购买">
+              <mat-icon>verified</mat-icon>
+            </span>
+          </div>
+        </div>
+      </mat-card-header>
+      <mat-card-content>
+        <h4 class="review-title">{{ review.title }}</h4>
+        <p class="review-content">{{ review.content }}</p>
+        
+        <div *ngIf="review.pros.length > 0" class="review-pros">
+          <strong>优点:</strong>
+          <mat-chip-listbox>
+            <mat-chip *ngFor="let pro of review.pros">{{ pro }}</mat-chip>
+          </mat-chip-listbox>
+        </div>
+        
+        <div *ngIf="review.cons.length > 0" class="review-cons">
+          <strong>缺点:</strong>
+          <mat-chip-listbox>
+            <mat-chip *ngFor="let con of review.cons">{{ con }}</mat-chip>
+          </mat-chip-listbox>
+        </div>
+      </mat-card-content>
+      <mat-card-actions>
+        <button mat-button (click)="markHelpful(review.id)">
+          <mat-icon>thumb_up</mat-icon>
+          有帮助 ({{ review.helpfulCount }})
+        </button>
+      </mat-card-actions>
+    </mat-card>
+  </div>
+
+  <!-- 分页 -->
+  <div *ngIf="!loading && !error && reviews.length > 0" class="pagination">
+    <button mat-button (click)="prevPage()" [disabled]="currentPage === 0">
+      <mat-icon>chevron_left</mat-icon>
+      上一页
+    </button>
+    <span class="page-info">第 {{ currentPage + 1 }} 页</span>
+    <button mat-button (click)="nextPage()" [disabled]="reviews.length < pageSize">
+      下一页
+      <mat-icon>chevron_right</mat-icon>
+    </button>
+  </div>
+</div>

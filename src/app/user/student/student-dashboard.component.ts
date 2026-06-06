@@ -5,8 +5,15 @@
  * 集成多来源学习系统，显示跨机构/兴趣班的学习进度
  */
 
+import { animate, state, style, transition, trigger } from '@angular/animations';
 import { CommonModule } from '@angular/common';
-import { ChangeDetectionStrategy, ChangeDetectorRef, Component, OnDestroy, OnInit } from '@angular/core';
+import {
+  ChangeDetectionStrategy,
+  ChangeDetectorRef,
+  Component,
+  OnDestroy,
+  OnInit,
+} from '@angular/core';
 import { MatButtonModule } from '@angular/material/button';
 import { MatCardModule } from '@angular/material/card';
 import { MatChipsModule } from '@angular/material/chips';
@@ -19,7 +26,6 @@ import { MatTooltipModule } from '@angular/material/tooltip';
 import { Router } from '@angular/router';
 import { forkJoin, Observable, of, Subject } from 'rxjs';
 import { catchError, map, switchMap, takeUntil } from 'rxjs/operators';
-import { trigger, state, style, animate, transition } from '@angular/animations';
 
 import type { User } from '../../core/models/auth.models';
 import {
@@ -28,6 +34,7 @@ import {
 } from '../../core/services/ai-edu-websocket.service';
 import { AuthService } from '../../core/services/auth.service';
 import { CourseEnrollmentService } from '../../core/services/course-enrollment.service';
+import { DashboardLayoutService } from '../../core/services/dashboard-layout.service';
 import { MultiSourceLearningService } from '../../core/services/multi-source-learning.service';
 import { UnifiedCourseService } from '../../core/services/unified-course.service';
 import type {
@@ -37,10 +44,11 @@ import type {
 } from '../../models/multi-source-learning.models';
 import { LearningSourceTypeLabels } from '../../models/multi-source-learning.models';
 import type { CourseEnrollment, UnifiedCourse } from '../../models/unified-course.models';
+import { DashboardLayoutDialogComponent } from '../../shared/components/dashboard-layout-dialog/dashboard-layout-dialog.component';
 import {
-  LearningCalendarHeatmapComponent,
   type CalendarHeatmapConfig,
   type DailyLearningRecord,
+  LearningCalendarHeatmapComponent,
 } from '../../shared/components/learning-calendar-heatmap/learning-calendar-heatmap.component';
 import { LearningSourceProgressComponent } from '../../shared/components/learning-source-progress/learning-source-progress.component';
 import {
@@ -49,10 +57,6 @@ import {
 } from '../../shared/components/stats-card/stats-card.component';
 import { StudentMaterialDashboardComponent } from '../../shared/components/student-material-dashboard/student-material-dashboard.component';
 import { UnifiedCourseCardComponent } from '../../shared/components/unified-course-card/unified-course-card.component';
-import { DashboardLayoutService } from '../../core/services/dashboard-layout.service';
-import { DashboardLayoutDialogComponent } from '../../shared/components/dashboard-layout-dialog/dashboard-layout-dialog.component';
-import { AITeacherChatComponent } from '../../shared/components/ai-teacher-chat/ai-teacher-chat.component';
-
 interface QuickTool {
   icon: string;
   label: string;
@@ -113,8 +117,6 @@ interface AchievementBadge {
     StatsCardComponent,
     StudentMaterialDashboardComponent,
     UnifiedCourseCardComponent,
-    DashboardLayoutDialogComponent,
-    AITeacherChatComponent,
   ],
   templateUrl: './student-dashboard.component.html',
   styleUrls: ['./student-dashboard.component.scss'],
@@ -201,7 +203,7 @@ export class StudentDashboardComponent implements OnInit, OnDestroy {
     { icon: 'code', label: '代码', color: '#3b82f6', bgClass: 'bg-blue' },
     { icon: 'view_in_ar', label: '3D模型', color: '#f97316', bgClass: 'bg-orange' },
     { icon: 'camera_alt', label: 'AR扫描', color: '#22c55e', bgClass: 'bg-green' },
-    { icon: 'smart_toy', label: 'AI助手', color: '#8b5cf6', bgClass: 'bg-purple' },
+    { icon: 'smart_toy', label: 'AI助手', color: '#3b82f6', bgClass: 'bg-blue' },
   ];
 
   // AI 推荐项目
@@ -209,7 +211,7 @@ export class StudentDashboardComponent implements OnInit, OnDestroy {
     {
       title: '智能感应小夜灯',
       description: '利用光敏电阻实现环境光自适应控制。',
-      gradient: 'linear-gradient(135deg, #6366f1 0%, #9333ea 100%)',
+      gradient: 'linear-gradient(135deg, #3b82f6 0%, #2563eb 100%)',
     },
     {
       title: 'PWM 舵机控制',
@@ -219,7 +221,7 @@ export class StudentDashboardComponent implements OnInit, OnDestroy {
     {
       title: 'AI 视觉识别入门',
       description: '掌握图像处理和模式识别的基础概念。',
-      gradient: 'linear-gradient(135deg, #ec4899 0%, #8b5cf6 100%)',
+      gradient: 'linear-gradient(135deg, #60a5fa 0%, #3b82f6 100%)',
     },
   ];
 
@@ -265,18 +267,98 @@ export class StudentDashboardComponent implements OnInit, OnDestroy {
 
   /** 成就徽章列表 */
   achievementBadges: AchievementBadge[] = [
-    { id: 'first-lesson', name: '初入编程', icon: '🎓', description: '完成第一个课程', unlocked: true, unlockedDate: '2026-01-15' },
-    { id: 'first-code', name: '代码新手', icon: '💻', description: '编写第一行代码', unlocked: true, unlockedDate: '2026-01-20' },
-    { id: 'python-start', name: 'Python入门', icon: '🐍', description: '完成 Python 基础课程', unlocked: true, unlockedDate: '2026-02-20' },
-    { id: 'streak-7', name: '坚持7天', icon: '🔥', description: '连续学习7天', unlocked: true, unlockedDate: '2026-03-01' },
-    { id: 'quiz-master', name: '测验达人', icon: '📝', description: '5次测验获得满分', unlocked: true, unlockedDate: '2026-03-15' },
-    { id: 'blockly-pro', name: '积木高手', icon: '🧩', description: '完成10个Blockly关卡', unlocked: true, unlockedDate: '2026-04-01' },
-    { id: 'first-debug', name: 'Bug猎手', icon: '🔧', description: '独立修复3个错误', unlocked: true, unlockedDate: '2026-04-05' },
-    { id: 'streak-30', name: '30天坚持', icon: '🏆', description: '连续学习30天', unlocked: true, unlockedDate: '2026-04-28' },
-    { id: 'circuit-master', name: '电路大师', icon: '⚡', description: '完成所有电路实验', unlocked: false },
-    { id: 'ai-pioneer', name: 'AI先锋', icon: '🤖', description: '完成AI编程课程', unlocked: false },
-    { id: 'project-10', name: '项目达人', icon: '🚀', description: '完成10个项目', unlocked: false },
-    { id: 'streak-100', name: '百日传说', icon: '💎', description: '连续学习100天', unlocked: false },
+    {
+      id: 'first-lesson',
+      name: '初入编程',
+      icon: '🎓',
+      description: '完成第一个课程',
+      unlocked: true,
+      unlockedDate: '2026-01-15',
+    },
+    {
+      id: 'first-code',
+      name: '代码新手',
+      icon: '💻',
+      description: '编写第一行代码',
+      unlocked: true,
+      unlockedDate: '2026-01-20',
+    },
+    {
+      id: 'python-start',
+      name: 'Python入门',
+      icon: '🐍',
+      description: '完成 Python 基础课程',
+      unlocked: true,
+      unlockedDate: '2026-02-20',
+    },
+    {
+      id: 'streak-7',
+      name: '坚持7天',
+      icon: '🔥',
+      description: '连续学习7天',
+      unlocked: true,
+      unlockedDate: '2026-03-01',
+    },
+    {
+      id: 'quiz-master',
+      name: '测验达人',
+      icon: '📝',
+      description: '5次测验获得满分',
+      unlocked: true,
+      unlockedDate: '2026-03-15',
+    },
+    {
+      id: 'blockly-pro',
+      name: '积木高手',
+      icon: '🧩',
+      description: '完成10个Blockly关卡',
+      unlocked: true,
+      unlockedDate: '2026-04-01',
+    },
+    {
+      id: 'first-debug',
+      name: 'Bug猎手',
+      icon: '🔧',
+      description: '独立修复3个错误',
+      unlocked: true,
+      unlockedDate: '2026-04-05',
+    },
+    {
+      id: 'streak-30',
+      name: '30天坚持',
+      icon: '🏆',
+      description: '连续学习30天',
+      unlocked: true,
+      unlockedDate: '2026-04-28',
+    },
+    {
+      id: 'circuit-master',
+      name: '电路大师',
+      icon: '⚡',
+      description: '完成所有电路实验',
+      unlocked: false,
+    },
+    {
+      id: 'ai-pioneer',
+      name: 'AI先锋',
+      icon: '🤖',
+      description: '完成AI编程课程',
+      unlocked: false,
+    },
+    {
+      id: 'project-10',
+      name: '项目达人',
+      icon: '🚀',
+      description: '完成10个项目',
+      unlocked: false,
+    },
+    {
+      id: 'streak-100',
+      name: '百日传说',
+      icon: '💎',
+      description: '连续学习100天',
+      unlocked: false,
+    },
   ];
 
   get unlockedAchievementsCount(): number {
@@ -298,7 +380,7 @@ export class StudentDashboardComponent implements OnInit, OnDestroy {
     private cdr: ChangeDetectorRef,
     private router: Router,
     public layout: DashboardLayoutService,
-    private dialog: MatDialog,
+    private dialog: MatDialog
   ) {}
 
   ngOnInit(): void {
@@ -363,20 +445,18 @@ export class StudentDashboardComponent implements OnInit, OnDestroy {
       .onProgressUpdate()
       .pipe(takeUntil(this.destroy$))
       .subscribe((update: ProgressUpdateData) => {
-        console.log('[Dashboard] 收到进度更新:', update);
+        console.warn('[Dashboard] 收到进度更新:', update);
         // 刷新学习进度统计
         this.loadProgressStats(userId);
         this.cdr.markForCheck();
       });
 
     // 监听连接状态
-    this.wsService.connectionStatus$
-      .pipe(takeUntil(this.destroy$))
-      .subscribe((status) => {
-        if (status === 'connected') {
-          console.log('[Dashboard] WebSocket 已连接，实时数据已启用');
-        }
-      });
+    this.wsService.connectionStatus$.pipe(takeUntil(this.destroy$)).subscribe((status) => {
+      if (status === 'connected') {
+        console.warn('[Dashboard] WebSocket 已连接，实时数据已启用');
+      }
+    });
   }
 
   /**
@@ -524,14 +604,48 @@ export class StudentDashboardComponent implements OnInit, OnDestroy {
   /**
    * 加载学习日历热力图数据
    */
-  private loadCalendarHeatmap(_userId: number): void {
-    // TODO: 调用后端 API 获取真实学习日历数据
-    // 目前使用 mock 数据
-    this.heatmapConfig = {
-      year: new Date().getFullYear(),
-      data: this.getMockCalendarData(),
-      loading: false,
-    };
+  private loadCalendarHeatmap(userId: number): void {
+    // 尝试从 API 获取真实学习记录，失败时使用 mock 数据
+    this.multiSourceService
+      .getUserUnifiedLearningRecords(userId, {
+        learningSourceId: undefined,
+      })
+      .pipe(
+        takeUntil(this.destroy$),
+        catchError(() => {
+          return of({ total: 0, page: 1, page_size: 0, items: [] });
+        })
+      )
+      .subscribe((response) => {
+        if (response.items.length > 0) {
+          // 在 API 返回数据时，按日期聚合学习时长
+          const dateMap = new Map<string, number>();
+          response.items.forEach((record) => {
+            const date = record.last_access_time?.split('T')[0] || record.created_at?.split('T')[0];
+            if (date) {
+              dateMap.set(date, (dateMap.get(date) ?? 0) + (record.time_spent_minutes || 0));
+            }
+          });
+
+          this.heatmapConfig = {
+            year: new Date().getFullYear(),
+            data: Array.from(dateMap.entries()).map(([date, minutes]) => ({
+              date,
+              minutes,
+              courses: 1,
+              quizzes: 0,
+            })),
+            loading: false,
+          };
+        } else {
+          this.heatmapConfig = {
+            year: new Date().getFullYear(),
+            data: this.getMockCalendarData(),
+            loading: false,
+          };
+        }
+        this.cdr.markForCheck();
+      });
   }
 
   /**
@@ -545,9 +659,8 @@ export class StudentDashboardComponent implements OnInit, OnDestroy {
     for (let d = new Date(year, 0, 1); d <= today; d.setDate(d.getDate() + 1)) {
       const dayOfWeek = d.getDay();
       // 周末学习概率低，工作日概率高
-      const shouldStudy = dayOfWeek === 0 || dayOfWeek === 6
-        ? Math.random() > 0.6
-        : Math.random() > 0.2;
+      const shouldStudy =
+        dayOfWeek === 0 || dayOfWeek === 6 ? Math.random() > 0.6 : Math.random() > 0.2;
 
       if (shouldStudy) {
         records.push({
@@ -710,7 +823,7 @@ export class StudentDashboardComponent implements OnInit, OnDestroy {
   }
 
   getSourceTypeLabel(type: string): string {
-    return LearningSourceTypeLabels[type as keyof typeof LearningSourceTypeLabels] || type;
+    return LearningSourceTypeLabels[type] || type;
   }
 
   getSourceIcon(type: string): string {

@@ -12,19 +12,19 @@
  */
 
 import { Injectable } from '@angular/core';
-import { BehaviorSubject, Observable } from 'rxjs';
+import { BehaviorSubject } from 'rxjs';
 
 /** 情感状态 */
 export type EmotionState =
-  | 'very_happy'    // 😄 很开心
-  | 'happy'         // 🙂 开心
-  | 'neutral'       // 😐 一般
-  | 'sad'           // 😢 难过
-  | 'frustrated'    // 😫 沮丧
-  | 'anxious'       // 😰 焦虑
-  | 'confused'      // 🤔 困惑
-  | 'bored'         // 😴 无聊
-  | 'angry';        // 😠 生气
+  | 'very_happy' // 😄 很开心
+  | 'happy' // 🙂 开心
+  | 'neutral' // 😐 一般
+  | 'sad' // 😢 难过
+  | 'frustrated' // 😫 沮丧
+  | 'anxious' // 😰 焦虑
+  | 'confused' // 🤔 困惑
+  | 'bored' // 😴 无聊
+  | 'angry'; // 😠 生气
 
 /** 情感日志条目 */
 export interface EmotionLogEntry {
@@ -189,19 +189,25 @@ export class EmotionalCompanionService {
 
     // 情绪分值映射
     const emotionScore: Record<EmotionState, number> = {
-      very_happy: 2, happy: 1, neutral: 0,
-      sad: -1, frustrated: -2, anxious: -1,
-      confused: -0.5, bored: -0.5, angry: -2,
+      very_happy: 2,
+      happy: 1,
+      neutral: 0,
+      sad: -1,
+      frustrated: -2,
+      anxious: -1,
+      confused: -0.5,
+      bored: -0.5,
+      angry: -2,
     };
 
     // 计算分布
     const distribution = {} as Record<EmotionState, number>;
-    let totalScore = 0;
+    let _totalScore = 0;
     let emotionChanges = 0;
 
     recent.forEach((e, i) => {
       distribution[e.emotion] = (distribution[e.emotion] ?? 0) + 1;
-      totalScore += emotionScore[e.emotion] ?? 0;
+      _totalScore += emotionScore[e.emotion] ?? 0;
       if (i > 0 && recent[i - 1].emotion !== e.emotion) {
         emotionChanges++;
       }
@@ -215,7 +221,7 @@ export class EmotionalCompanionService {
 
     // 积极比例
     const positiveCount = recent.filter((e) => (emotionScore[e.emotion] ?? 0) > 0).length;
-    const negativityCount = recent.filter((e) => (emotionScore[e.emotion] ?? 0) < 0).length;
+    const _negativityCount = recent.filter((e) => (emotionScore[e.emotion] ?? 0) < 0).length;
     const positivityRatio = recent.length > 0 ? positiveCount / recent.length : 0.5;
 
     // 鼓励消息
@@ -234,9 +240,15 @@ export class EmotionalCompanionService {
   /** 获取指定情绪对应的 emoji */
   getEmotionEmoji(emotion: EmotionState): string {
     const map: Record<EmotionState, string> = {
-      very_happy: '😄', happy: '🙂', neutral: '😐',
-      sad: '😢', frustrated: '😫', anxious: '😰',
-      confused: '🤔', bored: '😴', angry: '😠',
+      very_happy: '😄',
+      happy: '🙂',
+      neutral: '😐',
+      sad: '😢',
+      frustrated: '😫',
+      anxious: '😰',
+      confused: '🤔',
+      bored: '😴',
+      angry: '😠',
     };
     return map[emotion] ?? '😐';
   }
@@ -244,9 +256,15 @@ export class EmotionalCompanionService {
   /** 获取情绪中文名 */
   getEmotionLabel(emotion: EmotionState): string {
     const map: Record<EmotionState, string> = {
-      very_happy: '很开心', happy: '开心', neutral: '一般',
-      sad: '难过', frustrated: '沮丧', anxious: '焦虑',
-      confused: '困惑', bored: '无聊', angry: '生气',
+      very_happy: '很开心',
+      happy: '开心',
+      neutral: '一般',
+      sad: '难过',
+      frustrated: '沮丧',
+      anxious: '焦虑',
+      confused: '困惑',
+      bored: '无聊',
+      angry: '生气',
     };
     return map[emotion] ?? '一般';
   }
@@ -258,7 +276,9 @@ export class EmotionalCompanionService {
   private saveToLocalStorage(log: EmotionLogEntry[]): void {
     try {
       localStorage.setItem(this.STORAGE_KEY, JSON.stringify(log));
-    } catch { /* 忽略 */ }
+    } catch {
+      /* 忽略 */
+    }
   }
 
   private loadHistory(): void {
@@ -271,6 +291,8 @@ export class EmotionalCompanionService {
           this.currentEmotionSubject.next(log[log.length - 1].emotion);
         }
       }
-    } catch { /* 忽略 */ }
+    } catch {
+      /* 忽略 */
+    }
   }
 }

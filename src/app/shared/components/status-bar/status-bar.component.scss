@@ -10,31 +10,38 @@
 
 .status-bar {
   position: fixed;
+  right: 0;
   bottom: 0;
   left: 0;
-  right: 0;
+  z-index: 1000;
   height: 28px;
   background: #0f172a; // 藏青色 Slate-900 (PRD 标准)
-  color: #ffffff;
+  box-shadow: 0 -1px 3px rgb(0 0 0 / 10%);
+  color: #fff;
   font-size: 12px;
   line-height: 28px;
-  z-index: 1000;
-  box-shadow: 0 -1px 3px rgba(0, 0, 0, 0.1);
 
   .status-bar-content {
     display: flex;
-    align-items: center;
     justify-content: space-between;
-    height: 100%;
-    padding: 0 16px;
+    align-items: center;
     max-width: 1920px;
+    height: 100%;
     margin: 0 auto;
+    padding: 0 16px;
   }
 
   .status-group {
     display: flex;
     align-items: center;
     gap: 8px;
+  }
+
+  .status-separator {
+    width: 1px;
+    height: 14px;
+    background: rgb(255 255 255 / 20%);
+    margin: 0 4px;
   }
 
   .status-item {
@@ -46,14 +53,14 @@
     transition: background-color 0.2s ease;
 
     &:hover {
-      background-color: rgba(255, 255, 255, 0.1);
       border-radius: 4px;
+      background-color: rgb(255 255 255 / 10%);
     }
 
     mat-icon {
-      font-size: 14px;
       width: 14px;
       height: 14px;
+      font-size: 14px;
       line-height: 14px;
 
       &.status-online {
@@ -71,6 +78,19 @@
       &.status-stopped {
         color: #f59e0b; // 琥珀黄 Amber-500
       }
+
+      // Tier 指示器图标颜色
+      &.tier-full {
+        color: #10b981; // 翡翠绿 — 全部激活
+      }
+
+      &.tier-partial {
+        color: #f59e0b; // 琥珀黄 — 部分激活
+      }
+
+      &.tier-off {
+        color: #64748b; // 灰色 Slate-500 — 未激活
+      }
     }
 
     .status-text {
@@ -85,35 +105,54 @@
       }
 
       .status-text {
+        color: #fff;
         font-weight: 500;
-        color: #ffffff;
       }
     }
 
     &.status-version {
       .version-text {
-        font-size: 11px;
         opacity: 0.8;
+        font-size: 11px;
         font-weight: 300;
+      }
+    }
+
+    // Tier 指示器样式
+    &.tier-indicator {
+      padding: 0 4px;
+
+      .tier-label {
+        font-size: 11px;
+        opacity: 0.9;
       }
     }
   }
 }
 
 // 响应式调整
-@media (max-width: 768px) {
+@media (width <= 768px) {
   .status-bar {
     .status-bar-content {
       padding: 0 8px;
     }
 
     .status-item {
-      padding: 0 4px;
       gap: 4px;
+      padding: 0 4px;
 
       .status-text {
         font-size: 11px;
       }
+
+      // 移动端隐藏 Tier 标签，仅保留图标
+      &.tier-indicator .tier-label {
+        display: none;
+      }
+    }
+
+    .status-separator {
+      margin: 0 2px;
     }
   }
 }

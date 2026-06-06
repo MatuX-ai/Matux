@@ -9,8 +9,8 @@
         [class.selected]="selectedPackageId === pkg.id"
         [class.popular]="pkg.isPopular"
         (click)="selectPackage(pkg.id)"
-        *ngFor="let pkg of packages">
-
+        *ngFor="let pkg of packages"
+      >
         <!-- 热门标签 -->
         <div class="popular-badge" *ngIf="pkg.isPopular">
           <mat-icon>local_fire_department</mat-icon>
@@ -27,12 +27,13 @@
           <h3 class="package-name">{{ pkg.name }}</h3>
           <div class="package-price">
             <span class="price-current">{{ formatPrice(pkg.priceCents) }}</span>
-            <span class="price-original" *ngIf="pkg.originalPriceCents && pkg.originalPriceCents > pkg.priceCents">
+            <span
+              class="price-original"
+              *ngIf="pkg.originalPriceCents && pkg.originalPriceCents > pkg.priceCents"
+            >
               {{ formatPrice(pkg.originalPriceCents) }}
             </span>
-            <span class="discount-tag" *ngIf="getDiscount(pkg)">
-              {{ getDiscount(pkg) }}折
-            </span>
+            <span class="discount-tag" *ngIf="getDiscount(pkg)"> {{ getDiscount(pkg) }}折 </span>
           </div>
         </div>
 
@@ -51,9 +52,7 @@
         </div>
 
         <div class="package-footer">
-          <mat-radio-button
-            [value]="pkg.id"
-            [checked]="selectedPackageId === pkg.id">
+          <mat-radio-button [value]="pkg.id" [checked]="selectedPackageId === pkg.id">
           </mat-radio-button>
         </div>
       </div>
@@ -78,21 +77,24 @@
         <button
           mat-button
           [class.selected]="paymentMethod === 'alipay'"
-          (click)="paymentMethod = 'alipay'">
-          <img src="/assets/icons/alipay.svg" alt="支付宝" width="24">
+          (click)="paymentMethod = 'alipay'"
+        >
+          <img src="/assets/icons/alipay.svg" alt="支付宝" width="24" />
           支付宝
         </button>
         <button
           mat-button
           [class.selected]="paymentMethod === 'wechat'"
-          (click)="paymentMethod = 'wechat'">
-          <img src="/assets/icons/wechat-pay.svg" alt="微信支付" width="24">
+          (click)="paymentMethod = 'wechat'"
+        >
+          <img src="/assets/icons/wechat-pay.svg" alt="微信支付" width="24" />
           微信支付
         </button>
         <button
           mat-button
           [class.selected]="paymentMethod === 'credit_card'"
-          (click)="paymentMethod = 'credit_card'">
+          (click)="paymentMethod = 'credit_card'"
+        >
           <mat-icon>credit_card</mat-icon>
           信用卡
         </button>
@@ -106,7 +108,8 @@
       mat-flat-button
       color="primary"
       (click)="purchase()"
-      [disabled]="loading || !selectedPackageId">
+      [disabled]="loading || !selectedPackageId"
+    >
       <mat-icon *ngIf="loading">hourglass_empty</mat-icon>
       {{ loading ? '处理中...' : '立即购买' }}
     </button>

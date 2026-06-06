@@ -2,6 +2,7 @@ import { NgModule } from '@angular/core';
 import { RouterModule, Routes } from '@angular/router';
 
 import { CustomPreloadingStrategy } from './core/services/custom-preloading.strategy';
+import { ModuleActiveGuard } from './core/guards/module-active.guard';
 
 const routes: Routes = [
   {
@@ -29,6 +30,8 @@ const routes: Routes = [
   {
     path: 'ar-lab',
     loadComponent: () => import('./ar-lab/ar-lab.component').then((m) => m.ARLabComponent),
+    canActivate: [ModuleActiveGuard],
+    data: { requiredModule: 'ar_lab' },
   },
   {
     path: 'offline-mode',
@@ -46,6 +49,8 @@ const routes: Routes = [
       import('./shared/components/arvr-course-player/arvr-course-player.module').then(
         (m) => m.ARVRCoursePlayerModule
       ),
+    canActivate: [ModuleActiveGuard],
+    data: { requiredModule: 'ar_vr' },
   },
   {
     path: 'digital-twin-lab',
@@ -53,6 +58,8 @@ const routes: Routes = [
       import('./shared/components/digital-twin-lab/digital-twin-lab.module').then(
         (m) => m.DigitalTwinLabModule
       ),
+    canActivate: [ModuleActiveGuard],
+    data: { requiredModule: 'digital_twin' },
   },
   // 许可证管理模块已解耦至 OpenMTEduInst 项目，路由已移除
   {
@@ -61,11 +68,15 @@ const routes: Routes = [
       import('./shared/components/content-store/content-store.module').then(
         (m) => m.ContentStoreModule
       ),
+    canActivate: [ModuleActiveGuard],
+    data: { requiredModule: 'content_store' },
   },
   {
     path: 'creativity-engine',
     loadChildren: () =>
       import('./creativity-engine/creativity-engine.module').then((m) => m.CreativityEngineModule),
+    canActivate: [ModuleActiveGuard],
+    data: { requiredModule: 'creativity' },
   },
   // Auth Module - 认证模块
   {
@@ -82,14 +93,16 @@ const routes: Routes = [
   // Exam Module - 在线测验（懒加载）
   {
     path: 'exam',
-    loadChildren: () =>
-      import('./exam/exam.module').then((m) => m.ExamModule),
+    loadChildren: () => import('./exam/exam.module').then((m) => m.ExamModule),
+    canActivate: [ModuleActiveGuard],
+    data: { requiredModule: 'exam' },
   },
   // Vircadia Module - 元宇宙教室（懒加载）
   {
     path: 'vircadia',
-    loadChildren: () =>
-      import('./vircadia/vircadia.module').then((m) => m.VircadiaModule),
+    loadChildren: () => import('./vircadia/vircadia.module').then((m) => m.VircadiaModule),
+    canActivate: [ModuleActiveGuard],
+    data: { requiredModule: 'ar_vr' },
   },
   // Icon Debug Page
   {

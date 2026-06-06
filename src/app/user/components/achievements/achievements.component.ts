@@ -9,15 +9,11 @@ import { MatButtonModule } from '@angular/material/button';
 import { MatCardModule } from '@angular/material/card';
 import { MatIconModule } from '@angular/material/icon';
 import { MatProgressBarModule } from '@angular/material/progress-bar';
-import { MatTabsModule } from '@angular/material/tabs';
 import { Subject } from 'rxjs';
 import { takeUntil } from 'rxjs/operators';
 
 import { User } from '../../../core/models/auth.models';
 import { AuthService } from '../../../core/services/auth.service';
-import { AchievementGalleryComponent } from '../../../features/achievement-integration/components/achievement-gallery/achievement-gallery.component';
-import { AchievementProgressComponent } from '../../../features/achievement-integration/components/achievement-progress/achievement-progress.component';
-import { AchievementUploadComponent } from '../../../features/achievement-integration/components/achievement-upload/achievement-upload.component';
 
 @Component({
   selector: 'app-achievements',
@@ -27,43 +23,20 @@ import { AchievementUploadComponent } from '../../../features/achievement-integr
     MatCardModule,
     MatButtonModule,
     MatIconModule,
-    MatTabsModule,
     MatCardModule,
     MatProgressBarModule,
-    AchievementGalleryComponent,
-    AchievementProgressComponent,
-    AchievementUploadComponent,
   ],
   template: `
     <div class="achievements-container">
       <h1 class="page-title">成就系统</h1>
 
-      <!-- 用户成就进度 -->
       <div class="section" *ngIf="hasValidUserId; else noUser">
-        <app-achievement-progress [userId]="currentUserId"></app-achievement-progress>
-
-        <!-- 成就展示和上传 -->
-        <mat-tab-group animationDuration="300ms">
-          <mat-tab>
-            <ng-template mat-tab-label>
-              <mat-icon>emoji_events</mat-icon>
-              <span>我的成就</span>
-            </ng-template>
-            <div class="tab-content">
-              <app-achievement-gallery [userId]="currentUserId"></app-achievement-gallery>
-            </div>
-          </mat-tab>
-
-          <mat-tab>
-            <ng-template mat-tab-label>
-              <mat-icon>cloud_upload</mat-icon>
-              <span>上传成就</span>
-            </ng-template>
-            <div class="tab-content">
-              <app-achievement-upload [userId]="currentUserId"></app-achievement-upload>
-            </div>
-          </mat-tab>
-        </mat-tab-group>
+        <!-- 成就进度 -->
+        <mat-card class="info-card">
+          <mat-card-content>
+            <p>成就系统功能正在开发中，敬请期待。</p>
+          </mat-card-content>
+        </mat-card>
       </div>
 
       <ng-template #noUser>
@@ -92,10 +65,6 @@ import { AchievementUploadComponent } from '../../../features/achievement-integr
 
       .section {
         margin-bottom: 32px;
-      }
-
-      .tab-content {
-        padding: 24px 0;
       }
     `,
   ],

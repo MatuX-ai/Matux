@@ -11,6 +11,7 @@ import { MatTabsModule } from '@angular/material/tabs';
 import { MatTooltipModule } from '@angular/material/tooltip';
 import { RouterModule } from '@angular/router';
 
+import { User } from '../../../core/models/auth.models';
 import { AuthService } from '../../../core/services/auth.service';
 import { UserCenterMenuItem, UserCenterService } from '../../services/user-center.service';
 
@@ -164,7 +165,7 @@ import { UserCenterMenuItem, UserCenterService } from '../../services/user-cente
   ],
 })
 export class UserSubNavComponent {
-  currentUser: any = null;
+  currentUser: User | null = null;
   menuItems: UserCenterMenuItem[] = [];
   currentPageTitle = '仪表板';
 

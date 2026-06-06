@@ -19,23 +19,27 @@ import { Subject } from 'rxjs';
 import { takeUntil } from 'rxjs/operators';
 
 import { AuthService } from '../../../core/services/auth.service';
-import { DiagnosisService, DiagnosisReport, DiagnosisDimension, HealthRating } from '../../../core/services/diagnosis.service';
+import {
+  DiagnosisDimension,
+  DiagnosisReport,
+  DiagnosisService,
+  HealthRating,
+} from '../../../core/services/diagnosis.service';
 
 @Component({
   selector: 'app-teaching-suggestions',
   standalone: true,
-  imports: [
-    CommonModule,
-    MatCardModule,
-    MatButtonModule,
-    MatIconModule,
-    MatProgressBarModule,
-  ],
+  imports: [CommonModule, MatCardModule, MatButtonModule, MatIconModule, MatProgressBarModule],
   template: `
     <div class="suggestions-container">
       <div class="page-header">
         <h1 class="page-title">智能教学建议</h1>
-        <button mat-raised-button color="primary" (click)="runDiagnosis()" [disabled]="isDiagnosing">
+        <button
+          mat-raised-button
+          color="primary"
+          (click)="runDiagnosis()"
+          [disabled]="isDiagnosing"
+        >
           <mat-icon>refresh</mat-icon>
           {{ isDiagnosing ? '诊断中...' : '重新诊断' }}
         </button>
@@ -60,18 +64,21 @@ import { DiagnosisService, DiagnosisReport, DiagnosisDimension, HealthRating } f
 
       <!-- 诊断报告 -->
       <ng-container *ngIf="report && !isDiagnosing">
-
         <!-- 总体健康评分 -->
         <mat-card class="health-card" [class]="'health-' + healthRating">
           <mat-card-content class="health-content">
             <div class="health-score-section">
-              <div class="health-score-ring" [style.--score-color]="healthColor" [style.--score]="report.overallHealth">
+              <div
+                class="health-score-ring"
+                [style.--score-color]="healthColor"
+                [style.--score]="report.overallHealth"
+              >
                 <span class="health-score-value">{{ report.overallHealth }}</span>
                 <span class="health-score-label">健康分</span>
               </div>
               <div class="health-info">
                 <h2>学习健康评级：{{ healthLabel }}</h2>
-                <p>诊断时间：{{ report.timestamp | date:'yyyy-MM-dd HH:mm' }}</p>
+                <p>诊断时间：{{ report.timestamp | date: 'yyyy-MM-dd HH:mm' }}</p>
               </div>
             </div>
           </mat-card-content>
@@ -87,12 +94,15 @@ import { DiagnosisService, DiagnosisReport, DiagnosisDimension, HealthRating } f
               <div *ngFor="let dim of dimensionList" class="dimension-item">
                 <div class="dimension-header">
                   <span class="dimension-label">{{ dim.label }}</span>
-                  <span class="dimension-score" [style.color]="getScoreColor(dim.score)">{{ dim.score }}</span>
+                  <span class="dimension-score" [style.color]="getScoreColor(dim.score)">{{
+                    dim.score
+                  }}</span>
                 </div>
                 <mat-progress-bar
                   mode="determinate"
                   [value]="dim.score"
-                  [class]="'progress-' + getScoreLevel(dim.score)">
+                  [class]="'progress-' + getScoreLevel(dim.score)"
+                >
                 </mat-progress-bar>
                 <span class="dimension-desc">{{ dim.description }}</span>
               </div>
@@ -130,14 +140,30 @@ import { DiagnosisService, DiagnosisReport, DiagnosisDimension, HealthRating } f
             <mat-card-title>教学建议（{{ report.suggestions.length }}）</mat-card-title>
           </mat-card-header>
           <mat-card-content>
-            <div *ngFor="let item of report.suggestions" class="suggestion-item" [class]="item.severity">
+            <div
+              *ngFor="let item of report.suggestions"
+              class="suggestion-item"
+              [class]="item.severity"
+            >
               <div class="suggestion-header">
                 <mat-icon class="severity-icon">
-                  {{ item.severity === 'critical' ? 'error' : item.severity === 'warning' ? 'warning' : 'info' }}
+                  {{
+                    item.severity === 'critical'
+                      ? 'error'
+                      : item.severity === 'warning'
+                        ? 'warning'
+                        : 'info'
+                  }}
                 </mat-icon>
                 <strong>{{ item.title }}</strong>
                 <span class="severity-badge" [class]="'badge-' + item.severity">
-                  {{ item.severity === 'critical' ? '紧急' : item.severity === 'warning' ? '关注' : '提示' }}
+                  {{
+                    item.severity === 'critical'
+                      ? '紧急'
+                      : item.severity === 'warning'
+                        ? '关注'
+                        : '提示'
+                  }}
                 </span>
               </div>
               <p class="suggestion-desc">{{ item.description }}</p>
@@ -157,7 +183,10 @@ import { DiagnosisService, DiagnosisReport, DiagnosisDimension, HealthRating } f
         </mat-card>
 
         <!-- 趋势分析 -->
-        <mat-card *ngIf="report.trends.improving.length > 0 || report.trends.declining.length > 0" class="trends-card">
+        <mat-card
+          *ngIf="report.trends.improving.length > 0 || report.trends.declining.length > 0"
+          class="trends-card"
+        >
           <mat-card-header>
             <mat-card-title>趋势分析</mat-card-title>
           </mat-card-header>
@@ -183,312 +212,368 @@ import { DiagnosisService, DiagnosisReport, DiagnosisDimension, HealthRating } f
               <div class="history-score" [style.color]="getScoreColor(h.overallHealth)">
                 {{ h.overallHealth }}
               </div>
-              <span class="history-date">{{ h.timestamp | date:'MM/dd HH:mm' }}</span>
+              <span class="history-date">{{ h.timestamp | date: 'MM/dd HH:mm' }}</span>
               <mat-progress-bar mode="determinate" [value]="h.overallHealth"></mat-progress-bar>
             </div>
           </mat-card-content>
         </mat-card>
-
       </ng-container>
     </div>
   `,
-  styles: [`
-    .suggestions-container {
-      padding: 24px;
-      max-width: 960px;
-      margin: 0 auto;
-    }
-    .page-header {
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      margin-bottom: 24px;
-    }
-    .page-title {
-      margin: 0;
-      font-size: 24px;
-      font-weight: 600;
-      color: var(--color-text-primary);
-    }
+  styles: [
+    `
+      .suggestions-container {
+        padding: 24px;
+        max-width: 960px;
+        margin: 0 auto;
+      }
+      .page-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 24px;
+      }
+      .page-title {
+        margin: 0;
+        font-size: 24px;
+        font-weight: 600;
+        color: var(--color-text-primary);
+      }
 
-    /* 加载 */
-    .loading-section {
-      text-align: center;
-      padding: 48px 16px;
-      color: var(--color-text-secondary);
-    }
-    .empty-section {
-      text-align: center;
-      padding: 64px 16px;
-    }
-    .empty-icon {
-      font-size: 64px;
-      width: 64px;
-      height: 64px;
-      color: var(--color-text-disabled);
-      margin-bottom: 16px;
-    }
-    .empty-section h3 {
-      margin: 0 0 8px;
-      color: var(--color-text-primary);
-    }
-    .empty-section p {
-      color: var(--color-text-secondary);
-      margin: 0 0 24px;
-    }
+      /* 加载 */
+      .loading-section {
+        text-align: center;
+        padding: 48px 16px;
+        color: var(--color-text-secondary);
+      }
+      .empty-section {
+        text-align: center;
+        padding: 64px 16px;
+      }
+      .empty-icon {
+        font-size: 64px;
+        width: 64px;
+        height: 64px;
+        color: var(--color-text-disabled);
+        margin-bottom: 16px;
+      }
+      .empty-section h3 {
+        margin: 0 0 8px;
+        color: var(--color-text-primary);
+      }
+      .empty-section p {
+        color: var(--color-text-secondary);
+        margin: 0 0 24px;
+      }
 
-    /* 健康评分卡片 */
-    .health-card {
-      margin-bottom: 16px;
-      border-radius: 16px;
-    }
-    .health-card.health-excellent { border-left: 4px solid var(--color-success); }
-    .health-card.health-good { border-left: 4px solid var(--color-accent); }
-    .health-card.health-fair { border-left: 4px solid var(--color-warning); }
-    .health-card.health-needs_attention { border-left: 4px solid #f97316; }
-    .health-card.health-critical { border-left: 4px solid var(--color-error); }
+      /* 健康评分卡片 */
+      .health-card {
+        margin-bottom: 16px;
+        border-radius: 16px;
+      }
+      .health-card.health-excellent {
+        border-left: 4px solid var(--color-success);
+      }
+      .health-card.health-good {
+        border-left: 4px solid var(--color-accent);
+      }
+      .health-card.health-fair {
+        border-left: 4px solid var(--color-warning);
+      }
+      .health-card.health-needs_attention {
+        border-left: 4px solid #f97316;
+      }
+      .health-card.health-critical {
+        border-left: 4px solid var(--color-error);
+      }
 
-    .health-content {
-      padding: 24px;
-    }
-    .health-score-section {
-      display: flex;
-      align-items: center;
-      gap: 24px;
-    }
-    .health-score-ring {
-      width: 100px;
-      height: 100px;
-      border-radius: 50%;
-      background: conic-gradient(var(--score-color) calc(var(--score) * 1%), var(--color-divider) 0);
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      justify-content: center;
-      position: relative;
-      flex-shrink: 0;
-    }
-    .health-score-ring::before {
-      content: '';
-      position: absolute;
-      width: 80px;
-      height: 80px;
-      border-radius: 50%;
-      background: white;
-    }
-    .health-score-value {
-      font-size: 28px;
-      font-weight: 700;
-      color: var(--score-color);
-      z-index: 1;
-    }
-    .health-score-label {
-      font-size: 11px;
-      color: var(--color-text-secondary);
-      z-index: 1;
-    }
-    .health-info h2 {
-      margin: 0 0 4px;
-      font-size: 18px;
-    }
-    .health-info p {
-      margin: 0;
-      color: var(--color-text-secondary);
-      font-size: 13px;
-    }
+      .health-content {
+        padding: 24px;
+      }
+      .health-score-section {
+        display: flex;
+        align-items: center;
+        gap: 24px;
+      }
+      .health-score-ring {
+        width: 100px;
+        height: 100px;
+        border-radius: 50%;
+        background: conic-gradient(
+          var(--score-color) calc(var(--score) * 1%),
+          var(--color-divider) 0
+        );
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        position: relative;
+        flex-shrink: 0;
+      }
+      .health-score-ring::before {
+        content: '';
+        position: absolute;
+        width: 80px;
+        height: 80px;
+        border-radius: 50%;
+        background: white;
+      }
+      .health-score-value {
+        font-size: 28px;
+        font-weight: 700;
+        color: var(--score-color);
+        z-index: 1;
+      }
+      .health-score-label {
+        font-size: 11px;
+        color: var(--color-text-secondary);
+        z-index: 1;
+      }
+      .health-info h2 {
+        margin: 0 0 4px;
+        font-size: 18px;
+      }
+      .health-info p {
+        margin: 0;
+        color: var(--color-text-secondary);
+        font-size: 13px;
+      }
 
-    /* 维度评分 */
-    .dimensions-card {
-      margin-bottom: 16px;
-      border-radius: 16px;
-    }
-    .dimensions-grid {
-      display: grid;
-      gap: 16px;
-    }
-    .dimension-item {
-      display: flex;
-      flex-direction: column;
-      gap: 6px;
-    }
-    .dimension-header {
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-    }
-    .dimension-label {
-      font-size: 14px;
-      font-weight: 500;
-      color: var(--color-text-primary);
-    }
-    .dimension-score {
-      font-size: 16px;
-      font-weight: 600;
-    }
-    .dimension-desc {
-      font-size: 12px;
-      color: var(--color-text-disabled);
-    }
-    ::ng-deep .progress-high .mdc-linear-progress__bar-inner { background-color: var(--color-success); }
-    ::ng-deep .progress-medium .mdc-linear-progress__bar-inner { background-color: var(--color-warning); }
-    ::ng-deep .progress-low .mdc-linear-progress__bar-inner { background-color: var(--color-error); }
+      /* 维度评分 */
+      .dimensions-card {
+        margin-bottom: 16px;
+        border-radius: 16px;
+      }
+      .dimensions-grid {
+        display: grid;
+        gap: 16px;
+      }
+      .dimension-item {
+        display: flex;
+        flex-direction: column;
+        gap: 6px;
+      }
+      .dimension-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+      }
+      .dimension-label {
+        font-size: 14px;
+        font-weight: 500;
+        color: var(--color-text-primary);
+      }
+      .dimension-score {
+        font-size: 16px;
+        font-weight: 600;
+      }
+      .dimension-desc {
+        font-size: 12px;
+        color: var(--color-text-disabled);
+      }
+      ::ng-deep .progress-high .mdc-linear-progress__bar-inner {
+        background-color: var(--color-success);
+      }
+      ::ng-deep .progress-medium .mdc-linear-progress__bar-inner {
+        background-color: var(--color-warning);
+      }
+      ::ng-deep .progress-low .mdc-linear-progress__bar-inner {
+        background-color: var(--color-error);
+      }
 
-    /* 紧急问题 */
-    .critical-card {
-      margin-bottom: 16px;
-      border-radius: 16px;
-      border: 1px solid var(--color-error-light, #fecaca);
-      background: #fef2f2;
-    }
-    .critical-icon { color: var(--color-error); }
+      /* 紧急问题 */
+      .critical-card {
+        margin-bottom: 16px;
+        border-radius: 16px;
+        border: 1px solid var(--color-error-light, #fecaca);
+        background: #fef2f2;
+      }
+      .critical-icon {
+        color: var(--color-error);
+      }
 
-    /* 建议列表 */
-    .suggestions-card {
-      margin-bottom: 16px;
-      border-radius: 16px;
-    }
-    .suggestion-item {
-      padding: 16px;
-      border-bottom: 1px solid var(--color-divider);
-    }
-    .suggestion-item:last-child { border-bottom: none; }
-    .suggestion-item.critical { background: #fef2f2; border-radius: 8px; margin: 8px 0; }
-    .suggestion-item.warning { background: #fffbeb; border-radius: 8px; margin: 8px 0; }
-    .suggestion-item.info { border-radius: 0; }
+      /* 建议列表 */
+      .suggestions-card {
+        margin-bottom: 16px;
+        border-radius: 16px;
+      }
+      .suggestion-item {
+        padding: 16px;
+        border-bottom: 1px solid var(--color-divider);
+      }
+      .suggestion-item:last-child {
+        border-bottom: none;
+      }
+      .suggestion-item.critical {
+        background: #fef2f2;
+        border-radius: 8px;
+        margin: 8px 0;
+      }
+      .suggestion-item.warning {
+        background: #fffbeb;
+        border-radius: 8px;
+        margin: 8px 0;
+      }
+      .suggestion-item.info {
+        border-radius: 0;
+      }
 
-    .suggestion-header {
-      display: flex;
-      align-items: center;
-      gap: 8px;
-      margin-bottom: 8px;
-    }
-    .severity-icon {
-      font-size: 20px;
-      width: 20px;
-      height: 20px;
-    }
-    .critical .severity-icon { color: var(--color-error); }
-    .warning .severity-icon { color: var(--color-warning); }
-    .info .severity-icon { color: var(--color-accent); }
+      .suggestion-header {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        margin-bottom: 8px;
+      }
+      .severity-icon {
+        font-size: 20px;
+        width: 20px;
+        height: 20px;
+      }
+      .critical .severity-icon {
+        color: var(--color-error);
+      }
+      .warning .severity-icon {
+        color: var(--color-warning);
+      }
+      .info .severity-icon {
+        color: var(--color-accent);
+      }
 
-    .severity-badge {
-      font-size: 11px;
-      padding: 2px 8px;
-      border-radius: 12px;
-      margin-left: auto;
-    }
-    .badge-critical { background: #fecaca; color: #dc2626; }
-    .badge-warning { background: #fde68a; color: #d97706; }
-    .badge-info { background: #dbeafe; color: #2563eb; }
+      .severity-badge {
+        font-size: 11px;
+        padding: 2px 8px;
+        border-radius: 12px;
+        margin-left: auto;
+      }
+      .badge-critical {
+        background: #fecaca;
+        color: #dc2626;
+      }
+      .badge-warning {
+        background: #fde68a;
+        color: #d97706;
+      }
+      .badge-info {
+        background: #dbeafe;
+        color: #2563eb;
+      }
 
-    .suggestion-desc {
-      margin: 0 0 8px 28px;
-      color: #475569;
-      font-size: 13px;
-      line-height: 1.5;
-    }
-    .suggestion-action {
-      display: flex;
-      align-items: center;
-      gap: 6px;
-      margin: 0 0 8px 28px;
-      font-size: 13px;
-      color: #6366f1;
-    }
-    .suggestion-action mat-icon { font-size: 16px; width: 16px; height: 16px; }
-    .suggestion-tags {
-      display: flex;
-      gap: 6px;
-      flex-wrap: wrap;
-      margin-left: 28px;
-    }
-    .tag {
-      font-size: 11px;
-      padding: 2px 10px;
-      border-radius: 12px;
-      background: #f1f5f9;
-      color: #475569;
-    }
+      .suggestion-desc {
+        margin: 0 0 8px 28px;
+        color: #475569;
+        font-size: 13px;
+        line-height: 1.5;
+      }
+      .suggestion-action {
+        display: flex;
+        align-items: center;
+        gap: 6px;
+        margin: 0 0 8px 28px;
+        font-size: 13px;
+        color: #2563eb;
+      }
+      .suggestion-action mat-icon {
+        font-size: 16px;
+        width: 16px;
+        height: 16px;
+      }
+      .suggestion-tags {
+        display: flex;
+        gap: 6px;
+        flex-wrap: wrap;
+        margin-left: 28px;
+      }
+      .tag {
+        font-size: 11px;
+        padding: 2px 10px;
+        border-radius: 12px;
+        background: #f1f5f9;
+        color: #475569;
+      }
 
-    .no-suggestions {
-      display: flex;
-      align-items: center;
-      gap: 8px;
-      padding: 24px;
-      color: #22c55e;
-      justify-content: center;
-    }
+      .no-suggestions {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        padding: 24px;
+        color: #22c55e;
+        justify-content: center;
+      }
 
-    /* 趋势 */
-    .trends-card {
-      margin-bottom: 16px;
-      border-radius: 16px;
-    }
-    .trend-row {
-      display: flex;
-      align-items: center;
-      gap: 8px;
-      padding: 8px 0;
-      font-size: 14px;
-    }
-    .trend-row.improving .trend-icon { color: #22c55e; }
-    .trend-row.declining .trend-icon { color: #ef4444; }
+      /* 趋势 */
+      .trends-card {
+        margin-bottom: 16px;
+        border-radius: 16px;
+      }
+      .trend-row {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        padding: 8px 0;
+        font-size: 14px;
+      }
+      .trend-row.improving .trend-icon {
+        color: #22c55e;
+      }
+      .trend-row.declining .trend-icon {
+        color: #ef4444;
+      }
 
-    /* 历史 */
-    .history-card {
-      margin-bottom: 16px;
-      border-radius: 16px;
-    }
-    .history-item {
-      display: flex;
-      align-items: center;
-      gap: 12px;
-      padding: 8px 0;
-    }
-    .history-score {
-      font-size: 18px;
-      font-weight: 700;
-      min-width: 36px;
-    }
-    .history-date {
-      font-size: 12px;
-      color: #94a3b8;
-      min-width: 80px;
-    }
-    .history-item mat-progress-bar {
-      flex: 1;
-    }
-  `],
+      /* 历史 */
+      .history-card {
+        margin-bottom: 16px;
+        border-radius: 16px;
+      }
+      .history-item {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        padding: 8px 0;
+      }
+      .history-score {
+        font-size: 18px;
+        font-weight: 700;
+        min-width: 36px;
+      }
+      .history-date {
+        font-size: 12px;
+        color: #94a3b8;
+        min-width: 80px;
+      }
+      .history-item mat-progress-bar {
+        flex: 1;
+      }
+    `,
+  ],
 })
 export class TeachingSuggestionsComponent implements OnInit, OnDestroy {
   report: DiagnosisReport | null = null;
   history: DiagnosisReport[] = [];
   isDiagnosing = false;
 
-  dimensionList: { key: DiagnosisDimension; label: string; score: number; description: string }[] = [];
+  dimensionList: { key: DiagnosisDimension; label: string; score: number; description: string }[] =
+    [];
 
   private userId = '';
   private destroy$ = new Subject<void>();
 
   constructor(
     private diagnosisService: DiagnosisService,
-    private authService: AuthService,
+    private authService: AuthService
   ) {}
 
   ngOnInit(): void {
     const user = this.authService.getCurrentUser();
-    this.userId = user?.id || 'default_user';
+    this.userId = user?.id ?? 'default_user';
 
     // 订阅诊断报告
-    this.diagnosisService.report$
-      .pipe(takeUntil(this.destroy$))
-      .subscribe((r) => {
-        if (r) {
-          this.report = r;
-          this.history = this.diagnosisService.getHistory();
-          this.buildDimensionList(r);
-        }
-      });
+    this.diagnosisService.report$.pipe(takeUntil(this.destroy$)).subscribe((r) => {
+      if (r) {
+        this.report = r;
+        this.history = this.diagnosisService.getHistory();
+        this.buildDimensionList(r);
+      }
+    });
   }
 
   ngOnDestroy(): void {
@@ -512,8 +597,12 @@ export class TeachingSuggestionsComponent implements OnInit, OnDestroy {
   runDiagnosis(): void {
     this.isDiagnosing = true;
     this.diagnosisService.runFullDiagnosis(this.userId).subscribe({
-      complete: () => { this.isDiagnosing = false; },
-      error: () => { this.isDiagnosing = false; },
+      complete: () => {
+        this.isDiagnosing = false;
+      },
+      error: () => {
+        this.isDiagnosing = false;
+      },
     });
   }
 

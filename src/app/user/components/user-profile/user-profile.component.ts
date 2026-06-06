@@ -23,7 +23,7 @@ import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
 import { MatSnackBar, MatSnackBarModule } from '@angular/material/snack-bar';
 import { Router } from '@angular/router';
 import { Subject, throwError, TimeoutError } from 'rxjs';
-import { takeUntil, timeout, catchError } from 'rxjs/operators';
+import { catchError, takeUntil, timeout } from 'rxjs/operators';
 
 import { UserProfile } from '../../../core/models/group.models';
 import {
@@ -135,7 +135,7 @@ export class UserProfileComponent implements OnInit, OnDestroy {
       .pipe(
         takeUntil(this.destroy$),
         timeout(10000),
-        catchError((err) => {
+        catchError((err: Error) => {
           if (err instanceof TimeoutError) {
             console.error('加载用户资料超时');
             return throwError(() => new Error('加载超时，请检查网络连接后重试'));
@@ -171,7 +171,7 @@ export class UserProfileComponent implements OnInit, OnDestroy {
       .pipe(
         takeUntil(this.destroy$),
         timeout(10000),
-        catchError((err) => {
+        catchError((err: Error) => {
           if (err instanceof TimeoutError) {
             console.error('加载用户偏好设置超时');
             return throwError(() => new Error('加载超时，使用默认设置'));
@@ -284,6 +284,7 @@ export class UserProfileComponent implements OnInit, OnDestroy {
    * 上传头像
    * @param event 文件选择事件
    */
+  // eslint-disable-next-line max-lines-per-function
   uploadAvatar(event: Event): void {
     const input = event.target as HTMLInputElement;
 
@@ -338,7 +339,7 @@ export class UserProfileComponent implements OnInit, OnDestroy {
                 this.saving = false;
                 this.snackBar.open('头像更新成功', '关闭', { duration: 3000 });
               },
-              error: (error: any) => {
+              error: (error: unknown) => {
                 this.error = (error as Error).message || '上传失败';
                 this.saving = false;
                 console.error('上传头像失败:', error);

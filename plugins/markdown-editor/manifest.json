@@ -1,0 +1,63 @@
+{
+  "manifestVersion": "1.0",
+  "id": "markdown-editor",
+  "name": "Markdown 编辑器",
+  "version": "1.0.0",
+  "description": "功能丰富的 Markdown 编辑器，支持实时预览、语法高亮、导出 PDF/HTML 等功能",
+  "author": {
+    "name": "iMato Team",
+    "email": "team@imato.com",
+    "url": "https://imato.com"
+  },
+  "license": "MIT",
+  "icon": "resources/icon.svg",
+  "categories": ["editor", "productivity", "writing"],
+  "keywords": ["markdown", "editor", "preview", "export", "writing"],
+  "homepage": "https://github.com/imato/markdown-editor",
+  "repository": "https://github.com/imato/markdown-editor",
+  
+  "deviceCompatibility": {
+    "tier": "tier-a",
+    "minDeviceClass": "basic",
+    "hardwareRequirements": {
+      "minMemoryMB": 2048,
+      "minStorageMB": 100
+    }
+  },
+  
+  "entryPoints": {
+    "backend": {
+      "routes": "backend/routes/markdown_routes.py",
+      "services": ["backend/services/markdown_service.py"]
+    },
+    "frontend": {
+      "module": "frontend/markdown-editor.module.ts",
+      "components": ["frontend/components/markdown-editor.component.ts"]
+    },
+    "electron": {
+      "main": "electron/main.js",
+      "preload": "electron/preload.js"
+    }
+  },
+  
+  "dependencies": [],
+  
+  "permissions": [
+    "file:read",
+    "file:write",
+    "storage:local"
+  ],
+  
+  "settings": {
+    "defaultTheme": "light",
+    "autoSave": true,
+    "autoSaveInterval": 30000,
+    "enableSpellCheck": false,
+    "exportFormat": "html"
+  },
+  
+  "hooks": {
+    "onInstall": "backend/hooks/on_install.py",
+    "onUninstall": "backend/hooks/on_uninstall.py"
+  }
+}

@@ -1,17 +1,18 @@
-import { NgModule } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { RouterModule, Routes } from '@angular/router';
+import { NgModule } from '@angular/core';
 import { MatButtonModule } from '@angular/material/button';
 import { MatCardModule } from '@angular/material/card';
 import { MatIconModule } from '@angular/material/icon';
 import { MatProgressBarModule } from '@angular/material/progress-bar';
 import { MatTabsModule } from '@angular/material/tabs';
 import { MatTooltipModule } from '@angular/material/tooltip';
+import { RouterModule, Routes } from '@angular/router';
 
 import { VircadiaSceneViewerComponent } from '../components/vircadia-scene-viewer/vircadia-scene-viewer.component';
+
+import { AvatarCustomizationComponent } from './pages/avatar-customization/avatar-customization.component';
 import { VirtualClassroomComponent } from './pages/virtual-classroom/virtual-classroom.component';
 import { VirtualLabComponent } from './pages/virtual-lab/virtual-lab.component';
-import { AvatarCustomizationComponent } from './pages/avatar-customization/avatar-customization.component';
 import { VircadiaComponent } from './vircadia.component';
 
 const routes: Routes = [

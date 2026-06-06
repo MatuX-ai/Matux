@@ -6,68 +6,65 @@
 // =============================================================================
 
 // 主色调 - 藏青色 (Slate-900, 与 edu-proto 原型站一致)
-$color-primary: #0f172a;           // 藏青色 Slate-900 - Primary (PRD 标准)
-$color-primary-light: #1e293b;     // 藏青灰 Slate-800 - Light Primary
-$color-primary-dark: #020617;      // 极夜深色 Slate-950 - Dark Primary
-$color-primary-50: #f8fafc;        // 极浅灰蓝 Slate-50
-$color-primary-100: #f1f5f9;       // 浅灰蓝 Slate-100
-$color-primary-200: #e2e8f0;       // 灰蓝 Slate-200
-$color-primary-300: #cbd5e1;       // 中灰蓝 Slate-300
-$color-primary-400: #94a3b8;       // 深灰蓝 Slate-400
-$color-primary-500: #64748b;       // 石板灰 Slate-500
-$color-primary-600: #475569;       // 深石板 Slate-600
-$color-primary-700: #334155;       // 深蓝灰 Slate-700
-$color-primary-800: #1e293b;       // 藏青灰 Slate-800
-$color-primary-900: #0f172a;       // 藏青色 Slate-900
-$color-primary-950: #020617;       // 极夜黑 Slate-950
+$color-primary: #0f172a; // 藏青色 Slate-900 - Primary (PRD 标准)
+$color-primary-light: #1e293b; // 藏青灰 Slate-800 - Light Primary
+$color-primary-dark: #020617; // 极夜深色 Slate-950 - Dark Primary
+$color-primary-50: #f8fafc; // 极浅灰蓝 Slate-50
+$color-primary-100: #f1f5f9; // 浅灰蓝 Slate-100
+$color-primary-200: #e2e8f0; // 灰蓝 Slate-200
+$color-primary-300: #cbd5e1; // 中灰蓝 Slate-300
+$color-primary-400: #94a3b8; // 深灰蓝 Slate-400
+$color-primary-500: #64748b; // 石板灰 Slate-500
+$color-primary-600: #475569; // 深石板 Slate-600
+$color-primary-700: #334155; // 深蓝灰 Slate-700
+$color-primary-800: #1e293b; // 藏青灰 Slate-800
+$color-primary-900: #0f172a; // 藏青色 Slate-900
+$color-primary-950: #020617; // 极夜黑 Slate-950
 
 // 辅助色 - 科技蓝色系 (Blue-500, 与 edu-proto 原型站一致)
-$color-secondary: #3b82f6;         // 科技蓝 Blue-500 - Accent (PRD 标准)
-$color-secondary-light: #60a5fa;   // 浅蓝 Blue-400
-$color-secondary-dark: #2563eb;    // 深蓝 Blue-600
-$color-secondary-50: #eff6ff;      // Blue-50
-$color-secondary-100: #dbeafe;     // Blue-100
-$color-secondary-200: #bfdbfe;     // Blue-200
-$color-secondary-300: #93c5fd;     // Blue-300
-$color-secondary-400: #60a5fa;     // Blue-400
-$color-secondary-500: #3b82f6;     // Blue-500
-$color-secondary-600: #2563eb;     // Blue-600
-$color-secondary-700: #1d4ed8;     // Blue-700
-$color-secondary-800: #1e40af;     // Blue-800
-$color-secondary-900: #1e3a8a;     // Blue-900
+$color-secondary: #3b82f6; // 科技蓝 Blue-500 - Accent (PRD 标准)
+$color-secondary-light: #60a5fa; // 浅蓝 Blue-400
+$color-secondary-dark: #2563eb; // 深蓝 Blue-600
+$color-secondary-50: #eff6ff; // Blue-50
+$color-secondary-100: #dbeafe; // Blue-100
+$color-secondary-200: #bfdbfe; // Blue-200
+$color-secondary-300: #93c5fd; // Blue-300
+$color-secondary-400: #60a5fa; // Blue-400
+$color-secondary-500: #3b82f6; // Blue-500
+$color-secondary-600: #2563eb; // Blue-600
+$color-secondary-700: #1d4ed8; // Blue-700
+$color-secondary-800: #1e40af; // Blue-800
+$color-secondary-900: #1e3a8a; // Blue-900
 
 // 功能色 - Functional Colors
-$color-success: #10b981;           // 翡翠绿 - Emerald Green
+$color-success: #10b981; // 翡翠绿 - Emerald Green
 $color-success-light: #34d399;
 $color-success-dark: #059669;
-
-$color-warning: #f59e0b;           // 琥珀黄 - Amber
+$color-warning: #f59e0b; // 琥珀黄 - Amber
 $color-warning-light: #fbbf24;
 $color-warning-dark: #d97706;
-
-$color-error: #ef4444;             // 珊瑚红 - Coral Red
+$color-error: #ef4444; // 珊瑚红 - Coral Red
 $color-error-light: #f87171;
 $color-error-dark: #dc2626;
-
-$color-info: #8b5cf6;              // Violet-500 (PRD 标准)
-$color-info-light: #a78bfa;        // Violet-400
-$color-info-dark: #7c3aed;         // Violet-600
+$color-info: #60a5fa; // Blue-400
+$color-info-light: #93c5fd; // Blue-300
+$color-info-dark: #3b82f6; // Blue-500
 
 // =============================================================================
 // 中性色系统 - Neutral Color System (蓝灰调)
 // =============================================================================
 
-$color-gray-50: #f8fafc;           // 极浅灰蓝 - Ghost White
-$color-gray-100: #f1f5f9;          // 浅灰蓝 - Pale Blue Gray
-$color-gray-200: #e2e8f0;          // 灰蓝 - Blue Gray
-$color-gray-300: #cbd5e1;          // 中灰蓝 - Medium Blue Gray
-$color-gray-400: #94a3b8;          // 深灰蓝 - Dark Blue Gray
-$color-gray-500: #64748b;          // 石板灰 - Slate Gray
-$color-gray-600: #475569;          // 深石板 - Dark Slate
-$color-gray-700: #334155;          // 深蓝灰 - Deep Blue Gray
-$color-gray-800: #1e293b;          // 藏青灰 - Navy Gray
-$color-gray-900: #0f172a;          // 深夜空蓝 - Midnight Sky
-$color-gray-950: #020617;          // 极夜黑 - Ultra Dark
+$color-gray-50: #f8fafc; // 极浅灰蓝 - Ghost White
+$color-gray-100: #f1f5f9; // 浅灰蓝 - Pale Blue Gray
+$color-gray-200: #e2e8f0; // 灰蓝 - Blue Gray
+$color-gray-300: #cbd5e1; // 中灰蓝 - Medium Blue Gray
+$color-gray-400: #94a3b8; // 深灰蓝 - Dark Blue Gray
+$color-gray-500: #64748b; // 石板灰 - Slate Gray
+$color-gray-600: #475569; // 深石板 - Dark Slate
+$color-gray-700: #334155; // 深蓝灰 - Deep Blue Gray
+$color-gray-800: #1e293b; // 藏青灰 - Navy Gray
+$color-gray-900: #0f172a; // 深夜空蓝 - Midnight Sky
+$color-gray-950: #020617; // 极夜黑 - Ultra Dark
 
 // color-neutral 别名（与 color-gray 相同，提供兼容性）
 $color-neutral-50: $color-gray-50;
@@ -81,46 +78,53 @@ $color-neutral-700: $color-gray-700;
 $color-neutral-800: $color-gray-800;
 $color-neutral-900: $color-gray-900;
 $color-neutral-950: $color-gray-950;
-
-$color-black: #000000;
-$color-white: #ffffff;
-$color-text-white: #ffffff;       // 反色文本 - 用于深色背景上的白色文本
+$color-black: #000;
+$color-white: #fff;
+$color-text-white: #fff; // 反色文本 - 用于深色背景上的白色文本
 
 // =============================================================================
 // 语义化颜色 - Semantic Colors
 // =============================================================================
 
-$color-background: #f8fafc;        // 页面背景
-$color-surface: #ffffff;           // 卡片表面
-$color-surface-elevated: #ffffff;  // 悬浮表面
-$color-divider: #e2e8f0;           // 分割线
-$color-hover: rgba(30, 58, 138, 0.04);      // 悬停状态
-$color-selected: #dbeafe;          // 选中状态
-$color-focus: rgba(59, 89, 152, 0.4);       // 焦点状态
-$color-disabled: #cbd5e1;          // 禁用状态
+$color-background: #f8fafc; // 页面背景
+$color-surface: #fff; // 卡片表面
+$color-surface-elevated: #fff; // 悬浮表面
+$color-divider: #e2e8f0; // 分割线
+$color-hover: rgb(30 58 138 / 4%); // 悬停状态
+$color-selected: #dbeafe; // 选中状态
+$color-focus: rgb(59 89 152 / 40%); // 焦点状态
+$color-disabled: #cbd5e1; // 禁用状态
 
-$color-brand: #3b82f6;             // 品牌色（科技蓝，与原型站一致）
-$link-color: #3b82f6;              // 链接色
-$link-hover-color: #2563eb;        // 链接悬停
-$color-border: #e2e8f0;            // 边框色
-$color-placeholder: #94a3b8;       // 占位符
-$color-text-primary: #0f172a;      // 主文本
-$color-text-secondary: #475569;    // 次要文本
-$color-text-disabled: #94a3b8;     // 禁用文本
-$color-text-inverse: #ffffff;      // 反色文本
-$color-text-on-primary: #ffffff;   // 主色上文本
-$color-text-on-secondary: #ffffff; // 辅色上文本
+$color-brand: #3b82f6; // 品牌色（科技蓝，与原型站一致）
+$link-color: #3b82f6; // 链接色
+$link-hover-color: #2563eb; // 链接悬停
+$color-border: #e2e8f0; // 边框色
+$color-placeholder: #94a3b8; // 占位符
+$color-text-primary: #0f172a; // 主文本
+$color-text-secondary: #475569; // 次要文本
+$color-text-disabled: #94a3b8; // 禁用文本
+$color-text-inverse: #fff; // 反色文本
+$color-text-on-primary: #fff; // 主色上文本
+$color-text-on-secondary: #fff; // 辅色上文本
 
 // =============================================================================
 // 阴影系统 - Shadow System (V0.dev 风格)
 // =============================================================================
 
-$shadow-xs: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
-$shadow-sm: 0 1px 3px 0 rgba(0, 0, 0, 0.1), 0 1px 2px 0 rgba(0, 0, 0, 0.06);
-$shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
-$shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
-$shadow-xl: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
-$shadow-2xl: 0 25px 50px -12px rgba(0, 0, 0, 0.25);
+$shadow-xs: 0 1px 2px 0 rgb(0 0 0 / 5%);
+$shadow-sm:
+  0 1px 3px 0 rgb(0 0 0 / 10%),
+  0 1px 2px 0 rgb(0 0 0 / 6%);
+$shadow-md:
+  0 4px 6px -1px rgb(0 0 0 / 10%),
+  0 2px 4px -1px rgb(0 0 0 / 6%);
+$shadow-lg:
+  0 10px 15px -3px rgb(0 0 0 / 10%),
+  0 4px 6px -2px rgb(0 0 0 / 5%);
+$shadow-xl:
+  0 20px 25px -5px rgb(0 0 0 / 10%),
+  0 10px 10px -5px rgb(0 0 0 / 4%);
+$shadow-2xl: 0 25px 50px -12px rgb(0 0 0 / 25%);
 
 // 特定场景阴影
 $shadow-button: $shadow-sm;
@@ -130,31 +134,31 @@ $shadow-card-hover: $shadow-lg;
 $shadow-modal: $shadow-2xl;
 $shadow-dropdown: $shadow-lg;
 $shadow-tooltip: $shadow-md;
-$shadow-focus-ring: 0 0 0 3px rgba(59, 89, 152, 0.4);
-$shadow-inner: inset 0 2px 4px 0 rgba(0, 0, 0, 0.06);
+$shadow-focus-ring: 0 0 0 3px rgb(59 89 152 / 40%);
+$shadow-inner: inset 0 2px 4px 0 rgb(0 0 0 / 6%);
 
 // =============================================================================
 // 圆角系统 - Border Radius System
 // =============================================================================
 
 $border-radius-none: 0;
-$border-radius-xs: 0.125rem;    // 2px
-$border-radius-sm: 0.25rem;     // 4px
-$border-radius-md: 0.375rem;    // 6px
-$border-radius-lg: 0.5rem;      // 8px
-$border-radius-xl: 0.75rem;     // 12px
-$border-radius-2xl: 1rem;       // 16px
-$border-radius-3xl: 1.5rem;     // 24px
+$border-radius-xs: 0.125rem; // 2px
+$border-radius-sm: 0.25rem; // 4px
+$border-radius-md: 0.375rem; // 6px
+$border-radius-lg: 0.5rem; // 8px
+$border-radius-xl: 0.75rem; // 12px
+$border-radius-2xl: 1rem; // 16px
+$border-radius-3xl: 1.5rem; // 24px
 $border-radius-full: 9999px;
 
 // 组件圆角 (与 PRD 和原型站一致)
-$border-radius-button: 9999px;     // rounded-full - 完全圆角 (PRD 标准)
-$border-radius-input: 0.75rem;     // rounded-xl - 12px (PRD 标准)
-$border-radius-card: 1rem;         // rounded-2xl - 16px (PRD 标准)
-$border-radius-modal: 1.5rem;      // rounded-3xl - 24px (PRD 标准)
-$border-radius-badge: 9999px;      // 完全圆角
-$border-radius-avatar: 9999px;     // 完全圆角
-$border-radius-label: 9999px;      // 标签完全圆角 (PRD 标准)
+$border-radius-button: 9999px; // rounded-full - 完全圆角 (PRD 标准)
+$border-radius-input: 0.75rem; // rounded-xl - 12px (PRD 标准)
+$border-radius-card: 1rem; // rounded-2xl - 16px (PRD 标准)
+$border-radius-modal: 1.5rem; // rounded-3xl - 24px (PRD 标准)
+$border-radius-badge: 9999px; // 完全圆角
+$border-radius-avatar: 9999px; // 完全圆角
+$border-radius-label: 9999px; // 标签完全圆角 (PRD 标准)
 
 // =============================================================================
 // 间距系统 - Spacing System (基于 4px 网格)
@@ -162,26 +166,26 @@ $border-radius-label: 9999px;      // 标签完全圆角 (PRD 标准)
 
 $spacing-0: 0;
 $spacing-px: 1px;
-$spacing-half: 0.125rem;  // 2px
-$spacing-1: 0.25rem;      // 4px
+$spacing-half: 0.125rem; // 2px
+$spacing-1: 0.25rem; // 4px
 $spacing-one-and-half: 0.375rem; // 6px
-$spacing-2: 0.5rem;       // 8px
+$spacing-2: 0.5rem; // 8px
 $spacing-two-and-half: 0.625rem; // 10px
-$spacing-3: 0.75rem;      // 12px
+$spacing-3: 0.75rem; // 12px
 $spacing-three-and-half: 0.875rem; // 14px
-$spacing-4: 1rem;         // 16px
-$spacing-5: 1.25rem;      // 20px
-$spacing-6: 1.5rem;       // 24px
-$spacing-7: 1.75rem;      // 28px
-$spacing-8: 2rem;         // 32px
-$spacing-9: 2.25rem;      // 36px
-$spacing-10: 2.5rem;      // 40px
-$spacing-11: 2.75rem;     // 44px
-$spacing-12: 3rem;        // 48px
-$spacing-14: 3.5rem;      // 56px
-$spacing-16: 4rem;        // 64px
-$spacing-20: 5rem;        // 80px
-$spacing-24: 6rem;        // 96px
+$spacing-4: 1rem; // 16px
+$spacing-5: 1.25rem; // 20px
+$spacing-6: 1.5rem; // 24px
+$spacing-7: 1.75rem; // 28px
+$spacing-8: 2rem; // 32px
+$spacing-9: 2.25rem; // 36px
+$spacing-10: 2.5rem; // 40px
+$spacing-11: 2.75rem; // 44px
+$spacing-12: 3rem; // 48px
+$spacing-14: 3.5rem; // 56px
+$spacing-16: 4rem; // 64px
+$spacing-20: 5rem; // 80px
+$spacing-24: 6rem; // 96px
 
 // 语义化间距
 $spacing-xs: $spacing-2;
@@ -197,23 +201,32 @@ $spacing-xxl: $spacing-12;
 
 // 字体系列 (与 PRD 和原型站一致)
 // PRD v1.1 要求: Geist Sans（标题/正文）+ Geist Mono（代码）
-$font-family-sans: 'Geist Sans', 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+$font-family-sans:
+  'Geist Sans',
+  'Inter',
+  -apple-system,
+  blinkmacsystemfont,
+  'Segoe UI',
+  roboto,
+  'Helvetica Neue',
+  arial,
+  sans-serif;
 $font-family-mono: 'Geist Mono', 'JetBrains Mono', 'Fira Code', 'Courier New', monospace;
 $font-family-system: $font-family-sans;
 
 // 字体大小
-$font-size-xs: 0.75rem;     // 12px
-$font-size-sm: 0.875rem;    // 14px
-$font-size-base: 1rem;      // 16px
-$font-size-lg: 1.125rem;    // 18px
-$font-size-xl: 1.25rem;     // 20px
-$font-size-2xl: 1.5rem;     // 24px
-$font-size-3xl: 1.875rem;   // 30px
-$font-size-4xl: 2.25rem;    // 36px
-$font-size-5xl: 3rem;       // 48px
-$font-size-6xl: 3.75rem;    // 60px
-$font-size-7xl: 4.5rem;     // 72px
-$font-size-8xl: 6rem;       // 96px
+$font-size-xs: 0.75rem; // 12px
+$font-size-sm: 0.875rem; // 14px
+$font-size-base: 1rem; // 16px
+$font-size-lg: 1.125rem; // 18px
+$font-size-xl: 1.25rem; // 20px
+$font-size-2xl: 1.5rem; // 24px
+$font-size-3xl: 1.875rem; // 30px
+$font-size-4xl: 2.25rem; // 36px
+$font-size-5xl: 3rem; // 48px
+$font-size-6xl: 3.75rem; // 60px
+$font-size-7xl: 4.5rem; // 72px
+$font-size-8xl: 6rem; // 96px
 
 // 行高
 $line-height-none: 1;
@@ -242,28 +255,38 @@ $transition-duration-fast: 100ms;
 $transition-duration-normal: 200ms;
 $transition-duration-slow: 300ms;
 $transition-duration-slower: 500ms;
-
 $transition-timing-default: cubic-bezier(0.4, 0, 0.2, 1);
 $transition-timing-in: cubic-bezier(0.4, 0, 1, 1);
 $transition-timing-out: cubic-bezier(0, 0, 0.2, 1);
 $transition-timing-bounce: cubic-bezier(0.34, 1.56, 0.64, 1);
-
 $transition-fast: $transition-duration-fast $transition-timing-default;
 $transition-normal: $transition-duration-normal $transition-timing-default;
 $transition-slow: $transition-duration-slow $transition-timing-default;
 
 // 常用动画
-$animation-fade-in: fadeIn 0.3s ease-in-out;
-$animation-scale-in: scaleIn 0.2s ease-out;
+$animation-fade-in: fade-in 0.3s ease-in-out;
+$animation-scale-in: scale-in 0.2s ease-out;
 
-@keyframes fadeIn {
-  from { opacity: 0; }
-  to { opacity: 1; }
+@keyframes fade-in {
+  from {
+    opacity: 0;
+  }
+
+  to {
+    opacity: 1;
+  }
 }
 
-@keyframes scaleIn {
-  from { transform: scale(0.95); opacity: 0; }
-  to { transform: scale(1); opacity: 1; }
+@keyframes scale-in {
+  from {
+    opacity: 0;
+    transform: scale(0.95);
+  }
+
+  to {
+    opacity: 1;
+    transform: scale(1);
+  }
 }
 
 // =============================================================================
@@ -271,14 +294,14 @@ $animation-scale-in: scaleIn 0.2s ease-out;
 // =============================================================================
 
 // 响应式断点（桌面端优先）
-$breakpoint-sm: 640px;                    // 手机横屏
-$breakpoint-md: 768px;                    // 平板竖屏
-$breakpoint-lg: 1024px;                   // 平板横屏 / 小屏笔记本
-$breakpoint-desktop-small: 1024px;        // 桌面端最小宽度
-$breakpoint-desktop-medium: 1440px;       // 桌面端中屏
-$breakpoint-xl: 1280px;                   // 桌面标屏
-$breakpoint-2xl: 1536px;                  // 大屏桌面
-$breakpoint-desktop-large: 1920px;        // 桌面端大屏
+$breakpoint-sm: 640px; // 手机横屏
+$breakpoint-md: 768px; // 平板竖屏
+$breakpoint-lg: 1024px; // 平板横屏 / 小屏笔记本
+$breakpoint-desktop-small: 1024px; // 桌面端最小宽度
+$breakpoint-desktop-medium: 1440px; // 桌面端中屏
+$breakpoint-xl: 1280px; // 桌面标屏
+$breakpoint-2xl: 1536px; // 大屏桌面
+$breakpoint-desktop-large: 1920px; // 桌面端大屏
 
 // CSS 自定义属性断点（供 JS 运行时读取）
 :root {
@@ -318,10 +341,10 @@ $primary-palette: (
   700: $color-primary-700,
   800: $color-primary-800,
   900: $color-primary-900,
-  A100: $color-primary-200,
-  A200: $color-primary-400,
-  A400: $color-primary-600,
-  A700: $color-primary-800,
+  a100: $color-primary-200,
+  a200: $color-primary-400,
+  a400: $color-primary-600,
+  a700: $color-primary-800,
   contrast: (
     50: $color-text-primary,
     100: $color-text-primary,
@@ -333,11 +356,11 @@ $primary-palette: (
     700: $color-text-white,
     800: $color-text-white,
     900: $color-text-white,
-    A100: $color-text-primary,
-    A200: $color-text-white,
-    A400: $color-text-white,
-    A700: $color-text-white,
-  )
+    a100: $color-text-primary,
+    a200: $color-text-white,
+    a400: $color-text-white,
+    a700: $color-text-white,
+  ),
 );
 
 // 辅助色板 - Accent Palette
@@ -352,10 +375,10 @@ $accent-palette: (
   700: $color-secondary-700,
   800: $color-secondary-800,
   900: $color-secondary-900,
-  A100: $color-secondary-200,
-  A200: $color-secondary-400,
-  A400: $color-secondary-600,
-  A700: $color-secondary-800,
+  a100: $color-secondary-200,
+  a200: $color-secondary-400,
+  a400: $color-secondary-600,
+  a700: $color-secondary-800,
   contrast: (
     50: $color-text-primary,
     100: $color-text-primary,
@@ -367,11 +390,11 @@ $accent-palette: (
     700: $color-text-white,
     800: $color-text-white,
     900: $color-text-white,
-    A100: $color-text-primary,
-    A200: $color-text-white,
-    A400: $color-text-white,
-    A700: $color-text-white,
-  )
+    a100: $color-text-primary,
+    a200: $color-text-white,
+    a400: $color-text-white,
+    a700: $color-text-white,
+  ),
 );
 
 // 警告色板 - Warn Palette
@@ -405,8 +428,196 @@ $warn-palette: (
     A200: $color-text-primary,
     A400: $color-text-white,
     A700: $color-text-white,
-  )
+  ),
 );
+
+// =============================================================================
+// 组件级设计令牌 - Component Design Tokens (基于 edu-proto 原型)
+// =============================================================================
+
+// ----- 排版层级 (edu-proto 原型标准) -----
+$typo-hero-size: clamp(2.25rem, 5vw, 3.75rem); // 36-60px
+$typo-hero-weight: 800;
+$typo-hero-tracking: -0.025em;
+$typo-hero-line-height: 1.1;
+
+$typo-page-title-size: clamp(1.875rem, 4vw, 2.25rem); // 30-36px
+$typo-page-title-weight: 700;
+$typo-page-title-tracking: -0.025em;
+$typo-page-title-line-height: 1.25;
+
+$typo-section-title-size: clamp(1.25rem, 2.5vw, 1.5rem); // 20-24px
+$typo-section-title-weight: 700;
+$typo-section-title-line-height: 1.375;
+
+$typo-card-title-size: 1.125rem; // 18px
+$typo-card-title-weight: 700;
+$typo-card-title-line-height: 1.375;
+
+$typo-subtitle-size: 1rem; // 16px
+$typo-subtitle-weight: 600;
+$typo-subtitle-line-height: 1.5;
+
+$typo-body-size: 0.875rem; // 14px
+$typo-body-weight: 400;
+$typo-body-line-height: 1.5;
+
+$typo-caption-size: 0.75rem; // 12px
+$typo-caption-weight: 400;
+$typo-caption-line-height: 1.5;
+
+$typo-tiny-size: 0.625rem; // 10px
+$typo-tiny-weight: 400;
+$typo-tiny-line-height: 1.4;
+
+$typo-button-size: 0.875rem; // 14px
+$typo-button-weight: 500;
+$typo-button-letter-spacing: 0.01em;
+
+// ----- 按钮 (edu-proto: rounded-full/rounded-xl, bg-primary/bg-accent) -----
+$btn-height-sm: 2.25rem; // 36px - h-9
+$btn-height-md: 2.5rem; // 40px - h-10
+$btn-height-lg: 3rem; // 48px - h-12
+
+$btn-padding-x-sm: 1rem; // 16px - px-4
+$btn-padding-x-md: 1.5rem; // 24px - px-6
+$btn-padding-x-lg: 2rem; // 32px - px-8
+
+$btn-radius-full: 9999px; // rounded-full (主按钮)
+$btn-radius-xl: 0.75rem; // rounded-xl (次按钮, 12px)
+$btn-radius-lg: 0.5rem; // rounded-lg (小按钮, 8px)
+
+$btn-font-size-sm: 0.75rem; // 12px - text-xs
+$btn-font-size-md: 0.875rem; // 14px - text-sm
+$btn-font-size-lg: 1rem; // 16px - text-base
+$btn-font-weight: 500; // font-medium
+$btn-font-weight-bold: 700; // font-bold (CTA 按钮)
+
+$btn-shadow-default: $shadow-md; // shadow-md
+$btn-shadow-hover: $shadow-lg; // hover:shadow-lg
+$btn-transition: all 0.2s $transition-timing-default;
+
+// ----- 卡片 (edu-proto: rounded-2xl/rounded-xl, shadow-sm/md) -----
+$card-radius-lg: 1rem; // rounded-2xl (16px)
+$card-radius-md: 0.75rem; // rounded-xl (12px)
+$card-radius-sm: 0.5rem; // rounded-lg (8px)
+
+$card-padding-sm: 0.75rem; // p-3 (12px)
+$card-padding-md: 1rem; // p-4 (16px)
+$card-padding-lg: 1.25rem; // p-5 (20px)
+$card-padding-xl: 1.5rem; // p-6 (24px)
+
+$card-shadow-default: $shadow-sm; // shadow-sm
+$card-shadow-hover: $shadow-xl; // hover:shadow-xl
+$card-border: 1px solid $color-border;
+$card-bg: $color-surface;
+
+// ----- 输入框 (edu-proto: rounded-full, border-2, focus:ring-accent) -----
+$input-radius-full: 9999px; // rounded-full
+$input-radius-md: 0.5rem; // rounded-lg (8px)
+$input-border-width: 2px; // border-2
+$input-border-color: $color-border;
+$input-focus-border: $color-secondary; // focus:border-accent
+$input-focus-ring: 0 0 0 3px rgb(59 130 246 / 20%); // focus:ring-accent
+$input-padding-x: 1rem; // px-4
+$input-padding-y: 0.5rem; // py-2
+$input-font-size: 0.875rem; // text-sm (14px)
+$input-bg: $color-surface;
+$input-placeholder-color: $color-placeholder;
+
+// ----- 徽章/标签 (edu-proto: rounded-full, text-[9-10px]) -----
+$badge-radius: 9999px; // rounded-full
+$badge-padding-x: 0.5rem; // px-2
+$badge-padding-y: 0.125rem; // py-0.5
+$badge-font-size: 0.5625rem; // text-[9px]
+$badge-font-size-sm: 0.625rem; // text-[10px]
+$badge-font-weight: 500; // font-medium
+
+// 状态徽章 (bg-green-500/20 text-green-400 等)
+$status-badge-radius: 9999px;
+$status-badge-padding-x: 0.5rem;
+$status-badge-padding-y: 0.125rem;
+$status-badge-font-size: 0.625rem; // text-[10px]
+
+// ----- 导航栏 (edu-proto: sticky top-0, h-16, backdrop-blur) -----
+$navbar-height: 4rem; // h-16 (64px)
+$navbar-bg: rgb(255 255 255 / 95%); // bg-background/95
+$navbar-backdrop: blur(8px); // backdrop-blur
+$navbar-border: 1px solid $color-border; // border-b
+$navbar-z-index: $z-index-sticky;
+$navbar-logo-size: 1.75rem; // h-7 w-7 (28px)
+$navbar-link-font-size: 0.875rem; // text-sm
+$navbar-link-font-weight: 500; // font-medium
+
+// ----- 标签页 (edu-proto: rounded-full, bg-primary/bg-white) -----
+$tab-radius: 9999px; // rounded-full
+$tab-padding-x: 0.75rem; // px-3
+$tab-padding-y: 0.375rem; // py-1.5
+$tab-font-size: 0.625rem; // text-[10px]
+$tab-font-weight: 500;
+$tab-active-bg: $color-primary; // bg-primary text-white
+$tab-active-color: $color-text-inverse;
+$tab-inactive-bg: $color-surface; // bg-white border
+$tab-inactive-color: $color-text-secondary;
+
+// ----- 进度条 (edu-proto: h-1.5, rounded-full, bg-accent) -----
+$progress-height: 0.375rem; // h-1.5 (6px)
+$progress-radius: 9999px; // rounded-full
+$progress-bg: $color-gray-100; // bg-slate-100 (轨道)
+$progress-fill-bg: $color-secondary; // bg-accent (填充)
+$progress-fill-gradient: linear-gradient(
+  90deg,
+  $color-secondary 0%,
+  $color-secondary-dark 100%
+); // from-blue-500 to-blue-600
+
+// ----- 头像 (edu-proto: rounded-full, bg-accent/10) -----
+$avatar-radius: 9999px;
+$avatar-size-sm: 2.5rem; // w-10 h-10 (40px)
+$avatar-size-md: 3.5rem; // w-14 h-14 (56px)
+$avatar-size-lg: 5rem; // w-20 h-20 (80px)
+$avatar-bg: rgba($color-secondary, 0.1);
+
+// ----- 图标容器 (edu-proto: rounded-xl/rounded-2xl, bg-color-100) -----
+$icon-container-radius-sm: 0.75rem; // rounded-xl (12px)
+$icon-container-radius-md: 1rem; // rounded-2xl (16px)
+$icon-container-size-sm: 2.5rem; // w-10 h-10 (40px)
+$icon-container-size-md: 3rem; // w-12 h-12 (48px)
+$icon-container-size-lg: 4rem; // w-16 h-16 (64px)
+
+// ----- 浮动操作按钮 (edu-proto: rounded-full, shadow-xl) -----
+$fab-size-sm: 3.5rem; // w-14 h-14 (56px)
+$fab-size-md: 4rem; // w-16 h-16 (64px)
+$fab-radius: 9999px;
+$fab-shadow: $shadow-xl;
+$fab-bg-gradient: linear-gradient(
+  135deg,
+  $color-secondary 0%,
+  $color-secondary-dark 100%
+);
+
+// ----- 弹窗/模态框 (edu-proto: rounded-3xl/rounded-2xl, shadow-2xl) -----
+$modal-radius-lg: 1.5rem; // rounded-3xl (24px)
+$modal-radius-md: 1rem; // rounded-2xl (16px)
+$modal-shadow: $shadow-2xl;
+$modal-backdrop-bg: rgb(0 0 0 / 50%); // bg-black/50
+$modal-backdrop-blur: blur(4px); // backdrop-blur-sm
+
+// ----- 底部导航栏 (edu-proto: h-16, bg-white, border-t) -----
+$bottom-nav-height: 4rem; // h-16 (64px)
+$bottom-nav-bg: $color-surface;
+$bottom-nav-border: 1px solid $color-border;
+$bottom-nav-icon-size: 1.25rem; // h-5 w-5 (20px)
+$bottom-nav-label-size: 0.5625rem; // text-[9px]
+$bottom-nav-active-color: $color-secondary; // text-accent
+$bottom-nav-inactive-color: $color-gray-400; // text-gray-400
+
+// ----- 功能色板 (edu-proto 图标/工具色, 仅用于区分图标) -----
+$palette-blue: $color-secondary; // 代码/课程
+$palette-green: $color-success; // AR/实战
+$palette-orange: #f59e0b; // 3D模型/成就
+$palette-red: #ef4444; // 挑战/紧急
+$palette-cyan: #06b6d4; // 设计/创意
 
 // =============================================================================
 // 兼容性别名 - Compatibility Aliases
@@ -424,27 +635,27 @@ $radius-3xl: $border-radius-3xl;
 $radius-full: $border-radius-full;
 
 // font-size 补充变量
-$font-size-caption: $font-size-xs;      // 说明文字大小
-$font-size-body: $font-size-base;       // 正文字体大小
-$font-size-subtitle: $font-size-lg;     // 副标题大小
-$font-size-title: $font-size-2xl;       // 标题大小
-$font-size-headline: $font-size-3xl;    // 大标题大小
-$font-size-display: $font-size-4xl;     // 展示文字大小
+$font-size-caption: $font-size-xs; // 说明文字大小
+$font-size-body: $font-size-base; // 正文字体大小
+$font-size-subtitle: $font-size-lg; // 副标题大小
+$font-size-title: $font-size-2xl; // 标题大小
+$font-size-headline: $font-size-3xl; // 大标题大小
+$font-size-display: $font-size-4xl; // 展示文字大小
 
 // h1-h6 字体大小（桌面端优化，使用 clamp() 响应式）
-$font-size-h1: clamp(2rem, 4vw, 2.25rem);     // 32px → 36px
-$font-size-h2: clamp(1.5rem, 3vw, 1.75rem);  // 24px → 28px
+$font-size-h1: clamp(2rem, 4vw, 2.25rem); // 32px → 36px
+$font-size-h2: clamp(1.5rem, 3vw, 1.75rem); // 24px → 28px
 $font-size-h3: clamp(1.25rem, 2.5vw, 1.5rem); // 20px → 24px
 $font-size-h4: clamp(1.125rem, 2vw, 1.25rem); // 18px → 20px
-$font-size-h5: $font-size-lg;                 // 18px
-$font-size-h6: $font-size-base;               // 16px
+$font-size-h5: $font-size-lg; // 18px
+$font-size-h6: $font-size-base; // 16px
 
 // 品牌色别名
 $color-brand-primary: $color-primary;
 $color-brand-primary-50: $color-primary-50;
 $color-brand-primary-100: $color-primary-100;
 $color-brand-primary-200: $color-primary-200;
-$color-brand-primary-light: $color-primary-100;  // 浅色变体，用于背景
+$color-brand-primary-light: $color-primary-100; // 浅色变体，用于背景
 $color-brand-primary-dark: $color-primary-dark;
 $color-brand-secondary: $color-secondary;
 $color-brand-secondary-light: $color-secondary-light;

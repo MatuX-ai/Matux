@@ -20,7 +20,12 @@ import { UserCenterMenuItem, UserCenterService } from '../../services/user-cente
   standalone: true,
   imports: [CommonModule, RouterModule, MatListModule, MatIconModule, MatCardModule],
   template: `
-    <div class="sidebar" [class.desktop]="!isMobile" [class.mobile]="isMobile" [class.open]="opened">
+    <div
+      class="sidebar"
+      [class.desktop]="!isMobile"
+      [class.mobile]="isMobile"
+      [class.open]="opened"
+    >
       <!-- 用户信息卡片 -->
       <div class="user-info-card" *ngIf="currentUser">
         <div class="avatar">

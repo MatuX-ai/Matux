@@ -147,8 +147,9 @@ export class ARLabComponent implements OnInit, OnDestroy {
       this.gpuAccelerationLevel = 'webgl2';
     } else {
       // 降级到 WebGL1
-      gl = canvas.getContext('webgl') as WebGLRenderingContext | null
-        ?? canvas.getContext('experimental-webgl') as WebGLRenderingContext | null;
+      gl =
+        canvas.getContext('webgl') ??
+        (canvas.getContext('experimental-webgl') as WebGLRenderingContext | null);
       if (gl) {
         this.isARSupported = true;
         this.gpuAccelerationLevel = 'webgl1';
@@ -163,7 +164,7 @@ export class ARLabComponent implements OnInit, OnDestroy {
     if (gl) {
       const debugInfo = gl.getExtension('WEBGL_debug_renderer_info');
       if (debugInfo) {
-        const renderer = gl.getParameter(debugInfo.UNMASKED_RENDERER_WEBGL);
+        const renderer = gl.getParameter(debugInfo.UNMASKED_RENDERER_WEBGL) as string;
         this.gpuRendererInfo = String(renderer);
       }
     }
@@ -194,7 +195,8 @@ export class ARLabComponent implements OnInit, OnDestroy {
     try {
       // 检查 UnityLoader 是否可用
       if (typeof UnityLoader === 'undefined') {
-        this.errorMessage = 'Unity WebGL 运行时未加载。请确认 Unity 构建已部署到 /ar-lab/build/ 目录。';
+        this.errorMessage =
+          'Unity WebGL 运行时未加载。请确认 Unity 构建已部署到 /ar-lab/build/ 目录。';
         this.isLoading = false;
         this.snackBar.open(this.errorMessage, '关闭', { duration: 5000 });
         return;
@@ -408,6 +410,7 @@ export class ARLabComponent implements OnInit, OnDestroy {
    * 键盘快捷键处理（F11 / F / Esc）
    */
   @HostListener('document:keydown', ['$event'])
+  // eslint-disable-next-line complexity
   handleKeyboardShortcut(event: KeyboardEvent): void {
     // F11 → 切换全屏
     if (event.key === 'F11') {
@@ -417,8 +420,10 @@ export class ARLabComponent implements OnInit, OnDestroy {
     }
 
     // F 键（非输入框中）→ 切换全屏
-    if ((event.key === 'f' || event.key === 'F') &&
-        !(event.target instanceof HTMLInputElement || event.target instanceof HTMLTextAreaElement)) {
+    if (
+      (event.key === 'f' || event.key === 'F') &&
+      !(event.target instanceof HTMLInputElement || event.target instanceof HTMLTextAreaElement)
+    ) {
       event.preventDefault();
       this.toggleFullscreen();
       return;
@@ -482,16 +487,21 @@ export class ARLabComponent implements OnInit, OnDestroy {
     if (!container) return;
 
     if (!document.fullscreenElement) {
-      void container.requestFullscreen().then(() => {
-        this.isFullscreen = true;
-        // AR体验锁定横屏
-        if ((screen.orientation as unknown as { lock?: (o: string) => Promise<void> })?.lock) {
-          void (screen.orientation as unknown as { lock: (o: string) => Promise<void> }).lock('landscape').catch(() => {});
-        }
-        this.snackBar.open('全屏模式已启用 (Esc 退出)', '关闭', { duration: 2000 });
-      }).catch((err) => {
-        console.warn('[AR Lab] 全屏请求失败:', err);
-      });
+      void container
+        .requestFullscreen()
+        .then(() => {
+          this.isFullscreen = true;
+          // AR体验锁定横屏
+          if ((screen.orientation as unknown as { lock?: (o: string) => Promise<void> })?.lock) {
+            void (screen.orientation as unknown as { lock: (o: string) => Promise<void> })
+              .lock('landscape')
+              .catch(() => {});
+          }
+          this.snackBar.open('全屏模式已启用 (Esc 退出)', '关闭', { duration: 2000 });
+        })
+        .catch((err) => {
+          console.warn('[AR Lab] 全屏请求失败:', err);
+        });
     } else {
       void document.exitFullscreen().then(() => {
         this.isFullscreen = false;

@@ -1,35 +1,35 @@
 // Design Tokens 索引文件
-// 导入所有设计令牌
+// 转发所有设计令牌
 
 // MatuX 设计令牌（核心单一来源）
-@import 'matux-tokens';
+@forward 'matux-tokens';
 
 // Mac 风格颜色别名
-@import 'mac-colors';
+@forward 'mac-colors';
 
 // 渐变值
-@import 'tokens';
+@forward 'tokens';
 
 // 字体 mixins 和函数
-@import 'fonts';
+@forward 'fonts';
 
 // 颜色函数
-@import 'colors';
+@forward 'colors';
 
 // 间距 mixins 和函数
-@import 'spacing';
+@forward 'spacing';
 
 // 圆角 mixins 和函数
-@import 'border-radius';
+@forward 'border-radius';
 
 // 阴影 mixins 和函数
-@import 'shadows';
+@forward 'shadows';
 
 // 过渡（unique 变量）
-@import 'transitions';
+@forward 'transitions';
 
 // 布局和网格系统
-@import 'layout';
+@forward 'layout';
 
 // Z-index（unique 变量）
-@import 'z-index';
+@forward 'z-index';

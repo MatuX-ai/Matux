@@ -7,20 +7,24 @@
         <span class="status-indicator"></span>
         {{ isConnected ? '已连接' : '未连接' }}
       </span>
-      <span class="user-count">
-        {{ getConnectedUsersCount() }} 人在线
-      </span>
+      <span class="user-count"> {{ getConnectedUsersCount() }} 人在线 </span>
     </div>
 
     <div class="toolbar-right">
-      <button mat-button (click)="toggleCommentsPanel()"
-              [color]="showCommentsPanel ? 'primary' : ''">
+      <button
+        mat-button
+        (click)="toggleCommentsPanel()"
+        [color]="showCommentsPanel ? 'primary' : ''"
+      >
         <mat-icon>comment</mat-icon>
         评论 ({{ comments.length }})
       </button>
 
-      <button mat-button (click)="toggleSuggestionsPanel()"
-              [color]="showSuggestionsPanel ? 'primary' : ''">
+      <button
+        mat-button
+        (click)="toggleSuggestionsPanel()"
+        [color]="showSuggestionsPanel ? 'primary' : ''"
+      >
         <mat-icon>rate_review</mat-icon>
         建议 ({{ suggestions.length }})
       </button>
@@ -46,14 +50,17 @@
           (keyup)="onCursorPositionChange(editorTextarea.selectionStart)"
           (click)="onCursorPositionChange(editorTextarea.selectionStart)"
           placeholder="开始编辑文档内容..."
-          [disabled]="isLoading">
+          [disabled]="isLoading"
+        >
         </textarea>
 
         <!-- 用户光标指示器 -->
         <div class="cursor-overlay" *ngIf="activeUsers.length > 0">
-          <div *ngFor="let user of activeUsers"
-               class="remote-cursor"
-               [style.left.px]="calculateCursorPosition(user.cursorPosition)">
+          <div
+            *ngFor="let user of activeUsers"
+            class="remote-cursor"
+            [style.left.px]="calculateCursorPosition(user.cursorPosition)"
+          >
             <div class="cursor-tooltip">{{ user.userName }}</div>
           </div>
         </div>
@@ -95,19 +102,25 @@
           </mat-form-field>
 
           <div class="comment-actions">
-            <button mat-button color="primary"
-                    (click)="addComment(0, 0, commentInput.value); commentInput.value=''">
+            <button
+              mat-button
+              color="primary"
+              (click)="addComment(0, 0, commentInput.value); commentInput.value = ''"
+            >
               添加评论
             </button>
           </div>
         </div>
 
         <div class="comments-list">
-          <div *ngFor="let comment of comments" class="comment-item"
-               [class.resolved]="comment.is_resolved">
+          <div
+            *ngFor="let comment of comments"
+            class="comment-item"
+            [class.resolved]="comment.is_resolved"
+          >
             <div class="comment-header">
               <div class="comment-author">{{ comment.user_name }}</div>
-              <div class="comment-date">{{ comment.created_at | date:'short' }}</div>
+              <div class="comment-date">{{ comment.created_at | date: 'short' }}</div>
             </div>
 
             <div class="comment-content">
@@ -119,8 +132,12 @@
                 {{ getCommentTypeLabel(comment.comment_type) }}
               </span>
 
-              <button mat-button *ngIf="!comment.is_resolved"
-                      (click)="resolveComment(comment.id)" size="small">
+              <button
+                mat-button
+                *ngIf="!comment.is_resolved"
+                (click)="resolveComment(comment.id)"
+                size="small"
+              >
                 标记为已解决
               </button>
             </div>
@@ -147,12 +164,12 @@
         <div class="add-suggestion-form" *ngIf="documentInfo?.allow_suggestions">
           <mat-form-field appearance="outline" class="full-width">
             <mat-label>原内容</mat-label>
-            <input matInput #originalInput placeholder="选择要替换的文本">
+            <input matInput #originalInput placeholder="选择要替换的文本" />
           </mat-form-field>
 
           <mat-form-field appearance="outline" class="full-width">
             <mat-label>建议内容</mat-label>
-            <input matInput #suggestedInput placeholder="输入建议的文本">
+            <input matInput #suggestedInput placeholder="输入建议的文本" />
           </mat-form-field>
 
           <mat-form-field appearance="outline" class="full-width">
@@ -161,20 +178,30 @@
           </mat-form-field>
 
           <div class="suggestion-actions">
-            <button mat-button color="primary"
-                    (click)="addSuggestion(0, 0, suggestedInput.value, reasonInput.value);
-                            originalInput.value=''; suggestedInput.value=''; reasonInput.value=''">
+            <button
+              mat-button
+              color="primary"
+              (click)="
+                addSuggestion(0, 0, suggestedInput.value, reasonInput.value);
+                originalInput.value = '';
+                suggestedInput.value = '';
+                reasonInput.value = ''
+              "
+            >
               添加建议
             </button>
           </div>
         </div>
 
         <div class="suggestions-list">
-          <div *ngFor="let suggestion of suggestions" class="suggestion-item"
-               [class]="suggestion.status">
+          <div
+            *ngFor="let suggestion of suggestions"
+            class="suggestion-item"
+            [class]="suggestion.status"
+          >
             <div class="suggestion-header">
               <div class="suggestion-author">{{ suggestion.user_name }}</div>
-              <div class="suggestion-date">{{ suggestion.created_at | date:'short' }}</div>
+              <div class="suggestion-date">{{ suggestion.created_at | date: 'short' }}</div>
             </div>
 
             <div class="suggestion-content">
@@ -195,12 +222,14 @@
             </div>
 
             <div class="suggestion-actions" *ngIf="suggestion.status === 'pending'">
-              <button mat-button color="primary"
-                      (click)="reviewSuggestion(suggestion.id, 'accepted')">
+              <button
+                mat-button
+                color="primary"
+                (click)="reviewSuggestion(suggestion.id, 'accepted')"
+              >
                 接受
               </button>
-              <button mat-button color="warn"
-                      (click)="reviewSuggestion(suggestion.id, 'rejected')">
+              <button mat-button color="warn" (click)="reviewSuggestion(suggestion.id, 'rejected')">
                 拒绝
               </button>
             </div>
@@ -222,9 +251,12 @@
   </div>
 
   <!-- 选区操作工具栏 -->
-  <div class="selection-toolbar" *ngIf="showSelectionToolbar"
-       [style.left.px]="selectionToolbarPosition.x"
-       [style.top.px]="selectionToolbarPosition.y">
+  <div
+    class="selection-toolbar"
+    *ngIf="showSelectionToolbar"
+    [style.left.px]="selectionToolbarPosition.x"
+    [style.top.px]="selectionToolbarPosition.y"
+  >
     <button mat-icon-button (click)="openCommentDialog()">
       <mat-icon>comment</mat-icon>
     </button>

@@ -11,7 +11,7 @@
  */
 
 import { Injectable } from '@angular/core';
-import { BehaviorSubject, Observable } from 'rxjs';
+import { BehaviorSubject } from 'rxjs';
 
 /** .imato 课程包数据结构 */
 export interface ImatoCoursePackage {
@@ -55,7 +55,9 @@ export class ImatoFileService {
   private currentPackageSubject = new BehaviorSubject<ImatoCoursePackage | null>(null);
   public currentPackage$ = this.currentPackageSubject.asObservable();
 
-  private recentFilesSubject = new BehaviorSubject<{ path: string; title: string; openedAt: string }[]>([]);
+  private recentFilesSubject = new BehaviorSubject<
+    { path: string; title: string; openedAt: string }[]
+  >([]);
   public recentFiles$ = this.recentFilesSubject.asObservable();
 
   constructor() {
@@ -71,8 +73,13 @@ export class ImatoFileService {
   /** 初始化文件打开事件监听 */
   private initFileListener(): void {
     // 仅在 Electron 环境下运行
-    if (typeof window !== 'undefined' && (window as any).electronAPI?.on) {
-      (window as any).electronAPI.on('open-file', (data: { filePath: string; content: string }) => {
+    const win = window as unknown as {
+      electronAPI?: {
+        on: (event: string, handler: (data: { filePath: string; content: string }) => void) => void;
+      };
+    };
+    if (typeof window !== 'undefined' && win.electronAPI?.on) {
+      win.electronAPI.on('open-file', (data: { filePath: string; content: string }) => {
         this.handleOpenFile(data.filePath, data.content);
       });
     }
@@ -120,7 +127,9 @@ export class ImatoFileService {
     this.recentFilesSubject.next(updated);
     try {
       localStorage.setItem(this.STORAGE_KEY, JSON.stringify(updated));
-    } catch { /* 存储失败忽略 */ }
+    } catch {
+      /* 存储失败忽略 */
+    }
   }
 
   private loadRecentFiles(): void {
@@ -130,6 +139,8 @@ export class ImatoFileService {
         const parsed = JSON.parse(data) as { path: string; title: string; openedAt: string }[];
         this.recentFilesSubject.next(parsed);
       }
-    } catch { /* 加载失败忽略 */ }
+    } catch {
+      /* 加载失败忽略 */
+    }
   }
 }

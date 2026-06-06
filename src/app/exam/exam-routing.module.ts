@@ -2,8 +2,8 @@ import { NgModule } from '@angular/core';
 import { RouterModule, Routes } from '@angular/router';
 
 import { ExamListComponent } from './pages/exam-list/exam-list.component';
-import { ExamTakingComponent } from './pages/exam-taking/exam-taking.component';
 import { ExamResultComponent } from './pages/exam-result/exam-result.component';
+import { ExamTakingComponent } from './pages/exam-taking/exam-taking.component';
 
 const routes: Routes = [
   {

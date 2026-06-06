@@ -10,13 +10,13 @@
  * 在浏览器环境（非 Electron）下提供安全的降级处理。
  */
 import { Injectable, NgZone } from '@angular/core';
-import { BehaviorSubject, Observable, from, of } from 'rxjs';
+import { BehaviorSubject, from, Observable, of } from 'rxjs';
 import { catchError, map } from 'rxjs/operators';
 
 import type {
   AppEvent,
   AppInfo,
-  DirectoryEntry,
+  ElectronAPI,
   FileInfoResult,
   FileReadResult,
   FileWriteResult,
@@ -32,6 +32,11 @@ import type {
 export class ElectronService {
   /** 是否在 Electron 环境中运行 */
   readonly isElectron: boolean;
+
+  /** Electron API 引用 */
+  private get api(): ElectronAPI {
+    return window.electronAPI as ElectronAPI;
+  }
 
   /** 后端 URL Subject */
   private backendUrlSubject = new BehaviorSubject<string>('/api');
@@ -53,10 +58,13 @@ export class ElectronService {
    * 初始化 Electron 环境
    */
   private initializeElectron(): void {
-    const api = window.electronAPI!;
+    const api = window.electronAPI;
+    if (!api) {
+      return;
+    }
 
     // 获取后端 URL
-    api.getBackendUrl().then((url) => {
+    void api.getBackendUrl().then((url) => {
       this.backendUrlSubject.next(url);
     });
 
@@ -68,7 +76,7 @@ export class ElectronService {
 
         // 后端断连时弹出系统通知
         if (event.type === 'backend-disconnected') {
-          api.showNotification('后端连接断开', '后端服务可能已崩溃，部分功能将不可用');
+          void api.showNotification('后端连接断开', '后端服务可能已崩溃，部分功能将不可用');
         }
       });
     });
@@ -88,9 +96,7 @@ export class ElectronService {
     if (!this.isElectron) {
       return of(null);
     }
-    return from(window.electronAPI!.getAppInfo()).pipe(
-      catchError(() => of(null))
-    );
+    return from(this.api.getAppInfo()).pipe(catchError(() => of(null)));
   }
 
   /**
@@ -100,9 +106,7 @@ export class ElectronService {
     if (!this.isElectron) {
       return of(true); // 浏览器环境假设健康
     }
-    return from(window.electronAPI!.healthCheck()).pipe(
-      catchError(() => of(false))
-    );
+    return from(this.api.healthCheck()).pipe(catchError(() => of(false)));
   }
 
   // ==================== 文件系统操作 ====================
@@ -114,7 +118,7 @@ export class ElectronService {
     if (!this.isElectron) {
       return of({ success: false, error: '非桌面环境' });
     }
-    return from(window.electronAPI!.readFile(filePath));
+    return from(this.api.readFile(filePath));
   }
 
   /**
@@ -124,7 +128,7 @@ export class ElectronService {
     if (!this.isElectron) {
       return of({ success: false, error: '非桌面环境' });
     }
-    return from(window.electronAPI!.writeFile(filePath, content));
+    return from(this.api.writeFile(filePath, content));
   }
 
   /**
@@ -134,7 +138,7 @@ export class ElectronService {
     if (!this.isElectron) {
       return of({ success: false, error: '非桌面环境' });
     }
-    return from(window.electronAPI!.showSaveDialog());
+    return from(this.api.showSaveDialog());
   }
 
   /**
@@ -144,7 +148,7 @@ export class ElectronService {
     if (!this.isElectron) {
       return of({ success: false, error: '非桌面环境' });
     }
-    return from(window.electronAPI!.showOpenDialog());
+    return from(this.api.showOpenDialog());
   }
 
   /** ==================== 增强文件系统操作 (P1-4) ==================== */
@@ -154,7 +158,7 @@ export class ElectronService {
     if (!this.isElectron) {
       return of({ success: false, error: '非桌面环境' });
     }
-    return from(window.electronAPI!.listDirectory(dirPath));
+    return from(this.api.listDirectory(dirPath));
   }
 
   /** 创建目录（递归） */
@@ -162,7 +166,7 @@ export class ElectronService {
     if (!this.isElectron) {
       return of({ success: false, error: '非桌面环境' });
     }
-    return from(window.electronAPI!.makeDirectory(dirPath));
+    return from(this.api.makeDirectory(dirPath));
   }
 
   /** 删除文件或目录 */
@@ -170,7 +174,7 @@ export class ElectronService {
     if (!this.isElectron) {
       return of({ success: false, error: '非桌面环境' });
     }
-    return from(window.electronAPI!.deleteFile(targetPath));
+    return from(this.api.deleteFile(targetPath));
   }
 
   /** 检查文件是否存在 */
@@ -178,7 +182,7 @@ export class ElectronService {
     if (!this.isElectron) {
       return of({ exists: false });
     }
-    return from(window.electronAPI!.fileExists(targetPath));
+    return from(this.api.fileExists(targetPath));
   }
 
   /** 获取文件信息 */
@@ -186,7 +190,7 @@ export class ElectronService {
     if (!this.isElectron) {
       return of({ success: false, error: '非桌面环境' });
     }
-    return from(window.electronAPI!.getFileInfo(filePath));
+    return from(this.api.getFileInfo(filePath));
   }
 
   /** 选择目录对话框 */
@@ -194,7 +198,7 @@ export class ElectronService {
     if (!this.isElectron) {
       return of({ success: false, error: '非桌面环境' });
     }
-    return from(window.electronAPI!.selectDirectory());
+    return from(this.api.selectDirectory());
   }
 
   /**
@@ -205,7 +209,7 @@ export class ElectronService {
       window.open(url, '_blank');
       return of(true);
     }
-    return from(window.electronAPI!.openExternal(url)).pipe(
+    return from(this.api.openExternal(url)).pipe(
       map((result) => result.success),
       catchError(() => of(false))
     );
@@ -216,10 +220,11 @@ export class ElectronService {
   /**
    * 监听特定应用事件
    */
-  onAppEvent(eventType: AppEvent['type']): Observable<AppEvent> {
-    return this.appEvent$.pipe(
+  onAppEvent(_eventType: AppEvent['type']): Observable<AppEvent> {
+    return this.appEvent$
+      .pipe
       // 过滤匹配类型的事件
-    ) as unknown as Observable<AppEvent>;
+      () as unknown as Observable<AppEvent>;
     // 注：实际过滤逻辑由订阅方处理
   }
 
@@ -227,17 +232,17 @@ export class ElectronService {
    * 获取窗口失焦事件流
    */
   onWindowBlur(): Observable<void> {
-    return this.appEvent$.pipe(
+    return this.appEvent$
+      .pipe
       // 实际过滤由使用方通过 filter 操作符完成
-    ) as unknown as Observable<void>;
+      () as unknown as Observable<void>;
   }
 
   /**
    * 获取窗口聚焦事件流
    */
   onWindowFocus(): Observable<void> {
-    return this.appEvent$.pipe(
-    ) as unknown as Observable<void>;
+    return this.appEvent$.pipe() as unknown as Observable<void>;
   }
 
   /**
@@ -245,7 +250,7 @@ export class ElectronService {
    */
   sendAppEvent(event: AppEvent): void {
     if (this.isElectron) {
-      window.electronAPI!.send('app-event', event);
+      this.api.send('app-event', event);
     }
   }
 

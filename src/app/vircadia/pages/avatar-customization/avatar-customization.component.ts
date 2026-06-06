@@ -1,10 +1,10 @@
-import { Component } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { MatCardModule } from '@angular/material/card';
-import { MatIconModule } from '@angular/material/icon';
+import { Component } from '@angular/core';
 import { MatButtonModule } from '@angular/material/button';
-import { MatGridListModule } from '@angular/material/grid-list';
+import { MatCardModule } from '@angular/material/card';
 import { MatDividerModule } from '@angular/material/divider';
+import { MatGridListModule } from '@angular/material/grid-list';
+import { MatIconModule } from '@angular/material/icon';
 
 import { VircadiaSceneViewerComponent } from '../../../components/vircadia-scene-viewer/vircadia-scene-viewer.component';
 
@@ -45,8 +45,12 @@ interface AvatarOption {
         <div class="category-section">
           <h4>👤 体型</h4>
           <div class="option-grid">
-            <div *ngFor="let opt of bodyOptions" class="option-card" [class.selected]="selectedBody === opt.id"
-              (click)="selectBody(opt)">
+            <div
+              *ngFor="let opt of bodyOptions"
+              class="option-card"
+              [class.selected]="selectedBody === opt.id"
+              (click)="selectBody(opt)"
+            >
               <div class="option-preview">{{ opt.preview }}</div>
               <span>{{ opt.name }}</span>
             </div>
@@ -58,8 +62,12 @@ interface AvatarOption {
         <div class="category-section">
           <h4>👕 服装</h4>
           <div class="option-grid">
-            <div *ngFor="let opt of outfitOptions" class="option-card" [class.selected]="selectedOutfit === opt.id"
-              (click)="selectOutfit(opt)">
+            <div
+              *ngFor="let opt of outfitOptions"
+              class="option-card"
+              [class.selected]="selectedOutfit === opt.id"
+              (click)="selectOutfit(opt)"
+            >
               <div class="option-preview">{{ opt.preview }}</div>
               <span>{{ opt.name }}</span>
             </div>
@@ -71,8 +79,12 @@ interface AvatarOption {
         <div class="category-section">
           <h4>🎒 配饰</h4>
           <div class="option-grid">
-            <div *ngFor="let opt of accessoryOptions" class="option-card" [class.selected]="selectedAccessory === opt.id"
-              (click)="selectAccessory(opt)">
+            <div
+              *ngFor="let opt of accessoryOptions"
+              class="option-card"
+              [class.selected]="selectedAccessory === opt.id"
+              (click)="selectAccessory(opt)"
+            >
               <div class="option-preview">{{ opt.preview }}</div>
               <span>{{ opt.name }}</span>
             </div>
@@ -85,27 +97,80 @@ interface AvatarOption {
           <button mat-raised-button color="primary" (click)="applyAvatar()">
             <mat-icon>check</mat-icon> 应用
           </button>
-          <button mat-raised-button (click)="resetAvatar()">
-            <mat-icon>undo</mat-icon> 重置
-          </button>
+          <button mat-raised-button (click)="resetAvatar()"><mat-icon>undo</mat-icon> 重置</button>
         </div>
       </div>
     </div>
   `,
   styles: [
     `
-      .avatar-customization { height: 100%; display: flex; }
-      .scene-panel { flex: 1; position: relative; }
-      .customization-panel { width: 320px; padding: 16px; overflow-y: auto; background: rgba(255,255,255,0.05); color: white; }
-      .customization-panel h3 { display: flex; align-items: center; gap: 8px; margin: 0 0 16px; font-size: 18px; }
-      .customization-panel h4 { margin: 12px 0; font-size: 14px; color: rgba(255,255,255,0.7); }
-      .option-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-bottom: 16px; }
-      .option-card { display: flex; flex-direction: column; align-items: center; gap: 4px; padding: 12px 8px; border: 2px solid rgba(255,255,255,0.1); border-radius: 8px; cursor: pointer; transition: all 0.2s; font-size: 12px; color: rgba(255,255,255,0.7); }
-      .option-card:hover { border-color: rgba(102,126,234,0.5); background: rgba(102,126,234,0.1); }
-      .option-card.selected { border-color: #3b82f6; background: rgba(102,126,234,0.2); color: white; }
-      .option-preview { font-size: 32px; line-height: 1; }
-      .action-row { display: flex; gap: 12px; margin-top: 16px; }
-      .action-row button { flex: 1; }
+      .avatar-customization {
+        height: 100%;
+        display: flex;
+      }
+      .scene-panel {
+        flex: 1;
+        position: relative;
+      }
+      .customization-panel {
+        width: 320px;
+        padding: 16px;
+        overflow-y: auto;
+        background: rgba(255, 255, 255, 0.05);
+        color: white;
+      }
+      .customization-panel h3 {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        margin: 0 0 16px;
+        font-size: 18px;
+      }
+      .customization-panel h4 {
+        margin: 12px 0;
+        font-size: 14px;
+        color: rgba(255, 255, 255, 0.7);
+      }
+      .option-grid {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 8px;
+        margin-bottom: 16px;
+      }
+      .option-card {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        gap: 4px;
+        padding: 12px 8px;
+        border: 2px solid rgba(255, 255, 255, 0.1);
+        border-radius: 8px;
+        cursor: pointer;
+        transition: all 0.2s;
+        font-size: 12px;
+        color: rgba(255, 255, 255, 0.7);
+      }
+      .option-card:hover {
+        border-color: rgba(102, 126, 234, 0.5);
+        background: rgba(102, 126, 234, 0.1);
+      }
+      .option-card.selected {
+        border-color: #3b82f6;
+        background: rgba(102, 126, 234, 0.2);
+        color: white;
+      }
+      .option-preview {
+        font-size: 32px;
+        line-height: 1;
+      }
+      .action-row {
+        display: flex;
+        gap: 12px;
+        margin-top: 16px;
+      }
+      .action-row button {
+        flex: 1;
+      }
     `,
   ],
 })
@@ -148,7 +213,7 @@ export class AvatarCustomizationComponent {
   }
 
   applyAvatar(): void {
-    console.log('[AvatarCustomization] Apply:', {
+    console.warn('[AvatarCustomization] Apply:', {
       body: this.selectedBody,
       outfit: this.selectedOutfit,
       accessory: this.selectedAccessory,

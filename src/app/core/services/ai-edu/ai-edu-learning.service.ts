@@ -14,11 +14,11 @@ export class AIEduLearningService {
   private readonly API_BASE = 'http://localhost:8000/api/v1/org/1/ai-edu';
 
   // 缓存机制
-  private cache = new Map<string, { data: any; timestamp: number }>();
+  private cache = new Map<string, { data: unknown; timestamp: number }>();
   private readonly CACHE_TTL = 5 * 60 * 1000; // 5 分钟缓存时间
 
   // 学习进度主题
-  private progressSubject = new BehaviorSubject<any>(null);
+  private progressSubject = new BehaviorSubject<unknown>(null);
   public progress$ = this.progressSubject.asObservable();
 
   constructor(private http: HttpClient) {}
@@ -26,7 +26,7 @@ export class AIEduLearningService {
   /**
    * 从缓存获取数据
    */
-  private getFromCache(key: string): any | null {
+  private getFromCache(key: string): unknown {
     const cached = this.cache.get(key);
     if (cached && Date.now() - cached.timestamp < this.CACHE_TTL) {
       return cached.data;
@@ -38,7 +38,7 @@ export class AIEduLearningService {
   /**
    * 设置缓存
    */
-  private setCache(key: string, data: any): void {
+  private setCache(key: string, data: unknown): void {
     this.cache.set(key, {
       data,
       timestamp: Date.now(),
@@ -63,7 +63,7 @@ export class AIEduLearningService {
   /**
    * 获取课程模块详情
    */
-  getModule(moduleId: number): Observable<any> {
+  getModule(moduleId: number): Observable<unknown> {
     const cacheKey = `module_${moduleId}`;
     const cached = this.getFromCache(cacheKey);
 
@@ -83,7 +83,7 @@ export class AIEduLearningService {
   /**
    * 获取课时详情
    */
-  getLesson(lessonId: number): Observable<any> {
+  getLesson(lessonId: number): Observable<unknown> {
     const cacheKey = `lesson_${lessonId}`;
     const cached = this.getFromCache(cacheKey);
 
@@ -108,7 +108,7 @@ export class AIEduLearningService {
     lessonId: number,
     completionStatus: string,
     score?: number
-  ): Observable<any> {
+  ): Observable<unknown> {
     this.clearCache(`progress_${userId}`);
 
     return this.http
@@ -134,15 +134,15 @@ export class AIEduLearningService {
   /**
    * 完成课程
    */
-  completeLesson(userId: number, lessonId: number, score = 100): Observable<any> {
+  completeLesson(userId: number, lessonId: number, score = 100): Observable<unknown> {
     return this.updateProgress(userId, lessonId, 'completed', score);
   }
 
   /**
    * 获取用户学习进度
    */
-  getUserProgress(userId: number, moduleId?: number): Observable<any> {
-    const cacheKey = `progress_${userId}_${moduleId || 'all'}`;
+  getUserProgress(userId: number, moduleId?: number): Observable<unknown> {
+    const cacheKey = `progress_${userId}_${moduleId ?? 'all'}`;
     const cached = this.getFromCache(cacheKey);
 
     if (cached) {
@@ -166,7 +166,7 @@ export class AIEduLearningService {
   /**
    * 运行代码
    */
-  executeCode(code: string, language: string): Observable<any> {
+  executeCode(code: string, language: string): Observable<unknown> {
     return this.http.post(`${this.API_BASE}/execute-code`, {
       code,
       language,
@@ -176,7 +176,7 @@ export class AIEduLearningService {
   /**
    * 保存学习笔记
    */
-  saveNote(userId: number, lessonId: number, content: string): Observable<any> {
+  saveNote(userId: number, lessonId: number, content: string): Observable<unknown> {
     this.clearCache(`notes_${userId}_${lessonId}`);
 
     return this.http.post(`${this.API_BASE}/notes/save`, {
@@ -189,7 +189,7 @@ export class AIEduLearningService {
   /**
    * 获取学习笔记
    */
-  getNote(userId: number, lessonId: number): Observable<any> {
+  getNote(userId: number, lessonId: number): Observable<unknown> {
     const cacheKey = `notes_${userId}_${lessonId}`;
     const cached = this.getFromCache(cacheKey);
 
@@ -209,7 +209,7 @@ export class AIEduLearningService {
   /**
    * 开始测验
    */
-  startQuiz(lessonId: number): Observable<any> {
+  startQuiz(lessonId: number): Observable<unknown> {
     return this.http.post(`${this.API_BASE}/quiz/start`, {
       lesson_id: lessonId,
     });
@@ -218,7 +218,7 @@ export class AIEduLearningService {
   /**
    * 提交测验答案
    */
-  submitQuiz(quizId: number, answers: any[]): Observable<any> {
+  submitQuiz(quizId: number, answers: unknown[]): Observable<unknown> {
     return this.http.post(`${this.API_BASE}/quiz/submit`, {
       quiz_id: quizId,
       answers,
@@ -228,7 +228,7 @@ export class AIEduLearningService {
   /**
    * 获取积分统计
    */
-  getPointsStats(userId: number): Observable<any> {
+  getPointsStats(userId: number): Observable<unknown> {
     const cacheKey = `points_${userId}`;
     const cached = this.getFromCache(cacheKey);
 
@@ -248,7 +248,7 @@ export class AIEduLearningService {
   /**
    * 获取成就徽章
    */
-  getAchievements(userId: number): Observable<any> {
+  getAchievements(userId: number): Observable<unknown> {
     const cacheKey = `achievements_${userId}`;
     const cached = this.getFromCache(cacheKey);
 

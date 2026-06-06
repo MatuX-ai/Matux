@@ -1,4 +1,5 @@
 import { Injectable, OnDestroy } from '@angular/core';
+
 import { ExamService } from './exam.service';
 
 /**
@@ -21,23 +22,26 @@ export class AntiCheatService implements OnDestroy {
   private pasteBlocked = false;
 
   // 事件处理器引用（用于取消监听）
-  private onVisibilityChange = () => this.handleVisibilityChange();
-  private onBlur = () => this.handleBlur();
-  private onFocus = () => this.handleFocus();
-  private onPaste = (e: ClipboardEvent) => this.handlePaste(e);
-  private onCopy = (e: ClipboardEvent) => this.handleCopy(e);
-  private onBeforeUnload = (e: BeforeUnloadEvent) => this.handleBeforeUnload(e);
+  private onVisibilityChange = (): void => this.handleVisibilityChange();
+  private onBlur = (): void => this.handleBlur();
+  private onFocus = (): void => this.handleFocus();
+  private onPaste = (e: ClipboardEvent): void => this.handlePaste(e);
+  private onCopy = (e: ClipboardEvent): void => this.handleCopy(e);
+  private onBeforeUnload = (e: BeforeUnloadEvent): void => this.handleBeforeUnload(e);
 
   constructor(private examService: ExamService) {}
 
   /**
    * 开始防作弊监控
    */
-  startMonitoring(attemptId: number, options?: {
-    restrictPaste?: boolean;
-    restrictCopy?: boolean;
-    fullscreenRequired?: boolean;
-  }): void {
+  startMonitoring(
+    attemptId: number,
+    options?: {
+      restrictPaste?: boolean;
+      restrictCopy?: boolean;
+      fullscreenRequired?: boolean;
+    }
+  ): void {
     this.attemptId = attemptId;
     this.screenSwitchCount = 0;
 
@@ -108,7 +112,7 @@ export class AntiCheatService implements OnDestroy {
 
   private handlePaste(e: ClipboardEvent): void {
     e.preventDefault();
-    const content = e.clipboardData?.getData('text') || '';
+    const content = e.clipboardData?.getData('text') ?? '';
     this.reportEvent('copy_paste', { action: 'paste', content_length: content.length });
   }
 
@@ -126,11 +130,14 @@ export class AntiCheatService implements OnDestroy {
   private requestFullscreen(): void {
     const elem = document.documentElement;
     if (elem.requestFullscreen) {
-      elem.requestFullscreen().then(() => {
-        this.fullscreenMode = true;
-      }).catch(() => {
-        this.reportEvent('screen_switch', { action: 'fullscreen_failed' });
-      });
+      elem
+        .requestFullscreen()
+        .then(() => {
+          this.fullscreenMode = true;
+        })
+        .catch(() => {
+          this.reportEvent('screen_switch', { action: 'fullscreen_failed' });
+        });
     }
   }
 
@@ -149,16 +156,18 @@ export class AntiCheatService implements OnDestroy {
 
   private sendHeartbeat(): void {
     if (this.attemptId) {
-      this.examService.reportCheatEvent(this.attemptId, 'heartbeat', {
-        screen_switches: this.screenSwitchCount,
-        timestamp: Date.now(),
-      }).subscribe({
-        error: (err) => console.warn('[AntiCheat] Heartbeat failed:', err),
-      });
+      this.examService
+        .reportCheatEvent(this.attemptId, 'heartbeat', {
+          screen_switches: this.screenSwitchCount,
+          timestamp: Date.now(),
+        })
+        .subscribe({
+          error: (err) => console.warn('[AntiCheat] Heartbeat failed:', err),
+        });
     }
   }
 
-  private reportEvent(cheatType: string, details: Record<string, any>): void {
+  private reportEvent(cheatType: string, details: Record<string, unknown>): void {
     if (this.attemptId) {
       this.examService.reportCheatEvent(this.attemptId, cheatType, details).subscribe({
         error: (err) => console.warn('[AntiCheat] Report failed:', err),

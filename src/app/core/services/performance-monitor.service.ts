@@ -8,6 +8,41 @@ import { Injectable } from '@angular/core';
 import { Router } from '@angular/router';
 
 // Core Web Vitals 指标
+/**
+ * Navigation Timing 类型
+ */
+interface NavigationTimingLike {
+  loadEventEnd: number;
+  navigationStart: number;
+  responseStart: number;
+  requestStart: number;
+}
+
+/**
+ * LCP Entry 类型
+ */
+interface LargestContentfulPaintLike {
+  renderTime: number;
+  startTime: number;
+}
+
+/**
+ * FID Entry 类型
+ */
+interface FirstInputLike {
+  processingStart: number;
+  startTime: number;
+}
+
+/**
+ * CLS Entry 类型
+ */
+interface LayoutShiftLike {
+  hadRecentInput: boolean;
+  value: number;
+}
+
+// Core Web Vitals 指标
 export interface CoreWebVitals {
   // FCP - First Contentful Paint (首次内容绘制)
   fcp?: number;
@@ -97,7 +132,7 @@ export class PerformanceMonitorService {
     // 监听 Core Web Vitals
     this.initWebVitals();
 
-    console.log('[PerformanceMonitorService] 已初始化');
+    console.warn('[PerformanceMonitorService] 已初始化');
   }
 
   /**
@@ -107,28 +142,33 @@ export class PerformanceMonitorService {
     const observer = new PerformanceObserver((list) => {
       for (const entry of list.getEntries()) {
         switch (entry.entryType) {
-          case 'navigation':
-            const navEntry = entry as any;
+          case 'navigation': {
+            const navEntry = entry as unknown as NavigationTimingLike;
             this.recordNavigationTiming(navEntry);
             break;
-          case 'paint':
+          }
+          case 'paint': {
             const paintEntry = entry as PerformancePaintTiming;
             this.recordPaintTiming(paintEntry);
             break;
-          case 'largest-contentful-paint':
-            const lcpEntry = entry as any;
+          }
+          case 'largest-contentful-paint': {
+            const lcpEntry = entry as unknown as LargestContentfulPaintLike;
             this.webVitals.lcp = lcpEntry.renderTime || lcpEntry.startTime;
             break;
-          case 'first-input':
-            const fidEntry = entry as any;
+          }
+          case 'first-input': {
+            const fidEntry = entry as unknown as FirstInputLike;
             this.webVitals.fid = fidEntry.processingStart - fidEntry.startTime;
             break;
-          case 'layout-shift':
-            const clsEntry = entry as any;
+          }
+          case 'layout-shift': {
+            const clsEntry = entry as unknown as LayoutShiftLike;
             if (!clsEntry.hadRecentInput) {
-              this.webVitals.cls = (this.webVitals.cls || 0) + clsEntry.value;
+              this.webVitals.cls = (this.webVitals.cls ?? 0) + clsEntry.value;
             }
             break;
+          }
         }
       }
     });
@@ -158,7 +198,7 @@ export class PerformanceMonitorService {
   /**
    * 记录导航时间
    */
-  private recordNavigationTiming(timing: any): void {
+  private recordNavigationTiming(timing: NavigationTimingLike): void {
     this.metrics.push({
       pageLoadTime: timing.loadEventEnd - timing.navigationStart,
       timestamp: Date.now(),
@@ -230,7 +270,7 @@ export class PerformanceMonitorService {
    */
   private calculatePerformanceScore(): void {
     const scores = this.calculateScores();
-    console.log('[PerformanceMonitorService] 性能评分:', scores);
+    console.warn('[PerformanceMonitorService] 性能评分:', scores);
   }
 
   /**
@@ -239,12 +279,12 @@ export class PerformanceMonitorService {
   private calculateScores(): PerformanceScore {
     // 加载性能评分 (基于 FCP 和 LCP)
     const fcpScore = this.calculateMetricScore(
-      this.webVitals.fcp || 0,
+      this.webVitals.fcp ?? 0,
       this.thresholds.fcp.good,
       this.thresholds.fcp.needsImprovement
     );
     const lcpScore = this.calculateMetricScore(
-      this.webVitals.lcp || 0,
+      this.webVitals.lcp ?? 0,
       this.thresholds.lcp.good,
       this.thresholds.lcp.needsImprovement
     );
@@ -252,7 +292,7 @@ export class PerformanceMonitorService {
 
     // 交互性评分 (基于 FID)
     const interactivity = this.calculateMetricScore(
-      this.webVitals.fid || 0,
+      this.webVitals.fid ?? 0,
       this.thresholds.fid.good,
       this.thresholds.fid.needsImprovement,
       true // FID 越小越好
@@ -260,7 +300,7 @@ export class PerformanceMonitorService {
 
     // 稳定性评分 (基于 CLS)
     const stability = this.calculateMetricScore(
-      this.webVitals.cls || 0,
+      this.webVitals.cls ?? 0,
       this.thresholds.cls.good,
       this.thresholds.cls.needsImprovement,
       true // CLS 越小越好
@@ -312,7 +352,7 @@ export class PerformanceMonitorService {
   clearMetrics(): void {
     this.metrics = [];
     this.webVitals = {};
-    console.log('[PerformanceMonitorService] 已清空性能指标');
+    console.warn('[PerformanceMonitorService] 已清空性能指标');
   }
 
   /**

@@ -10,15 +10,15 @@
  * - 指数退避重试
  */
 
-import { Injectable, Inject, PLATFORM_ID } from '@angular/core';
 import { isPlatformBrowser } from '@angular/common';
+import { Inject, Injectable, PLATFORM_ID } from '@angular/core';
 import { BehaviorSubject } from 'rxjs';
 
 import {
   OfflineOperation,
   OfflineOperationStatus,
-  OfflineSyncConfig,
   OfflineOperationType,
+  OfflineSyncConfig,
 } from '../../../shared/models/offline.models';
 import { NetworkMonitorService, NetworkStatus } from '../../core/services/network-monitor.service';
 import { OfflineStorageService } from '../../core/services/offline-storage.service';
@@ -111,7 +111,7 @@ export class OfflineSyncService {
   constructor(
     @Inject(PLATFORM_ID) private platformId: object,
     private networkMonitor: NetworkMonitorService,
-    private offlineStorage: OfflineStorageService,
+    private offlineStorage: OfflineStorageService
   ) {
     if (isPlatformBrowser(platformId)) {
       this.initializeAutoSync();
@@ -264,7 +264,10 @@ export class OfflineSyncService {
   }
 
   /** 将操作分批 */
-  private createBatches(operations: PrioritizedOperation[], batchSize: number): PrioritizedOperation[][] {
+  private createBatches(
+    operations: PrioritizedOperation[],
+    batchSize: number
+  ): PrioritizedOperation[][] {
     const batches: PrioritizedOperation[][] = [];
     for (let i = 0; i < operations.length; i += batchSize) {
       batches.push(operations.slice(i, i + batchSize));
@@ -275,7 +278,7 @@ export class OfflineSyncService {
   /** 批量处理一组操作 */
   private async processBatch(
     batch: PrioritizedOperation[],
-    config: OfflineSyncConfig,
+    config: OfflineSyncConfig
   ): Promise<{ synced: number; failed: number; conflicts: number; errors: SyncError[] }> {
     const result = { synced: 0, failed: 0, conflicts: 0, errors: [] as SyncError[] };
 
@@ -284,7 +287,10 @@ export class OfflineSyncService {
       try {
         await this.syncOperation(batch[0]);
         result.synced = 1;
-        await this.offlineStorage.updateOperationStatus(batch[0].id, OfflineOperationStatus.COMPLETED);
+        await this.offlineStorage.updateOperationStatus(
+          batch[0].id,
+          OfflineOperationStatus.COMPLETED
+        );
       } catch (error) {
         result.failed = 1;
         result.errors.push(this.createSyncError(batch[0], error));
@@ -310,7 +316,11 @@ export class OfflineSyncService {
             retryCount: op.retryCount,
             timestamp: new Date().toISOString(),
           });
-          await this.offlineStorage.updateOperationStatus(op.id, OfflineOperationStatus.FAILED, '数据冲突');
+          await this.offlineStorage.updateOperationStatus(
+            op.id,
+            OfflineOperationStatus.FAILED,
+            '数据冲突'
+          );
         } else {
           result.failed++;
           result.errors.push({
@@ -342,9 +352,7 @@ export class OfflineSyncService {
   }
 
   /** 批量同步多个操作（一次 HTTP 请求） */
-  private async batchSyncOperations(
-    batch: PrioritizedOperation[],
-  ): Promise<{
+  private async batchSyncOperations(batch: PrioritizedOperation[]): Promise<{
     successful: number[];
     conflicts: number[];
     error: Error | null;
@@ -369,7 +377,7 @@ export class OfflineSyncService {
       throw new Error(`批量同步失败: ${response.status} ${errorText}`);
     }
 
-    const result = await response.json() as {
+    const result = (await response.json()) as {
       results: { index: number; status: 'success' | 'conflict' | 'failed'; error?: string }[];
     };
 
@@ -407,7 +415,7 @@ export class OfflineSyncService {
   private async handleOperationError(
     operation: PrioritizedOperation,
     error: unknown,
-    config: OfflineSyncConfig,
+    config: OfflineSyncConfig
   ): Promise<void> {
     const nextRetry = operation.retryCount + 1;
 
@@ -415,19 +423,19 @@ export class OfflineSyncService {
       // 指数退避
       const delay = Math.min(
         this.BACKOFF_BASE_MS * Math.pow(2, operation.retryCount),
-        this.BACKOFF_MAX_MS,
+        this.BACKOFF_MAX_MS
       );
 
       await this.offlineStorage.updateOperationStatus(
         operation.id,
         OfflineOperationStatus.PENDING,
-        error instanceof Error ? error.message : String(error),
+        error instanceof Error ? error.message : String(error)
       );
 
       // 更新下次重试时间
       const op = await this.offlineStorage.getData<OfflineOperation>(
         'syncQueue' as any,
-        operation.id,
+        operation.id
       );
       if (op) {
         (op as any).nextRetryAt = new Date(Date.now() + delay).toISOString();
@@ -438,7 +446,7 @@ export class OfflineSyncService {
       await this.offlineStorage.updateOperationStatus(
         operation.id,
         OfflineOperationStatus.FAILED,
-        error instanceof Error ? error.message : String(error),
+        error instanceof Error ? error.message : String(error)
       );
     }
   }
@@ -464,7 +472,7 @@ export class OfflineSyncService {
     tableName: string,
     type: OfflineOperationType,
     recordId: string,
-    data: Record<string, unknown>,
+    data: Record<string, unknown>
   ): Promise<string> {
     const id = await this.offlineStorage.addOperation({
       tableName,
@@ -482,7 +490,12 @@ export class OfflineSyncService {
 
   /** 批量添加操作到队列 */
   async enqueueOperations(
-    operations: { tableName: string; type: OfflineOperationType; recordId: string; data: Record<string, unknown> }[],
+    operations: {
+      tableName: string;
+      type: OfflineOperationType;
+      recordId: string;
+      data: Record<string, unknown>;
+    }[]
   ): Promise<string[]> {
     const ids: string[] = [];
     for (const op of operations) {

@@ -1,0 +1,118 @@
+<div class="recommendations-container">
+  <!-- 头部 -->
+  <div class="header">
+    <div class="header-left">
+      <mat-icon class="header-icon">auto_awesome</mat-icon>
+      <div>
+        <h2>个性化推荐</h2>
+        <p class="reason">{{ recommendationReason }}</p>
+      </div>
+    </div>
+    <div class="header-right">
+      <div class="confidence-badge" [style.background-color]="getConfidenceColor(confidence)">
+        <span class="confidence-value">{{ confidence * 100 | number:'1.0-0' }}%</span>
+        <span class="confidence-label">{{ getConfidenceLabel(confidence) }}</span>
+      </div>
+      <button mat-icon-button (click)="refresh()" [disabled]="loading" matTooltip="刷新推荐">
+        <mat-icon>refresh</mat-icon>
+      </button>
+    </div>
+  </div>
+
+  <!-- 加载状态 -->
+  <div *ngIf="loading" class="loading-container">
+    <mat-spinner diameter="40"></mat-spinner>
+    <p>正在生成个性化推荐...</p>
+  </div>
+
+  <!-- 错误状态 -->
+  <div *ngIf="error && !loading" class="error-container">
+    <mat-icon color="warn">error_outline</mat-icon>
+    <p>{{ error }}</p>
+    <button mat-raised-button color="primary" (click)="loadRecommendations()">
+      重试
+    </button>
+  </div>
+
+  <!-- 推荐捆绑包 -->
+  <div *ngIf="!loading && !error && bundles.length > 0" class="bundles-section">
+    <h3>
+      <mat-icon class="section-icon">inventory_2</mat-icon>
+      推荐捆绑包
+    </h3>
+    <div class="bundles-grid">
+      <mat-card *ngFor="let bundle of bundles" class="bundle-card">
+        <mat-card-header>
+          <mat-card-title>{{ bundle.name }}</mat-card-title>
+          <mat-card-subtitle>
+            <span class="discount-badge">{{ getDiscountText(bundle.discount) }}</span>
+            {{ bundle.plugins.length }} 个插件
+          </mat-card-subtitle>
+        </mat-card-header>
+        <mat-card-content>
+          <p>{{ bundle.description }}</p>
+          <div class="bundle-plugins">
+            <mat-chip-listbox>
+              <mat-chip *ngFor="let pluginId of bundle.plugins">
+                {{ pluginId }}
+              </mat-chip>
+            </mat-chip-listbox>
+          </div>
+        </mat-card-content>
+        <mat-card-actions>
+          <button mat-raised-button color="primary" (click)="installBundle(bundle)">
+            <mat-icon>download</mat-icon>
+            一键安装
+          </button>
+        </mat-card-actions>
+      </mat-card>
+    </div>
+  </div>
+
+  <!-- 推荐插件列表 -->
+  <div *ngIf="!loading && !error" class="recommendations-section">
+    <h3>
+      <mat-icon class="section-icon">star</mat-icon>
+      推荐插件 ({{ recommendations.length }})
+    </h3>
+    
+    <div *ngIf="recommendations.length === 0" class="empty-state">
+      <mat-icon>check_circle</mat-icon>
+      <p>所有推荐插件已安装完成</p>
+    </div>
+
+    <div *ngIf="recommendations.length > 0" class="recommendations-list">
+      <mat-card *ngFor="let rec of recommendations" class="recommendation-card">
+        <mat-card-content>
+          <div class="rec-header">
+            <div class="rec-info">
+              <h4>{{ rec.pluginId }}</h4>
+              <p class="rec-reason">{{ rec.reason }}</p>
+            </div>
+            <div class="rec-score">
+              <span class="score-value">{{ rec.score * 100 | number:'1.0-0' }}%</span>
+              <span class="score-label">匹配度</span>
+            </div>
+          </div>
+          <div class="rec-sources">
+            <mat-chip-listbox>
+              <mat-chip *ngFor="let source of rec.sources" [color]="source === 'device' ? 'primary' : 'accent'">
+                {{ source === 'device' ? '设备推荐' : '使用推荐' }}
+              </mat-chip>
+            </mat-chip-listbox>
+          </div>
+        </mat-card-content>
+        <mat-card-actions>
+          <button mat-raised-button color="primary" (click)="installPlugin(rec.pluginId)">
+            <mat-icon>download</mat-icon>
+            安装
+          </button>
+          <button mat-button color="warn">
+            <mat-icon>close</mat-icon>
+            忽略
+          </button>
+        </mat-card-actions>
+      </mat-card>
+    </div>
+  </div>
+</div>

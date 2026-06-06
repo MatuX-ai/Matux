@@ -10,7 +10,6 @@ import 'package:imatuproject_flutter/models/professional_instruments.dart' as in
 import 'package:imatuproject_flutter/utils/data_processor.dart';
 import 'package:imatuproject_flutter/widgets/enhanced_ar_interaction.dart' as ar_interaction;
 import 'package:imatuproject_flutter/widgets/enhanced_ar_virtual_multimeter.dart';
-import 'package:imatuproject_flutter/widgets/ar_virtual_multimeter.dart' as ar_vm;
 
 void main() {
   group('专业仪表盘测试', () {
@@ -393,7 +392,7 @@ void main() {
     });
 
     test('AR 手势扩展功能测试', () {
-      final gesture = ar_vm.ArCoreGesture(type: 'tap', data: {'tap_count': 2});
+      final gesture = ArCoreGesture(type: 'tap', data: {'tap_count': 2});
       final enhancedGesture = gesture as dynamic;
 
       // 验证扩展方法存在

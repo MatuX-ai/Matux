@@ -2,58 +2,113 @@
 // 圆角变量请使用 _matux-tokens.scss（单一来源）
 // 本文件仅保留 unique 内容：方向性圆角、响应式圆角、圆角 mixins 和函数
 
+@use 'sass:map';
+
 // ===== Unique: 方向性圆角变量 =====
 $border-top-left-radius: 0.5rem;
 $border-top-right-radius: 0.5rem;
 $border-bottom-left-radius: 0.5rem;
 $border-bottom-right-radius: 0.5rem;
-
 $border-radius-mobile-button: 0.25rem;
 $border-radius-mobile-card: 0.5rem;
 $border-radius-mobile-modal: 0.75rem;
-
 $border-radius-desktop-button: 0.125rem;
 $border-radius-desktop-card: 0.25rem;
 $border-radius-desktop-modal: 0.5rem;
 
 // ===== Unique Mixins =====
 @mixin border-radius($radius: md) {
-  border-radius: map-get((
-    none: 0, xs: 0.125rem, sm: 0.25rem, md: 0.5rem,
-    lg: 0.75rem, xl: 1rem, full: 9999px
-  ), $radius, 0.5rem);
+  border-radius: map.get(
+    (
+      none: 0,
+      xs: 0.125rem,
+      sm: 0.25rem,
+      md: 0.5rem,
+      lg: 0.75rem,
+      xl: 1rem,
+      full: 9999px,
+    ),
+    $radius,
+    0.5rem
+  );
 }
 
 @mixin component-border-radius($component: card) {
-  border-radius: map-get((
-    button: 9999px, input: 0.75rem, card: 1rem, modal: 1.5rem,
-    badge: 9999px, avatar: 9999px, dropdown: 0.5rem, tooltip: 0.25rem
-  ), $component, 1rem);
+  border-radius: map.get(
+    (
+      button: 9999px,
+      input: 0.75rem,
+      card: 1rem,
+      modal: 1.5rem,
+      badge: 9999px,
+      avatar: 9999px,
+      dropdown: 0.5rem,
+      tooltip: 0.25rem,
+    ),
+    $component,
+    1rem
+  );
 }
 
 @mixin directional-border-radius($direction, $radius: md) {
-  $r: map-get((none: 0, xs: 0.125rem, sm: 0.25rem, md: 0.5rem,
-    lg: 0.75rem, xl: 1rem, full: 9999px), $radius, 0.5rem);
-  @if $direction == top-left { border-top-left-radius: $r; }
-  @else if $direction == top-right { border-top-right-radius: $r; }
-  @else if $direction == bottom-left { border-bottom-left-radius: $r; }
-  @else if $direction == bottom-right { border-bottom-right-radius: $r; }
+  $r: map.get(
+    (
+      none: 0,
+      xs: 0.125rem,
+      sm: 0.25rem,
+      md: 0.5rem,
+      lg: 0.75rem,
+      xl: 1rem,
+      full: 9999px,
+    ),
+    $radius,
+    0.5rem
+  );
+
+  @if $direction == top-left {
+    border-top-left-radius: $r;
+  } @else if $direction == top-right {
+    border-top-right-radius: $r;
+  } @else if $direction == bottom-left {
+    border-bottom-left-radius: $r;
+  } @else if $direction == bottom-right {
+    border-bottom-right-radius: $r;
+  }
 }
 
 @mixin responsive-border-radius($breakpoint: mobile, $component: card) {
   @if $breakpoint == mobile {
-    @if $component == button { border-radius: $border-radius-mobile-button; }
-    @else if $component == card { border-radius: $border-radius-mobile-card; }
-    @else if $component == modal { border-radius: $border-radius-mobile-modal; }
+    @if $component == button {
+      border-radius: $border-radius-mobile-button;
+    } @else if $component == card {
+      border-radius: $border-radius-mobile-card;
+    } @else if $component == modal {
+      border-radius: $border-radius-mobile-modal;
+    }
   } @else if $breakpoint == desktop {
-    @if $component == button { border-radius: $border-radius-desktop-button; }
-    @else if $component == card { border-radius: $border-radius-desktop-card; }
-    @else if $component == modal { border-radius: $border-radius-desktop-modal; }
+    @if $component == button {
+      border-radius: $border-radius-desktop-button;
+    } @else if $component == card {
+      border-radius: $border-radius-desktop-card;
+    } @else if $component == modal {
+      border-radius: $border-radius-desktop-modal;
+    }
   }
 }
 
 // ===== Unique Functions =====
 @function get-border-radius($size) {
-  @return map-get((none: 0, xs: 0.125rem, sm: 0.25rem, md: 0.5rem,
-    lg: 0.75rem, xl: 1rem, full: 9999px), $size, 0.5rem);
+  @return map.get(
+    (
+      none: 0,
+      xs: 0.125rem,
+      sm: 0.25rem,
+      md: 0.5rem,
+      lg: 0.75rem,
+      xl: 1rem,
+      full: 9999px,
+    ),
+    $size,
+    0.5rem
+  );
 }

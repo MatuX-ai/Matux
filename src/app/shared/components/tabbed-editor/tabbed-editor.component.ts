@@ -204,7 +204,7 @@ export class TabbedEditorComponent implements OnDestroy {
   requestSave(tabId: string): void {
     // 优先通过 Electron IPC 保存文件
     if (this.electronApi && tabId) {
-      this.saveActiveTabToFile(tabId);
+      void this.saveActiveTabToFile(tabId);
       return;
     }
     this.saveRequest.emit(tabId);
@@ -244,7 +244,10 @@ export class TabbedEditorComponent implements OnDestroy {
           title: '保存文件',
           defaultPath: `${tab.title}${ext}`,
           filters: [
-            { name: '代码文件', extensions: ['py', 'js', 'ts', 'cpp', 'java', 'html', 'css', 'json'] },
+            {
+              name: '代码文件',
+              extensions: ['py', 'js', 'ts', 'cpp', 'java', 'html', 'css', 'json'],
+            },
             { name: '所有文件', extensions: ['*'] },
           ],
         });
@@ -274,7 +277,7 @@ export class TabbedEditorComponent implements OnDestroy {
       const fileResult = await api.readFile(dialogResult.filePath);
       if (!fileResult.success || fileResult.content === undefined) return;
 
-      const fileName = dialogResult.filePath.split(/[/\\]/).pop() || 'untitled';
+      const fileName = dialogResult.filePath.split(/[/\\]/).pop() ?? 'untitled';
       const language = this.guessLanguage(fileName);
 
       const tab: EditorTab = {
@@ -295,22 +298,34 @@ export class TabbedEditorComponent implements OnDestroy {
   /** 根据文件名猜测编程语言 */
   private guessLanguage(fileName: string): string {
     const extMap: Record<string, string> = {
-      py: 'python', js: 'javascript', ts: 'typescript',
-      cpp: 'cpp', java: 'java', html: 'html',
-      css: 'css', json: 'json', md: 'markdown',
+      py: 'python',
+      js: 'javascript',
+      ts: 'typescript',
+      cpp: 'cpp',
+      java: 'java',
+      html: 'html',
+      css: 'css',
+      json: 'json',
+      md: 'markdown',
     };
-    const ext = fileName.split('.').pop()?.toLowerCase() || '';
-    return extMap[ext] || 'plaintext';
+    const ext = fileName.split('.').pop()?.toLowerCase() ?? '';
+    return extMap[ext] ?? 'plaintext';
   }
 
   /** 根据语言获取默认文件扩展名 */
   private getFileExtension(language: string): string {
     const extMap: Record<string, string> = {
-      python: '.py', javascript: '.js', typescript: '.ts',
-      cpp: '.cpp', java: '.java', html: '.html',
-      css: '.css', json: '.json', markdown: '.md',
+      python: '.py',
+      javascript: '.js',
+      typescript: '.ts',
+      cpp: '.cpp',
+      java: '.java',
+      html: '.html',
+      css: '.css',
+      json: '.json',
+      markdown: '.md',
     };
-    return extMap[language] || '.txt';
+    return extMap[language] ?? '.txt';
   }
 
   /** 获取语言标签映射 */
@@ -326,11 +341,13 @@ export class TabbedEditorComponent implements OnDestroy {
       json: 'JSON',
       markdown: 'Markdown',
     };
-    return labels[lang] || lang;
+    return labels[lang] ?? lang;
   }
 
   /** 注册桌面端键盘快捷键 */
+  // eslint-disable-next-line complexity
   private registerKeyboardShortcuts(): void {
+    // eslint-disable-next-line complexity
     this.keydownHandler = (event: KeyboardEvent) => {
       const isCtrlOrCmd = event.ctrlKey || event.metaKey;
 
@@ -362,7 +379,7 @@ export class TabbedEditorComponent implements OnDestroy {
       // Ctrl+O → 打开文件（Electron 优先）
       if (isCtrlOrCmd && event.key === 'o') {
         event.preventDefault();
-        this.openFileFromDisk();
+        void this.openFileFromDisk();
         return;
       }
 

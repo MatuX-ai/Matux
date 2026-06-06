@@ -1,262 +1,373 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="zh-CN">
-<head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>MatuX 图标与色彩系统</title>
-  <style>
-    * { box-sizing: border-box; margin: 0; padding: 0; }
-    body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; background: #f5f5f7; padding: 40px; }
-    h1 { font-size: 32px; margin-bottom: 8px; color: #1d1d1f; }
-    h2 { font-size: 24px; margin: 40px 0 20px; color: #1d1d1f; border-bottom: 2px solid #3B82F6; padding-bottom: 8px; }
-    h3 { font-size: 18px; margin: 20px 0 10px; color: #3a3a3c; }
-    p { color: #6e6e73; margin-bottom: 20px; }
-    .container { max-width: 1400px; margin: 0 auto; }
-    .badge { display: inline-block; background: #3B82F6; color: white; padding: 4px 10px; border-radius: 20px; font-size: 12px; margin-left: 8px; }
-    
-    /* 色彩系统 */
-    .color-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(150px, 1fr)); gap: 16px; }
-    .color-card { background: white; border-radius: 12px; padding: 16px; text-align: center; box-shadow: 0 2px 8px rgba(0,0,0,0.08); }
-    .color-swatch { width: 100%; height: 60px; border-radius: 8px; margin-bottom: 12px; }
-    .color-name { font-weight: 600; font-size: 14px; color: #1d1d1f; }
-    .color-value { font-size: 12px; color: #86868b; font-family: monospace; margin-top: 4px; }
-    
-    /* 图标系统 */
-    .icon-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(100px, 1fr)); gap: 16px; }
-    .icon-card { background: white; border-radius: 16px; padding: 20px 16px; text-align: center; box-shadow: 0 2px 8px rgba(0,0,0,0.08); cursor: pointer; transition: all 0.25s; border: 2px solid transparent; }
-    .icon-card:hover { transform: translateY(-4px); box-shadow: 0 8px 24px rgba(59, 130, 246, 0.2); border-color: #3B82F6; }
-    .icon-preview { width: 48px; height: 48px; margin: 0 auto 12px; }
-    .icon-preview img { width: 100%; height: 100%; }
-    .icon-name { font-size: 13px; color: #3a3a3c; font-weight: 500; }
-    
-    /* 代码示例 */
-    .code-block { background: #1d1d1f; color: #d4d4d4; padding: 20px; border-radius: 12px; overflow-x: auto; font-family: 'SF Mono', Monaco, monospace; font-size: 14px; line-height: 1.6; margin-bottom: 20px; }
-    
-    .copy-hint { font-size: 14px; color: #34c759; margin-top: 12px; font-weight: 500; }
-    code { background: #e8f0ff; padding: 2px 6px; border-radius: 4px; color: #3B82F6; }
-  </style>
-</head>
-<body>
-  <div class="container">
-    <h1>🎨 MatuX 图标与色彩系统 <span class="badge">SVG 图片</span></h1>
-    <p>基于 SVG 图片文件的图标系统，统一星空蓝风格</p>
-    
-    <!-- 色彩系统 -->
-    <h2>🎨 品牌色彩</h2>
-    <div class="color-grid">
-      <div class="color-card">
-        <div class="color-swatch" style="background: linear-gradient(135deg, #0B1426 0%, #3B82F6 100%);"></div>
-        <div class="color-name">主渐变色</div>
-        <div class="color-value">#0B1426 → #3B82F6</div>
-      </div>
-      <div class="color-card">
-        <div class="color-swatch" style="background: #3B82F6;"></div>
-        <div class="color-name">主色调（星空蓝）</div>
-        <div class="color-value">#3B82F6</div>
-      </div>
-      <div class="color-card">
-        <div class="color-swatch" style="background: #0B1426;"></div>
-        <div class="color-name">辅助色（夜空蓝）</div>
-        <div class="color-value">#0B1426</div>
-      </div>
-      <div class="color-card">
-        <div class="color-swatch" style="background: #1d1d1f;"></div>
-        <div class="color-name">文本主色</div>
-        <div class="color-value">#1d1d1f</div>
-      </div>
-      <div class="color-card">
-        <div class="color-swatch" style="background: #6e6e73;"></div>
-        <div class="color-name">文本副色</div>
-        <div class="color-value">#6e6e73</div>
-      </div>
-      <div class="color-card">
-        <div class="color-swatch" style="background: #f5f5f7;"></div>
-        <div class="color-name">背景浅色</div>
-        <div class="color-value">#f5f5f7</div>
-      </div>
-      <div class="color-card">
-        <div class="color-swatch" style="background: #34c759;"></div>
-        <div class="color-name">成功色</div>
-        <div class="color-value">#34c759</div>
-      </div>
-      <div class="color-card">
-        <div class="color-swatch" style="background: #ff9500;"></div>
-        <div class="color-name">警告色</div>
-        <div class="color-value">#ff9500</div>
-      </div>
-      <div class="color-card">
-        <div class="color-swatch" style="background: #ff3b30;"></div>
-        <div class="color-name">错误色</div>
-        <div class="color-value">#ff3b30</div>
-      </div>
-      <div class="color-card">
-        <div class="color-swatch" style="background: #FFD700;"></div>
-        <div class="color-name">强调色（金）</div>
-        <div class="color-value">#FFD700</div>
-      </div>
-    </div>
-    
-    <!-- 图标系统 -->
-    <h2>🧩 SVG 图标库 <span class="badge" id="iconCount">0</span></h2>
-    <p>图标文件存放于 <code>/assets/icons/</code> 目录</p>
-    
-    <h3>📱 产品类</h3>
-    <div class="icon-grid" id="productIcons"></div>
-    
-    <h3>💻 技术类</h3>
-    <div class="icon-grid" id="techIcons"></div>
-    
-    <h3>👤 用户类</h3>
-    <div class="icon-grid" id="userIcons"></div>
-    
-    <h3>⬆️ 方向类</h3>
-    <div class="icon-grid" id="arrowIcons"></div>
-    
-    <h3>⚡ 操作类</h3>
-    <div class="icon-grid" id="actionIcons"></div>
-    
-    <h3>⚠️ 状态类</h3>
-    <div class="icon-grid" id="statusIcons"></div>
-    
-    <h3>📁 文件类</h3>
-    <div class="icon-grid" id="fileIcons"></div>
-    
-    <h3>💬 通讯类</h3>
-    <div class="icon-grid" id="commIcons"></div>
-    
-    <h3>💰 商业类</h3>
-    <div class="icon-grid" id="bizIcons"></div>
-    
-    <!-- 使用代码 -->
-    <h2>📝 使用方法</h2>
-    <div class="code-block">
-&lt;!-- 组件方式 --&gt;<br>
-&lt;mac-icon name="robot" size="lg"&gt;&lt;/mac-icon&gt;<br><br>
-&lt;!-- 直接使用 --&gt;<br>
-&lt;img src="assets/icons/robot.svg" width="32" /&gt;
-    </div>
-    
-    <h2>📋 图标列表</h2>
-    <p>点击图标复制名称</p>
-    <div id="allIcons" class="icon-grid"></div>
-    
-    <div class="copy-hint" id="copyHint"></div>
-  </div>
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>MatuX 图标与色彩系统</title>
+    <style>
+      * {
+        box-sizing: border-box;
+        margin: 0;
+        padding: 0;
+      }
+      body {
+        font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+        background: #f5f5f7;
+        padding: 40px;
+      }
+      h1 {
+        font-size: 32px;
+        margin-bottom: 8px;
+        color: #1d1d1f;
+      }
+      h2 {
+        font-size: 24px;
+        margin: 40px 0 20px;
+        color: #1d1d1f;
+        border-bottom: 2px solid #3b82f6;
+        padding-bottom: 8px;
+      }
+      h3 {
+        font-size: 18px;
+        margin: 20px 0 10px;
+        color: #3a3a3c;
+      }
+      p {
+        color: #6e6e73;
+        margin-bottom: 20px;
+      }
+      .container {
+        max-width: 1400px;
+        margin: 0 auto;
+      }
+      .badge {
+        display: inline-block;
+        background: #3b82f6;
+        color: white;
+        padding: 4px 10px;
+        border-radius: 20px;
+        font-size: 12px;
+        margin-left: 8px;
+      }
 
-  <script>
-    const icons = {
-      // 产品类
-      phone: { name: '手机', category: 'product' },
-      desktop: { name: '电脑', category: 'product' },
-      ar: { name: 'AR/VR', category: 'product' },
-      robot: { name: '机器人', category: 'product' },
-      gift: { name: '礼物/课程', category: 'product' },
-      link: { name: '链接', category: 'product' },
-      
-      // 技术类
-      code: { name: '编程', category: 'tech' },
-      ai: { name: 'AI智能', category: 'tech' },
-      cloud: { name: '云服务', category: 'tech' },
-      blockchain: { name: '区块链', category: 'tech' },
-      network: { name: '网络', category: 'tech' },
-      
-      // 用户类
-      user: { name: '用户', category: 'user' },
-      users: { name: '用户组', category: 'user' },
-      school: { name: '学校', category: 'user' },
-      building: { name: '建筑/机构', category: 'user' },
-      home: { name: '首页', category: 'user' },
-      
-      // 方向类
-      'arrow-right': { name: '右箭头', category: 'arrow' },
-      'arrow-down': { name: '下箭头', category: 'arrow' },
-      
-      // 操作类
-      add: { name: '添加', category: 'action' },
-      edit: { name: '编辑', category: 'action' },
-      delete: { name: '删除', category: 'action' },
-      save: { name: '保存', category: 'action' },
-      download: { name: '下载', category: 'action' },
-      upload: { name: '上传', category: 'action' },
-      play: { name: '播放', category: 'action' },
-      search: { name: '搜索', category: 'action' },
-      settings: { name: '设置', category: 'action' },
-      menu: { name: '菜单', category: 'action' },
-      close: { name: '关闭', category: 'action' },
-      refresh: { name: '刷新', category: 'action' },
-      share: { name: '分享', category: 'action' },
-      star: { name: '星星', category: 'action' },
-      check: { name: '勾选', category: 'action' },
-      check_circle: { name: '完成', category: 'action' },
-      
-      // 状态类
-      warning: { name: '警告', category: 'status' },
-      error: { name: '错误', category: 'status' },
-      info: { name: '信息', category: 'status' },
-      favorite: { name: '收藏', category: 'status' },
-      
-      // 文件类
-      file: { name: '文件', category: 'file' },
-      folder: { name: '文件夹', category: 'file' },
-      image: { name: '图片', category: 'file' },
-      video: { name: '视频', category: 'file' },
-      
-      // 通讯类
-      email: { name: '邮件', category: 'comm' },
-      notification: { name: '通知', category: 'comm' },
-      mic: { name: '麦克风', category: 'comm' },
-      location_on: { name: '位置', category: 'comm' },
-      
-      // 商业类
-      cart: { name: '购物车', category: 'biz' },
-      card: { name: '支付卡', category: 'biz' },
-    };
-    
-    const categories = {
-      product: document.getElementById('productIcons'),
-      tech: document.getElementById('techIcons'),
-      user: document.getElementById('userIcons'),
-      arrow: document.getElementById('arrowIcons'),
-      action: document.getElementById('actionIcons'),
-      status: document.getElementById('statusIcons'),
-      file: document.getElementById('fileIcons'),
-      comm: document.getElementById('commIcons'),
-      biz: document.getElementById('bizIcons'),
-      all: document.getElementById('allIcons'),
-    };
-    
-    function renderIcons() {
-      Object.keys(icons).forEach(key => {
-        const icon = icons[key];
-        const card = document.createElement('div');
-        card.className = 'icon-card';
-        card.onclick = () => copyIconCode(key);
-        card.innerHTML = `
+      /* 色彩系统 */
+      .color-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+        gap: 16px;
+      }
+      .color-card {
+        background: white;
+        border-radius: 12px;
+        padding: 16px;
+        text-align: center;
+        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+      }
+      .color-swatch {
+        width: 100%;
+        height: 60px;
+        border-radius: 8px;
+        margin-bottom: 12px;
+      }
+      .color-name {
+        font-weight: 600;
+        font-size: 14px;
+        color: #1d1d1f;
+      }
+      .color-value {
+        font-size: 12px;
+        color: #86868b;
+        font-family: monospace;
+        margin-top: 4px;
+      }
+
+      /* 图标系统 */
+      .icon-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(100px, 1fr));
+        gap: 16px;
+      }
+      .icon-card {
+        background: white;
+        border-radius: 16px;
+        padding: 20px 16px;
+        text-align: center;
+        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+        cursor: pointer;
+        transition: all 0.25s;
+        border: 2px solid transparent;
+      }
+      .icon-card:hover {
+        transform: translateY(-4px);
+        box-shadow: 0 8px 24px rgba(59, 130, 246, 0.2);
+        border-color: #3b82f6;
+      }
+      .icon-preview {
+        width: 48px;
+        height: 48px;
+        margin: 0 auto 12px;
+      }
+      .icon-preview img {
+        width: 100%;
+        height: 100%;
+      }
+      .icon-name {
+        font-size: 13px;
+        color: #3a3a3c;
+        font-weight: 500;
+      }
+
+      /* 代码示例 */
+      .code-block {
+        background: #1d1d1f;
+        color: #d4d4d4;
+        padding: 20px;
+        border-radius: 12px;
+        overflow-x: auto;
+        font-family: 'SF Mono', Monaco, monospace;
+        font-size: 14px;
+        line-height: 1.6;
+        margin-bottom: 20px;
+      }
+
+      .copy-hint {
+        font-size: 14px;
+        color: #34c759;
+        margin-top: 12px;
+        font-weight: 500;
+      }
+      code {
+        background: #e8f0ff;
+        padding: 2px 6px;
+        border-radius: 4px;
+        color: #3b82f6;
+      }
+    </style>
+  </head>
+  <body>
+    <div class="container">
+      <h1>🎨 MatuX 图标与色彩系统 <span class="badge">SVG 图片</span></h1>
+      <p>基于 SVG 图片文件的图标系统，统一星空蓝风格</p>
+
+      <!-- 色彩系统 -->
+      <h2>🎨 品牌色彩</h2>
+      <div class="color-grid">
+        <div class="color-card">
+          <div
+            class="color-swatch"
+            style="background: linear-gradient(135deg, #0b1426 0%, #3b82f6 100%)"
+          ></div>
+          <div class="color-name">主渐变色</div>
+          <div class="color-value">#0B1426 → #3B82F6</div>
+        </div>
+        <div class="color-card">
+          <div class="color-swatch" style="background: #3b82f6"></div>
+          <div class="color-name">主色调（星空蓝）</div>
+          <div class="color-value">#3B82F6</div>
+        </div>
+        <div class="color-card">
+          <div class="color-swatch" style="background: #0b1426"></div>
+          <div class="color-name">辅助色（夜空蓝）</div>
+          <div class="color-value">#0B1426</div>
+        </div>
+        <div class="color-card">
+          <div class="color-swatch" style="background: #1d1d1f"></div>
+          <div class="color-name">文本主色</div>
+          <div class="color-value">#1d1d1f</div>
+        </div>
+        <div class="color-card">
+          <div class="color-swatch" style="background: #6e6e73"></div>
+          <div class="color-name">文本副色</div>
+          <div class="color-value">#6e6e73</div>
+        </div>
+        <div class="color-card">
+          <div class="color-swatch" style="background: #f5f5f7"></div>
+          <div class="color-name">背景浅色</div>
+          <div class="color-value">#f5f5f7</div>
+        </div>
+        <div class="color-card">
+          <div class="color-swatch" style="background: #34c759"></div>
+          <div class="color-name">成功色</div>
+          <div class="color-value">#34c759</div>
+        </div>
+        <div class="color-card">
+          <div class="color-swatch" style="background: #ff9500"></div>
+          <div class="color-name">警告色</div>
+          <div class="color-value">#ff9500</div>
+        </div>
+        <div class="color-card">
+          <div class="color-swatch" style="background: #ff3b30"></div>
+          <div class="color-name">错误色</div>
+          <div class="color-value">#ff3b30</div>
+        </div>
+        <div class="color-card">
+          <div class="color-swatch" style="background: #ffd700"></div>
+          <div class="color-name">强调色（金）</div>
+          <div class="color-value">#FFD700</div>
+        </div>
+      </div>
+
+      <!-- 图标系统 -->
+      <h2>🧩 SVG 图标库 <span class="badge" id="iconCount">0</span></h2>
+      <p>图标文件存放于 <code>/assets/icons/</code> 目录</p>
+
+      <h3>📱 产品类</h3>
+      <div class="icon-grid" id="productIcons"></div>
+
+      <h3>💻 技术类</h3>
+      <div class="icon-grid" id="techIcons"></div>
+
+      <h3>👤 用户类</h3>
+      <div class="icon-grid" id="userIcons"></div>
+
+      <h3>⬆️ 方向类</h3>
+      <div class="icon-grid" id="arrowIcons"></div>
+
+      <h3>⚡ 操作类</h3>
+      <div class="icon-grid" id="actionIcons"></div>
+
+      <h3>⚠️ 状态类</h3>
+      <div class="icon-grid" id="statusIcons"></div>
+
+      <h3>📁 文件类</h3>
+      <div class="icon-grid" id="fileIcons"></div>
+
+      <h3>💬 通讯类</h3>
+      <div class="icon-grid" id="commIcons"></div>
+
+      <h3>💰 商业类</h3>
+      <div class="icon-grid" id="bizIcons"></div>
+
+      <!-- 使用代码 -->
+      <h2>📝 使用方法</h2>
+      <div class="code-block">
+        &lt;!-- 组件方式 --&gt;<br />
+        &lt;mac-icon name="robot" size="lg"&gt;&lt;/mac-icon&gt;<br /><br />
+        &lt;!-- 直接使用 --&gt;<br />
+        &lt;img src="assets/icons/robot.svg" width="32" /&gt;
+      </div>
+
+      <h2>📋 图标列表</h2>
+      <p>点击图标复制名称</p>
+      <div id="allIcons" class="icon-grid"></div>
+
+      <div class="copy-hint" id="copyHint"></div>
+    </div>
+
+    <script>
+      const icons = {
+        // 产品类
+        phone: { name: '手机', category: 'product' },
+        desktop: { name: '电脑', category: 'product' },
+        ar: { name: 'AR/VR', category: 'product' },
+        robot: { name: '机器人', category: 'product' },
+        gift: { name: '礼物/课程', category: 'product' },
+        link: { name: '链接', category: 'product' },
+
+        // 技术类
+        code: { name: '编程', category: 'tech' },
+        ai: { name: 'AI智能', category: 'tech' },
+        cloud: { name: '云服务', category: 'tech' },
+        blockchain: { name: '区块链', category: 'tech' },
+        network: { name: '网络', category: 'tech' },
+
+        // 用户类
+        user: { name: '用户', category: 'user' },
+        users: { name: '用户组', category: 'user' },
+        school: { name: '学校', category: 'user' },
+        building: { name: '建筑/机构', category: 'user' },
+        home: { name: '首页', category: 'user' },
+
+        // 方向类
+        'arrow-right': { name: '右箭头', category: 'arrow' },
+        'arrow-down': { name: '下箭头', category: 'arrow' },
+
+        // 操作类
+        add: { name: '添加', category: 'action' },
+        edit: { name: '编辑', category: 'action' },
+        delete: { name: '删除', category: 'action' },
+        save: { name: '保存', category: 'action' },
+        download: { name: '下载', category: 'action' },
+        upload: { name: '上传', category: 'action' },
+        play: { name: '播放', category: 'action' },
+        search: { name: '搜索', category: 'action' },
+        settings: { name: '设置', category: 'action' },
+        menu: { name: '菜单', category: 'action' },
+        close: { name: '关闭', category: 'action' },
+        refresh: { name: '刷新', category: 'action' },
+        share: { name: '分享', category: 'action' },
+        star: { name: '星星', category: 'action' },
+        check: { name: '勾选', category: 'action' },
+        check_circle: { name: '完成', category: 'action' },
+
+        // 状态类
+        warning: { name: '警告', category: 'status' },
+        error: { name: '错误', category: 'status' },
+        info: { name: '信息', category: 'status' },
+        favorite: { name: '收藏', category: 'status' },
+
+        // 文件类
+        file: { name: '文件', category: 'file' },
+        folder: { name: '文件夹', category: 'file' },
+        image: { name: '图片', category: 'file' },
+        video: { name: '视频', category: 'file' },
+
+        // 通讯类
+        email: { name: '邮件', category: 'comm' },
+        notification: { name: '通知', category: 'comm' },
+        mic: { name: '麦克风', category: 'comm' },
+        location_on: { name: '位置', category: 'comm' },
+
+        // 商业类
+        cart: { name: '购物车', category: 'biz' },
+        card: { name: '支付卡', category: 'biz' },
+      };
+
+      const categories = {
+        product: document.getElementById('productIcons'),
+        tech: document.getElementById('techIcons'),
+        user: document.getElementById('userIcons'),
+        arrow: document.getElementById('arrowIcons'),
+        action: document.getElementById('actionIcons'),
+        status: document.getElementById('statusIcons'),
+        file: document.getElementById('fileIcons'),
+        comm: document.getElementById('commIcons'),
+        biz: document.getElementById('bizIcons'),
+        all: document.getElementById('allIcons'),
+      };
+
+      function renderIcons() {
+        Object.keys(icons).forEach((key) => {
+          const icon = icons[key];
+          const card = document.createElement('div');
+          card.className = 'icon-card';
+          card.onclick = () => copyIconCode(key);
+          card.innerHTML = `
           <div class="icon-preview">
             <img src="../../../../assets/icons/${key}.svg" alt="${icon.name}">
           </div>
           <div class="icon-name">${key}</div>
         `;
-        
-        if (categories[icon.category]) {
-          categories[icon.category].appendChild(card);
-        }
-        categories.all.appendChild(card);
-      });
-      
-      document.getElementById('iconCount').textContent = Object.keys(icons).length;
-    }
-    
-    function copyIconCode(name) {
-      navigator.clipboard.writeText(name).then(() => {
-        document.getElementById('copyHint').textContent = `✓ 已复制图标名称: ${name}`;
-        setTimeout(() => {
-          document.getElementById('copyHint').textContent = '';
-        }, 3000);
-      });
-    }
-    
-    renderIcons();
-  </script>
-</body>
+
+          if (categories[icon.category]) {
+            categories[icon.category].appendChild(card);
+          }
+          categories.all.appendChild(card);
+        });
+
+        document.getElementById('iconCount').textContent = Object.keys(icons).length;
+      }
+
+      function copyIconCode(name) {
+        navigator.clipboard.writeText(name).then(() => {
+          document.getElementById('copyHint').textContent = `✓ 已复制图标名称: ${name}`;
+          setTimeout(() => {
+            document.getElementById('copyHint').textContent = '';
+          }, 3000);
+        });
+      }
+
+      renderIcons();
+    </script>
+  </body>
 </html>

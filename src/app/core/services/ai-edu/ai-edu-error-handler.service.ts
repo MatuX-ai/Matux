@@ -4,6 +4,8 @@ import { ErrorHandler, Injectable, Injector } from '@angular/core';
 import { Router } from '@angular/router';
 import { BehaviorSubject } from 'rxjs';
 
+import { AuthService } from '../auth.service';
+
 /**
  * 错误类型枚举
  */
@@ -28,7 +30,7 @@ export interface AppError {
   status?: number;
   url?: string;
   timestamp: number;
-  details?: any;
+  details?: unknown;
 }
 
 /**
@@ -38,6 +40,21 @@ export interface ErrorToastConfig {
   duration?: number; // 显示时长 (毫秒)
   position?: 'top' | 'bottom';
   dismissible?: boolean; // 是否可手动关闭
+}
+
+/**
+ * 可解析的错误对象结构
+ */
+interface ErrorPayload {
+  error?: {
+    type?: string;
+    message?: string;
+    code?: string;
+    details?: unknown;
+  };
+  message?: string;
+  code?: string;
+  url?: string;
 }
 
 /**
@@ -68,7 +85,7 @@ export class AIEduErrorHandlerService implements ErrorHandler {
   private readonly LOG_BATCH_SIZE = 10; // 批量上报阈值
   private readonly LOG_FLUSH_INTERVAL = 30000; // 30 秒定时上报
   private pendingLogs: AppError[] = [];
-  private flushTimer?: any;
+  private flushTimer?: ReturnType<typeof setInterval>;
 
   constructor(private injector: Injector) {
     setTimeout(() => {
@@ -83,7 +100,7 @@ export class AIEduErrorHandlerService implements ErrorHandler {
   /**
    * Angular 全局错误处理器
    */
-  handleError(error: any): void {
+  handleError(error: unknown): void {
     const appError = this.parseError(error);
 
     // 记录错误历史
@@ -104,12 +121,20 @@ export class AIEduErrorHandlerService implements ErrorHandler {
   /**
    * 解析错误对象
    */
-  private parseError(error: any): AppError {
+  // eslint-disable-next-line complexity
+  private parseError(error: unknown): AppError {
     const baseError: AppError = {
       type: ErrorType.UNKNOWN,
       message: '发生未知错误，请稍后重试',
       timestamp: Date.now(),
     };
+
+    // 非对象类型直接返回
+    if (error === null || error === undefined || typeof error !== 'object') {
+      return baseError;
+    }
+
+    const err = error as ErrorPayload;
 
     // HTTP 错误
     if (error instanceof HttpErrorResponse) {
@@ -117,26 +142,26 @@ export class AIEduErrorHandlerService implements ErrorHandler {
     }
 
     // 已知的错误类型
-    if (error.error?.type) {
-      baseError.type = error.error.type as ErrorType;
+    if (err.error?.type) {
+      baseError.type = err.error.type as ErrorType;
     }
 
-    if (error.error?.message) {
-      baseError.message = error.error.message;
-    } else if (error.message) {
-      baseError.message = error.message;
+    if (err.error?.message) {
+      baseError.message = err.error.message;
+    } else if (err.message) {
+      baseError.message = err.message;
     }
 
-    if (error.code || error.error?.code) {
-      baseError.code = error.code || error.error?.code;
+    if (err.code ?? err.error?.code) {
+      baseError.code = err.code ?? err.error?.code;
     }
 
-    if (error.url) {
-      baseError.url = error.url;
+    if (err.url) {
+      baseError.url = err.url;
     }
 
-    if (error.error?.details) {
-      baseError.details = error.error.details;
+    if (err.error?.details) {
+      baseError.details = err.error.details;
     }
 
     return baseError;
@@ -145,15 +170,17 @@ export class AIEduErrorHandlerService implements ErrorHandler {
   /**
    * 解析 HTTP 错误
    */
+  // eslint-disable-next-line complexity
   private parseHttpError(error: HttpErrorResponse): AppError {
     const httpError: AppError = {
       type: ErrorType.HTTP,
       message: '',
       status: error.status,
-      url: error.url || undefined,
+      url: error.url ?? undefined,
       timestamp: Date.now(),
-      details: error.error,
     };
+
+    const errBody = error.error as { message?: string } | null | undefined;
 
     switch (error.status) {
       case 0:
@@ -163,7 +190,7 @@ export class AIEduErrorHandlerService implements ErrorHandler {
 
       case 400:
         httpError.type = ErrorType.VALIDATION;
-        httpError.message = error.error?.message || '请求参数错误';
+        httpError.message = errBody?.message ?? '请求参数错误';
         break;
 
       case 401:
@@ -194,7 +221,7 @@ export class AIEduErrorHandlerService implements ErrorHandler {
         break;
 
       default:
-        httpError.message = error.error?.message || `HTTP 错误：${error.status}`;
+        httpError.message = errBody?.message ?? `HTTP 错误：${error.status}`;
     }
 
     return httpError;
@@ -254,6 +281,10 @@ export class AIEduErrorHandlerService implements ErrorHandler {
 
     const API_BASE = 'http://localhost:8000/api/v1/org/1/logs';
 
+    const currentUser = this.injector.get(AuthService).getCurrentUser();
+    const userId = currentUser?.id ? Number(currentUser.id) : 1;
+    const orgId = (currentUser as unknown as { org_id?: number })?.org_id ?? 1;
+
     this.http
       .post(`${API_BASE}/error`, {
         errors: logsToSend.map((err) => ({
@@ -263,14 +294,14 @@ export class AIEduErrorHandlerService implements ErrorHandler {
           status: err.status,
           url: err.url,
           timestamp: new Date(err.timestamp).toISOString(),
-          details: err.details,
+          details: err.details as Record<string, unknown> | undefined,
         })),
-        user_id: 1, // TODO: 从认证服务获取
-        org_id: 1,
+        user_id: userId,
+        org_id: orgId,
       })
       .subscribe({
         next: () => {
-          console.log(`✅ 成功上报 ${logsToSend.length} 条错误日志`);
+          console.warn(`成功上报 ${logsToSend.length} 条错误日志`);
         },
         error: (error) => {
           console.error('❌ 错误日志上报失败:', error);
@@ -375,6 +406,7 @@ export class AIEduErrorHandlerService implements ErrorHandler {
   /**
    * 注入 CSS 样式
    */
+  // eslint-disable-next-line max-lines-per-function
   private injectStyles(): void {
     const styleId = 'ai-edu-toast-styles';
     if (document.getElementById(styleId)) return;
@@ -514,7 +546,7 @@ export class AIEduErrorHandlerService implements ErrorHandler {
     // 401 跳转到登录页
     if (error.type === ErrorType.AUTH && this.router) {
       setTimeout(() => {
-        this.router?.navigate(['/login']);
+        void this.router?.navigate(['/login']);
       }, 2000);
     }
 
@@ -555,7 +587,10 @@ export class AIEduErrorHandlerService implements ErrorHandler {
     // 修改为成功样式
     if (this.currentToast) {
       this.currentToast.className = 'ai-edu-toast ai-edu-toast-success';
-      this.currentToast.querySelector('.toast-icon')!.textContent = '✅';
+      const toastIcon = this.currentToast.querySelector('.toast-icon');
+      if (toastIcon) {
+        toastIcon.textContent = '✅';
+      }
     }
   }
 

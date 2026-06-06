@@ -1,0 +1,139 @@
+{
+  "manifestVersion": "1.0",
+  "id": "my-plugin",
+  "name": "我的插件",
+  "version": "1.0.0",
+  "description": "插件简短描述（不超过 500 字符）",
+  "author": {
+    "name": "开发者名称",
+    "email": "developer@example.com",
+    "url": "https://example.com",
+    "organization": "组织名称（可选）"
+  },
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/username/my-plugin"
+  },
+  "homepage": "https://example.com/my-plugin",
+  "bugs": {
+    "url": "https://github.com/username/my-plugin/issues",
+    "email": "bugs@example.com"
+  },
+  "keywords": [
+    "keyword1",
+    "keyword2",
+    "keyword3"
+  ],
+  "categories": [
+    "productivity"
+  ],
+  "icon": "icon.png",
+  
+  "deviceCompatibility": {
+    "compatibleTiers": [
+      "tier-a",
+      "tier-b",
+      "tier-c",
+      "tier-d"
+    ],
+    "minDeviceScore": 0,
+    "requiredHardware": {
+    },
+    "incompatibleWith": []
+  },
+  
+  "entryPoints": {
+    "backend": {
+      "routes": [
+        {
+          "file": "backend/routes/my_plugin_routes.py",
+          "prefix": "/api/v1/my-plugin",
+          "tags": ["我的插件"],
+          "tier": 2,
+          "lazyLoad": true
+        }
+      ],
+      "services": [
+        {
+          "name": "MyPluginService",
+          "file": "backend/services/my_plugin_service.py",
+          "autoStart": false
+        }
+      ],
+      "migrations": false,
+      "hooks": {
+        "onInstall": "backend/hooks/on_install.py",
+        "onUninstall": "backend/hooks/on_uninstall.py"
+      }
+    },
+    "frontend": {
+      "module": "frontend/module.ts",
+      "routes": "frontend/routes/my-plugin-routes.ts",
+      "components": [
+        {
+          "selector": "app-my-plugin",
+          "file": "frontend/components/my-plugin.component.ts",
+          "lazyLoad": true
+        }
+      ],
+      "menuItems": [
+        {
+          "label": "我的插件",
+          "route": "/my-plugin",
+          "icon": "extension",
+          "parentMenu": "tools",
+          "order": 100
+        }
+      ]
+    },
+    "electron": {
+      "main": "electron/main.js",
+      "preload": "electron/preload.js",
+      "ipcHandlers": [
+        "my-plugin:action1",
+        "my-plugin:action2"
+      ]
+    }
+  },
+  
+  "dependencies": {
+    "plugins": [],
+    "python": [],
+    "system": []
+  },
+  
+  "permissions": [],
+  
+  "settings": {
+    "schema": {
+      "type": "object",
+      "properties": {
+        "enabled": {
+          "type": "boolean",
+          "default": true,
+          "title": "启用插件",
+          "description": "是否启用此插件"
+        }
+      }
+    },
+    "defaults": {
+      "enabled": true
+    }
+  },
+  
+  "localization": {
+    "defaultLocale": "zh-CN",
+    "supportedLocales": [
+      "zh-CN",
+      "en-US"
+    ],
+    "resourcePath": "frontend/assets/i18n"
+  },
+  
+  "updateInfo": {
+    "updateUrl": "https://plugins.imato.edu/api/v1/plugins/my-plugin/updates",
+    "changelog": "### 1.0.0\n- 首次发布",
+    "autoUpdate": false
+  }
+}

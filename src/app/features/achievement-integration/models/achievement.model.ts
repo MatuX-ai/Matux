@@ -1,189 +1,157 @@
 /**
- * 学员成果数据接口
+ * 成就系统数据模型
+ *
+ * 定义成就、徽章、进度等核心数据结构
+ * 对应后端 gamification 模块的成就系统
  */
-export interface Achievement {
-  id: number;
-  userId: number;
-  moduleId?: number;
-  lessonId?: number;
-  type: AchievementType;
+
+/** 成就徽章 */
+export interface AchievementBadge {
+  id: string;
+  name: string;
+  icon: string;
+  description: string;
+  unlocked: boolean;
+  unlockedDate?: string;
+  category?: AchievementCategory;
+  rarity?: AchievementRarity;
+}
+
+/** 成就分类 */
+export enum AchievementCategory {
+  LEARNING = 'learning',
+  EXPERIMENT = 'experiment',
+  SOCIAL = 'social',
+  CHALLENGE = 'challenge',
+  HIDDEN = 'hidden',
+}
+
+/** 成就稀有度 */
+export enum AchievementRarity {
+  COMMON = 'common',
+  UNCOMMON = 'uncommon',
+  RARE = 'rare',
+  EPIC = 'epic',
+  LEGENDARY = 'legendary',
+}
+
+/** 成就进度里程碑 */
+export interface ProgressMilestone {
+  id: string;
   title: string;
   description: string;
-  files: AchievementFile[];
-  status: AchievementStatus;
-  score?: number;
-  feedback?: string;
-  reviewedBy?: number;
-  reviewedAt?: string;
-  submittedAt: string;
-  updatedAt: string;
-  tags: string[];
-  isPublic: boolean;
+  icon: string;
+  progress: number;
+  target: number;
+  completed: boolean;
+  category: AchievementCategory;
 }
 
-/**
- * 成果类型
- */
-export type AchievementType =
-  | 'project' // 项目案例
-  | 'certificate' // 证书
-  | 'assignment' // 作业
-  | 'portfolio' // 作品集
-  | 'case_study' // 案例研究
-  | 'other'; // 其他
-
-/**
- * 成果状态
- */
-export type AchievementStatus =
-  | 'pending' // 待审核
-  | 'approved' // 已通过
-  | 'rejected' // 已拒绝
-  | 'revision'; // 需要修改
-
-/**
- * 成果文件接口
- */
-export interface AchievementFile {
-  id: number;
-  achievementId: number;
-  fileName: string;
-  fileType: string;
-  fileSize: number;
-  fileUrl: string;
-  thumbnailUrl?: string;
-  uploadedAt: string;
-}
-
-/**
- * 成果审核记录接口
- */
-export interface AchievementReview {
-  id: number;
-  achievementId: number;
-  reviewerId: number;
-  reviewerName: string;
-  status: AchievementStatus;
-  score: number;
-  feedback: string;
-  reviewedAt: string;
-  comment?: string;
-}
-
-/**
- * 成果展示模板接口
- */
-export interface AchievementTemplate {
-  id: number;
-  name: string;
-  type: AchievementType;
-  layout: 'card' | 'grid' | 'timeline' | 'masonry';
-  styles: TemplateStyle;
-  fields: TemplateField[];
-}
-
-/**
- * 模板样式接口
- */
-export interface TemplateStyle {
-  backgroundColor: string;
-  textColor: string;
-  accentColor: string;
-  cardStyle: 'flat' | 'elevated' | 'outlined';
-  borderRadius: number;
-  showProgress: boolean;
-  showTags: boolean;
-  showDate: boolean;
-}
-
-/**
- * 模板字段配置接口
- */
-export interface TemplateField {
-  key: string;
-  label: string;
-  type: 'text' | 'image' | 'file' | 'rating' | 'date' | 'tags';
-  required: boolean;
-  displayInCard: boolean;
-  displayInDetail: boolean;
-}
-
-/**
- * 学习进度关联接口
- */
+/** 成就进度 */
 export interface AchievementProgress {
-  achievementId: number;
-  userId: number;
-  courseId?: number;
-  moduleId?: number;
-  lessonId?: number;
+  totalBadges: number;
+  unlockedBadges: number;
+  overallProgress: number;
   completionPercentage: number;
+  averageScore: number;
   totalAchievements: number;
   completedAchievements: number;
-  averageScore: number;
-  lastUpdated: string;
+  categoryProgress: Record<AchievementCategory, number>;
+  recentUnlocks: AchievementBadge[];
   milestones: ProgressMilestone[];
 }
 
-/**
- * 进度里程碑接口
- */
-export interface ProgressMilestone {
-  id: number;
-  name: string;
-  description: string;
-  achievedAt?: string;
-  achievementIds: number[];
+/** 成就解锁记录 */
+export interface AchievementUnlockEvent {
+  badgeId: string;
+  badgeName: string;
+  unlockedAt: string;
+  pointsAwarded?: number;
 }
 
-/**
- * 成果统计数据接口
- */
-export interface AchievementStats {
-  totalAchievements: number;
-  pendingReviews: number;
-  approvedAchievements: number;
-  rejectedAchievements: number;
-  averageScore: number;
-  recentActivity: AchievementActivity[];
-  byType: Record<string, number>;
-  byStatus: Record<AchievementStatus, number>;
+/** 成就类型 */
+export enum AchievementType {
+  BADGE = 'badge',
+  TROPHY = 'trophy',
+  MEDAL = 'medal',
+  CERTIFICATE = 'certificate',
+  STAR = 'star',
 }
 
-/**
- * 成果活动记录接口
- */
-export interface AchievementActivity {
-  id: number;
-  achievementId: number;
-  achievementTitle: string;
-  type: 'submitted' | 'approved' | 'rejected' | 'commented';
-  userId: number;
-  userName: string;
-  timestamp: string;
+/** 成就状态 */
+export enum AchievementStatus {
+  LOCKED = 'locked',
+  IN_PROGRESS = 'in_progress',
+  COMPLETED = 'completed',
+  EXPIRED = 'expired',
+  PENDING = 'pending',
+  APPROVED = 'approved',
+  REJECTED = 'rejected',
+  REVISION = 'revision',
 }
 
-/**
- * 成果筛选接口
- */
+/** 成就排序字段 */
+export enum AchievementSortBy {
+  NAME = 'name',
+  DATE = 'date',
+  RARITY = 'rarity',
+  CATEGORY = 'category',
+  PROGRESS = 'progress',
+}
+
+/** 成就排序选项 */
+export interface AchievementSort {
+  sortBy: AchievementSortBy;
+  ascending: boolean;
+}
+
+/** 成就筛选条件 */
 export interface AchievementFilter {
-  status?: AchievementStatus[];
-  type?: AchievementType[];
-  moduleId?: number[];
-  lessonId?: number[];
-  userId?: number[];
-  dateFrom?: string;
-  dateTo?: string;
-  tags?: string[];
+  category?: AchievementCategory;
+  status?: AchievementStatus;
+  type?: AchievementType;
+  rarity?: AchievementRarity;
   searchQuery?: string;
 }
 
-/**
- * 成果排序接口
- */
-export type AchievementSortBy = 'submittedAt' | 'updatedAt' | 'score' | 'title' | 'reviewedAt';
+/** 完整成就条目 */
+export interface Achievement {
+  id: string;
+  name: string;
+  icon: string;
+  description: string;
+  type: AchievementType;
+  status: AchievementStatus;
+  category: AchievementCategory;
+  rarity: AchievementRarity;
+  progress: number;
+  target: number;
+  unlockedDate?: string;
+  points: number;
+  tags: string[];
+  requirements: string[];
+}
 
-export interface AchievementSort {
-  field: AchievementSortBy;
-  direction: 'asc' | 'desc';
+/** 成就审核记录 */
+export interface AchievementReview {
+  id: string;
+  achievementId: string;
+  achievementName: string;
+  userId: number;
+  userName: string;
+  status: AchievementStatus;
+  comment: string;
+  reviewerId?: number;
+  reviewerName?: string;
+  submittedAt: string;
+  reviewedAt?: string;
+}
+
+/** 成就统计 */
+export interface AchievementStats {
+  totalPoints: number;
+  badgesCount: number;
+  currentStreak: number;
+  longestStreak: number;
+  lastActiveDate: string;
 }

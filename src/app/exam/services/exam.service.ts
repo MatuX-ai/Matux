@@ -48,7 +48,7 @@ export interface ExamAttempt {
   started_at: string;
   submitted_at?: string;
   time_spent_seconds?: number;
-  answers?: Record<string, any>;
+  answers?: Record<string, unknown>;
   cheat_events?: CheatEvent[];
 }
 
@@ -57,7 +57,7 @@ export interface CheatEvent {
   attempt_id: number;
   cheat_type: string;
   severity: number;
-  details?: Record<string, any>;
+  details?: Record<string, unknown>;
   timestamp: string;
 }
 
@@ -79,11 +79,19 @@ export class ExamService {
   constructor(private http: HttpClient) {}
 
   /** 获取测验列表 */
-  getExams(status?: string, courseId?: number, page = 1, pageSize = 20): Observable<{ exams: Exam[]; total: number; page: number; page_size: number }> {
+  getExams(
+    status?: string,
+    courseId?: number,
+    page = 1,
+    pageSize = 20
+  ): Observable<{ exams: Exam[]; total: number; page: number; page_size: number }> {
     const params: Record<string, string | number> = { page, page_size: pageSize };
     if (status) params['status'] = status;
     if (courseId) params['course_id'] = courseId;
-    return this.http.get<{ exams: Exam[]; total: number; page: number; page_size: number }>(this.API_URL, { params });
+    return this.http.get<{ exams: Exam[]; total: number; page: number; page_size: number }>(
+      this.API_URL,
+      { params }
+    );
   }
 
   /** 获取测验详情（含题目） */
@@ -92,12 +100,17 @@ export class ExamService {
   }
 
   /** 开始考试 */
-  startExam(examId: number): Observable<{ attempt_id: number; started_at: string; questions: Question[] }> {
-    return this.http.post<{ attempt_id: number; started_at: string; questions: Question[] }>(`${this.API_URL}/${examId}/start`, {});
+  startExam(
+    examId: number
+  ): Observable<{ attempt_id: number; started_at: string; questions: Question[] }> {
+    return this.http.post<{ attempt_id: number; started_at: string; questions: Question[] }>(
+      `${this.API_URL}/${examId}/start`,
+      {}
+    );
   }
 
   /** 提交答案 */
-  submitExam(attemptId: number, answers: Record<string, any>): Observable<ExamAttempt> {
+  submitExam(attemptId: number, answers: Record<string, unknown>): Observable<ExamAttempt> {
     return this.http.post<ExamAttempt>(`${this.API_URL}/attempts/${attemptId}/submit`, { answers });
   }
 
@@ -117,7 +130,16 @@ export class ExamService {
   }
 
   /** 防作弊心跳上报 */
-  reportCheatEvent(attemptId: number, cheatType: string, details?: Record<string, any>, severity = 1): Observable<any> {
-    return this.http.post(`${this.API_URL}/attempts/${attemptId}/heartbeat`, { cheat_type: cheatType, details, severity });
+  reportCheatEvent(
+    attemptId: number,
+    cheatType: string,
+    details?: Record<string, unknown>,
+    severity = 1
+  ): Observable<unknown> {
+    return this.http.post(`${this.API_URL}/attempts/${attemptId}/heartbeat`, {
+      cheat_type: cheatType,
+      details,
+      severity,
+    });
   }
 }

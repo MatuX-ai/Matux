@@ -4,12 +4,12 @@
  */
 
 import { Injectable, OnDestroy } from '@angular/core';
-import { Observable, Subject, BehaviorSubject } from 'rxjs';
+import { BehaviorSubject, Observable, Subject } from 'rxjs';
 import { filter, map, takeUntil } from 'rxjs/operators';
 
 export interface WebSocketMessage {
   type: string;
-  data?: any;
+  data?: unknown;
   message?: string;
   timestamp?: string;
   error?: string;
@@ -74,7 +74,7 @@ export class AiEduWebSocketService implements OnDestroy {
   private maxDelay = 30000;
   private jitterMax = 1000;
   private reconnectAttempts = 0;
-  private reconnectTimer: any = null;
+  private reconnectTimer: ReturnType<typeof setTimeout> | null = null;
 
   // ---- 重连状态 ----
   private reconnectStateSubject = new BehaviorSubject<ReconnectState>({
@@ -84,14 +84,13 @@ export class AiEduWebSocketService implements OnDestroy {
     nextDelay: 0,
   });
   /** 重连状态流，可用于 UI 展示 */
-  readonly reconnectState$: Observable<ReconnectState> =
-    this.reconnectStateSubject.asObservable();
+  readonly reconnectState$: Observable<ReconnectState> = this.reconnectStateSubject.asObservable();
 
   // ---- 心跳配置 ----
   private pingIntervalMs = 30000;
   private pongTimeoutMs = 10000;
-  private pingInterval: any = null;
-  private pongTimeoutTimer: any = null;
+  private pingInterval: ReturnType<typeof setInterval> | null = null;
+  private pongTimeoutTimer: ReturnType<typeof setInterval> | null = null;
   private lastPongTime: number = 0;
 
   private destroy$ = new Subject<void>();
@@ -182,9 +181,9 @@ export class AiEduWebSocketService implements OnDestroy {
         this.startPongTimeout();
       };
 
-      this.websocket.onmessage = (event) => {
+      this.websocket.onmessage = (event: MessageEvent) => {
         try {
-          const message: WebSocketMessage = JSON.parse(event.data);
+          const message = JSON.parse(event.data as string) as WebSocketMessage;
 
           // 收到 pong 响应，更新最后 pong 时间
           if (message.type === 'pong') {
@@ -192,7 +191,9 @@ export class AiEduWebSocketService implements OnDestroy {
           }
 
           this.messageSubject.next(message);
-        } catch (error) {}
+        } catch {
+          /* 忽略解析错误 */
+        }
       };
 
       this.websocket.onclose = (event) => {
@@ -300,13 +301,15 @@ export class AiEduWebSocketService implements OnDestroy {
    * 发送通用消息
    */
   sendMessage(message: WebSocketMessage): void {
-    if (!this.isConnected()) {
+    if (!this.isConnected() || !this.websocket) {
       return;
     }
 
     try {
-      this.websocket!.send(JSON.stringify(message));
-    } catch (error) {}
+      this.websocket.send(JSON.stringify(message));
+    } catch {
+      /* 忽略发送错误 */
+    }
   }
 
   /**
@@ -355,10 +358,7 @@ export class AiEduWebSocketService implements OnDestroy {
    * delay = min(maxDelay, baseDelay * 2^attempt) + random(0, jitterMax)
    */
   private calculateBackoff(attempt: number): number {
-    const exponentialDelay = Math.min(
-      this.maxDelay,
-      this.baseDelay * Math.pow(2, attempt - 1)
-    );
+    const exponentialDelay = Math.min(this.maxDelay, this.baseDelay * Math.pow(2, attempt - 1));
     const jitter = Math.random() * this.jitterMax;
     return Math.floor(exponentialDelay + jitter);
   }
@@ -434,17 +434,20 @@ export class AiEduWebSocketService implements OnDestroy {
   private startPongTimeout(): void {
     this.stopPongTimeout();
 
-    this.pongTimeoutTimer = setInterval(() => {
-      if (!this.isConnected()) {
-        return;
-      }
+    this.pongTimeoutTimer = setInterval(
+      () => {
+        if (!this.isConnected()) {
+          return;
+        }
 
-      const elapsed = Date.now() - this.lastPongTime;
-      if (elapsed > this.pongTimeoutMs) {
-        // 心跳超时，强制断开触发重连
-        this.forceReconnect();
-      }
-    }, Math.min(this.pongTimeoutMs, 5000)); // 至少每 5s 检查一次
+        const elapsed = Date.now() - this.lastPongTime;
+        if (elapsed > this.pongTimeoutMs) {
+          // 心跳超时，强制断开触发重连
+          this.forceReconnect();
+        }
+      },
+      Math.min(this.pongTimeoutMs, 5000)
+    ); // 至少每 5s 检查一次
   }
 
   /**
@@ -463,7 +466,7 @@ export class AiEduWebSocketService implements OnDestroy {
   private forceReconnect(): void {
     if (this.websocket) {
       // 移除 onclose 监听，手动触发重连逻辑
-      const oldOnClose = this.websocket.onclose;
+      const _oldOnClose = this.websocket.onclose;
       this.websocket.onclose = null;
       this.websocket.close(4001, 'Heartbeat timeout');
       this.websocket = null;

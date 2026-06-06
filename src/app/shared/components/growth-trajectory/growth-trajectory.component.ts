@@ -9,12 +9,12 @@ import { CommonModule } from '@angular/common';
 import { ChangeDetectionStrategy, Component, Input } from '@angular/core';
 import { MatButtonModule } from '@angular/material/button';
 import { MatCardModule } from '@angular/material/card';
+import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatIconModule } from '@angular/material/icon';
 import { MatSelectModule } from '@angular/material/select';
-import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatTooltipModule } from '@angular/material/tooltip';
 
-import { GrowthTrajectory, LearningMilestone, PeerComparisonData } from '../../../core/models/ai-teacher.models';
+import { GrowthTrajectory, LearningMilestone } from '../../../core/models/ai-teacher.models';
 
 @Component({
   selector: 'app-growth-trajectory',
@@ -58,43 +58,85 @@ import { GrowthTrajectory, LearningMilestone, PeerComparisonData } from '../../.
           <div class="trend-chart">
             <svg [attr.viewBox]="'0 0 ' + chartWidth + ' ' + chartHeight" class="trend-svg">
               <!-- 网格线和Y轴标签 -->
-              <line *ngFor="let level of [0, 25, 50, 75, 100]"
-                x1="40" [attr.x2]="chartWidth - 10"
-                [attr.y1]="getY(level)" [attr.y2]="getY(level)"
-                stroke="#f0f0f0" stroke-width="1"/>
-              <text *ngFor="let level of [0, 25, 50, 75, 100]"
-                x="35" [attr.y]="getY(level) + 4"
-                text-anchor="end" font-size="11" fill="#94a3b8">{{ level }}%</text>
+              <line
+                *ngFor="let level of [0, 25, 50, 75, 100]"
+                x1="40"
+                [attr.x2]="chartWidth - 10"
+                [attr.y1]="getY(level)"
+                [attr.y2]="getY(level)"
+                stroke="#f0f0f0"
+                stroke-width="1"
+              />
+              <text
+                *ngFor="let level of [0, 25, 50, 75, 100]"
+                x="35"
+                [attr.y]="getY(level) + 4"
+                text-anchor="end"
+                font-size="11"
+                fill="#94a3b8"
+              >
+                {{ level }}%
+              </text>
 
               <!-- X轴月份标签 -->
-              <text *ngFor="let point of trajectory?.abilityTrend ?? []; let i = index"
-                [attr.x]="getX(i)" [attr.y]="chartHeight - 5"
-                text-anchor="middle" font-size="11" fill="#94a3b8">
+              <text
+                *ngFor="let point of trajectory?.abilityTrend ?? []; let i = index"
+                [attr.x]="getX(i)"
+                [attr.y]="chartHeight - 5"
+                text-anchor="middle"
+                font-size="11"
+                fill="#94a3b8"
+              >
                 {{ point.date.slice(5) }}
               </text>
 
               <!-- 能力趋势线 - 编程思维 -->
-              <polyline *ngIf="trajectory?.abilityTrend?.length"
+              <polyline
+                *ngIf="trajectory?.abilityTrend?.length"
                 [attr.points]="getTrendLine('programmingThinking')"
-                fill="none" stroke="#3b82f6" stroke-width="2.5"/>
+                fill="none"
+                stroke="#3b82f6"
+                stroke-width="2.5"
+              />
 
               <!-- 能力趋势线 - STEM实验 -->
-              <polyline *ngIf="trajectory?.abilityTrend?.length"
+              <polyline
+                *ngIf="trajectory?.abilityTrend?.length"
                 [attr.points]="getTrendLine('stemExperiment')"
-                fill="none" stroke="#22c55e" stroke-width="2.5" stroke-dasharray="6,3"/>
+                fill="none"
+                stroke="#22c55e"
+                stroke-width="2.5"
+                stroke-dasharray="6,3"
+              />
 
               <!-- 数据点 -->
-              <circle *ngFor="let point of trajectory?.abilityTrend ?? []; let i = index"
-                [attr.cx]="getX(i)" [attr.cy]="getY(point.programmingThinking)"
-                r="4" fill="#3b82f6"/>
-              <circle *ngFor="let point of trajectory?.abilityTrend ?? []; let i = index"
-                [attr.cx]="getX(i)" [attr.cy]="getY(point.stemExperiment)"
-                r="4" fill="#22c55e"/>
+              <circle
+                *ngFor="let point of trajectory?.abilityTrend ?? []; let i = index"
+                [attr.cx]="getX(i)"
+                [attr.cy]="getY(point.programmingThinking)"
+                r="4"
+                fill="#3b82f6"
+              />
+              <circle
+                *ngFor="let point of trajectory?.abilityTrend ?? []; let i = index"
+                [attr.cx]="getX(i)"
+                [attr.cy]="getY(point.stemExperiment)"
+                r="4"
+                fill="#22c55e"
+              />
 
               <!-- 图例 -->
-              <line x1="60" y1="15" x2="85" y2="15" stroke="#3b82f6" stroke-width="2.5"/>
+              <line x1="60" y1="15" x2="85" y2="15" stroke="#3b82f6" stroke-width="2.5" />
               <text x="90" y="19" font-size="11" fill="#334155">编程思维</text>
-              <line x1="170" y1="15" x2="195" y2="15" stroke="#22c55e" stroke-width="2.5" stroke-dasharray="6,3"/>
+              <line
+                x1="170"
+                y1="15"
+                x2="195"
+                y2="15"
+                stroke="#22c55e"
+                stroke-width="2.5"
+                stroke-dasharray="6,3"
+              />
               <text x="200" y="19" font-size="11" fill="#334155">STEM实验</text>
             </svg>
           </div>
@@ -108,14 +150,16 @@ import { GrowthTrajectory, LearningMilestone, PeerComparisonData } from '../../.
         </mat-card-header>
         <mat-card-content>
           <div class="timeline">
-            <div *ngFor="let milestone of trajectory?.milestones ?? []; let last = last"
-              class="timeline-item">
+            <div
+              *ngFor="let milestone of trajectory?.milestones ?? []; let last = last"
+              class="timeline-item"
+            >
               <div class="timeline-dot">
                 <mat-icon>{{ getMilestoneIcon(milestone) }}</mat-icon>
               </div>
               <div *ngIf="!last" class="timeline-line"></div>
               <div class="timeline-content">
-                <span class="timeline-date">{{ milestone.achievedAt | date:'yyyy-MM-dd' }}</span>
+                <span class="timeline-date">{{ milestone.achievedAt | date: 'yyyy-MM-dd' }}</span>
                 <span class="timeline-title">{{ milestone.title }}</span>
                 <span class="timeline-desc">{{ milestone.description }}</span>
               </div>
@@ -149,16 +193,18 @@ import { GrowthTrajectory, LearningMilestone, PeerComparisonData } from '../../.
               <span class="peer-label">{{ dim.label }}</span>
               <div class="peer-bars">
                 <div class="peer-bar-wrapper">
-                  <div class="peer-bar peer-bar-user"
+                  <div
+                    class="peer-bar peer-bar-user"
                     [style.width.%]="getPeerBarWidth(dim.key, 'user')"
-                    [matTooltip]="'你: ' + getUserValue(dim.key)">
-                  </div>
+                    [matTooltip]="'你: ' + getUserValue(dim.key)"
+                  ></div>
                 </div>
                 <div class="peer-bar-wrapper peer-bar-peer-wrapper">
-                  <div class="peer-bar peer-bar-peer"
+                  <div
+                    class="peer-bar peer-bar-peer"
                     [style.width.%]="getPeerBarWidth(dim.key, 'peer')"
-                    [matTooltip]="'同龄平均: ' + getPeerValue(dim.key)">
-                  </div>
+                    [matTooltip]="'同龄平均: ' + getPeerValue(dim.key)"
+                  ></div>
                 </div>
               </div>
               <div class="peer-values">
@@ -169,7 +215,9 @@ import { GrowthTrajectory, LearningMilestone, PeerComparisonData } from '../../.
           </div>
           <div class="peer-rank">
             <mat-icon>emoji_events</mat-icon>
-            <span>综合排名：<strong>{{ trajectory!.peerComparison!.percentileRank }}%</strong></span>
+            <span
+              >综合排名：<strong>{{ trajectory!.peerComparison!.percentileRank }}%</strong></span
+            >
           </div>
         </mat-card-content>
       </mat-card>
@@ -235,124 +283,286 @@ import { GrowthTrajectory, LearningMilestone, PeerComparisonData } from '../../.
       </div>
     </div>
   `,
-  styles: [`
-    .growth-container {
-      display: flex;
-      flex-direction: column;
-      gap: 16px;
-      padding: 16px;
-    }
-    .ai-message-card { }
-    .ai-avatar {
-      font-size: 40px; color: #3b82f6;
-      background: linear-gradient(135deg, #dbeafe, #ede9fe);
-      border-radius: 50%; padding: 8px;
-    }
-    .ai-message-text {
-      font-size: 14px; line-height: 1.8; color: #334155;
-      padding: 12px; background: #f8fafc; border-radius: 12px;
-      border-left: 4px solid #8b5cf6;
-    }
-    .period-select { width: 120px; margin-left: auto; }
+  styles: [
+    `
+      .growth-container {
+        display: flex;
+        flex-direction: column;
+        gap: 16px;
+        padding: 16px;
+      }
+      .ai-message-card {
+      }
+      .ai-avatar {
+        font-size: 40px;
+        color: #3b82f6;
+        background: linear-gradient(135deg, #dbeafe, #bfdbfe);
+        border-radius: 50%;
+        padding: 8px;
+      }
+      .ai-message-text {
+        font-size: 14px;
+        line-height: 1.8;
+        color: #334155;
+        padding: 12px;
+        background: #f8fafc;
+        border-radius: 12px;
+        border-left: 4px solid #3b82f6;
+      }
+      .period-select {
+        width: 120px;
+        margin-left: auto;
+      }
 
-    .trend-card { }
-    .trend-chart { display: flex; justify-content: center; }
-    .trend-svg { width: 100%; max-width: 700px; height: auto; }
+      .trend-card {
+      }
+      .trend-chart {
+        display: flex;
+        justify-content: center;
+      }
+      .trend-svg {
+        width: 100%;
+        max-width: 700px;
+        height: auto;
+      }
 
-    .milestone-card { }
-    .timeline { position: relative; padding-left: 40px; }
-    .timeline-item {
-      position: relative; padding-bottom: 24px;
-      display: flex; align-items: flex-start;
-    }
-    .timeline-dot {
-      position: absolute; left: -40px; width: 32px; height: 32px;
-      border-radius: 50%; background: #3b82f6; color: white;
-      display: flex; align-items: center; justify-content: center;
-      font-size: 16px; z-index: 1;
-    }
-    .future-dot { background: #8b5cf6; }
-    .timeline-line {
-      position: absolute; left: -25px; top: 32px; bottom: 0;
-      width: 2px; background: #e2e8f0;
-    }
-    .timeline-content {
-      display: flex; flex-direction: column; gap: 2px; padding-left: 8px;
-    }
-    .timeline-date { font-size: 12px; color: #94a3b8; }
-    .timeline-title { font-size: 14px; font-weight: 600; color: #0f172a; }
-    .timeline-desc { font-size: 13px; color: #64748b; }
+      .milestone-card {
+      }
+      .timeline {
+        position: relative;
+        padding-left: 40px;
+      }
+      .timeline-item {
+        position: relative;
+        padding-bottom: 24px;
+        display: flex;
+        align-items: flex-start;
+      }
+      .timeline-dot {
+        position: absolute;
+        left: -40px;
+        width: 32px;
+        height: 32px;
+        border-radius: 50%;
+        background: #3b82f6;
+        color: white;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 16px;
+        z-index: 1;
+      }
+      .future-dot {
+        background: #3b82f6;
+      }
+      .timeline-line {
+        position: absolute;
+        left: -25px;
+        top: 32px;
+        bottom: 0;
+        width: 2px;
+        background: #e2e8f0;
+      }
+      .timeline-content {
+        display: flex;
+        flex-direction: column;
+        gap: 2px;
+        padding-left: 8px;
+      }
+      .timeline-date {
+        font-size: 12px;
+        color: #94a3b8;
+      }
+      .timeline-title {
+        font-size: 14px;
+        font-weight: 600;
+        color: #0f172a;
+      }
+      .timeline-desc {
+        font-size: 13px;
+        color: #64748b;
+      }
 
-    .bottom-row {
-      display: grid; grid-template-columns: 1fr 1fr; gap: 16px;
-    }
-    .stats-card { }
-    .stat-row { display: flex; flex-wrap: wrap; gap: 16px; }
-    .stat-entry {
-      display: flex; flex-direction: column; align-items: center; min-width: 80px;
-    }
-    .stat-num { font-size: 24px; font-weight: 700; color: #3b82f6; }
-    .stat-unit { font-size: 12px; color: #64748b; }
-    .stat-desc { font-size: 12px; color: #94a3b8; }
+      .bottom-row {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 16px;
+      }
+      .stats-card {
+      }
+      .stat-row {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 16px;
+      }
+      .stat-entry {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        min-width: 80px;
+      }
+      .stat-num {
+        font-size: 24px;
+        font-weight: 700;
+        color: #3b82f6;
+      }
+      .stat-unit {
+        font-size: 12px;
+        color: #64748b;
+      }
+      .stat-desc {
+        font-size: 12px;
+        color: #94a3b8;
+      }
 
-    .interest-card { }
-    .interest-period { margin-bottom: 12px; }
-    .interest-period-label {
-      font-size: 13px; font-weight: 500; color: #64748b; margin-bottom: 4px; display: block;
-    }
-    .interest-bar-item {
-      display: flex; align-items: center; gap: 8px; margin-bottom: 4px;
-    }
-    .interest-name { font-size: 13px; color: #334155; width: 60px; }
-    .interest-bar-bg {
-      flex: 1; height: 8px; background: #f1f5f9; border-radius: 4px; overflow: hidden;
-    }
-    .interest-bar-fill {
-      height: 100%; background: linear-gradient(90deg, #3b82f6, #8b5cf6); border-radius: 4px;
-    }
-    .interest-pct { font-size: 12px; color: #64748b; width: 35px; }
-    .interest-trend {
-      font-size: 13px; color: #8b5cf6; font-weight: 500; margin-top: 8px;
-    }
+      .interest-card {
+      }
+      .interest-period {
+        margin-bottom: 12px;
+      }
+      .interest-period-label {
+        font-size: 13px;
+        font-weight: 500;
+        color: #64748b;
+        margin-bottom: 4px;
+        display: block;
+      }
+      .interest-bar-item {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        margin-bottom: 4px;
+      }
+      .interest-name {
+        font-size: 13px;
+        color: #334155;
+        width: 60px;
+      }
+      .interest-bar-bg {
+        flex: 1;
+        height: 8px;
+        background: #f1f5f9;
+        border-radius: 4px;
+        overflow: hidden;
+      }
+      .interest-bar-fill {
+        height: 100%;
+        background: linear-gradient(90deg, #60a5fa, #3b82f6);
+        border-radius: 4px;
+      }
+      .interest-pct {
+        font-size: 12px;
+        color: #64748b;
+        width: 35px;
+      }
+      .interest-trend {
+        font-size: 13px;
+        color: #3b82f6;
+        font-weight: 500;
+        margin-top: 8px;
+      }
 
-    /* 同龄对比 */
-    .peer-card { }
-    .peer-card mat-card-header { display: flex; align-items: center; gap: 8px; }
-    .peer-card mat-card-title { display: flex; align-items: center; gap: 6px; font-size: 16px; }
-    .peer-badge {
-      margin-left: auto; padding: 4px 12px; border-radius: 12px;
-      background: linear-gradient(135deg, #dbeafe, #ede9fe);
-      color: #6366f1; font-size: 13px; font-weight: 600;
-    }
-    .peer-dimensions { display: flex; flex-direction: column; gap: 12px; }
-    .peer-row {
-      display: grid; grid-template-columns: 80px 1fr 60px; gap: 12px;
-      align-items: center;
-    }
-    .peer-label { font-size: 13px; color: #475569; font-weight: 500; }
-    .peer-bars { display: flex; flex-direction: column; gap: 3px; }
-    .peer-bar-wrapper {
-      height: 8px; background: #f1f5f9; border-radius: 4px; overflow: hidden;
-    }
-    .peer-bar { height: 100%; border-radius: 4px; transition: width 0.5s ease; min-width: 2px; }
-    .peer-bar-user { background: linear-gradient(90deg, #3b82f6, #6366f1); }
-    .peer-bar-peer { background: #cbd5e1; }
-    .peer-bar-peer-wrapper { background: transparent; }
-    .peer-values {
-      display: flex; flex-direction: column; align-items: flex-end; gap: 3px;
-    }
-    .peer-user-val { font-size: 12px; font-weight: 600; color: #3b82f6; }
-    .peer-peer-val { font-size: 11px; color: #94a3b8; }
-    .peer-rank {
-      margin-top: 16px; padding-top: 12px; border-top: 1px solid #e2e8f0;
-      display: flex; align-items: center; gap: 6px; font-size: 14px; color: #475569;
-    }
-    .peer-rank mat-icon { color: #f59e0b; }
+      /* 同龄对比 */
+      .peer-card {
+      }
+      .peer-card mat-card-header {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+      }
+      .peer-card mat-card-title {
+        display: flex;
+        align-items: center;
+        gap: 6px;
+        font-size: 16px;
+      }
+      .peer-badge {
+        margin-left: auto;
+        padding: 4px 12px;
+        border-radius: 12px;
+        background: linear-gradient(135deg, #dbeafe, #bfdbfe);
+        color: #2563eb;
+        font-size: 13px;
+        font-weight: 600;
+      }
+      .peer-dimensions {
+        display: flex;
+        flex-direction: column;
+        gap: 12px;
+      }
+      .peer-row {
+        display: grid;
+        grid-template-columns: 80px 1fr 60px;
+        gap: 12px;
+        align-items: center;
+      }
+      .peer-label {
+        font-size: 13px;
+        color: #475569;
+        font-weight: 500;
+      }
+      .peer-bars {
+        display: flex;
+        flex-direction: column;
+        gap: 3px;
+      }
+      .peer-bar-wrapper {
+        height: 8px;
+        background: #f1f5f9;
+        border-radius: 4px;
+        overflow: hidden;
+      }
+      .peer-bar {
+        height: 100%;
+        border-radius: 4px;
+        transition: width 0.5s ease;
+        min-width: 2px;
+      }
+      .peer-bar-user {
+        background: linear-gradient(90deg, #3b82f6, #2563eb);
+      }
+      .peer-bar-peer {
+        background: #cbd5e1;
+      }
+      .peer-bar-peer-wrapper {
+        background: transparent;
+      }
+      .peer-values {
+        display: flex;
+        flex-direction: column;
+        align-items: flex-end;
+        gap: 3px;
+      }
+      .peer-user-val {
+        font-size: 12px;
+        font-weight: 600;
+        color: #3b82f6;
+      }
+      .peer-peer-val {
+        font-size: 11px;
+        color: #94a3b8;
+      }
+      .peer-rank {
+        margin-top: 16px;
+        padding-top: 12px;
+        border-top: 1px solid #e2e8f0;
+        display: flex;
+        align-items: center;
+        gap: 6px;
+        font-size: 14px;
+        color: #475569;
+      }
+      .peer-rank mat-icon {
+        color: #f59e0b;
+      }
 
-    @media (max-width: 768px) {
-      .bottom-row { grid-template-columns: 1fr; }
-    }
-  `],
+      @media (max-width: 768px) {
+        .bottom-row {
+          grid-template-columns: 1fr;
+        }
+      }
+    `,
+  ],
 })
 export class GrowthTrajectoryComponent {
   @Input() trajectory: GrowthTrajectory | null = null;

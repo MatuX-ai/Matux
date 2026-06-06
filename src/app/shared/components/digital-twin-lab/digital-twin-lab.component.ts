@@ -12,8 +12,9 @@ import { MatSnackBar } from '@angular/material/snack-bar';
 import { ActivatedRoute, Router } from '@angular/router';
 import { Subject } from 'rxjs';
 
-import { ElectronService } from '../../../core/services/electron.service';
 import { CircuitShortcutRegistrar } from '../../../core/services/circuit-shortcut-registrar.service';
+import { ElectronService } from '../../../core/services/electron.service';
+
 import { CircuitShortcutHelpDialogComponent } from './circuit-shortcut-help-dialog.component';
 
 interface CircuitElement {
@@ -96,7 +97,6 @@ interface WindowWithUnity extends Window {
     CommonModule,
     DecimalPipe,
     NgClass,
-    CircuitShortcutHelpDialogComponent,
   ],
 })
 export class DigitalTwinLabComponent implements OnInit, OnDestroy {
@@ -135,7 +135,7 @@ export class DigitalTwinLabComponent implements OnInit, OnDestroy {
     private snackBar: MatSnackBar,
     private dialog: MatDialog,
     private electronService: ElectronService,
-    private shortcutRegistrar: CircuitShortcutRegistrar,
+    private shortcutRegistrar: CircuitShortcutRegistrar
   ) {}
 
   ngOnInit(): void {
@@ -578,6 +578,7 @@ export class DigitalTwinLabComponent implements OnInit, OnDestroy {
   }
 
   /** 处理快捷键动作 */
+  // eslint-disable-next-line max-lines-per-function, complexity
   private handleShortcutAction(action: string): void {
     switch (action) {
       case 'rotate':

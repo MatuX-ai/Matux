@@ -4,6 +4,7 @@ import { Router } from '@angular/router';
 import { BehaviorSubject, Observable, of, throwError } from 'rxjs';
 import { catchError, map, tap } from 'rxjs/operators';
 
+import { environment } from '../../../environments/environment';
 import {
   AuthResponse,
   BindChildRequest,
@@ -15,7 +16,7 @@ import {
   UnifiedTokenResponse,
   User,
 } from '../models/auth.models';
-import { environment } from '../../../environments/environment';
+
 import { ElectronService } from './electron.service';
 
 /**
@@ -105,21 +106,14 @@ export class AuthService {
    * 检查是否存在访问令牌
    */
   private hasToken(): boolean {
-    return !!(
-      localStorage.getItem(this.TOKEN_KEY) ||
-      sessionStorage.getItem(this.TOKEN_KEY)
-    );
+    return !!(localStorage.getItem(this.TOKEN_KEY) ?? sessionStorage.getItem(this.TOKEN_KEY));
   }
 
   /**
    * 获取当前有效的 Token
    */
   getAccessToken(): string | null {
-    return (
-      localStorage.getItem(this.TOKEN_KEY) ||
-      sessionStorage.getItem(this.TOKEN_KEY) ||
-      null
-    );
+    return localStorage.getItem(this.TOKEN_KEY) ?? sessionStorage.getItem(this.TOKEN_KEY) ?? null;
   }
 
   /**
@@ -196,7 +190,8 @@ export class AuthService {
    */
   isRememberMe(): boolean {
     try {
-      return JSON.parse(localStorage.getItem(this.REMEMBER_ME_KEY) || 'false');
+      const stored = localStorage.getItem(this.REMEMBER_ME_KEY);
+      return stored ? Boolean(JSON.parse(stored)) : false;
     } catch {
       return false;
     }
@@ -232,15 +227,13 @@ export class AuthService {
    * 手机号登录
    */
   phoneLogin(req: PhoneLoginRequest): Observable<UnifiedTokenResponse> {
-    return this.http
-      .post<UnifiedTokenResponse>(`${this.UNIFIED_AUTH_URL}/login/phone`, req)
-      .pipe(
-        tap((response) => {
-          this.storeUnifiedAuthData(response);
-          this.cacheOfflineCredentials(req.phone, response.access_token);
-        }),
-        catchError((error) => this.handleError(error))
-      );
+    return this.http.post<UnifiedTokenResponse>(`${this.UNIFIED_AUTH_URL}/login/phone`, req).pipe(
+      tap((response) => {
+        this.storeUnifiedAuthData(response);
+        this.cacheOfflineCredentials(req.phone, response.access_token);
+      }),
+      catchError((error) => this.handleError(error))
+    );
   }
 
   /**
@@ -258,7 +251,7 @@ export class AuthService {
   /**
    * 家长绑定学生
    */
-  bindChild(req: BindChildRequest): Observable<any> {
+  bindChild(req: BindChildRequest): Observable<unknown> {
     return this.http.post(`${this.UNIFIED_AUTH_URL}/bind-child`, req, {
       headers: this.getAuthHeaders(),
     });
@@ -267,7 +260,7 @@ export class AuthService {
   /**
    * 获取绑定的学生列表
    */
-  getChildren(): Observable<any> {
+  getChildren(): Observable<unknown> {
     return this.http.get(`${this.UNIFIED_AUTH_URL}/children`, {
       headers: this.getAuthHeaders(),
     });
@@ -279,12 +272,12 @@ export class AuthService {
   private storeUnifiedAuthData(response: UnifiedTokenResponse): void {
     const user: User = {
       id: String(response.user.id),
-      email: response.user.email || '',
+      email: response.user.email ?? '',
       username: response.user.username,
       phone: response.user.phone,
       userType: response.user.role,
-      createdAt: new Date(response.user.created_at || Date.now()),
-      updatedAt: new Date(response.user.updated_at || Date.now()),
+      createdAt: new Date(response.user.created_at ?? Date.now()),
+      updatedAt: new Date(response.user.updated_at ?? Date.now()),
     };
 
     const authResponse: AuthResponse = {
@@ -305,10 +298,10 @@ export class AuthService {
 
     // 从后端获取授权 URL
     this.http
-      .get<{ authorize_url: string; state: string }>(
-        `${this.OAUTH_API_URL}/${provider}/authorize`,
-        { params: { redirect_uri: redirectUri } }
-      )
+      .get<{
+        authorize_url: string;
+        state: string;
+      }>(`${this.OAUTH_API_URL}/${provider}/authorize`, { params: { redirect_uri: redirectUri } })
       .subscribe({
         next: (response) => {
           this.storeOAuthState({
@@ -320,7 +313,7 @@ export class AuthService {
           if (this.isElectron && this.electronService) {
             // 桌面端：使用系统默认浏览器完成授权
             this.electronService.openExternal(response.authorize_url).subscribe();
-            console.log('[Auth] 已打开系统浏览器进行 OAuth 授权');
+            console.warn('[Auth] 已打开系统浏览器进行 OAuth 授权');
           } else {
             // Web 端：页面跳转
             window.location.href = response.authorize_url;
@@ -337,7 +330,7 @@ export class AuthService {
           } else {
             window.location.href = authUrl;
           }
-        }
+        },
       });
   }
 
@@ -436,7 +429,14 @@ export class AuthService {
         access_token: string;
         refresh_token: string;
         token_type: string;
-        user: any;
+        user: {
+          id: string | number;
+          email?: string;
+          username: string;
+          role: string;
+          created_at?: string;
+          updated_at?: string;
+        };
       }>(`${this.OAUTH_API_URL}/${provider}/callback`, {
         code,
         state,
@@ -446,7 +446,7 @@ export class AuthService {
         map((response) => {
           const user: User = {
             id: String(response.user.id),
-            email: response.user.email || '',
+            email: response.user.email ?? '',
             username: response.user.username,
             userType: response.user.role,
             createdAt: response.user.created_at ? new Date(response.user.created_at) : new Date(),
@@ -529,7 +529,7 @@ export class AuthService {
       )
       .pipe(
         tap((response) => this.storeAuthData(response)),
-        catchError((error) => {
+        catchError((error: unknown) => {
           // 刷新失败则登出
           this.logout();
           return throwError(() => error);
@@ -635,7 +635,7 @@ export class AuthService {
    */
   logout(): void {
     const refreshToken =
-      localStorage.getItem(this.REFRESH_TOKEN_KEY) ||
+      localStorage.getItem(this.REFRESH_TOKEN_KEY) ??
       sessionStorage.getItem(this.REFRESH_TOKEN_KEY);
 
     // 可选：通知服务器撤销令牌
@@ -762,7 +762,7 @@ export class AuthService {
         this.isAuthenticatedSubject.next(true);
         return of({
           accessToken: storedToken,
-          refreshToken: this.getStore().getItem(this.REFRESH_TOKEN_KEY) || '',
+          refreshToken: this.getStore().getItem(this.REFRESH_TOKEN_KEY) ?? '',
           user,
         });
       } catch {
@@ -797,7 +797,8 @@ export class AuthService {
     try {
       const raw = localStorage.getItem(this.OFFLINE_CREDENTIALS_KEY);
       if (!raw) return null;
-      const credentials = JSON.parse(raw);
+      const credentials = JSON.parse(raw) as { username: string; token: string; cachedAt: number };
+      if (!credentials) return null;
       // 凭据有效期 30 天
       if (Date.now() - credentials.cachedAt > 30 * 24 * 60 * 60 * 1000) {
         this.clearOfflineCredentials();

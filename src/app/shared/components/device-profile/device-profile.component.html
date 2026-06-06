@@ -1,0 +1,213 @@
+<div class="device-profile" [class.compact]="compact">
+  <!-- 加载中 -->
+  <div class="loading" *ngIf="loading">
+    <mat-icon class="spin">sync</mat-icon>
+    <span>正在评估设备能力...</span>
+  </div>
+
+  <!-- 错误提示 -->
+  <div class="error-banner" *ngIf="error">
+    <mat-icon class="error-icon">warning</mat-icon>
+    <span>{{ error }}</span>
+    <button mat-button class="btn-retry" *ngIf="pluginAPI" (click)="loadProfile()">
+      <mat-icon>refresh</mat-icon>
+      重试
+    </button>
+  </div>
+
+  <!-- 设备评估报告 -->
+  <div class="profile-content" *ngIf="profile && !loading && !error">
+    <!-- 头部：设备等级 + 综合评分 -->
+    <div class="profile-header">
+      <div class="device-class-badge" [style.background]="deviceClassConfig.color">
+        <mat-icon>{{ deviceClassConfig.icon }}</mat-icon>
+        <span class="class-label">{{ deviceClassConfig.label }}</span>
+      </div>
+
+      <div class="score-section">
+        <span class="score-label">综合评分</span>
+        <span class="score-value" [style.color]="getScoreColor(score)">{{ score }}</span>
+        <mat-progress-bar
+          class="score-bar"
+          mode="determinate"
+          [value]="score"
+          [style.--bar-color]="getScoreColor(score)">
+        </mat-progress-bar>
+      </div>
+
+      <div class="header-actions">
+        <span class="assessed-at" matTooltip="最后评估时间">
+          <mat-icon>schedule</mat-icon>
+          {{ assessedAtLabel }}
+        </span>
+        <button
+          mat-icon-button
+          class="btn-reassess"
+          [disabled]="reassessing"
+          (click)="reassess()"
+          matTooltip="重新评估设备">
+          <mat-icon [class.spin]="reassessing">refresh</mat-icon>
+        </button>
+      </div>
+    </div>
+
+    <!-- 详细模式 -->
+    <div class="profile-details" *ngIf="!compact">
+      <!-- 硬件指标 -->
+      <div class="section">
+        <h3 class="section-title">
+          <mat-icon>memory</mat-icon>
+          硬件指标
+        </h3>
+        <div class="metrics-grid">
+          <div class="metric-card">
+            <mat-icon class="metric-icon">developer_board</mat-icon>
+            <span class="metric-label">CPU</span>
+            <span class="metric-value" [matTooltip]="hardware?.cpu?.model">{{ hardware?.cpu?.cores }} 核</span>
+            <span class="metric-sub">{{ hardware?.cpu?.benchmarkScore }} 分</span>
+          </div>
+
+          <div class="metric-card">
+            <mat-icon class="metric-icon">straighten</mat-icon>
+            <span class="metric-label">内存</span>
+            <span class="metric-value">{{ memoryGB }} GB</span>
+            <span class="metric-sub" *ngIf="hardware?.memory?.availableMB">
+              可用 {{ (hardware.memory.availableMB / 1024).toFixed(0) }} GB
+            </span>
+          </div>
+
+          <div class="metric-card">
+            <mat-icon class="metric-icon">videogame_asset</mat-icon>
+            <span class="metric-label">显卡</span>
+            <span class="metric-value" [matTooltip]="hardware?.gpu?.gpuName">{{ vramLabel }}</span>
+            <span class="metric-sub" *ngIf="hardware?.gpu?.supportsCUDA">CUDA 支持</span>
+          </div>
+
+          <div class="metric-card">
+            <mat-icon class="metric-icon">storage</mat-icon>
+            <span class="metric-label">存储</span>
+            <span class="metric-value">{{ hardware?.storage?.freeGB }} GB 可用</span>
+            <span class="metric-sub" [class.warn]="hardware?.storage?.type === 'hdd'">
+              {{ hardware?.storage?.type === 'ssd' ? 'SSD' : '机械硬盘' }}
+            </span>
+          </div>
+
+          <div class="metric-card" *ngIf="hardware?.peripherals">
+            <mat-icon class="metric-icon">devices</mat-icon>
+            <span class="metric-label">外设</span>
+            <span class="metric-value">
+              {{ hardware.peripherals.hasCamera ? '📷 摄像头' : '' }}
+              {{ hardware.peripherals.hasMicrophone ? '🎤 麦克风' : '' }}
+            </span>
+            <span class="metric-sub" *ngIf="hardware.peripherals.hasUSBDevices">USB 设备已连接</span>
+          </div>
+
+          <div class="metric-card">
+            <mat-icon class="metric-icon">wifi</mat-icon>
+            <span class="metric-label">网络</span>
+            <span class="metric-value">{{ hardware?.network?.bandwidthMbps }} Mbps</span>
+            <span class="metric-sub" [class.warn]="hardware?.network?.isMetered">
+              {{ hardware?.network?.type }}
+              {{ hardware?.network?.isMetered ? '(计量)' : '' }}
+            </span>
+          </div>
+        </div>
+      </div>
+
+      <!-- 软件环境 -->
+      <div class="section">
+        <h3 class="section-title">
+          <mat-icon>settings</mat-icon>
+          软件环境
+        </h3>
+        <div class="metrics-grid">
+          <div class="metric-card" *ngIf="software?.runtime?.pythonVersion">
+            <mat-icon class="metric-icon">code</mat-icon>
+            <span class="metric-label">Python</span>
+            <span class="metric-value">{{ software.runtime.pythonVersion }}</span>
+          </div>
+
+          <div class="metric-card">
+            <mat-icon class="metric-icon">dns</mat-icon>
+            <span class="metric-label">Docker</span>
+            <span class="metric-value" [class.ok]="software?.containers?.dockerRunning" [class.warn]="!software?.containers?.dockerInstalled">
+              {{ software?.containers?.dockerRunning ? '运行中' : software?.containers?.dockerInstalled ? '已安装' : '未安装' }}
+            </span>
+            <span class="metric-sub" *ngIf="software?.containers?.dockerVersion">v{{ software.containers.dockerVersion }}</span>
+          </div>
+
+          <div class="metric-card">
+            <mat-icon class="metric-icon">hub</mat-icon>
+            <span class="metric-label">Redis</span>
+            <span class="metric-value" [class.ok]="software?.connectivity?.redisAvailable" [class.warn]="!software?.connectivity?.redisAvailable">
+              {{ software?.connectivity?.redisAvailable ? '已连接' : '未连接' }}
+            </span>
+          </div>
+        </div>
+      </div>
+
+      <!-- 插件兼容性 -->
+      <div class="section">
+        <h3 class="section-title">
+          <mat-icon>extension</mat-icon>
+          插件兼容性
+        </h3>
+
+        <div class="compatibility-info">
+          <!-- 兼容层级 -->
+          <div class="tier-badges">
+            <span class="tier-badge" *ngFor="let tier of assessment?.compatiblePluginTiers"
+                  [style.background]="getTierConfig(tier).color"
+                  matTooltip="兼容">
+              {{ getTierConfig(tier).label }} ✓
+            </span>
+            <span class="tier-badge incompatible" *ngFor="let tier of getIncompatibleTiers()"
+                  matTooltip="不兼容">
+              {{ getTierConfig(tier).label }} ✗
+            </span>
+          </div>
+
+          <!-- 警告信息 -->
+          <div class="warnings" *ngIf="assessment?.warnings?.length">
+            <div class="warning-item" *ngFor="let warning of assessment.warnings">
+              <mat-icon class="warn-icon">warning</mat-icon>
+              <span>{{ warning }}</span>
+            </div>
+          </div>
+
+          <!-- 推荐插件 -->
+          <div class="recommended-plugins" *ngIf="assessment?.recommendedPlugins?.length">
+            <span class="rec-label">推荐安装：</span>
+            <span class="rec-plugins">
+              <span class="rec-plugin" *ngFor="let plugin of assessment.recommendedPlugins">
+                {{ plugin }}
+              </span>
+            </span>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- 紧凑模式：只显示等级和评分 -->
+    <div class="profile-compact" *ngIf="compact">
+      <div class="compact-metrics">
+        <span class="compact-item">
+          <mat-icon>developer_board</mat-icon>
+          {{ hardware?.cpu?.cores }}核
+        </span>
+        <span class="compact-item">
+          <mat-icon>straighten</mat-icon>
+          {{ memoryGB }}GB
+        </span>
+        <span class="compact-item">
+          <mat-icon>storage</mat-icon>
+          {{ hardware?.storage?.freeGB }}GB
+        </span>
+        <span class="compact-item">
+          <mat-icon>extension</mat-icon>
+          {{ assessment?.compatiblePluginTiers?.length || 0 }} 层级
+        </span>
+      </div>
+    </div>
+  </div>
+</div>

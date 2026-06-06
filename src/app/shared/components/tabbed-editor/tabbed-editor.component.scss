@@ -17,14 +17,24 @@ $dirty-color: #f59e0b;
 $success: #22c55e;
 $error: #ef4444;
 
+// Transition 变量
+$transition-tab-btn: opacity 0.15s, background 0.15s;
+$transition-action-btn: background 0.15s, color 0.15s;
+
+// 等宽字体变量
+$font-family-output: 'Cascadia Code', 'Fira Code', 'JetBrains Mono', 'Geist Mono', consolas, monospace;
+
+// 动画变量
+$animation-pulse: pulse 1.5s ease-in-out infinite;
+
 .tabbed-editor {
   display: flex;
+  overflow: hidden;
   flex-direction: column;
   height: 100%;
-  background: $bg-primary;
   border-radius: 12px;
-  overflow: hidden;
-  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.2);
+  background: $bg-primary;
+  box-shadow: 0 4px 6px -1px rgb(0 0 0 / 20%);
 }
 
 // ==================== 标签栏 ====================
@@ -33,15 +43,15 @@ $error: #ef4444;
   display: flex;
   align-items: center;
   height: $tab-height;
-  background: $bg-secondary;
   border-bottom: 1px solid $border-color;
+  background: $bg-secondary;
   user-select: none;
 }
 
 .tab-list {
   display: flex;
-  flex: 1;
   overflow-x: auto;
+  flex: 1;
   scrollbar-width: none;
 
   &::-webkit-scrollbar {
@@ -50,26 +60,26 @@ $error: #ef4444;
 }
 
 .tab-item {
+  position: relative;
   display: flex;
   align-items: center;
   gap: 6px;
+  min-width: 0;
   height: $tab-height;
   padding: 0 12px;
-  background: $bg-tab;
   border-right: 1px solid $border-color;
-  cursor: pointer;
+  background: $bg-tab;
   white-space: nowrap;
+  cursor: pointer;
   transition: background 0.15s;
-  min-width: 0;
-  position: relative;
 
   &:hover {
-    background: lighten($bg-tab, 4%);
+    background: color-mix(in srgb, $bg-tab, white 4%);
   }
 
   &.active {
-    background: $bg-tab-active;
     border-bottom: 2px solid $accent;
+    background: $bg-tab-active;
   }
 
   &.dirty .tab-title {
@@ -78,46 +88,46 @@ $error: #ef4444;
 }
 
 .tab-icon {
-  font-size: 14px;
-  color: $accent;
   flex-shrink: 0;
+  color: $accent;
+  font-size: 14px;
 }
 
 .tab-title {
-  font-size: 13px;
-  color: $text-primary;
   overflow: hidden;
-  text-overflow: ellipsis;
   max-width: 160px;
+  color: $text-primary;
+  font-size: 13px;
+  text-overflow: ellipsis;
 }
 
 .tab-dirty-indicator {
-  font-size: 10px;
-  color: $dirty-color;
   flex-shrink: 0;
+  color: $dirty-color;
+  font-size: 10px;
 }
 
 .tab-close-btn {
   display: flex;
-  align-items: center;
+  flex-shrink: 0;
   justify-content: center;
+  align-items: center;
   width: 18px;
   height: 18px;
   border: none;
+  border-radius: 4px;
   background: transparent;
   color: $text-muted;
-  border-radius: 4px;
-  cursor: pointer;
-  flex-shrink: 0;
   opacity: 0;
-  transition: opacity 0.15s, background 0.15s;
+  cursor: pointer;
+  transition: $transition-tab-btn;
 
   .tab-item:hover & {
     opacity: 1;
   }
 
   &:hover {
-    background: rgba(239, 68, 68, 0.2);
+    background: rgb(239 68 68 / 20%);
     color: #ef4444;
   }
 
@@ -135,17 +145,17 @@ $error: #ef4444;
 
 .tab-action-btn {
   display: flex;
-  align-items: center;
+  flex-shrink: 0;
   justify-content: center;
+  align-items: center;
   width: 28px;
   height: 28px;
   border: none;
+  border-radius: 4px;
   background: transparent;
   color: $text-muted;
-  border-radius: 4px;
   cursor: pointer;
-  flex-shrink: 0;
-  transition: background 0.15s, color 0.15s;
+  transition: $transition-action-btn;
 
   &:hover {
     background: rgba($accent, 0.1);
@@ -160,53 +170,53 @@ $error: #ef4444;
 // ==================== 编辑器区域 ====================
 
 .editor-area {
-  flex: 1;
   overflow: hidden;
+  flex: 1;
 }
 
 .editor-content {
   height: 100%;
 
   .monaco-editor {
-    height: 100%;
     width: 100%;
+    height: 100%;
   }
 }
 
 .editor-empty {
   display: flex;
   flex-direction: column;
-  align-items: center;
   justify-content: center;
-  height: 100%;
+  align-items: center;
   gap: 8px;
+  height: 100%;
   color: $text-muted;
 }
 
 .empty-icon {
-  font-size: 48px;
   opacity: 0.3;
+  font-size: 48px;
 }
 
 .empty-text {
-  font-size: 15px;
   margin: 0;
+  font-size: 15px;
 }
 
 .empty-hint {
-  font-size: 12px;
-  color: $text-muted;
   margin: 0;
+  color: $text-muted;
+  font-size: 12px;
 }
 
 // ==================== 输出面板 ====================
 
 .output-panel {
-  border-top: 1px solid $border-color;
-  background: #0d1117;
-  max-height: 35%;
   display: flex;
   flex-direction: column;
+  max-height: 35%;
+  border-top: 1px solid $border-color;
+  background: #0d1117;
 }
 
 .output-header {
@@ -214,53 +224,58 @@ $error: #ef4444;
   justify-content: space-between;
   align-items: center;
   padding: 6px 12px;
-  background: $bg-secondary;
   border-bottom: 1px solid $border-color;
+  background: $bg-secondary;
 }
 
 .output-title {
   display: flex;
   align-items: center;
   gap: 6px;
-  font-size: 13px;
   color: $text-secondary;
+  font-size: 13px;
 
-  .success { color: $success; }
-  .error { color: $error; }
+  .success {
+    color: $success;
+  }
+
+  .error {
+    color: $error;
+  }
 
   .exec-time {
-    font-size: 11px;
     color: $text-muted;
+    font-size: 11px;
   }
 }
 
 .output-close-btn {
   display: flex;
-  align-items: center;
   justify-content: center;
+  align-items: center;
+  padding: 2px;
   border: none;
+  border-radius: 4px;
   background: transparent;
   color: $text-muted;
   cursor: pointer;
-  padding: 2px;
-  border-radius: 4px;
 
   &:hover {
+    background: rgb(255 255 255 / 5%);
     color: $text-primary;
-    background: rgba(255, 255, 255, 0.05);
   }
 }
 
 .output-content {
+  overflow: auto;
   flex: 1;
   margin: 0;
   padding: 12px;
-  font-family: 'Cascadia Code', 'Fira Code', 'JetBrains Mono', 'Geist Mono', 'Consolas', monospace;
-  font-size: 13px;
   color: $text-primary;
-  white-space: pre-wrap;
-  overflow: auto;
+  font-family: $font-family-output;
+  font-size: 13px;
   line-height: 1.5;
+  white-space: pre-wrap;
 
   &.error-output {
     color: #f48771;
@@ -272,13 +287,13 @@ $error: #ef4444;
 .editor-statusbar {
   display: flex;
   align-items: center;
+  gap: 16px;
   height: $statusbar-height;
   padding: 0 12px;
-  background: $bg-secondary;
   border-top: 1px solid $border-color;
-  font-size: 11px;
+  background: $bg-secondary;
   color: $text-muted;
-  gap: 16px;
+  font-size: 11px;
 }
 
 .status-spacer {
@@ -291,12 +306,18 @@ $error: #ef4444;
 
 .status-running {
   color: $accent;
-  animation: pulse 1.5s ease-in-out infinite;
+  animation: $animation-pulse;
 }
 
 @keyframes pulse {
-  0%, 100% { opacity: 1; }
-  50% { opacity: 0.5; }
+  0%,
+  100% {
+    opacity: 1;
+  }
+
+  50% {
+    opacity: 0.5;
+  }
 }
 
 .status-tabs {

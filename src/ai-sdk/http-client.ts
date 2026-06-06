@@ -9,6 +9,7 @@ import {
   HttpClient as SharedHttpClient,
   HttpRequestConfig as SharedHttpRequestConfig,
 } from '../shared/services/http-client';
+
 import type { HttpError } from './types';
 
 // ============================================================
@@ -121,7 +122,7 @@ export class HttpClient {
       const response = await this.sharedClient.request<T>(sharedConfig);
       return {
         status: response.status,
-        data: response.data as T,
+        data: response.data,
         headers: response.headers,
       };
     } catch (err: unknown) {

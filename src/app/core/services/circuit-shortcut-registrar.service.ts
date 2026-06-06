@@ -13,20 +13,20 @@ export type CircuitShortcutCallback = (action: CircuitAction) => void;
 
 /** 电路操作类型 */
 export type CircuitAction =
-  | 'rotate'         // R: 旋转选中元件 90 度
-  | 'delete'         // Delete: 删除选中元件
-  | 'undo'           // Ctrl+Z: 撤销上一步
-  | 'redo'           // Ctrl+Shift+Z: 重做
-  | 'cancel'         // Escape: 取消选择
-  | 'help'           // F1: 显示快捷键帮助面板
-  | 'selectAll'      // Ctrl+A: 全选
-  | 'copy'           // Ctrl+C: 复制
-  | 'paste'          // Ctrl+V: 粘贴
-  | 'save'           // Ctrl+S: 保存电路
-  | 'new'            // Ctrl+N: 新建电路
-  | 'zoomIn'         // Ctrl+=: 放大
-  | 'zoomOut'        // Ctrl+-: 缩小
-  | 'resetZoom'      // Ctrl+0: 重置缩放;
+  | 'rotate' // R: 旋转选中元件 90 度
+  | 'delete' // Delete: 删除选中元件
+  | 'undo' // Ctrl+Z: 撤销上一步
+  | 'redo' // Ctrl+Shift+Z: 重做
+  | 'cancel' // Escape: 取消选择
+  | 'help' // F1: 显示快捷键帮助面板
+  | 'selectAll' // Ctrl+A: 全选
+  | 'copy' // Ctrl+C: 复制
+  | 'paste' // Ctrl+V: 粘贴
+  | 'save' // Ctrl+S: 保存电路
+  | 'new' // Ctrl+N: 新建电路
+  | 'zoomIn' // Ctrl+=: 放大
+  | 'zoomOut' // Ctrl+-: 缩小
+  | 'resetZoom'; // Ctrl+0: 重置缩放;
 
 /** 快捷键定义 */
 interface ShortcutDefinition {
@@ -44,7 +44,7 @@ export class CircuitShortcutRegistrar {
   /** 快捷键定义列表 */
   private readonly shortcuts: ShortcutDefinition[] = [
     // 编辑操作
-    { key: 'r', action: 'rotate', description: '旋转元件 90°' },      
+    { key: 'r', action: 'rotate', description: '旋转元件 90°' },
     { key: 'Delete', action: 'delete', description: '删除选中元件' },
     { key: 'Backspace', action: 'delete', description: '删除选中元件' },
     { key: 'Escape', action: 'cancel', description: '取消选择' },
@@ -75,7 +75,7 @@ export class CircuitShortcutRegistrar {
 
   constructor(
     private ngZone: NgZone,
-    private snackBar: MatSnackBar,
+    private snackBar: MatSnackBar
   ) {}
 
   /**
@@ -113,7 +113,7 @@ export class CircuitShortcutRegistrar {
   private matchShortcut(event: KeyboardEvent): CircuitAction | null {
     for (const shortcut of this.shortcuts) {
       const keyMatch = event.key === shortcut.key;
-      const ctrlMatch = shortcut.ctrl ? (event.ctrlKey || event.metaKey) : !event.ctrlKey;
+      const ctrlMatch = shortcut.ctrl ? event.ctrlKey || event.metaKey : !event.ctrlKey;
       const shiftMatch = shortcut.shift ? event.shiftKey : !event.shiftKey;
 
       if (keyMatch && ctrlMatch && shiftMatch) {
@@ -125,21 +125,22 @@ export class CircuitShortcutRegistrar {
 
   /** 显示简短 Toast 帮助（快速提示） */
   showHelpToast(): void {
-    const lines = this.shortcuts.map(
-      (s) => `${this.formatKey(s)}: ${s.description}`
-    );
+    const lines = this.shortcuts.map((s) => `${this.formatKey(s)}: ${s.description}`);
     this.snackBar.open(lines.join(' | '), '关闭', { duration: 5000 });
   }
 
   /** 获取分组快捷键列表（用于帮助面板） */
-  getGroupedShortcuts(): { group: string; items: { key: string; action: string; description: string }[] }[] {
+  getGroupedShortcuts(): {
+    group: string;
+    items: { key: string; action: string; description: string }[];
+  }[] {
     const groups: Record<string, ShortcutDefinition[]> = {
-      '编辑操作': [],
+      编辑操作: [],
       '撤销/重做': [],
-      '剪贴板': [],
-      '文件操作': [],
-      '缩放': [],
-      '帮助': [],
+      剪贴板: [],
+      文件操作: [],
+      缩放: [],
+      帮助: [],
     };
 
     this.shortcuts.forEach((s) => {
@@ -155,8 +156,11 @@ export class CircuitShortcutRegistrar {
       .filter(([_, items]) => items.length > 0)
       .map(([group, items]) => ({
         group,
-        items: [...new Map(items.map((item) => [item.action, item])).values()]
-          .map((s) => ({ key: this.formatKey(s), action: s.action, description: s.description })),
+        items: [...new Map(items.map((item) => [item.action, item])).values()].map((s) => ({
+          key: this.formatKey(s),
+          action: s.action,
+          description: s.description,
+        })),
       }));
   }
 

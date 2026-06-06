@@ -16,6 +16,7 @@ import { MatIconModule } from '@angular/material/icon';
 import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
 import { MatRadioModule } from '@angular/material/radio';
 import { MatSnackBar, MatSnackBarModule } from '@angular/material/snack-bar';
+import { Router } from '@angular/router';
 
 import { TokenService } from '../../core/services/token.service';
 import { TokenPackage } from '../../models/token.models';
@@ -68,7 +69,8 @@ export class TokenPurchaseComponent implements OnInit {
     public dialogRef: MatDialogRef<TokenPurchaseComponent>,
     @Inject(MAT_DIALOG_DATA) public data: TokenPurchaseDialogData,
     private tokenService: TokenService,
-    private snackBar: MatSnackBar
+    private snackBar: MatSnackBar,
+    private router: Router
   ) {}
 
   ngOnInit(): void {
@@ -92,7 +94,7 @@ export class TokenPurchaseComponent implements OnInit {
         // 如果没有选中且套餐存在，默认选中第一个
         if (!this.selectedPackageId && packages.length > 0) {
           // 优先选中推荐套餐
-          const recommended = packages.find((p) => p.isRecommended) || packages[0];
+          const recommended = packages.find((p) => p.isRecommended) ?? packages[0];
           this.selectedPackageId = recommended.id;
         }
       },
@@ -118,7 +120,7 @@ export class TokenPurchaseComponent implements OnInit {
    */
   getSelectedPackage(): TokenPackage | null {
     if (!this.selectedPackageId) return null;
-    return this.packages.find((p) => p.id === this.selectedPackageId) || null;
+    return this.packages.find((p) => p.id === this.selectedPackageId) ?? null;
   }
 
   /**
@@ -137,12 +139,12 @@ export class TokenPurchaseComponent implements OnInit {
         this.loading = false;
         this.snackBar.open('订单创建成功！正在跳转支付...', '关闭', { duration: 3000 });
 
-        // TODO: 跳转到支付页面
-        // this.router.navigate(['/payment', response.order.id]);
+        // 跳转到支付页面
+        void this.router.navigate(['/payment', response.order.id]);
 
         this.dialogRef.close({ success: true, orderId: response.order.id });
       },
-      error: (error) => {
+      error: (error: Error) => {
         console.error('购买失败:', error);
         this.snackBar.open(error.message || '购买失败，请稍后重试', '关闭', {
           duration: 3000,

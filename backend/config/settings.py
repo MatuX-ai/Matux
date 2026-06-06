@@ -165,6 +165,14 @@ class Settings(BaseSettings):
     OPENHYDRA_ENABLED: bool = True  # 是否启用 OpenHydra 集成
     JUPYTERHUB_URL: str = "http://localhost:8000"  # JupyterHub 基础 URL
 
+    # === 模块懒加载架构配置 ===
+    # 是否启用懒加载架构（True=新模式，False=旧模式全量加载）
+    ENABLE_LAZY_LOADING: bool = True
+    # 启动时自动预加载的 Tier 层级（0=Tier0, 1=Tier0+Tier1）
+    AUTO_PRELOAD_TIER: int = 1
+    # 后台预加载延迟（秒），避免与启动竞争资源
+    PRELOAD_DELAY_SECONDS: float = 2.0
+
     class Config:
         env_file = ".env"
         env_file_encoding = "utf-8"

@@ -12,19 +12,19 @@ export { TokenService } from './token.service';
 
 // ==================== AI教育相关服务 ====================
 export { AIEduService } from './ai-edu.service';
-export { AiEduWebSocketService } from './ai-edu-websocket.service';
 export { AIEduAntiCheatingService } from './ai-edu/ai-edu-anti-cheating.service';
 export { AIEduCacheService } from './ai-edu/ai-edu-cache.service';
 export { AIEduErrorHandlerService } from './ai-edu/ai-edu-error-handler.service';
 export { AIEduLearningService } from './ai-edu/ai-edu-learning.service';
 export { AIEduShortcutService } from './ai-edu/ai-edu-shortcut.service';
-export { EditorContextService } from './ai-edu/editor-context.service';
 export { CodeCompletionService } from './ai-edu/code-completion.service';
+export { EditorContextService } from './ai-edu/editor-context.service';
+export { AiEduWebSocketService } from './ai-edu-websocket.service';
 
 // ==================== 学习与课程服务 ====================
+export { CourseEnrollmentService } from './course-enrollment.service';
 export { MultiSourceLearningService } from './multi-source-learning.service';
 export { UnifiedCourseService } from './unified-course.service';
-export { CourseEnrollmentService } from './course-enrollment.service';
 
 // ==================== 应用状态服务 ====================
 export { AppStateService } from './app-state.service';
@@ -42,9 +42,9 @@ export { PerformanceMonitorService } from './performance-monitor.service';
 export { PwaService } from './pwa.service';
 
 // ==================== 显示与主题 ====================
-export { ThemeService } from './theme.service';
-export { SEOService } from './seo.service';
 export { EnhancedToastService } from './enhanced-toast.service';
+export { SEOService } from './seo.service';
+export { ThemeService } from './theme.service';
 
 // ==================== 订阅与授权 ====================
 export { SubscriptionService } from './subscription.service';
@@ -58,9 +58,9 @@ export { CircuitSimulatorService } from './circuit-simulator.service';
 // ==================== 业务服务 ====================
 export { ABTestingService } from './ab-testing.service';
 export { EcommerceService } from './ecommerce.service';
-export { PricingService } from './pricing.service';
 export { GroupService } from './group.service';
 export { NotificationService } from './notification.service';
+export { PricingService } from './pricing.service';
 export { RepositoryCacheService } from './repository-cache.service';
 
 // ==================== Vircadia相关服务 ====================

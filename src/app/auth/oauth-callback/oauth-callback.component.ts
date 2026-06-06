@@ -5,6 +5,13 @@ import { catchError, finalize, of, switchMap } from 'rxjs';
 
 import { AuthService } from '../../core/services/auth.service';
 
+/** OAuth 状态信息 */
+interface OAuthState {
+  state: string;
+  provider: string;
+  redirectUrl?: string;
+}
+
 /**
  * OAuth 回调处理组件
  *
@@ -74,7 +81,9 @@ import { AuthService } from '../../core/services/auth.service';
       }
 
       @keyframes spin {
-        to { transform: rotate(360deg); }
+        to {
+          transform: rotate(360deg);
+        }
       }
 
       .loading-state h2,
@@ -168,6 +177,7 @@ export class OAuthCallbackComponent implements OnInit {
     this.processCallback();
   }
 
+  // eslint-disable-next-line max-lines-per-function
   private processCallback(): void {
     // 从 URL 参数中提取 code 和 state
     const code = this.route.snapshot.queryParamMap.get('code');
@@ -189,7 +199,7 @@ export class OAuthCallbackComponent implements OnInit {
       return;
     }
 
-    const oauthState = JSON.parse(storedState);
+    const oauthState = JSON.parse(storedState) as OAuthState;
 
     // 验证 state 参数（防 CSRF）
     if (oauthState.state !== state) {
@@ -215,7 +225,7 @@ export class OAuthCallbackComponent implements OnInit {
           // 延迟后跳转
           return of(null);
         }),
-        catchError((err) => {
+        catchError((err: Error) => {
           this.loading = false;
           this.error = true;
           this.errorMessage = err.message || 'OAuth 登录失败，请重试';
@@ -225,7 +235,7 @@ export class OAuthCallbackComponent implements OnInit {
           // 3 秒后跳转
           setTimeout(() => {
             if (this.success) {
-              const returnUrl = oauthState.redirectUrl || '/ai-edu';
+              const returnUrl = oauthState.redirectUrl ?? '/ai-edu';
               void this.router.navigateByUrl(returnUrl);
             }
           }, 3000);

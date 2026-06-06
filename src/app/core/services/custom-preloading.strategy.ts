@@ -9,6 +9,16 @@ import { PreloadingStrategy, Route } from '@angular/router';
 import { Observable, of } from 'rxjs';
 import { delay } from 'rxjs/operators';
 
+/** Navigator Network Information API */
+interface NetworkConnection {
+  effectiveType: string;
+  type: string;
+  downlink: number;
+  rtt: number;
+  downlinkMax: number;
+  addEventListener(type: string, listener: EventListenerOrEventListenerObject): void;
+}
+
 export interface PreloadConfig {
   path: string;
   priority: number; // 优先级，数字越大优先级越高
@@ -65,7 +75,7 @@ export class CustomPreloadingStrategy implements PreloadingStrategy {
    * 获取路由路径
    */
   private getRoutePath(route: Route): string {
-    const path = route.path || '';
+    const path = route.path ?? '';
     return path.replace(/^\/+|\/+$/g, '');
   }
 
@@ -128,7 +138,7 @@ export class CustomPreloadingStrategy implements PreloadingStrategy {
     const config = this.preloadConfigs.find((c) => routePath.includes(c.path));
     if (config?.preloadWhen === 'hover') {
       this.preloadedRoutes.add(routePath);
-      console.log(`[CustomPreloadingStrategy] 预加载路由: ${routePath}`);
+      console.warn(`[CustomPreloadingStrategy] 预加载路由: ${routePath}`);
       // 这里需要触发路由加载，实际实现中可以使用Router的loadChildren
     }
   }
@@ -139,8 +149,8 @@ export class CustomPreloadingStrategy implements PreloadingStrategy {
   private initNetworkIdleDetector(): void {
     // 监听网络连接类型变化
     if ('connection' in navigator) {
-      const connection = (navigator as any).connection;
-      connection.addEventListener('change', () => {
+      const connection = (navigator as unknown as { connection?: NetworkConnection }).connection;
+      connection?.addEventListener('change', () => {
         this.checkNetworkIdle();
       });
     }
@@ -172,7 +182,7 @@ export class CustomPreloadingStrategy implements PreloadingStrategy {
    */
   clearPreloadedCache(): void {
     this.preloadedRoutes.clear();
-    console.log('[CustomPreloadingStrategy] 清除预加载缓存');
+    console.warn('[CustomPreloadingStrategy] 清除预加载缓存');
   }
 
   /**
@@ -187,7 +197,7 @@ export class CustomPreloadingStrategy implements PreloadingStrategy {
       this.preloadConfigs = this.preloadConfigs.filter(
         (config) => config.priority >= 5 // 只预加载高优先级路由
       );
-      console.log('[CustomPreloadingStrategy] 移动端模式：减少预加载');
+      console.warn('[CustomPreloadingStrategy] 移动端模式：减少预加载');
     }
   }
 
@@ -196,8 +206,8 @@ export class CustomPreloadingStrategy implements PreloadingStrategy {
    */
   private isSlowConnection(): boolean {
     if ('connection' in navigator) {
-      const connection = (navigator as any).connection;
-      const effectiveType = connection.effectiveType;
+      const connection = (navigator as unknown as { connection?: NetworkConnection }).connection;
+      const effectiveType = connection?.effectiveType ?? '';
       // slow-2g, 2g, 3g 被认为是慢速网络
       return ['slow-2g', '2g', '3g'].includes(effectiveType);
     }

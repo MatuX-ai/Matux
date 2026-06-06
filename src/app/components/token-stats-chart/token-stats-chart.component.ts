@@ -24,6 +24,41 @@ import * as echarts from 'echarts';
 import { TokenService } from '../../core/services/token.service';
 import { TokenTimeStats } from '../../models/token.models';
 
+// ECharts 类型定义（原生库无完整类型声明）
+interface ChartInstance {
+  setOption(option: unknown): void;
+  resize(): void;
+  dispose(): void;
+}
+
+interface GradientStop {
+  offset: number;
+  color: string;
+}
+
+type LinearGradientConstructor = new (
+  x: number,
+  y: number,
+  x2: number,
+  y2: number,
+  colorStops: GradientStop[]
+) => unknown;
+
+function createGradient(startColor: string, endColor: string): unknown {
+  const graphic = echarts as { graphic?: Record<string, unknown> }['graphic'];
+  const GradientCtor = (graphic as Record<string, unknown>)[
+    'LinearGradient'
+  ] as LinearGradientConstructor;
+  return new GradientCtor(0, 0, 0, 1, [
+    { offset: 0, color: startColor },
+    { offset: 1, color: endColor },
+  ]);
+}
+
+function initChartInstance(element: HTMLElement): ChartInstance {
+  return (echarts as { init: (el: HTMLElement) => ChartInstance }).init(element);
+}
+
 @Component({
   selector: 'app-token-stats-chart',
   standalone: true,
@@ -49,7 +84,7 @@ export class TokenStatsChartComponent implements OnInit, OnChanges {
    */
   @Input() chartType: 'line' | 'bar' = 'line';
 
-  chartInstance: any | null = null;
+  chartInstance: ChartInstance | null = null;
   loading = false;
   error: string | null = null;
   statsData: TokenTimeStats[] = [];
@@ -74,7 +109,7 @@ export class TokenStatsChartComponent implements OnInit, OnChanges {
    * 初始化图表
    */
   initChart(): void {
-    this.chartInstance = echarts.init(this.chartElement.nativeElement);
+    this.chartInstance = initChartInstance(this.chartElement.nativeElement as HTMLElement);
 
     // 响应窗口大小变化
     window.addEventListener('resize', () => {
@@ -91,8 +126,8 @@ export class TokenStatsChartComponent implements OnInit, OnChanges {
     this.loading = true;
     this.error = null;
 
-    const start = this.startDate || this.getDaysAgo(7);
-    const end = this.endDate || new Date().toISOString().split('T')[0];
+    const start = this.startDate ?? this.getDaysAgo(7);
+    const end = this.endDate ?? new Date().toISOString().split('T')[0];
 
     this.tokenService.getTimeStats(start, end).subscribe({
       next: (data) => {
@@ -100,7 +135,7 @@ export class TokenStatsChartComponent implements OnInit, OnChanges {
         this.updateChart();
         this.loading = false;
       },
-      error: (error) => {
+      error: (error: Error) => {
         console.error('加载统计数据失败:', error);
         this.error = error.message || '加载数据失败';
         this.loading = false;
@@ -111,6 +146,7 @@ export class TokenStatsChartComponent implements OnInit, OnChanges {
   /**
    * 更新图表
    */
+  // eslint-disable-next-line max-lines-per-function
   updateChart(): void {
     if (!this.chartInstance) return;
 
@@ -118,7 +154,7 @@ export class TokenStatsChartComponent implements OnInit, OnChanges {
     const consumedTokens = this.statsData.map((item) => item.consumed);
     const purchasedTokens = this.statsData.map((item) => item.purchased);
 
-    const option: any = {
+    const option = {
       tooltip: {
         trigger: 'axis',
         axisPointer: {
@@ -160,10 +196,7 @@ export class TokenStatsChartComponent implements OnInit, OnChanges {
             color: '#ef4444',
           },
           areaStyle: {
-            color: new echarts.graphic.LinearGradient(0, 0, 0, 1, [
-              { offset: 0, color: 'rgba(239, 68, 68, 0.3)' },
-              { offset: 1, color: 'rgba(239, 68, 68, 0.1)' },
-            ]),
+            color: createGradient('rgba(239, 68, 68, 0.3)', 'rgba(239, 68, 68, 0.1)'),
           },
         },
         {
@@ -175,10 +208,7 @@ export class TokenStatsChartComponent implements OnInit, OnChanges {
             color: '#10b981',
           },
           areaStyle: {
-            color: new echarts.graphic.LinearGradient(0, 0, 0, 1, [
-              { offset: 0, color: 'rgba(16, 185, 129, 0.3)' },
-              { offset: 1, color: 'rgba(16, 185, 129, 0.1)' },
-            ]),
+            color: createGradient('rgba(16, 185, 129, 0.3)', 'rgba(16, 185, 129, 0.1)'),
           },
         },
       ],

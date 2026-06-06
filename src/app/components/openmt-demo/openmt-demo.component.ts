@@ -1,6 +1,7 @@
-import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { OpenMtSciEdService, Tutorial, HardwareProject } from '../../services/openmt-scied.service';
+import { Component, OnInit } from '@angular/core';
+
+import { HardwareProject, OpenMtSciEdService, Tutorial } from '../../services/openmt-scied.service';
 
 @Component({
   selector: 'app-openmt-demo',
@@ -36,16 +37,52 @@ import { OpenMtSciEdService, Tutorial, HardwareProject } from '../../services/op
       </section>
     </div>
   `,
-  styles: [`
-    .openmt-demo { padding: 20px; max-width: 1200px; margin: 0 auto; }
-    section { margin: 20px 0; padding: 15px; border: 1px solid #ddd; border-radius: 8px; }
-    button { padding: 10px 20px; background: #007bff; color: white; border: none; border-radius: 4px; cursor: pointer; }
-    button:hover { background: #0056b3; }
-    .loading { color: #666; font-style: italic; }
-    .error { color: red; padding: 10px; background: #ffe6e6; border-radius: 4px; }
-    ul { list-style: none; padding: 0; }
-    li { padding: 10px; margin: 5px 0; background: #f5f5f5; border-radius: 4px; }
-  `]
+  styles: [
+    `
+      .openmt-demo {
+        padding: 20px;
+        max-width: 1200px;
+        margin: 0 auto;
+      }
+      section {
+        margin: 20px 0;
+        padding: 15px;
+        border: 1px solid #ddd;
+        border-radius: 8px;
+      }
+      button {
+        padding: 10px 20px;
+        background: #007bff;
+        color: white;
+        border: none;
+        border-radius: 4px;
+        cursor: pointer;
+      }
+      button:hover {
+        background: #0056b3;
+      }
+      .loading {
+        color: #666;
+        font-style: italic;
+      }
+      .error {
+        color: red;
+        padding: 10px;
+        background: #ffe6e6;
+        border-radius: 4px;
+      }
+      ul {
+        list-style: none;
+        padding: 0;
+      }
+      li {
+        padding: 10px;
+        margin: 5px 0;
+        background: #f5f5f5;
+        border-radius: 4px;
+      }
+    `,
+  ],
 })
 export class OpenMtDemoComponent implements OnInit {
   tutorials: Tutorial[] = [];
@@ -55,44 +92,46 @@ export class OpenMtDemoComponent implements OnInit {
 
   constructor(private openMtService: OpenMtSciEdService) {}
 
-  ngOnInit() {
+  ngOnInit(): void {
     // 自动加载教程
     this.loadTutorials();
   }
 
-  loadTutorials() {
+  loadTutorials(): void {
     this.loading = true;
     this.error = null;
 
     this.openMtService.getTutorials(1, 5).subscribe({
-      next: (data) => {
+      next: (data: { items: Tutorial[] }) => {
         this.tutorials = data.items;
         this.loading = false;
+        /* eslint-disable-next-line no-console */
         console.log('教程列表:', data);
       },
-      error: (err) => {
+      error: (err: Error) => {
         this.error = `加载失败: ${err.message}`;
         this.loading = false;
         console.error('错误:', err);
-      }
+      },
     });
   }
 
-  loadHardwareProjects() {
+  loadHardwareProjects(): void {
     this.loading = true;
     this.error = null;
 
     this.openMtService.getHardwareProjects(1, 5).subscribe({
-      next: (data) => {
+      next: (data: { items: HardwareProject[] }) => {
         this.hardwareProjects = data.items;
         this.loading = false;
+        /* eslint-disable-next-line no-console */
         console.log('硬件项目:', data);
       },
-      error: (err) => {
+      error: (err: Error) => {
         this.error = `加载失败: ${err.message}`;
         this.loading = false;
         console.error('错误:', err);
-      }
+      },
     });
   }
 }

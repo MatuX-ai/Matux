@@ -4,19 +4,29 @@
  * 显示应用状态信息：
  * - 在线/离线状态
  * - Python 后端运行状态
+ * - 模块 Tier 分组状态（核心/AI/扩展/实验）
  * - 应用版本号
  *
  * 符合 PRD 第 6.5 节页面布局规范（28px 高度状态栏）
  */
 
 import { CommonModule } from '@angular/common';
-import { Component, OnInit, OnDestroy, inject } from '@angular/core';
+import { Component, inject, OnDestroy, OnInit } from '@angular/core';
 import { MatIconModule } from '@angular/material/icon';
 import { MatTooltipModule } from '@angular/material/tooltip';
-import { Subject } from 'rxjs';
-import { takeUntil } from 'rxjs/operators';
+import { Subject, takeUntil } from 'rxjs';
 
 import { AuthService } from '../../../core/services/auth.service';
+import {
+  ModuleStatusService,
+  TierGroupStatus,
+} from '../../../core/services/module-status.service';
+
+/** 用户信息接口 */
+interface AppUser {
+  nickname?: string;
+  username?: string;
+}
 
 @Component({
   selector: 'app-status-bar',
@@ -27,97 +37,85 @@ import { AuthService } from '../../../core/services/auth.service';
 })
 export class StatusBarComponent implements OnInit, OnDestroy {
   private authService = inject(AuthService);
+  private moduleStatusService = inject(ModuleStatusService);
   private destroy$ = new Subject<void>();
 
-  // 状态信息
+  // 基础状态
   isOnline = navigator.onLine;
   isBackendRunning = false;
-  backendVersion = 'Python 3.11';
+  backendVersion = 'Python 3.12';
   appVersion = 'v1.0.0';
   currentUser: string = '';
 
+  // 模块状态（懒加载架构）
+  tierGroups: TierGroupStatus[] = [];
+  moduleSummaryText = '';
+
+  // 在线/离线事件处理器引用（便于移除）
+  private onlineHandler = () => (this.isOnline = true);
+  private offlineHandler = () => (this.isOnline = false);
+
   ngOnInit(): void {
     // 监听网络状态
-    window.addEventListener('online', () => this.isOnline = true);
-    window.addEventListener('offline', () => this.isOnline = false);
+    window.addEventListener('online', this.onlineHandler);
+    window.addEventListener('offline', this.offlineHandler);
 
     // 获取当前用户
-    this.authService.currentUser$
+    this.authService.currentUser$.pipe(takeUntil(this.destroy$)).subscribe((user) => {
+      if (user) {
+        this.currentUser = (user as AppUser).nickname ?? user.username ?? '同学';
+      }
+    });
+
+    // 订阅模块状态
+    this.moduleStatusService.healthy$
       .pipe(takeUntil(this.destroy$))
-      .subscribe(user => {
-        if (user) {
-          this.currentUser = (user as any).nickname || user.username || '同学';
-        }
+      .subscribe((healthy) => {
+        this.isBackendRunning = healthy;
       });
 
-    // 检查后端状态（通过 Electron IPC 或 HTTP 健康检查）
-    this.checkBackendStatus();
+    this.moduleStatusService.tierGroups$
+      .pipe(takeUntil(this.destroy$))
+      .subscribe((groups) => {
+        this.tierGroups = groups;
+        this.updateSummaryText();
+      });
   }
 
   ngOnDestroy(): void {
     this.destroy$.next();
     this.destroy$.complete();
-    window.removeEventListener('online', () => this.isOnline = true);
-    window.removeEventListener('offline', () => this.isOnline = false);
+    window.removeEventListener('online', this.onlineHandler);
+    window.removeEventListener('offline', this.offlineHandler);
   }
 
   /**
-   * 检查后端运行状态
+   * 更新摘要文本
    */
-  private checkBackendStatus(): void {
-    // 在 Electron 环境中，通过 IPC 检查
-    // 在 Web 环境中，通过 HTTP 健康检查
-    if (this.isElectron()) {
-      this.checkElectronBackend();
-    } else {
-      this.checkWebBackend();
+  private updateSummaryText(): void {
+    if (this.tierGroups.length === 0) {
+      this.moduleSummaryText = '';
+      return;
     }
+    const totalActive = this.tierGroups.reduce((s, g) => s + g.active, 0);
+    const totalAll = this.tierGroups.reduce((s, g) => s + g.total, 0);
+    this.moduleSummaryText = `${totalActive}/${totalAll} 模块`;
   }
 
   /**
-   * 检测是否在 Electron 环境
+   * 获取 Tier 分组 tooltip
    */
-  private isElectron(): boolean {
-    return !!(window && window.process && (window.process as any).type);
+  getTierTooltip(group: TierGroupStatus): string {
+    return `${group.label}模块: ${group.active}/${group.total} 已激活`;
   }
 
   /**
-   * Electron 环境下的后端检查
+   * 获取 Tier 分组图标
    */
-  private checkElectronBackend(): void {
-    // 通过 Electron IPC 获取后端状态
-    if (typeof window !== 'undefined' && (window as any).electronAPI) {
-      (window as any).electronAPI
-        .healthCheck()
-        .then((result: any) => {
-          this.isBackendRunning = result?.success || false;
-          if (result?.version) {
-            this.backendVersion = `Python ${result.version}`;
-          }
-        })
-        .catch(() => {
-          this.isBackendRunning = false;
-        });
-    } else {
-      // 如果 electronAPI 未定义，默认为运行中
-      this.isBackendRunning = true;
-    }
-  }
-
-  /**
-   * Web 环境下的后端检查
-   */
-  private checkWebBackend(): void {
-    // 通过 HTTP 健康检查端点
-    fetch('http://localhost:8000/api/v1/health')
-      .then(res => {
-        if (res.ok) {
-          this.isBackendRunning = true;
-        }
-      })
-      .catch(() => {
-        this.isBackendRunning = false;
-      });
+  getTierIcon(group: TierGroupStatus): string {
+    if (group.active === group.total && group.total > 0) return 'check_circle';
+    if (group.active > 0) return 'pending';
+    return 'radio_button_unchecked';
   }
 
   /**
@@ -145,7 +143,9 @@ export class StatusBarComponent implements OnInit, OnDestroy {
    * 获取后端状态文本
    */
   getBackendStatusText(): string {
-    return this.isBackendRunning ? `${this.backendVersion} 运行中` : '后端未启动';
+    if (!this.isBackendRunning) return '后端未启动';
+    if (this.moduleSummaryText) return this.moduleSummaryText;
+    return `${this.backendVersion} 运行中`;
   }
 
   /**

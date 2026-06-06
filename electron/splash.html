@@ -122,6 +122,66 @@
       color: #22c55e;
     }
 
+    /* 模块加载进度区域 */
+    .module-progress {
+      display: none;
+      margin-top: 16px;
+      width: 280px;
+      text-align: left;
+    }
+
+    .module-progress.visible {
+      display: block;
+      animation: fadeIn 0.3s ease-out;
+    }
+
+    .module-item {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      padding: 3px 0;
+      font-size: 11px;
+      color: #64748b;
+      transition: color 0.3s;
+    }
+
+    .module-item.active {
+      color: #22c55e;
+    }
+
+    .module-item.loading {
+      color: #94a3b8;
+    }
+
+    .module-item.failed {
+      color: #f87171;
+    }
+
+    .module-item.degraded {
+      color: #fbbf24;
+    }
+
+    .module-dot {
+      width: 6px;
+      height: 6px;
+      border-radius: 50%;
+      background: #475569;
+      flex-shrink: 0;
+      transition: background 0.3s;
+    }
+
+    .module-item.active .module-dot { background: #22c55e; }
+    .module-item.loading .module-dot { background: #3b82f6; animation: pulse 1.5s ease-in-out infinite; }
+    .module-item.failed .module-dot { background: #f87171; }
+    .module-item.degraded .module-dot { background: #fbbf24; }
+
+    .module-label {
+      flex: 1;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+    }
+
     .error-section {
       display: none;
       margin-top: 24px;
@@ -210,6 +270,11 @@
         <div class="progress-bar-fill indeterminate" id="progressBar"></div>
       </div>
       <div class="status-text dots" id="statusText">正在启动后端服务</div>
+
+      <!-- 模块加载进度 -->
+      <div class="module-progress" id="moduleProgress">
+        <div id="moduleList"></div>
+      </div>
     </div>
 
     <div class="error-section" id="errorSection">
@@ -274,17 +339,57 @@
     }
 
     /**
+     * 更新模块加载进度显示
+     */
+    function updateModuleProgress(modules) {
+      const moduleProgress = document.getElementById('moduleProgress');
+      const moduleList = document.getElementById('moduleList');
+
+      if (!modules || !Array.isArray(modules) || modules.length === 0) return;
+
+      moduleProgress.classList.add('visible');
+
+      // 只显示 Tier 0 和 Tier 1 模块（最多显示 8 个）
+      const tierLabels = { tier_0_core: '核心', tier_1_high: '高优先' };
+      const relevantModules = modules
+        .filter(m => tierLabels[m.tier] && m.state !== 'disabled')
+        .slice(0, 8);
+
+      const stateLabels = {
+        active: '已就绪',
+        loading: '加载中...',
+        degraded: '降级运行',
+        failed: '失败',
+        unloaded: '等待中',
+      };
+
+      moduleList.innerHTML = relevantModules.map(m => {
+        const stateClass = m.state || 'unloaded';
+        const label = stateLabels[stateClass] || stateClass;
+        return `<div class="module-item ${stateClass}">
+          <span class="module-dot"></span>
+          <span class="module-label">${m.name}</span>
+          <span style="font-size:10px;opacity:0.7">${label}</span>
+        </div>`;
+      }).join('');
+    }
+
+    /**
      * 接收主进程状态更新
      */
     if (window.splashAPI) {
       window.splashAPI.onStatusUpdate((data) => {
-      const { phase, text, progress } = data;
+      const { phase, text, progress, modules } = data;
 
       setStatus(text);
 
       if (progress !== undefined && progress >= 0) {
         progressBar.classList.remove('indeterminate');
         progressBar.style.width = `${Math.min(progress, 100)}%`;
+      }
+
+      if (modules) {
+        updateModuleProgress(modules);
       }
 
       switch (phase) {
@@ -323,6 +428,11 @@
           break;
         case 'loading-app':
           setStatus('正在加载应用');
+          break;
+        case 'modules':
+          // 模块加载进度更新
+          if (text) setStatus(text);
+          if (modules) updateModuleProgress(modules);
           break;
         case 'app-ready':
           setStatus('即将进入 MatuX', 'success');

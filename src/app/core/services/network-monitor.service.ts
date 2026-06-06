@@ -3,6 +3,18 @@ import { BehaviorSubject, fromEvent, interval } from 'rxjs';
 import { distinctUntilChanged, map } from 'rxjs/operators';
 
 /**
+ * Network Connection API 类型
+ */
+interface NetworkConnection {
+  effectiveType: string;
+  type: string;
+  downlink: number;
+  rtt: number;
+  downlinkMax: number;
+  addEventListener: (type: string, listener: EventListenerOrEventListenerObject) => void;
+}
+
+/**
  * 网络连接状态枚举
  * 用于表示不同的网络连接质量级别
  */
@@ -92,7 +104,7 @@ export class NetworkMonitorService {
 
     // 监听网络信息变化（如果支持）
     if ('connection' in navigator) {
-      const connection = (navigator as any).connection;
+      const connection = (navigator as unknown as { connection?: NetworkConnection }).connection;
       if (connection) {
         // 监听网络连接属性变化
         ['change', 'typechange'].forEach((event) => {
@@ -113,6 +125,7 @@ export class NetworkMonitorService {
    * 获取当前网络状态
    * 综合多种API信息判断网络质量
    */
+  // eslint-disable-next-line max-lines-per-function, complexity, max-depth
   private getCurrentNetworkStatus(): NetworkStatus {
     const isOnline = navigator.onLine;
     let quality = NetworkQuality.OFFLINE;
@@ -124,7 +137,7 @@ export class NetworkMonitorService {
     if (isOnline) {
       // 尝试获取详细的网络信息
       if ('connection' in navigator) {
-        const connection = (navigator as any).connection;
+        const connection = (navigator as unknown as { connection?: NetworkConnection }).connection;
         if (connection) {
           type = connection.effectiveType || connection.type || 'unknown';
           downlink = connection.downlink;
@@ -147,6 +160,7 @@ export class NetworkMonitorService {
               break;
             default:
               // 如果没有effectiveType，根据downlink速度判断
+              /* eslint-disable max-depth */
               if (downlink !== undefined) {
                 if (downlink < 0.1) {
                   quality = NetworkQuality.SLOW_2G;
@@ -160,6 +174,7 @@ export class NetworkMonitorService {
               } else {
                 quality = NetworkQuality.FAST_4G; // 默认假设较快
               }
+            /* eslint-enable max-depth */
           }
         } else {
           quality = NetworkQuality.FAST_4G; // 基本在线状态

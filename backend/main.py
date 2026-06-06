@@ -22,53 +22,6 @@ from middleware import (
     CircuitBreakerConfig,
     CircuitBreakerMiddleware
 )
-from routes import (  # noqa: E501
-    ai_recommend_routes,
-    ai_routes,
-    ar_lab_routes,
-    ar_rewards,
-    ar_vr_mock_routes,
-    ar_vr_routes,
-    auth_routes,
-    blockchain_gateway_routes,
-    collaborative_editor_routes,
-    course_routes,
-    course_version_routes,
-    creativity_routes,
-    digital_twin_routes,
-    dynamic_course_routes,
-    educational_institution_routes,
-    hardware_certification_routes,
-    learning_behavior_routes,
-    learning_source_routes,
-    local_knowledge_graph_routes,  # 本地知识图谱
-    material_routes,  # 统一课件库
-    model_benchmark_routes,
-    model_update_routes,
-    multimedia_routes,
-    payment_routes,
-    permission_routes,
-    sponsorship_routes,
-    subscription_routes,
-    tenant_config_routes,
-    unified_learning_record_routes,
-    ai_edu_progress_routes,  # AI教育学习进度
-    ai_teacher_routes,  # AI 个性化教师
-    vector_knowledge_routes,  # 向量知识库 (RAG)
-)
-from routes import ai_capabilities_routes  # XEduHub AI 能力组件
-from routes import achievement_routes  # 成就系统
-from routes import openhydra_routes  # OpenHydra AI 沙箱环境
-from routes import admin_settings_routes  # Admin 后台全局设置
-from routes import finance_routes  # 财务管理
-from routes import sensor_data_routes  # 传感器数据
-from routes import oauth_routes  # OAuth 第三方登录
-from routes import exam_routes  # 防作弊测验系统
-from ai_service.model_routes import router as model_router  # AI 模型热更新管理
-from modules.auth.auth_routes import router as unified_auth_router
-from modules.learning.aggregation_routes import (  # noqa: E501
-    router as aggregation_router,
-)
 from database import (
     init_registry_manager,
 )
@@ -124,165 +77,37 @@ if settings.CIRCUIT_BREAKER_ENABLED:
 # 配置权限验证中间件
 app.add_middleware(PermissionMiddleware)
 
+# 配置模块激活中间件（懒加载架构）
+if settings.ENABLE_LAZY_LOADING:
+    from core.activation_middleware import ModuleActivationMiddleware
+    app.add_middleware(ModuleActivationMiddleware)
+
 # 配置日志
 logger = setup_logger(settings.LOG_LEVEL, settings.LOG_FILE)
 
-# 包含路由
-app.include_router(  # noqa: E501
-    ai_routes.router, prefix="/api/v1", tags=["AI服务"]
-)
-app.include_router(  # noqa: E501
-    ai_recommend_routes.router,
-    prefix="/api/v1",
-    tags=["AI 推荐服务"],
-)
-app.include_router(  # noqa: E501
-    auth_routes.router, prefix="/api/v1/auth", tags=["认证"]
-)
-app.include_router(  # noqa: E501
-    payment_routes.router, prefix="/api/v1", tags=["支付系统"]
-)
-app.include_router(subscription_routes.router, prefix="/api/v1", tags=["订阅系统"])
-app.include_router(  # noqa: E501
-    hardware_certification_routes.router,
-    prefix="/api/v1/hardware",
-    tags=["硬件认证"],
-)
-app.include_router(course_routes.router, tags=["课程管理"])
-# [已解耦] 租户配置管理路由 - 功能已迁移至 OpenMTEduInst 项目
-# 此路由保留作为兼容性存根，新功能请在 OpenMTEduInst 中开发
-app.include_router(tenant_config_routes.router, tags=["租户配置管理(已解耦)"])
-# [已解耦] 教育机构管理路由 - 功能已迁移至 OpenMTEduInst 项目
-# 此路由保留作为兼容性存根，新功能请在 OpenMTEduInst 中开发
-app.include_router(educational_institution_routes.router, tags=["教育机构管理(已解耦)"])
-
-# [已解耦] 权限管理路由 - 多租户权限功能已迁移至 OpenMTEduInst 项目
-# 此路由保留作为兼容性存根
-app.include_router(permission_routes.router, tags=["权限管理(已解耦)"])
-app.include_router(course_version_routes.router, tags=["课程版本控制"])
-app.include_router(collaborative_editor_routes.router, tags=["协作编辑"])
-app.include_router(multimedia_routes.router, tags=["多媒体资源"])
-app.include_router(creativity_routes.router, tags=["创意引擎"])
-app.include_router(  # noqa: E501
-    dynamic_course_routes.router, prefix="/api/v1", tags=["动态课程生成"]
-)
-app.include_router(ar_lab_routes.router)
-app.include_router(sponsorship_routes.router, tags=["企业赞助管理"])
-app.include_router(model_benchmark_routes.router, tags=["模型基准测试"])
-app.include_router(
-    blockchain_gateway_routes.router,
-    prefix="/api/v1",
-    tags=["区块链网关"],
-)
-app.include_router(
-    learning_behavior_routes.router, prefix="/api/v1", tags=["学习行为特征"]
-)
-
-# 多来源学习关联管理路由
-app.include_router(  # noqa: E501
-    learning_source_routes.router,
-    prefix="/api/v1",
-    tags=["学习来源管理"],
-)
-app.include_router(  # noqa: E501
-    unified_learning_record_routes.router,
-    prefix="/api/v1",
-    tags=["统一学习记录"],
-)
-
-app.include_router(ar_rewards.router, prefix="/api/v1", tags=["AR 奖励系统"])
-# OpenHydra AI 沙箱环境 API 路由
-# 提供容器生命周期管理、Jupyter 环境访问等功能
-app.include_router(openhydra_routes.router, tags=["AI 实验室"])
-# XEduHub AI 能力组件 API 路由
-# 封装视觉分析、NLP 对话、ML 预测等 SOTA 模型能力
-app.include_router(ai_capabilities_routes.router, tags=["AI 能力组件"])
-
-# 成就系统 API 路由
-# 提供成就创建、查询、进度追踪、徽章展示等功能
-app.include_router(achievement_routes.router)
-
-# 财务管理 API 路由
-# 提供学费、薪酬、定价、消课等财务相关接口
-app.include_router(finance_routes.router, tags=["财务管理"])
-# Admin 后台全局设置 API 路由
-# 提供全局配置的增删改查和测试连接功能
-app.include_router(admin_settings_routes.router, tags=["Admin 设置管理"])
-
-# 传感器数据 API 路由（提供 AR 实验室模拟传感器数据）
-app.include_router(sensor_data_routes.router)
-
-# 统一认证 API 路由（手机号注册/登录、家长绑定学生、Token刷新）
-app.include_router(unified_auth_router)
-
-# OAuth 第三方登录 API 路由
-# 提供 GitHub/Google/WeChat/QQ 的 OAuth 2.0 授权码流程
-app.include_router(oauth_routes.router)
-
-# 防作弊测验系统 API 路由
-# 提供测验 CRUD、考试流程、防作弊检测等功能
-app.include_router(exam_routes.router)
-
-# AI 模型热更新管理 API 路由
-# 提供模型的注册、加载、卸载、推理、A/B测试等功能
-app.include_router(model_router)
-
-# 课程聚合 API 路由（子项目回调、学生课程查询）
-app.include_router(aggregation_router)
-
-# [已解耦] 统一课件库 API 路由 - 功能已迁移至 OpenMTSciEd 项目 (localhost:3000/api/v1)
-# 此路由保留作为兼容性存根，新功能请在 OpenMTSciEd 中开发
-# 支持24种课件类型的完整CRUD操作、统计分析、批量操作等功能
-app.include_router(material_routes.router, tags=["统一课件库(已解耦)"])
-
-# AI教育学习进度 API 路由
-# 提供学习进度的上报、查询和统计分析功能
-app.include_router(ai_edu_progress_routes.router, tags=["AI教育学习进度"])
-
-# AI 个性化教师 API 路由
-# 提供学生学习画像、上下文记忆、AI教师对话、成长轨迹、智能教学建议等功能
-app.include_router(ai_teacher_routes.router, tags=["AI 个性化教师"])
-
-# 向量知识库 API 路由 (RAG)
-# 提供分层知识库检索、RAG上下文生成、知识库管理
-app.include_router(vector_knowledge_routes.router, tags=["向量知识库"])
-
-# 本地知识图谱 API 路由
-# 提供本地知识图谱管理、学习路径推荐、个性化学习画像
-app.include_router(local_knowledge_graph_routes.router, tags=["本地知识图谱"])
-
-# AR 奖励系统API路由
-# 处理 AR 场景完成、元件验证等奖励事件
-# 集成成就徽章和积分奖励系统
-# 手势识别系统API路由
-# 处理 MediaPipe 手势识别和复杂手势序列检测
-# 支持隐藏任务触发和奖励发放
-
-# 可选路由注册 (根据配置启用)
-if settings.ENABLE_AR_VR_ROUTES:
-    app.include_router(ar_vr_routes.router, tags=["AR/VR 课程"])
-    logger.info("✅ AR/VR 课程内容管理路由已启用")
-
-if settings.ENABLE_AR_VR_MOCK_ROUTES:
-    app.include_router(ar_vr_mock_routes.mock_router, tags=["AR/VR Mock服务"])
-    logger.info("✅ AR/VR Mock服务路由已启用")
-
-if settings.ENABLE_DIGITAL_TWIN_ROUTES:
-    app.include_router(digital_twin_routes.router, tags=["数字孪生实验室"])
-    logger.info("✅ 数字孪生实验室路由已启用")
-
-if settings.ENABLE_FEDERATED_ROUTES:
-    logger.info("✅ 联邦学习 API 路由已启用（暂未实现）")
-
-if settings.ENABLE_MODEL_UPDATE_ROUTES:
-    app.include_router(model_update_routes.router, tags=["模型更新"])
-    logger.info("✅ AI 模型热更新路由已启用")
+# 路由注册
+# 懒加载模式：路由由 LazyLoader 引擎自动管理
+# 传统模式：一次性注册所有路由
+if not settings.ENABLE_LAZY_LOADING:
+    from legacy_routes import register_all_routes
+    register_all_routes(app)
+else:
+    # 仅注册系统管理 API（始终可用）
+    from routes.system_status_routes import router as system_status_router
+    app.include_router(system_status_router)
+    logger.info("📦 懒加载模式：路由由 LazyLoader 引擎管理")
 
 
 @app.on_event("startup")
 async def startup_event():
     """应用启动事件"""
+    import time
+    _start_time = time.time()
+
     logger.info(f"Starting {settings.APP_NAME} v{settings.APP_VERSION}")
+    logger.info(
+        f"Lazy Loading: {'ON' if settings.ENABLE_LAZY_LOADING else 'OFF'}"
+    )
 
     # 导入所有模型以确保它们被注册到 Base.metadata
     # 按依赖顺序导入：先导入基础模型，再导入依赖模型
@@ -323,9 +148,13 @@ async def startup_event():
     # 初始化 APM 监控
     init_apm()
 
-    # 创建数据库表
-    await create_db_and_tables()
-    logger.info("Database tables created successfully")
+    # === 懒加载架构：初始化核心模块 ===
+    if settings.ENABLE_LAZY_LOADING:
+        await _init_lazy_architecture(app, _start_time)
+    else:
+        # 旧模式：全量创建所有表
+        await create_db_and_tables()
+        logger.info("Database tables created successfully (full mode)")
 
     # 初始化测试数据（仅开发环境）
     if settings.DEBUG:
@@ -361,6 +190,117 @@ async def startup_event():
         logger.error(f"数据库模块注册表初始化失败: {str(e)}")
         import traceback
         traceback.print_exc()
+
+
+async def _init_lazy_architecture(app_instance, start_time: float):
+    """
+    初始化懒加载架构
+
+    流程：
+    1. 初始化核心引擎组件
+    2. 注册所有模块规格
+    3. 创建核心数据库表（Tier 0）
+    4. 激活 Tier 0 核心模块路由
+    5. 注册激活中间件
+    6. 后台预加载 Tier 1 模块
+    """
+    import asyncio
+    import time
+    from core import (
+        init_lazy_loader,
+        init_lazy_table_manager,
+        init_service_manager,
+        ModuleSpec,
+        ModuleTier,
+    )
+    from core.module_registry import get_all_module_specs
+    from core.lazy_tables import get_lazy_table_manager
+
+    logger.info("\n" + "=" * 60)
+    logger.info("🚀 启动懒加载架构")
+    logger.info("=" * 60)
+
+    # Step 1: 初始化核心组件
+    loader = init_lazy_loader(app_instance)
+    table_manager = init_lazy_table_manager()
+    service_manager = init_service_manager()
+
+    # 注册外部服务降级方案
+    service_manager.register_many({
+        "redis": "in_memory",
+        "neo4j": "disabled",
+        "openai": "local_template",
+        "rabbitmq": "sync_mode",
+        "smtp": "log_only",
+        "hardware_auth": "offline_sim",
+        "docker": "read_only",
+        "vircadia": "2d_simulation",
+        "openhydra": "disabled",
+        "hyperledger": "cache_mode",
+    })
+
+    logger.info("✅ 核心组件初始化完成")
+
+    # Step 2: 注册所有模块
+    all_specs = get_all_module_specs()
+    for spec_data in all_specs:
+        spec = ModuleSpec(
+            name=spec_data["name"],
+            tier=ModuleTier(spec_data["tier"]),
+            router_factory=spec_data["router_factory"],
+            prefix=spec_data.get("prefix", ""),
+            tags=spec_data.get("tags", []),
+            dependencies=spec_data.get("dependencies", []),
+            required_services=spec_data.get("required_services", []),
+            fallback_services=spec_data.get("fallback_services", {}),
+            model_classes=spec_data.get("model_classes", []),
+        )
+        try:
+            loader.register(spec)
+        except ValueError:
+            pass  # 重复注册跳过
+
+    # 注册表映射
+    for spec_data in all_specs:
+        if spec_data.get("model_classes"):
+            table_manager.register_module_tables(
+                spec_data["name"],
+                spec_data["model_classes"],
+            )
+
+    logger.info(f"✅ 模块注册完成: {len(all_specs)} 个模块")
+
+    # Step 3: 创建核心数据库表
+    await create_db_and_tables()
+    logger.info("✅ 核心数据库表创建完成")
+
+    # Step 4: 激活 Tier 0 核心模块
+    core_results = await loader.activate_tier(ModuleTier.TIER_0_CORE)
+    core_elapsed = (time.time() - start_time) * 1000
+    logger.info(
+        f"✅ Tier 0 核心模块激活完成: "
+        f"{sum(1 for v in core_results.values() if v)}/{len(core_results)} "
+        f"成功 (总耗时: {core_elapsed:.0f}ms)"
+    )
+
+    # Step 5: 后台预加载 Tier 1
+    async def _preload_tier1():
+        await asyncio.sleep(settings.PRELOAD_DELAY_SECONDS)
+        logger.info("📋 开始后台预加载 Tier 1 模块...")
+        t1_results = await loader.activate_tier(ModuleTier.TIER_1_HIGH)
+        success = sum(1 for v in t1_results.values() if v)
+        logger.info(
+            f"✅ Tier 1 预加载完成: "
+            f"{success}/{len(t1_results)} 成功"
+        )
+
+    asyncio.create_task(_preload_tier1())
+
+    elapsed = (time.time() - start_time) * 1000
+    logger.info(
+        f"\n🎯 懒加载架构启动完成 (Tier 0 就绪: {elapsed:.0f}ms)"
+    )
+    logger.info("=" * 60 + "\n")
 
 
 @app.on_event("shutdown")

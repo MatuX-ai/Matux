@@ -20,12 +20,10 @@ import { Injectable } from '@angular/core';
 import { BehaviorSubject, Observable, of } from 'rxjs';
 import { catchError, switchMap, tap } from 'rxjs/operators';
 
-import { EmotionalCompanionService } from './emotional-companion.service';
-
 import {
+  AbilityTrendPoint,
   AITeacherChatRequest,
   AITeacherChatResponse,
-  AbilityTrendPoint,
   ChatMessage,
   DailyLearningSuggestion,
   GrowthTrajectory,
@@ -36,10 +34,12 @@ import {
   SessionMemory,
   SkillTreeNode,
   StudentLearningProfile,
-  TeachingSuggestion,
   TeacherPersona,
+  TeachingSuggestion,
 } from '../models/ai-teacher.models';
-import { VectorKnowledgeService, RAGResult } from './vector-knowledge.service';
+
+import { EmotionalCompanionService } from './emotional-companion.service';
+import { RAGResult, VectorKnowledgeService } from './vector-knowledge.service';
 
 @Injectable({
   providedIn: 'root',
@@ -57,7 +57,9 @@ export class AITeacherService {
   private sessionSubject = new BehaviorSubject<SessionMemory | null>(null);
   public session$ = this.sessionSubject.asObservable();
   /** 同步获取当前会话值（供模板/组件使用） */
-  get currentSession(): SessionMemory | null { return this.sessionSubject.value; }
+  get currentSession(): SessionMemory | null {
+    return this.sessionSubject.value;
+  }
 
   /** AI教师人格配置 */
   private personaSubject = new BehaviorSubject<TeacherPersona>(this.getDefaultPersona());
@@ -82,7 +84,7 @@ export class AITeacherService {
   constructor(
     private http: HttpClient,
     private vectorKnowledge: VectorKnowledgeService,
-    private emotionCompanion: EmotionalCompanionService,
+    private emotionCompanion: EmotionalCompanionService
   ) {}
 
   // ==================== 学习画像 ====================
@@ -101,20 +103,26 @@ export class AITeacherService {
   }
 
   /** 更新学习画像 */
-  updateProfile(userId: string, update: LearningProfileUpdateRequest): Observable<StudentLearningProfile> {
-    return this.http.patch<StudentLearningProfile>(`${this.API_BASE}/profile/${userId}`, update).pipe(
-      tap((profile) => this.profileSubject.next(profile)),
-      catchError(() => {
-        // 本地更新
-        const current = this.profileSubject.value;
-        if (current) {
-          const updated = { ...current, ...update, updatedAt: new Date().toISOString() };
-          this.profileSubject.next(updated as StudentLearningProfile);
-          return of(updated as StudentLearningProfile);
-        }
-        return of(current!);
-      })
-    );
+  updateProfile(
+    userId: string,
+    update: LearningProfileUpdateRequest
+  ): Observable<StudentLearningProfile> {
+    return this.http
+      .patch<StudentLearningProfile>(`${this.API_BASE}/profile/${userId}`, update)
+      .pipe(
+        tap((profile) => this.profileSubject.next(profile)),
+        catchError(() => {
+          // 本地更新
+          const current = this.profileSubject.value;
+          if (current) {
+            const updated = { ...current, ...update, updatedAt: new Date().toISOString() };
+            this.profileSubject.next(updated as StudentLearningProfile);
+            return of(updated as StudentLearningProfile);
+          }
+          // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
+          return of(current!);
+        })
+      );
   }
 
   /** 生成画像摘要（供AI教师prompt使用） */
@@ -136,7 +144,9 @@ export class AITeacherService {
       `独立完成率${profile.abilityDimensions.independentCompletion}%`,
       weakPointsStr ? `薄弱环节：${weakPointsStr}` : '',
       `连续学习${profile.currentStreakDays}天`,
-    ].filter(Boolean).join('。');
+    ]
+      .filter(Boolean)
+      .join('。');
   }
 
   /** 注入情绪上下文到画像摘要 */
@@ -154,16 +164,29 @@ export class AITeacherService {
   /** 获取长期记忆 */
   getLongTermMemories(userId: string, query?: string): Observable<LongTermMemory[]> {
     const params: Record<string, string> = query ? { query } : {};
-    return this.http.get<LongTermMemory[]>(`${this.API_BASE}/memory/${userId}/long-term`, { params }).pipe(
-      catchError(() => of(this.createMockMemories()))
-    );
+    return this.http
+      .get<LongTermMemory[]>(`${this.API_BASE}/memory/${userId}/long-term`, { params })
+      .pipe(catchError(() => of(this.createMockMemories())));
   }
 
   /** 保存长期记忆 */
-  saveLongTermMemory(userId: string, memory: Omit<LongTermMemory, 'id' | 'createdAt' | 'accessCount' | 'lastAccessedAt'>): Observable<LongTermMemory> {
-    return this.http.post<LongTermMemory>(`${this.API_BASE}/memory/${userId}/long-term`, memory).pipe(
-      catchError(() => of({ ...memory, id: `mem_${Date.now()}`, createdAt: new Date().toISOString(), accessCount: 0, lastAccessedAt: new Date().toISOString() } as LongTermMemory))
-    );
+  saveLongTermMemory(
+    userId: string,
+    memory: Omit<LongTermMemory, 'id' | 'createdAt' | 'accessCount' | 'lastAccessedAt'>
+  ): Observable<LongTermMemory> {
+    return this.http
+      .post<LongTermMemory>(`${this.API_BASE}/memory/${userId}/long-term`, memory)
+      .pipe(
+        catchError(() =>
+          of({
+            ...memory,
+            id: `mem_${Date.now()}`,
+            createdAt: new Date().toISOString(),
+            accessCount: 0,
+            lastAccessedAt: new Date().toISOString(),
+          } as LongTermMemory)
+        )
+      );
   }
 
   /** 获取/创建会话记忆 */
@@ -193,14 +216,13 @@ export class AITeacherService {
   // ==================== AI 教师对话 ====================
 
   /** 发送消息给AI教师 */
+  // eslint-disable-next-line max-lines-per-function, max-depth
   chat(request: AITeacherChatRequest): Observable<AITeacherChatResponse> {
     const profile = this.profileSubject.value;
     const persona = this.personaSubject.value;
 
     // 注入画像和人格到请求
-    const profileSeed = this.injectEmotionContext(
-      profile ? this.generatePersonaSeed(profile) : ''
-    );
+    const profileSeed = this.injectEmotionContext(profile ? this.generatePersonaSeed(profile) : '');
     const enhancedRequest = {
       ...request,
       profileSeed,
@@ -219,11 +241,12 @@ export class AITeacherService {
           request.message,
           request.userId,
           profile ? this.injectEmotionContext(this.generatePersonaSeed(profile)) : '',
-          this.inferStage(profile?.gradeLevel),
+          this.inferStage(profile?.gradeLevel)
         )
       : of(null);
 
     return ragObservable.pipe(
+      // eslint-disable-next-line max-lines-per-function
       switchMap((ragResult: RAGResult | null) => {
         // 将 RAG 上下文注入请求
         const requestWithContext = {
@@ -232,65 +255,72 @@ export class AITeacherService {
           knowledgeSources: ragResult?.sources ?? [],
         };
 
-        return this.http.post<AITeacherChatResponse>(`${this.API_BASE}/chat`, requestWithContext).pipe(
-          tap((response) => {
-            // 自动记录AI检测到的情绪到情感陪伴日志（跳过 neutral 避免淹没日志）
-            if (response.emotionDetected && response.emotionDetected !== 'neutral') {
-              // EmotionLog.emotion 与 EmotionState 有交集但不是同一类型
-              const detected = response.emotionDetected;
-              const validEmotions: readonly string[] = ['frustrated', 'anxious', 'confused', 'bored'];
-              if (validEmotions.includes(detected)) {
-                this.emotionCompanion.logEmotion(
-                  detected as any,
-                  'AI对话检测',
-                  3
-                );
+        return this.http
+          .post<AITeacherChatResponse>(`${this.API_BASE}/chat`, requestWithContext)
+          .pipe(
+            tap((response) => {
+              // 自动记录AI检测到的情绪到情感陪伴日志（跳过 neutral 避免淹没日志）
+              if (response.emotionDetected && response.emotionDetected !== 'neutral') {
+                // EmotionLog.emotion 与 EmotionState 有交集但不是同一类型
+                const detected = response.emotionDetected;
+                const validEmotions: readonly string[] = [
+                  'frustrated',
+                  'anxious',
+                  'confused',
+                  'bored',
+                ];
+                if (validEmotions.includes(detected)) {
+                  this.emotionCompanion.logEmotion(
+                    detected as 'frustrated' | 'anxious' | 'confused' | 'bored',
+                    'AI对话检测',
+                    3
+                  );
+                }
               }
-            }
-            // 更新会话记忆
-            const session = this.sessionSubject.value;
-            if (session) {
-              const userMsg: ChatMessage = {
-                role: 'user',
-                content: request.message,
-                timestamp: new Date().toISOString(),
+              // 更新会话记忆
+              const session = this.sessionSubject.value;
+              if (session) {
+                const userMsg: ChatMessage = {
+                  role: 'user',
+                  content: request.message,
+                  timestamp: new Date().toISOString(),
+                };
+                const aiMsg: ChatMessage = {
+                  role: 'assistant',
+                  content: response.reply,
+                  timestamp: new Date().toISOString(),
+                  metadata: {
+                    knowledgeUsed: response.knowledgeUsed || !!ragResult?.context,
+                    confidence: response.confidence,
+                    referencedMemories: response.memoriesReferenced,
+                    emotionDetected: response.emotionDetected,
+                  },
+                };
+                const updatedMessages = [...session.recentMessages, userMsg, aiMsg].slice(-20);
+                this.sessionSubject.next({
+                  ...session,
+                  recentMessages: updatedMessages,
+                  lastActivityAt: new Date().toISOString(),
+                });
+              }
+            }),
+            catchError(() => {
+              // Mock响应降级
+              const mockResponse: AITeacherChatResponse = {
+                reply: this.generateMockReply(request.message, persona),
+                sessionId: request.sessionId,
+                emotionDetected: 'neutral',
+                memoriesReferenced: [],
+                knowledgeUsed: !!ragResult?.context,
+                suggestions: [],
+                model: 'mock',
+                confidence: 0.7,
+                inferenceTimeMs: 200,
               };
-              const aiMsg: ChatMessage = {
-                role: 'assistant',
-                content: response.reply,
-                timestamp: new Date().toISOString(),
-                metadata: {
-                  knowledgeUsed: response.knowledgeUsed || !!ragResult?.context,
-                  confidence: response.confidence,
-                  referencedMemories: response.memoriesReferenced,
-                  emotionDetected: response.emotionDetected,
-                },
-              };
-              const updatedMessages = [...session.recentMessages, userMsg, aiMsg].slice(-20);
-              this.sessionSubject.next({
-                ...session,
-                recentMessages: updatedMessages,
-                lastActivityAt: new Date().toISOString(),
-              });
-            }
-          }),
-          catchError(() => {
-            // Mock响应降级
-            const mockResponse: AITeacherChatResponse = {
-              reply: this.generateMockReply(request.message, persona),
-              sessionId: request.sessionId,
-              emotionDetected: 'neutral',
-              memoriesReferenced: [],
-              knowledgeUsed: !!ragResult?.context,
-              suggestions: [],
-              model: 'mock',
-              confidence: 0.7,
-              inferenceTimeMs: 200,
-            };
-            return of(mockResponse);
-          }),
-        );
-      }),
+              return of(mockResponse);
+            })
+          );
+      })
     );
   }
 
@@ -310,14 +340,16 @@ export class AITeacherService {
 
   /** 获取成长轨迹 */
   getGrowthTrajectory(userId: string, months: number = 6): Observable<GrowthTrajectory> {
-    return this.http.get<GrowthTrajectory>(`${this.API_BASE}/growth/${userId}`, { params: { months } }).pipe(
-      tap((growth) => this.growthSubject.next(growth)),
-      catchError(() => {
-        const mockGrowth = this.createMockGrowthTrajectory(months);
-        this.growthSubject.next(mockGrowth);
-        return of(mockGrowth);
-      })
-    );
+    return this.http
+      .get<GrowthTrajectory>(`${this.API_BASE}/growth/${userId}`, { params: { months } })
+      .pipe(
+        tap((growth) => this.growthSubject.next(growth)),
+        catchError(() => {
+          const mockGrowth = this.createMockGrowthTrajectory(months);
+          this.growthSubject.next(mockGrowth);
+          return of(mockGrowth);
+        })
+      );
   }
 
   // ==================== 智能教学建议 ====================
@@ -336,14 +368,16 @@ export class AITeacherService {
 
   /** 获取每日学习建议 */
   getDailySuggestion(userId: string): Observable<DailyLearningSuggestion> {
-    return this.http.get<DailyLearningSuggestion>(`${this.API_BASE}/daily-suggestion/${userId}`).pipe(
-      tap((suggestion) => this.dailySuggestionSubject.next(suggestion)),
-      catchError(() => {
-        const mock = this.createMockDailySuggestion();
-        this.dailySuggestionSubject.next(mock);
-        return of(mock);
-      })
-    );
+    return this.http
+      .get<DailyLearningSuggestion>(`${this.API_BASE}/daily-suggestion/${userId}`)
+      .pipe(
+        tap((suggestion) => this.dailySuggestionSubject.next(suggestion)),
+        catchError(() => {
+          const mock = this.createMockDailySuggestion();
+          this.dailySuggestionSubject.next(mock);
+          return of(mock);
+        })
+      );
   }
 
   /** 标记建议已读 */
@@ -352,7 +386,7 @@ export class AITeacherService {
       tap(() => {
         const current = this.suggestionsSubject.value;
         this.suggestionsSubject.next(
-          current.map((s) => s.id === suggestionId ? { ...s, isRead: true } : s)
+          current.map((s) => (s.id === suggestionId ? { ...s, isRead: true } : s))
         );
       }),
       catchError(() => of(void 0))
@@ -430,16 +464,14 @@ export class AITeacherService {
     if (errorEntries.length === 0) return results;
 
     // 按错误次数排序，取前2个
-    const topErrors = errorEntries
-      .sort(([, a], [, b]) => b - a)
-      .slice(0, 2);
+    const topErrors = errorEntries.sort(([, a], [, b]) => b - a).slice(0, 2);
 
     const errorLabels: Record<string, string> = {
-      'indentation_error': '缩进错误',
-      'range_parameter': 'range() 参数混淆',
-      'list_index': '列表索引越界',
-      'type_error': '类型错误',
-      'syntax_error': '语法错误',
+      indentation_error: '缩进错误',
+      range_parameter: 'range() 参数混淆',
+      list_index: '列表索引越界',
+      type_error: '类型错误',
+      syntax_error: '语法错误',
     };
 
     for (const [errorType, count] of topErrors) {
@@ -496,7 +528,7 @@ export class AITeacherService {
     const dims = profile.abilityDimensions;
     if (!dims) return results;
 
-    const entries = Object.entries(dims);
+    const entries = Object.entries(dims) as Array<[string, number]>;
     const values = entries.map(([, v]) => v);
     const avg = values.reduce((a, b) => a + b, 0) / values.length;
     const threshold = 20;
@@ -592,27 +624,29 @@ export class AITeacherService {
     const knowledgeState = this.knowledgeStateSubject.value;
 
     // 尝试从API获取
-    return this.http.get<TeachingSuggestion[]>(`${this.API_BASE}/active-suggestions/${userId}`).pipe(
-      tap((suggestions) => {
-        const updated = [
-          ...this.diagnoseLearningIssues(
-            profile || this.createMockProfile(userId),
+    return this.http
+      .get<TeachingSuggestion[]>(`${this.API_BASE}/active-suggestions/${userId}`)
+      .pipe(
+        tap((suggestions) => {
+          const updated = [
+            ...this.diagnoseLearningIssues(
+              profile ?? this.createMockProfile(userId),
+              knowledgeState.length > 0 ? knowledgeState : this.createMockKnowledgeState()
+            ),
+            ...suggestions,
+          ];
+          this.suggestionsSubject.next(updated);
+        }),
+        catchError(() => {
+          // API 不可用，使用本地诊断
+          const localSuggestions: TeachingSuggestion[] = this.diagnoseLearningIssues(
+            profile ?? this.createMockProfile(userId),
             knowledgeState.length > 0 ? knowledgeState : this.createMockKnowledgeState()
-          ) as TeachingSuggestion[],
-          ...suggestions,
-        ];
-        this.suggestionsSubject.next(updated);
-      }),
-      catchError(() => {
-        // API 不可用，使用本地诊断
-        const localSuggestions: TeachingSuggestion[] = this.diagnoseLearningIssues(
-          profile || this.createMockProfile(userId),
-          knowledgeState.length > 0 ? knowledgeState : this.createMockKnowledgeState()
-        );
-        this.suggestionsSubject.next(localSuggestions);
-        return of(localSuggestions);
-      })
-    );
+          );
+          this.suggestionsSubject.next(localSuggestions);
+          return of(localSuggestions);
+        })
+      );
   }
 
   // ==================== 知识状态 ====================
@@ -643,17 +677,17 @@ export class AITeacherService {
   updatePersona(userId: string, persona: Partial<TeacherPersona>): Observable<TeacherPersona> {
     const updated = { ...this.personaSubject.value, ...persona };
     this.personaSubject.next(updated);
-    return this.http.patch<TeacherPersona>(`${this.API_BASE}/persona/${userId}`, persona).pipe(
-      catchError(() => of(updated))
-    );
+    return this.http
+      .patch<TeacherPersona>(`${this.API_BASE}/persona/${userId}`, persona)
+      .pipe(catchError(() => of(updated)));
   }
 
   /** 重置AI教师记忆 */
   resetMemory(userId: string): Observable<{ success: boolean }> {
     this.sessionSubject.next(null);
-    return this.http.delete<{ success: boolean }>(`${this.API_BASE}/memory/${userId}`).pipe(
-      catchError(() => of({ success: true }))
-    );
+    return this.http
+      .delete<{ success: boolean }>(`${this.API_BASE}/memory/${userId}`)
+      .pipe(catchError(() => of({ success: true })));
   }
 
   // ==================== 私有辅助方法 ====================
@@ -671,6 +705,7 @@ export class AITeacherService {
     };
   }
 
+  // eslint-disable-next-line max-lines-per-function
   private createMockProfile(userId: string): StudentLearningProfile {
     return {
       userId,
@@ -691,12 +726,12 @@ export class AITeacherService {
       },
       interestPreferences: ['game_development', 'robotics', '3d_modeling'],
       knowledgeMastery: {
-        'python_basics': 0.85,
-        'conditions': 0.90,
-        'loops': 0.45,
-        'functions': 0.0,
-        'led_control': 1.0,
-        'sensors': 0.45,
+        python_basics: 0.85,
+        conditions: 0.9,
+        loops: 0.45,
+        functions: 0.0,
+        led_control: 1.0,
+        sensors: 0.45,
       },
       totalStudyTimeMinutes: 11220,
       completedCoursesCount: 23,
@@ -704,11 +739,29 @@ export class AITeacherService {
       currentStreakDays: 15,
       longestStreakDays: 30,
       weakPoints: [
-        { knowledgePoint: 'range() 参数理解', mastery: 0.55, errorRate: 0.45, suggestion: 'Blockly 对照练习', lastDetected: new Date().toISOString() },
-        { knowledgePoint: '缩进规范', mastery: 0.70, errorRate: 0.30, suggestion: '代码格式化插件', lastDetected: new Date().toISOString() },
-        { knowledgePoint: '列表索引', mastery: 0.65, errorRate: 0.35, suggestion: '互动小测验', lastDetected: new Date().toISOString() },
+        {
+          knowledgePoint: 'range() 参数理解',
+          mastery: 0.55,
+          errorRate: 0.45,
+          suggestion: 'Blockly 对照练习',
+          lastDetected: new Date().toISOString(),
+        },
+        {
+          knowledgePoint: '缩进规范',
+          mastery: 0.7,
+          errorRate: 0.3,
+          suggestion: '代码格式化插件',
+          lastDetected: new Date().toISOString(),
+        },
+        {
+          knowledgePoint: '列表索引',
+          mastery: 0.65,
+          errorRate: 0.35,
+          suggestion: '互动小测验',
+          lastDetected: new Date().toISOString(),
+        },
       ],
-      errorPatterns: { 'indentation_error': 12, 'range_parameter': 8, 'list_index': 6 },
+      errorPatterns: { indentation_error: 12, range_parameter: 8, list_index: 6 },
       attentionProfile: {
         averageFocusDurationMinutes: 25,
         tabSwitchFrequency: 2.3,
@@ -716,14 +769,49 @@ export class AITeacherService {
         trend: 'stable',
       },
       emotionalStates: [
-        { timestamp: new Date().toISOString(), emotion: 'excited', source: 'dialogue', confidence: 0.8 },
+        {
+          timestamp: new Date().toISOString(),
+          emotion: 'excited',
+          source: 'dialogue',
+          confidence: 0.8,
+        },
       ],
       learningMilestones: [
-        { id: 'm1', type: 'first_blockly', title: '初入编程', description: '完成第一个 Blockly 关卡', achievedAt: '2026-01-15T10:00:00Z' },
-        { id: 'm2', type: 'python_intro', title: 'Python 入门', description: '完成 Python 基础课程', achievedAt: '2026-02-20T14:00:00Z' },
-        { id: 'm3', type: 'first_independent_project', title: '首个独立项目', description: '猜数字游戏', achievedAt: '2026-03-10T16:00:00Z' },
-        { id: 'm4', type: 'first_debug', title: '独立 Debug 成功', description: '修复 3 个以上错误', achievedAt: '2026-04-05T11:00:00Z' },
-        { id: 'm5', type: 'breakthrough', title: '突破瓶颈', description: '循环正确率从 40% → 75%', achievedAt: '2026-04-28T09:00:00Z' },
+        {
+          id: 'm1',
+          type: 'first_blockly',
+          title: '初入编程',
+          description: '完成第一个 Blockly 关卡',
+          achievedAt: '2026-01-15T10:00:00Z',
+        },
+        {
+          id: 'm2',
+          type: 'python_intro',
+          title: 'Python 入门',
+          description: '完成 Python 基础课程',
+          achievedAt: '2026-02-20T14:00:00Z',
+        },
+        {
+          id: 'm3',
+          type: 'first_independent_project',
+          title: '首个独立项目',
+          description: '猜数字游戏',
+          achievedAt: '2026-03-10T16:00:00Z',
+        },
+        {
+          id: 'm4',
+          type: 'first_debug',
+          title: '独立 Debug 成功',
+          description: '修复 3 个以上错误',
+          achievedAt: '2026-04-05T11:00:00Z',
+        },
+        {
+          id: 'm5',
+          type: 'breakthrough',
+          title: '突破瓶颈',
+          description: '循环正确率从 40% → 75%',
+          achievedAt: '2026-04-28T09:00:00Z',
+        },
       ],
       skillTree: this.createMockSkillTree(),
       personaSeed: '',
@@ -733,24 +821,92 @@ export class AITeacherService {
     };
   }
 
+  // eslint-disable-next-line max-lines-per-function
   private createMockSkillTree(): SkillTreeNode[] {
     return [
       {
-        id: 'python_basics', name: 'Python 基础', category: 'python', progress: 0.6, status: 'learning',
+        id: 'python_basics',
+        name: 'Python 基础',
+        category: 'python',
+        progress: 0.6,
+        status: 'learning',
         children: [
-          { id: 'variables', name: '变量与数据类型', category: 'python', progress: 1.0, status: 'mastered', parent: 'python_basics' },
-          { id: 'conditions', name: '条件判断', category: 'python', progress: 0.95, status: 'mastered', parent: 'python_basics' },
-          { id: 'loops', name: '循环', category: 'python', progress: 0.6, status: 'learning', parent: 'python_basics' },
-          { id: 'functions', name: '函数', category: 'python', progress: 0, status: 'not_started', parent: 'python_basics', unlockRequirement: 'loops' },
-          { id: 'oop', name: '面向对象', category: 'python', progress: 0, status: 'not_started', parent: 'python_basics', unlockRequirement: 'functions' },
+          {
+            id: 'variables',
+            name: '变量与数据类型',
+            category: 'python',
+            progress: 1.0,
+            status: 'mastered',
+            parent: 'python_basics',
+          },
+          {
+            id: 'conditions',
+            name: '条件判断',
+            category: 'python',
+            progress: 0.95,
+            status: 'mastered',
+            parent: 'python_basics',
+          },
+          {
+            id: 'loops',
+            name: '循环',
+            category: 'python',
+            progress: 0.6,
+            status: 'learning',
+            parent: 'python_basics',
+          },
+          {
+            id: 'functions',
+            name: '函数',
+            category: 'python',
+            progress: 0,
+            status: 'not_started',
+            parent: 'python_basics',
+            unlockRequirement: 'loops',
+          },
+          {
+            id: 'oop',
+            name: '面向对象',
+            category: 'python',
+            progress: 0,
+            status: 'not_started',
+            parent: 'python_basics',
+            unlockRequirement: 'functions',
+          },
         ],
       },
       {
-        id: 'stem_basics', name: 'STEM 实验', category: 'stem', progress: 0.5, status: 'learning',
+        id: 'stem_basics',
+        name: 'STEM 实验',
+        category: 'stem',
+        progress: 0.5,
+        status: 'learning',
         children: [
-          { id: 'led_control', name: 'LED 控制', category: 'stem', progress: 1.0, status: 'mastered', parent: 'stem_basics' },
-          { id: 'sensors', name: '传感器入门', category: 'stem', progress: 0.45, status: 'learning', parent: 'stem_basics' },
-          { id: 'robotics', name: '机器人编程', category: 'stem', progress: 0, status: 'not_started', parent: 'stem_basics', unlockRequirement: 'sensors' },
+          {
+            id: 'led_control',
+            name: 'LED 控制',
+            category: 'stem',
+            progress: 1.0,
+            status: 'mastered',
+            parent: 'stem_basics',
+          },
+          {
+            id: 'sensors',
+            name: '传感器入门',
+            category: 'stem',
+            progress: 0.45,
+            status: 'learning',
+            parent: 'stem_basics',
+          },
+          {
+            id: 'robotics',
+            name: '机器人编程',
+            category: 'stem',
+            progress: 0,
+            status: 'not_started',
+            parent: 'stem_basics',
+            unlockRequirement: 'sensors',
+          },
         ],
       },
     ];
@@ -759,22 +915,31 @@ export class AITeacherService {
   private createMockMemories(): LongTermMemory[] {
     return [
       {
-        id: 'mem_1', userId: '', category: 'learning_summary',
+        id: 'mem_1',
+        userId: '',
+        category: 'learning_summary',
         content: '学生完成循环入门测验，for/while 正确率 60%',
-        tags: ['循环', '测验'], importance: 0.8,
+        tags: ['循环', '测验'],
+        importance: 0.8,
         createdAt: new Date(Date.now() - 3 * 86400000).toISOString(),
-        accessCount: 2, lastAccessedAt: new Date().toISOString(),
+        accessCount: 2,
+        lastAccessedAt: new Date().toISOString(),
       },
       {
-        id: 'mem_2', userId: '', category: 'key_dialogue',
+        id: 'mem_2',
+        userId: '',
+        category: 'key_dialogue',
         content: '学生提问 "为什么 for 和 while 有区别？"',
-        tags: ['循环', '概念对比'], importance: 0.7,
+        tags: ['循环', '概念对比'],
+        importance: 0.7,
         createdAt: new Date(Date.now() - 7 * 86400000).toISOString(),
-        accessCount: 1, lastAccessedAt: new Date(Date.now() - 7 * 86400000).toISOString(),
+        accessCount: 1,
+        lastAccessedAt: new Date(Date.now() - 7 * 86400000).toISOString(),
       },
     ];
   }
 
+  // eslint-disable-next-line max-lines-per-function
   private createMockGrowthTrajectory(months: number): GrowthTrajectory {
     const trend: AbilityTrendPoint[] = [];
     const now = new Date();
@@ -796,7 +961,8 @@ export class AITeacherService {
       userId: '',
       abilityTrend: trend,
       milestones: this.profileSubject.value?.learningMilestones ?? [],
-      aiMonthlyMessage: '小明，这个月你进步非常大！从月初对循环一知半解，到现在已经能独立写出 for/while 两种循环了。特别让我惊喜的是，你在电路实验里独立完成了红绿灯项目。下个月我建议你重点攻克函数，加油！💪',
+      aiMonthlyMessage:
+        '小明，这个月你进步非常大！从月初对循环一知半解，到现在已经能独立写出 for/while 两种循环了。特别让我惊喜的是，你在电路实验里独立完成了红绿灯项目。下个月我建议你重点攻克函数，加油！💪',
       statistics: {
         totalStudyHours: 187,
         completedCourses: 23,
@@ -806,8 +972,20 @@ export class AITeacherService {
       },
       interestEvolution: [
         { period: '2026-01', interests: [{ name: '游戏开发', percentage: 60 }] },
-        { period: '2026-03', interests: [{ name: '机器人', percentage: 30 }, { name: '游戏开发', percentage: 50 }] },
-        { period: '2026-05', interests: [{ name: '机器人', percentage: 45 }, { name: '游戏开发', percentage: 35 }] },
+        {
+          period: '2026-03',
+          interests: [
+            { name: '机器人', percentage: 30 },
+            { name: '游戏开发', percentage: 50 },
+          ],
+        },
+        {
+          period: '2026-05',
+          interests: [
+            { name: '机器人', percentage: 45 },
+            { name: '游戏开发', percentage: 35 },
+          ],
+        },
       ],
       peerComparison: {
         peerAverages: {
@@ -846,71 +1024,104 @@ export class AITeacherService {
     };
   }
 
+  // eslint-disable-next-line max-lines-per-function
   private createMockSuggestions(): TeachingSuggestion[] {
     return [
       {
-        id: 'sug_1', diagnosisType: 'prerequisite_missing', severity: 'warning',
-        title: '前置知识缺失', description: '你正在学函数，但变量作用域还没完全掌握',
+        id: 'sug_1',
+        diagnosisType: 'prerequisite_missing',
+        severity: 'warning',
+        title: '前置知识缺失',
+        description: '你正在学函数，但变量作用域还没完全掌握',
         suggestedAction: '先回顾变量作用域的概念，再继续学习函数',
         relatedKnowledgePoints: ['变量作用域', '函数'],
         recommendedCourses: ['python_scope_basics'],
-        createdAt: new Date().toISOString(), isRead: false,
+        createdAt: new Date().toISOString(),
+        isRead: false,
       },
       {
-        id: 'sug_2', diagnosisType: 'concept_confusion', severity: 'info',
-        title: '概念混淆', description: '你最近出现了 range() 参数混淆的错误',
+        id: 'sug_2',
+        diagnosisType: 'concept_confusion',
+        severity: 'info',
+        title: '概念混淆',
+        description: '你最近出现了 range() 参数混淆的错误',
         suggestedAction: '对比练习：分别测试 range(5)、range(1,5)、range(1,5,2) 的输出',
         relatedKnowledgePoints: ['range()', 'for循环'],
         recommendedCourses: ['python_loops_fundamentals'],
-        createdAt: new Date().toISOString(), isRead: false,
+        createdAt: new Date().toISOString(),
+        isRead: false,
       },
       {
-        id: 'sug_3', diagnosisType: 'learning_plateau', severity: 'warning',
-        title: '学习高原期', description: '循环的掌握度在 45% 停留了 3 天，没有明显进步',
+        id: 'sug_3',
+        diagnosisType: 'learning_plateau',
+        severity: 'warning',
+        title: '学习高原期',
+        description: '循环的掌握度在 45% 停留了 3 天，没有明显进步',
         suggestedAction: '换个方式试试！先用 Blockly 搭 3 个循环积木，再翻译成 Python',
         relatedKnowledgePoints: ['循环', 'Blockly 转换'],
         recommendedCourses: ['blockly_to_python'],
-        createdAt: new Date().toISOString(), isRead: false,
+        createdAt: new Date().toISOString(),
+        isRead: false,
       },
       {
-        id: 'sug_4', diagnosisType: 'skill_imbalance', severity: 'info',
-        title: '能力发展不均衡', description: '你的编程思维很强，但代码规范方面需要加强',
+        id: 'sug_4',
+        diagnosisType: 'skill_imbalance',
+        severity: 'info',
+        title: '能力发展不均衡',
+        description: '你的编程思维很强，但代码规范方面需要加强',
         suggestedAction: '建议安装代码格式化插件，并学习 Python PEP 8 规范',
         relatedKnowledgePoints: ['PEP 8', '代码规范'],
         recommendedCourses: ['python_code_style'],
-        createdAt: new Date().toISOString(), isRead: false,
+        createdAt: new Date().toISOString(),
+        isRead: false,
       },
       {
-        id: 'sug_5', diagnosisType: 'attention_decline', severity: 'warning',
-        title: '注意力下降', description: '最近你的平均专注时长从 30 分钟降到了 20 分钟',
+        id: 'sug_5',
+        diagnosisType: 'attention_decline',
+        severity: 'warning',
+        title: '注意力下降',
+        description: '最近你的平均专注时长从 30 分钟降到了 20 分钟',
         suggestedAction: '建议适当休息，或尝试交互式更强的学习方式',
         relatedKnowledgePoints: [],
         recommendedCourses: ['fun_interactive_projects'],
-        createdAt: new Date().toISOString(), isRead: false,
+        createdAt: new Date().toISOString(),
+        isRead: false,
       },
       {
-        id: 'sug_6', diagnosisType: 'ai_overdependence', severity: 'info',
-        title: '独立解题能力提醒', description: '最近你频繁向 AI 老师求助，独立完成率 40%',
+        id: 'sug_6',
+        diagnosisType: 'ai_overdependence',
+        severity: 'info',
+        title: '独立解题能力提醒',
+        description: '最近你频繁向 AI 老师求助，独立完成率 40%',
         suggestedAction: '遇到问题先自己思考 2 分钟，借助提示尝试独立解决',
         relatedKnowledgePoints: ['问题拆解', '独立调试'],
         recommendedCourses: ['independent_debug_practice'],
-        createdAt: new Date().toISOString(), isRead: false,
+        createdAt: new Date().toISOString(),
+        isRead: false,
       },
       {
-        id: 'sug_7', diagnosisType: 'skill_imbalance', severity: 'critical',
-        title: '编程能力严重失衡', description: '你的调试技能(25)远低于编程思维(75)，差距超过30分',
+        id: 'sug_7',
+        diagnosisType: 'skill_imbalance',
+        severity: 'critical',
+        title: '编程能力严重失衡',
+        description: '你的调试技能(25)远低于编程思维(75)，差距超过30分',
         suggestedAction: '建议暂停新知识学习，集中进行调试专项练习，完成「调试大师」挑战',
         relatedKnowledgePoints: ['断点调试', '错误追踪', '日志分析'],
         recommendedCourses: ['debugging_master', 'error_analysis_101'],
-        createdAt: new Date().toISOString(), isRead: false,
+        createdAt: new Date().toISOString(),
+        isRead: false,
       },
       {
-        id: 'sug_8', diagnosisType: 'prerequisite_missing', severity: 'critical',
-        title: '关键前置知识缺失', description: '函数章节前置知识(变量作用域)掌握率仅 15%，严重阻碍后续学习',
+        id: 'sug_8',
+        diagnosisType: 'prerequisite_missing',
+        severity: 'critical',
+        title: '关键前置知识缺失',
+        description: '函数章节前置知识(变量作用域)掌握率仅 15%，严重阻碍后续学习',
         suggestedAction: '立即暂停函数学习，退回至变量作用域章节完成所有练习并通过测试',
         relatedKnowledgePoints: ['变量作用域', '函数', '闭包'],
         recommendedCourses: ['python_scope_fundamentals', 'scope_quiz'],
-        createdAt: new Date().toISOString(), isRead: false,
+        createdAt: new Date().toISOString(),
+        isRead: false,
       },
     ];
   }
@@ -922,7 +1133,13 @@ export class AITeacherService {
       yesterdayReview: '昨天你完成了 Python 循环练习，正确率 75%，比前天提升了 10%！',
       todayGoals: ['完成循环进阶练习', '尝试用 for 循环写一个小程序', '复习 range() 的三种用法'],
       weakPointReminder: [
-        { knowledgePoint: 'range() 参数理解', mastery: 0.55, errorRate: 0.45, suggestion: 'Blockly 对照练习', lastDetected: new Date().toISOString() },
+        {
+          knowledgePoint: 'range() 参数理解',
+          mastery: 0.55,
+          errorRate: 0.45,
+          suggestion: 'Blockly 对照练习',
+          lastDetected: new Date().toISOString(),
+        },
       ],
       suggestedCourses: [
         { courseId: 'python_loops_advanced', reason: '因为你刚学完循环基础，进阶课程是自然延伸' },
@@ -933,18 +1150,54 @@ export class AITeacherService {
 
   private createMockKnowledgeState(): KnowledgeStateItem[] {
     return [
-      { knowledgePoint: 'python_basics', mastery: 0.85, status: 'mastered', prerequisites: [], nextTopics: ['conditions', 'loops'], lastPracticed: new Date().toISOString(), practiceCount: 45 },
-      { knowledgePoint: 'conditions', mastery: 0.90, status: 'mastered', prerequisites: ['python_basics'], nextTopics: ['loops'], lastPracticed: new Date().toISOString(), practiceCount: 30 },
-      { knowledgePoint: 'loops', mastery: 0.45, status: 'learning', prerequisites: ['conditions'], nextTopics: ['functions'], lastPracticed: new Date().toISOString(), practiceCount: 18 },
-      { knowledgePoint: 'functions', mastery: 0.0, status: 'not_started', prerequisites: ['loops'], nextTopics: ['oop'], lastPracticed: null, practiceCount: 0 },
+      {
+        knowledgePoint: 'python_basics',
+        mastery: 0.85,
+        status: 'mastered',
+        prerequisites: [],
+        nextTopics: ['conditions', 'loops'],
+        lastPracticed: new Date().toISOString(),
+        practiceCount: 45,
+      },
+      {
+        knowledgePoint: 'conditions',
+        mastery: 0.9,
+        status: 'mastered',
+        prerequisites: ['python_basics'],
+        nextTopics: ['loops'],
+        lastPracticed: new Date().toISOString(),
+        practiceCount: 30,
+      },
+      {
+        knowledgePoint: 'loops',
+        mastery: 0.45,
+        status: 'learning',
+        prerequisites: ['conditions'],
+        nextTopics: ['functions'],
+        lastPracticed: new Date().toISOString(),
+        practiceCount: 18,
+      },
+      {
+        knowledgePoint: 'functions',
+        mastery: 0.0,
+        status: 'not_started',
+        prerequisites: ['loops'],
+        nextTopics: ['oop'],
+        lastPracticed: null,
+        practiceCount: 0,
+      },
     ];
   }
 
   private generateMockReply(message: string, persona: TeacherPersona): string {
-    const emoji = persona.emojiUsage === 'heavy' ? '🎉😊💡' : persona.emojiUsage === 'moderate' ? '💡' : '';
-    const address = persona.addressMode === 'nickname' && persona.nickname
-      ? persona.nickname
-      : persona.addressMode === 'classmate' ? '同学' : '小明';
+    const emoji =
+      persona.emojiUsage === 'heavy' ? '🎉😊💡' : persona.emojiUsage === 'moderate' ? '💡' : '';
+    const address =
+      persona.addressMode === 'nickname' && persona.nickname
+        ? persona.nickname
+        : persona.addressMode === 'classmate'
+          ? '同学'
+          : '小明';
 
     if (message.includes('循环') || message.includes('loop')) {
       return `${address}，循环是一个很重要的概念！${emoji} 记得上次你用动画学懂了条件判断吗？循环其实很像条件判断的重复版。要不要先在 Blockly 里试试循环积木？`;

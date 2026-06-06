@@ -1,321 +1,216 @@
-import { HttpClient } from '@angular/common/http';
-import { Injectable } from '@angular/core';
-import { Observable } from 'rxjs';
+/**
+ * 成就系统服务
+ *
+ * 提供成就数据获取、解锁、进度跟踪等功能
+ * 与后端 gamification API 通信
+ */
 
+import { HttpClient, HttpParams } from '@angular/common/http';
+import { Injectable } from '@angular/core';
+import { BehaviorSubject, Observable, of } from 'rxjs';
+import { catchError, map, tap } from 'rxjs/operators';
+
+import { environment } from '../../../../environments/environment';
 import {
-  Achievement,
-  AchievementActivity,
-  AchievementFile,
-  AchievementFilter,
+  AchievementBadge,
   AchievementProgress,
   AchievementReview,
-  AchievementSort,
   AchievementStats,
-  AchievementTemplate,
+  AchievementUnlockEvent,
+  ProgressMilestone,
 } from '../models/achievement.model';
 
-import { AchievementMockService } from './achievement-mock.service';
-
-/**
- * 学员成果服务
- * 支持真实 API 和 Mock 数据两种模式
- */
 @Injectable({
   providedIn: 'root',
 })
 export class AchievementService {
-  private readonly API_BASE = 'http://localhost:8000/api/v1/achievements';
-  private readonly USE_MOCK = true; // 设置为 false 使用真实 API
+  private readonly apiUrl = `${environment.apiUrl}/gamification/achievements`;
 
-  constructor(
-    private http: HttpClient,
-    private mockService: AchievementMockService
-  ) {}
+  /** 成就数据缓存 */
+  private badgesSubject = new BehaviorSubject<AchievementBadge[]>([]);
+  readonly badges$ = this.badgesSubject.asObservable();
+
+  /** 已解锁数 */
+  private unlockedCountSubject = new BehaviorSubject<number>(0);
+  readonly unlockedCount$ = this.unlockedCountSubject.asObservable();
+
+  constructor(private http: HttpClient) {}
 
   /**
-   * 获取学员成果列表
+   * 获取用户所有成就徽章
    */
-  getAchievements(
-    filter?: AchievementFilter,
-    sort?: AchievementSort,
-    page = 1,
-    pageSize = 20
-  ): Observable<{ data: Achievement[]; total: number }> {
-    if (this.USE_MOCK) {
-      return this.mockService.getAchievements(filter, sort, page, pageSize);
-    }
-
-    const params: any = { page, page_size: pageSize };
-
-    if (filter) {
-      if (filter.status?.length) params.status = filter.status.join(',');
-      if (filter.type?.length) params.type = filter.type.join(',');
-      if (filter.moduleId?.length) params.module_id = filter.moduleId.join(',');
-      if (filter.lessonId?.length) params.lesson_id = filter.lessonId.join(',');
-      if (filter.userId?.length) params.user_id = filter.userId.join(',');
-      if (filter.dateFrom) params.date_from = filter.dateFrom;
-      if (filter.dateTo) params.date_to = filter.dateTo;
-      if (filter.tags?.length) params.tags = filter.tags.join(',');
-      if (filter.searchQuery) params.search = filter.searchQuery;
-    }
-
-    if (sort) {
-      params.sort_by = sort.field;
-      params.sort_dir = sort.direction;
-    }
-
-    return this.http.get<{ data: Achievement[]; total: number }>(`${this.API_BASE}/achievements`, {
-      params,
-    });
+  getAchievements(userId: number): Observable<AchievementBadge[]> {
+    const params = new HttpParams().set('userId', userId.toString());
+    return this.http
+      .get<{ badges: AchievementBadge[] }>(`${this.apiUrl}/badges`, { params })
+      .pipe(
+        map((res) => res.badges),
+        tap((badges) => {
+          this.badgesSubject.next(badges);
+          this.unlockedCountSubject.next(
+            badges.filter((b) => b.unlocked).length
+          );
+        }),
+        catchError(() => {
+          // 失败时返回空列表
+          return of([]);
+        })
+      );
   }
 
   /**
-   * 获取单个成果详情
+   * 获取成就进度
    */
-  getAchievementById(id: number): Observable<Achievement> {
-    return this.http.get<Achievement>(`${this.API_BASE}/achievements/${id}`);
+  getProgress(userId: number): Observable<AchievementProgress> {
+    const params = new HttpParams().set('userId', userId.toString());
+    return this.http
+      .get<AchievementProgress>(`${this.apiUrl}/progress`, { params })
+      .pipe(
+        catchError(() => {
+          return of({
+            totalBadges: 0,
+            unlockedBadges: 0,
+            overallProgress: 0,
+            completionPercentage: 0,
+            averageScore: 0,
+            totalAchievements: 0,
+            completedAchievements: 0,
+            categoryProgress: {} as Record<string, number>,
+            recentUnlocks: [],
+            milestones: [],
+          });
+        })
+      );
   }
 
   /**
-   * 获取用户的成果列表
+   * 获取成就统计
    */
-  getUserAchievements(userId: number, filter?: AchievementFilter): Observable<Achievement[]> {
-    const params: any = {};
-
-    if (filter) {
-      if (filter.status?.length) params.status = filter.status.join(',');
-      if (filter.type?.length) params.type = filter.type.join(',');
-      if (filter.moduleId?.length) params.module_id = filter.moduleId.join(',');
-      if (filter.lessonId?.length) params.lesson_id = filter.lessonId.join(',');
-      if (filter.tags?.length) params.tags = filter.tags.join(',');
-    }
-
-    return this.http.get<Achievement[]>(`${this.API_BASE}/users/${userId}/achievements`, {
-      params,
-    });
+  getStats(userId: number): Observable<AchievementStats> {
+    const params = new HttpParams().set('userId', userId.toString());
+    return this.http
+      .get<AchievementStats>(`${this.apiUrl}/stats`, { params })
+      .pipe(
+        catchError(() => {
+          return of({
+            totalPoints: 0,
+            badgesCount: 0,
+            currentStreak: 0,
+            longestStreak: 0,
+            lastActiveDate: '',
+          });
+        })
+      );
   }
 
   /**
-   * 创建新成果
+   * 获取最近的成就解锁记录
    */
-  createAchievement(achievement: Partial<Achievement>): Observable<Achievement> {
-    return this.http.post<Achievement>(`${this.API_BASE}/achievements`, achievement);
+  getRecentUnlocks(
+    userId: number,
+    limit: number = 5
+  ): Observable<AchievementUnlockEvent[]> {
+    const params = new HttpParams()
+      .set('userId', userId.toString())
+      .set('limit', limit.toString());
+    return this.http
+      .get<{ unlocks: AchievementUnlockEvent[] }>(`${this.apiUrl}/recent`, {
+        params,
+      })
+      .pipe(
+        map((res) => res.unlocks),
+        catchError(() => of([]))
+      );
   }
 
   /**
-   * 更新成果
+   * 解锁成就（通常由后端规则引擎自动触发）
    */
-  updateAchievement(id: number, achievement: Partial<Achievement>): Observable<Achievement> {
-    return this.http.put<Achievement>(`${this.API_BASE}/achievements/${id}`, achievement);
+  unlockAchievement(
+    userId: number,
+    badgeId: string
+  ): Observable<AchievementUnlockEvent | null> {
+    return this.http
+      .post<AchievementUnlockEvent>(`${this.apiUrl}/unlock`, {
+        userId,
+        badgeId,
+      })
+      .pipe(
+        tap(() => {
+          // 刷新成就列表
+          this.getAchievements(userId).subscribe();
+        }),
+        catchError(() => of(null))
+      );
   }
 
   /**
-   * 删除成果
+   * 获取用户成就进度（含里程碑）
    */
-  deleteAchievement(id: number): Observable<void> {
-    return this.http.delete<void>(`${this.API_BASE}/achievements/${id}`);
+  getUserAchievementProgress(userId: number): Observable<AchievementProgress> {
+    const params = new HttpParams().set('userId', userId.toString());
+    return this.http
+      .get<AchievementProgress>(`${this.apiUrl}/progress`, { params })
+      .pipe(
+        catchError(() => {
+          return of({
+            totalBadges: 0,
+            unlockedBadges: 0,
+            overallProgress: 0,
+            completionPercentage: 0,
+            averageScore: 0,
+            totalAchievements: 0,
+            completedAchievements: 0,
+            categoryProgress: {} as Record<string, number>,
+            recentUnlocks: [],
+            milestones: [],
+          });
+        })
+      );
   }
 
   /**
-   * 上传成果文件
+   * 获取待审核的成就记录
    */
-  uploadAchievementFile(achievementId: number, file: File): Observable<AchievementFile> {
-    const formData = new FormData();
-    formData.append('file', file);
-
-    return this.http.post<AchievementFile>(
-      `${this.API_BASE}/achievements/${achievementId}/files`,
-      formData
-    );
+  getAchievementReviews(
+    userId: number
+  ): Observable<AchievementReview[]> {
+    const params = new HttpParams().set('userId', userId.toString());
+    return this.http
+      .get<{ reviews: AchievementReview[] }>(
+        `${this.apiUrl}/reviews`,
+        { params }
+      )
+      .pipe(
+        map((res) => res.reviews),
+        catchError(() => of([]))
+      );
   }
 
   /**
-   * 删除成果文件
-   */
-  deleteAchievementFile(fileId: number): Observable<void> {
-    return this.http.delete<void>(`${this.API_BASE}/files/${fileId}`);
-  }
-
-  /**
-   * 提交成果审核
-   */
-  submitAchievement(id: number): Observable<Achievement> {
-    return this.http.post<Achievement>(`${this.API_BASE}/achievements/${id}/submit`, {});
-  }
-
-  /**
-   * 审核成果（教师/管理员）
+   * 审核成就（批准/拒绝/退回修改）
    */
   reviewAchievement(
-    id: number,
-    review: {
-      status: 'approved' | 'rejected' | 'revision';
-      score: number;
-      feedback: string;
-    }
-  ): Observable<Achievement> {
-    return this.http.post<Achievement>(`${this.API_BASE}/achievements/${id}/review`, review);
+    reviewId: string,
+    status: 'approved' | 'rejected' | 'revision',
+    comment: string,
+    reviewerId: number
+  ): Observable<AchievementReview | null> {
+    return this.http
+      .put<AchievementReview>(`${this.apiUrl}/reviews/${reviewId}`, {
+        status,
+        comment,
+        reviewerId,
+      })
+      .pipe(
+        catchError(() => of(null))
+      );
   }
 
   /**
-   * 获取成果审核记录
+   * 刷新本地缓存
    */
-  getAchievementReviews(achievementId: number): Observable<AchievementReview[]> {
-    return this.http.get<AchievementReview[]>(
-      `${this.API_BASE}/achievements/${achievementId}/reviews`
-    );
-  }
-
-  /**
-   * 获取成果模板列表
-   */
-  getTemplates(): Observable<AchievementTemplate[]> {
-    return this.http.get<AchievementTemplate[]>(`${this.API_BASE}/templates`);
-  }
-
-  /**
-   * 获取模板详情
-   */
-  getTemplateById(id: number): Observable<AchievementTemplate> {
-    return this.http.get<AchievementTemplate>(`${this.API_BASE}/templates/${id}`);
-  }
-
-  /**
-   * 创建成果模板
-   */
-  createTemplate(template: Partial<AchievementTemplate>): Observable<AchievementTemplate> {
-    return this.http.post<AchievementTemplate>(`${this.API_BASE}/templates`, template);
-  }
-
-  /**
-   * 更新成果模板
-   */
-  updateTemplate(
-    id: number,
-    template: Partial<AchievementTemplate>
-  ): Observable<AchievementTemplate> {
-    return this.http.put<AchievementTemplate>(`${this.API_BASE}/templates/${id}`, template);
-  }
-
-  /**
-   * 删除成果模板
-   */
-  deleteTemplate(id: number): Observable<void> {
-    return this.http.delete<void>(`${this.API_BASE}/templates/${id}`);
-  }
-
-  /**
-   * 获取用户的成果进度
-   */
-  getUserAchievementProgress(
-    userId: number,
-    courseId?: number,
-    moduleId?: number
-  ): Observable<AchievementProgress> {
-    const params: any = {};
-    if (courseId) params.course_id = courseId;
-    if (moduleId) params.module_id = moduleId;
-
-    return this.http.get<AchievementProgress>(`${this.API_BASE}/users/${userId}/progress`, {
-      params,
-    });
-  }
-
-  /**
-   * 获取成果统计信息
-   */
-  getAchievementStats(filter?: AchievementFilter): Observable<AchievementStats> {
-    if (this.USE_MOCK) {
-      return this.mockService.getAchievementStats(filter);
-    }
-
-    const params: any = {};
-
-    if (filter) {
-      if (filter.moduleId?.length) params.module_id = filter.moduleId.join(',');
-      if (filter.userId?.length) params.user_id = filter.userId.join(',');
-      if (filter.dateFrom) params.date_from = filter.dateFrom;
-      if (filter.dateTo) params.date_to = filter.dateTo;
-    }
-
-    return this.http.get<AchievementStats>(`${this.API_BASE}/stats`, { params });
-  }
-
-  /**
-   * 获取最近活动
-   */
-  getRecentActivity(limit = 10): Observable<AchievementActivity[]> {
-    return this.http.get<AchievementActivity[]>(`${this.API_BASE}/activity`, {
-      params: { limit },
-    });
-  }
-
-  /**
-   * 获取课程相关的成果
-   */
-  getCourseAchievements(courseId: number, filter?: AchievementFilter): Observable<Achievement[]> {
-    const params: any = {};
-
-    if (filter) {
-      if (filter.status?.length) params.status = filter.status.join(',');
-      if (filter.type?.length) params.type = filter.type.join(',');
-      if (filter.lessonId?.length) params.lesson_id = filter.lessonId.join(',');
-    }
-
-    return this.http.get<Achievement[]>(`${this.API_BASE}/courses/${courseId}/achievements`, {
-      params,
-    });
-  }
-
-  /**
-   * 获取模块相关的成果
-   */
-  getModuleAchievements(moduleId: number, filter?: AchievementFilter): Observable<Achievement[]> {
-    const params: any = {};
-
-    if (filter) {
-      if (filter.status?.length) params.status = filter.status.join(',');
-      if (filter.type?.length) params.type = filter.type.join(',');
-      if (filter.lessonId?.length) params.lesson_id = filter.lessonId.join(',');
-    }
-
-    return this.http.get<Achievement[]>(`${this.API_BASE}/modules/${moduleId}/achievements`, {
-      params,
-    });
-  }
-
-  /**
-   * 获取课程章节相关的成果
-   */
-  getLessonAchievements(lessonId: number, filter?: AchievementFilter): Observable<Achievement[]> {
-    const params: any = {};
-
-    if (filter) {
-      if (filter.status?.length) params.status = filter.status.join(',');
-      if (filter.type?.length) params.type = filter.type.join(',');
-    }
-
-    return this.http.get<Achievement[]>(`${this.API_BASE}/lessons/${lessonId}/achievements`, {
-      params,
-    });
-  }
-
-  /**
-   * 导出成果数据
-   */
-  exportAchievements(filter?: AchievementFilter, format = 'csv'): Observable<Blob> {
-    const params: any = { format };
-
-    if (filter) {
-      if (filter.status?.length) params.status = filter.status.join(',');
-      if (filter.type?.length) params.type = filter.type.join(',');
-      if (filter.moduleId?.length) params.module_id = filter.moduleId.join(',');
-      if (filter.userId?.length) params.user_id = filter.userId.join(',');
-    }
-
-    return this.http.get(`${this.API_BASE}/export`, {
-      params,
-      responseType: 'blob',
-    });
+  refresh(userId: number): void {
+    this.getAchievements(userId).subscribe();
   }
 }

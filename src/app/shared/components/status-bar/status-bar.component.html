@@ -13,12 +13,28 @@
       </div>
     </div>
 
-    <!-- 中间：后端状态 -->
-    <div class="status-item" [matTooltip]="isBackendRunning ? 'Python 后端运行正常' : '后端未启动'">
-      <mat-icon [class]="getBackendStatusClass()">
-        {{ isBackendRunning ? 'check_circle' : 'error' }}
-      </mat-icon>
-      <span class="status-text">{{ getBackendStatusText() }}</span>
+    <!-- 中间：后端状态 + 模块 Tier 指示器 -->
+    <div class="status-group">
+      <div class="status-item" [matTooltip]="isBackendRunning ? 'Python 后端运行正常' : '后端未启动'">
+        <mat-icon [class]="getBackendStatusClass()">
+          {{ isBackendRunning ? 'check_circle' : 'error' }}
+        </mat-icon>
+        <span class="status-text">{{ getBackendStatusText() }}</span>
+      </div>
+
+      <!-- 模块 Tier 状态指示器 -->
+      <ng-container *ngIf="tierGroups.length > 0">
+        <span class="status-separator"></span>
+        <div
+          *ngFor="let group of tierGroups"
+          class="status-item tier-indicator"
+          [ngClass]="group.cssClass"
+          [matTooltip]="getTierTooltip(group)"
+        >
+          <mat-icon [class]="group.cssClass">{{ getTierIcon(group) }}</mat-icon>
+          <span class="status-text tier-label">{{ group.label }}</span>
+        </div>
+      </ng-container>
     </div>
 
     <!-- 右侧：应用版本 -->

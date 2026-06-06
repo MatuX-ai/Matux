@@ -1,4 +1,4 @@
-@use '../../../../styles/shared/variables' as *;
+@use '../../../../styles/design-tokens' as dt;
 @use '../../../../styles/shared/mixins' as *;
 
 // Mixin for flex column layout
@@ -9,37 +9,41 @@
 
 .collaborative-editor-container {
   @include flex-column;
+
   height: 100%;
   border: 1px solid #e0e0e0;
-  border-radius: $border-radius-sm;
+  border-radius: dt.$border-radius-sm;
   background: #fff;
 }
 
 /* 工具栏样式 */
 .editor-toolbar {
   @include flex-between;
+
   min-height: 64px;
-  padding: $spacing-md $spacing-lg;
+  padding: dt.$spacing-md dt.$spacing-lg;
   border-bottom: 1px solid #e0e0e0;
   background: #fafafa;
 }
 
 .toolbar-left {
   @include flex-center;
-  gap: $spacing-lg;
+
+  gap: dt.$spacing-lg;
 }
 
 .toolbar-left h2 {
   margin: 0;
-  color: $text-primary;
+  color: dt.$color-text-primary;
   font-size: 18px;
   font-weight: 500;
 }
 
 .document-status {
   @include flex-center;
-  gap: $spacing-xs;
-  color: $text-secondary;
+
+  gap: dt.$spacing-xs;
+  color: dt.$color-text-secondary;
   font-size: 14px;
 }
 
@@ -47,34 +51,36 @@
   width: 8px;
   height: 8px;
   border-radius: 50%;
-  background: $status-error;
+  background: dt.$color-error;
 }
 
 .document-status.connected .status-indicator {
-  background: $status-completed;
+  background: dt.$color-success;
 }
 
 .user-count {
-  padding: $spacing-xs $spacing-sm;
-  border-radius: $border-radius-xl;
+  padding: dt.$spacing-xs dt.$spacing-sm;
+  border-radius: dt.$border-radius-xl;
   background: #e3f2fd;
-  color: $text-secondary;
+  color: dt.$color-text-secondary;
   font-size: 14px;
 }
 
 .toolbar-right {
   display: flex;
-  gap: $spacing-xs;
+  gap: dt.$spacing-xs;
 }
 
 /* 主要内容区域 */
 .editor-main-content {
   @include flex-center;
+
   flex: 1;
 }
 
 .editor-area {
   @include flex-column;
+
   flex: 1;
   min-width: 0;
 }
@@ -85,15 +91,18 @@
   border-bottom: 1px solid #e0e0e0;
 }
 
+$font-family-editor: consolas, monaco, 'Courier New', monospace;
+$animation-spin: spin 0.8s linear infinite;
+
 .editor-textarea {
   width: 100%;
   height: 100%;
-  padding: $spacing-xl;
+  padding: dt.$spacing-xl;
   border: none;
   outline: none;
   background: #fff;
-  color: $text-primary;
-  font-family: Consolas, Monaco, 'Courier New', monospace;
+  color: dt.$color-text-primary;
+  font-family: $font-family-editor;
   font-size: 14px;
   line-height: 1.5;
   resize: none;
@@ -101,7 +110,7 @@
 
 .editor-textarea:disabled {
   background: #f5f5f5;
-  color: $text-disabled;
+  color: dt.$color-text-disabled;
 }
 
 /* 光标覆盖层 */
@@ -114,7 +123,7 @@
 
 .remote-cursor {
   position: absolute;
-  top: $spacing-xl;
+  top: dt.$spacing-xl;
   width: 2px;
   height: 20px;
   background: #3b82f6; // 藏青色光标
@@ -124,8 +133,8 @@
   position: absolute;
   top: -24px;
   left: -50%;
-  padding: $spacing-xs $spacing-sm;
-  border-radius: $border-radius-sm;
+  padding: dt.$spacing-xs dt.$spacing-sm;
+  border-radius: dt.$border-radius-sm;
   background: #3b82f6; // 藏青色提示框
   color: #fff;
   font-size: 12px;
@@ -133,22 +142,22 @@
   transform: translateX(-50%);
 }
 
-
-
 /* 编辑器状态栏 */
 .editor-status {
   @include flex-center;
+
   min-height: 40px;
-  padding: $spacing-sm $spacing-lg;
+  padding: dt.$spacing-sm dt.$spacing-lg;
   border-top: 1px solid #e0e0e0;
   background: #f5f5f5;
 }
 
 .status-item {
   @include flex-center;
-  gap: $spacing-xs;
-  margin-right: $spacing-lg;
-  color: $text-secondary;
+
+  gap: dt.$spacing-xs;
+  margin-right: dt.$spacing-lg;
+  color: dt.$color-text-secondary;
   font-size: 13px;
 }
 
@@ -160,8 +169,9 @@
 
 /* 侧边面板 */
 .sidebar-panel {
-  z-index: 20;
   @include flex-column;
+
+  z-index: 20;
   width: 320px;
   border-left: 1px solid #e0e0e0;
   background: #fafafa;
@@ -169,14 +179,15 @@
 
 .panel-header {
   @include flex-between;
-  padding: $spacing-md $spacing-lg;
+
+  padding: dt.$spacing-md dt.$spacing-lg;
   border-bottom: 1px solid #e0e0e0;
   background: #fff;
 }
 
 .panel-header h3 {
   margin: 0;
-  color: $text-primary;
+  color: dt.$color-text-primary;
   font-size: 16px;
   font-weight: 500;
 }
@@ -184,16 +195,16 @@
 .panel-content {
   overflow-y: auto;
   flex: 1;
-  padding: $spacing-lg;
+  padding: dt.$spacing-lg;
 }
 
 /* 评论和建议表单 */
 .add-comment-form,
 .add-suggestion-form {
-  margin-bottom: $spacing-xl;
-  padding: $spacing-lg;
+  margin-bottom: dt.$spacing-xl;
+  padding: dt.$spacing-lg;
   border: 1px solid #e0e0e0;
-  border-radius: $border-radius-sm;
+  border-radius: dt.$border-radius-sm;
   background: #fff;
 }
 
@@ -205,21 +216,22 @@
 .suggestion-actions {
   display: flex;
   justify-content: flex-end;
-  margin-top: $spacing-md;
+  margin-top: dt.$spacing-md;
 }
 
 /* 评论列表 */
 .comments-list,
 .suggestions-list {
   @include flex-column;
-  gap: $spacing-lg;
+
+  gap: dt.$spacing-lg;
 }
 
 .comment-item,
 .suggestion-item {
-  padding: $spacing-lg;
+  padding: dt.$spacing-lg;
   border: 1px solid #e0e0e0;
-  border-radius: $border-radius-sm;
+  border-radius: dt.$border-radius-sm;
   background: #fff;
 }
 
@@ -232,7 +244,8 @@
 .comment-header,
 .suggestion-header {
   @include flex-between;
-  margin-bottom: $spacing-md;
+
+  margin-bottom: dt.$spacing-md;
 }
 
 .comment-author,
@@ -243,25 +256,26 @@
 
 .comment-date,
 .suggestion-date {
-  color: $text-disabled;
+  color: dt.$color-text-disabled;
   font-size: 12px;
 }
 
 .comment-content,
 .suggestion-content {
-  margin-bottom: $spacing-md;
-  color: $text-primary;
+  margin-bottom: dt.$spacing-md;
+  color: dt.$color-text-primary;
   line-height: 1.5;
 }
 
 .comment-meta {
   @include flex-between;
+
   align-items: center;
 }
 
 .comment-type {
-  padding: $spacing-xs $spacing-sm;
-  border-radius: $border-radius-xl;
+  padding: dt.$spacing-xs dt.$spacing-sm;
+  border-radius: dt.$border-radius-xl;
   background: #ccfbf1; // 浅藏青色背景
   color: #3b82f6; // 藏青色文本
   font-size: 12px;
@@ -269,7 +283,7 @@
 
 .comment-type.suggestion {
   background: #fff3e0;
-  color: $status-in-progress;
+  color: dt.$color-warning;
 }
 
 .comment-type.question {
@@ -279,34 +293,34 @@
 
 /* 建议内容样式 */
 .original-content span {
-  padding: $spacing-xs;
-  border-radius: $border-radius-sm;
+  padding: dt.$spacing-xs;
+  border-radius: dt.$border-radius-sm;
   background: #ffebee;
 }
 
 .suggested-content span {
-  padding: $spacing-xs;
-  border-radius: $border-radius-sm;
+  padding: dt.$spacing-xs;
+  border-radius: dt.$border-radius-sm;
   background: #e8f5e8;
 }
 
 .suggestion-actions {
   display: flex;
-  gap: $spacing-xs;
-  margin-top: $spacing-md;
+  gap: dt.$spacing-xs;
+  margin-top: dt.$spacing-md;
 }
 
 /* 空状态 */
 .empty-state {
-  padding: $spacing-xxl $spacing-xl;
-  color: $text-disabled;
+  padding: dt.$spacing-xxl dt.$spacing-xl;
+  color: dt.$color-text-disabled;
   text-align: center;
 }
 
 .empty-state mat-icon {
   width: 48px;
   height: 48px;
-  margin-bottom: $spacing-lg;
+  margin-bottom: dt.$spacing-lg;
   opacity: 0.5;
 }
 
@@ -314,7 +328,7 @@
 @media (width <= 768px) {
   .editor-toolbar {
     flex-direction: column;
-    gap: $spacing-md;
+    gap: dt.$spacing-md;
   }
 
   .toolbar-left {
@@ -333,20 +347,19 @@
   }
 
   .panel-content {
-    padding: $spacing-md;
+    padding: dt.$spacing-md;
   }
 }
 
 /* 加载状态 */
 .loading-overlay {
+  @include flex-center;
+
   position: absolute;
   inset: 0;
   z-index: 1000;
-  @include flex-center;
   background: rgb(255 255 255 / 80%);
 }
-
-
 
 /* 滚动条样式 */
 .panel-content::-webkit-scrollbar {

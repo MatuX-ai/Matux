@@ -1,3 +1,5 @@
+@use 'sass:list';
+
 // Design Tokens - Shadows（精简层）
 // 阴影变量请使用 _matux-tokens.scss（单一来源）
 // 本文件仅保留 unique 内容：方向性阴影、响应式阴影、阴影 mixins 和函数
@@ -6,94 +8,171 @@
 $shadow-down-sm: 0 2px 4px 0 rgb(0 0 0 / 10%);
 $shadow-down-md: 0 4px 8px 0 rgb(0 0 0 / 12%);
 $shadow-down-lg: 0 8px 16px 0 rgb(0 0 0 / 16%);
-
 $shadow-up-sm: 0 -2px 4px 0 rgb(0 0 0 / 10%);
 $shadow-up-md: 0 -4px 8px 0 rgb(0 0 0 / 12%);
 $shadow-up-lg: 0 -8px 16px 0 rgb(0 0 0 / 16%);
-
 $shadow-inner-sm: inset 0 2px 4px 0 rgb(0 0 0 / 6%);
 $shadow-inner-md: inset 0 4px 8px 0 rgb(0 0 0 / 10%);
 $shadow-inner-lg: inset 0 8px 16px 0 rgb(0 0 0 / 15%);
-
-$shadow-mobile-card: 0 4px 6px -1px rgb(0 0 0 / 10%), 0 2px 4px -1px rgb(0 0 0 / 6%);
-$shadow-mobile-modal: 0 20px 25px -5px rgb(0 0 0 / 10%), 0 10px 10px -5px rgb(0 0 0 / 4%);
-$shadow-mobile-button: 0 1px 3px 0 rgb(0 0 0 / 10%), 0 1px 2px 0 rgb(0 0 0 / 6%);
-
-$shadow-desktop-card: 0 1px 3px 0 rgb(0 0 0 / 10%), 0 1px 2px 0 rgb(0 0 0 / 6%);
-$shadow-desktop-modal: 0 10px 15px -3px rgb(0 0 0 / 10%), 0 4px 6px -2px rgb(0 0 0 / 5%);
+$shadow-mobile-card:
+  0 4px 6px -1px rgb(0 0 0 / 10%),
+  0 2px 4px -1px rgb(0 0 0 / 6%);
+$shadow-mobile-modal:
+  0 20px 25px -5px rgb(0 0 0 / 10%),
+  0 10px 10px -5px rgb(0 0 0 / 4%);
+$shadow-mobile-button:
+  0 1px 3px 0 rgb(0 0 0 / 10%),
+  0 1px 2px 0 rgb(0 0 0 / 6%);
+$shadow-desktop-card:
+  0 1px 3px 0 rgb(0 0 0 / 10%),
+  0 1px 2px 0 rgb(0 0 0 / 6%);
+$shadow-desktop-modal:
+  0 10px 15px -3px rgb(0 0 0 / 10%),
+  0 4px 6px -2px rgb(0 0 0 / 5%);
 $shadow-desktop-button: 0 1px 2px 0 rgb(0 0 0 / 5%);
 
 // ===== Unique Mixins =====
 @mixin shadow($size: sm) {
-  @if $size == none { box-shadow: none; }
-  @else if $size == xs { box-shadow: 0 1px 2px 0 rgb(0 0 0 / 5%); }
-  @else if $size == sm { box-shadow: 0 1px 3px 0 rgb(0 0 0 / 10%), 0 1px 2px 0 rgb(0 0 0 / 6%); }
-  @else if $size == md { box-shadow: 0 4px 6px -1px rgb(0 0 0 / 10%), 0 2px 4px -1px rgb(0 0 0 / 6%); }
-  @else if $size == lg { box-shadow: 0 10px 15px -3px rgb(0 0 0 / 10%), 0 4px 6px -2px rgb(0 0 0 / 5%); }
-  @else if $size == xl { box-shadow: 0 20px 25px -5px rgb(0 0 0 / 10%), 0 10px 10px -5px rgb(0 0 0 / 4%); }
-  @else { box-shadow: 0 1px 3px 0 rgb(0 0 0 / 10%), 0 1px 2px 0 rgb(0 0 0 / 6%); }
+  @if $size == none {
+    box-shadow: none;
+  } @else if $size == xs {
+    box-shadow: 0 1px 2px 0 rgb(0 0 0 / 5%);
+  } @else if $size == sm {
+    box-shadow:
+      0 1px 3px 0 rgb(0 0 0 / 10%),
+      0 1px 2px 0 rgb(0 0 0 / 6%);
+  } @else if $size == md {
+    box-shadow:
+      0 4px 6px -1px rgb(0 0 0 / 10%),
+      0 2px 4px -1px rgb(0 0 0 / 6%);
+  } @else if $size == lg {
+    box-shadow:
+      0 10px 15px -3px rgb(0 0 0 / 10%),
+      0 4px 6px -2px rgb(0 0 0 / 5%);
+  } @else if $size == xl {
+    box-shadow:
+      0 20px 25px -5px rgb(0 0 0 / 10%),
+      0 10px 10px -5px rgb(0 0 0 / 4%);
+  } @else {
+    box-shadow:
+      0 1px 3px 0 rgb(0 0 0 / 10%),
+      0 1px 2px 0 rgb(0 0 0 / 6%);
+  }
 }
 
 @mixin component-shadow($component: card) {
-  @if $component == button { box-shadow: 0 1px 3px 0 rgb(0 0 0 / 10%), 0 1px 2px 0 rgb(0 0 0 / 6%); }
-  @else if $component == card { box-shadow: 0 1px 3px 0 rgb(0 0 0 / 10%), 0 1px 2px 0 rgb(0 0 0 / 6%); }
-  @else if $component == modal { box-shadow: 0 25px 50px -12px rgb(0 0 0 / 25%); }
-  @else if $component == dropdown { box-shadow: 0 10px 15px -3px rgb(0 0 0 / 10%), 0 4px 6px -2px rgb(0 0 0 / 5%); }
-  @else if $component == tooltip { box-shadow: 0 4px 6px -1px rgb(0 0 0 / 10%), 0 2px 4px -1px rgb(0 0 0 / 6%); }
-  @else if $component == navbar { box-shadow: 0 1px 3px 0 rgb(0 0 0 / 10%), 0 1px 2px 0 rgb(0 0 0 / 6%); }
-  @else { box-shadow: 0 1px 3px 0 rgb(0 0 0 / 10%), 0 1px 2px 0 rgb(0 0 0 / 6%); }
+  @if $component == button {
+    box-shadow:
+      0 1px 3px 0 rgb(0 0 0 / 10%),
+      0 1px 2px 0 rgb(0 0 0 / 6%);
+  } @else if $component == card {
+    box-shadow:
+      0 1px 3px 0 rgb(0 0 0 / 10%),
+      0 1px 2px 0 rgb(0 0 0 / 6%);
+  } @else if $component == modal {
+    box-shadow: 0 25px 50px -12px rgb(0 0 0 / 25%);
+  } @else if $component == dropdown {
+    box-shadow:
+      0 10px 15px -3px rgb(0 0 0 / 10%),
+      0 4px 6px -2px rgb(0 0 0 / 5%);
+  } @else if $component == tooltip {
+    box-shadow:
+      0 4px 6px -1px rgb(0 0 0 / 10%),
+      0 2px 4px -1px rgb(0 0 0 / 6%);
+  } @else if $component == navbar {
+    box-shadow:
+      0 1px 3px 0 rgb(0 0 0 / 10%),
+      0 1px 2px 0 rgb(0 0 0 / 6%);
+  } @else {
+    box-shadow:
+      0 1px 3px 0 rgb(0 0 0 / 10%),
+      0 1px 2px 0 rgb(0 0 0 / 6%);
+  }
 }
 
 @mixin state-shadow($state) {
-  @if $state == focus { box-shadow: 0 0 0 3px rgb(33 150 243 / 30%); }
-  @else if $state == error { box-shadow: 0 0 0 3px rgb(244 67 54 / 30%); }
-  @else if $state == success { box-shadow: 0 0 0 3px rgb(76 175 80 / 30%); }
-  @else if $state == warning { box-shadow: 0 0 0 3px rgb(255 152 0 / 30%); }
+  @if $state == focus {
+    box-shadow: 0 0 0 3px rgb(33 150 243 / 30%);
+  } @else if $state == error {
+    box-shadow: 0 0 0 3px rgb(244 67 54 / 30%);
+  } @else if $state == success {
+    box-shadow: 0 0 0 3px rgb(76 175 80 / 30%);
+  } @else if $state == warning {
+    box-shadow: 0 0 0 3px rgb(255 152 0 / 30%);
+  }
 }
 
 @mixin directional-shadow($direction, $size: md) {
   @if $direction == down {
-    @if $size == sm { box-shadow: $shadow-down-sm; }
-    @else if $size == md { box-shadow: $shadow-down-md; }
-    @else { box-shadow: $shadow-down-lg; }
+    @if $size == sm {
+      box-shadow: $shadow-down-sm;
+    } @else if $size == md {
+      box-shadow: $shadow-down-md;
+    } @else {
+      box-shadow: $shadow-down-lg;
+    }
   } @else if $direction == up {
-    @if $size == sm { box-shadow: $shadow-up-sm; }
-    @else if $size == md { box-shadow: $shadow-up-md; }
-    @else { box-shadow: $shadow-up-lg; }
+    @if $size == sm {
+      box-shadow: $shadow-up-sm;
+    } @else if $size == md {
+      box-shadow: $shadow-up-md;
+    } @else {
+      box-shadow: $shadow-up-lg;
+    }
   } @else if $direction == inner {
-    @if $size == sm { box-shadow: $shadow-inner-sm; }
-    @else if $size == md { box-shadow: $shadow-inner-md; }
-    @else { box-shadow: $shadow-inner-lg; }
+    @if $size == sm {
+      box-shadow: $shadow-inner-sm;
+    } @else if $size == md {
+      box-shadow: $shadow-inner-md;
+    } @else {
+      box-shadow: $shadow-inner-lg;
+    }
   }
 }
 
 @mixin responsive-shadow($breakpoint: mobile, $component: card) {
   @if $breakpoint == mobile {
-    @if $component == card { box-shadow: $shadow-mobile-card; }
-    @else if $component == modal { box-shadow: $shadow-mobile-modal; }
-    @else if $component == button { box-shadow: $shadow-mobile-button; }
+    @if $component == card {
+      box-shadow: $shadow-mobile-card;
+    } @else if $component == modal {
+      box-shadow: $shadow-mobile-modal;
+    } @else if $component == button {
+      box-shadow: $shadow-mobile-button;
+    }
   } @else if $breakpoint == desktop {
-    @if $component == card { box-shadow: $shadow-desktop-card; }
-    @else if $component == modal { box-shadow: $shadow-desktop-modal; }
-    @else if $component == button { box-shadow: $shadow-desktop-button; }
+    @if $component == card {
+      box-shadow: $shadow-desktop-card;
+    } @else if $component == modal {
+      box-shadow: $shadow-desktop-modal;
+    } @else if $component == button {
+      box-shadow: $shadow-desktop-button;
+    }
   }
 }
 
 // ===== Unique Functions =====
 @function get-shadow($size) {
-  @if $size == none { @return none; }
-  @else if $size == xs { @return 0 1px 2px 0 rgb(0 0 0 / 5%); }
-  @else if $size == sm { @return 0 1px 3px 0 rgb(0 0 0 / 10%), 0 1px 2px 0 rgb(0 0 0 / 6%); }
-  @else if $size == md { @return 0 4px 6px -1px rgb(0 0 0 / 10%), 0 2px 4px -1px rgb(0 0 0 / 6%); }
-  @else if $size == lg { @return 0 10px 15px -3px rgb(0 0 0 / 10%), 0 4px 6px -2px rgb(0 0 0 / 5%); }
-  @else if $size == xl { @return 0 20px 25px -5px rgb(0 0 0 / 10%), 0 10px 10px -5px rgb(0 0 0 / 4%); }
-  @else { @return 0 1px 3px 0 rgb(0 0 0 / 10%), 0 1px 2px 0 rgb(0 0 0 / 6%); }
+  @if $size == none {
+    @return none;
+  } @else if $size == xs {
+    @return 0 1px 2px 0 rgb(0 0 0 / 5%);
+  } @else if $size == sm {
+    @return 0 1px 3px 0 rgb(0 0 0 / 10%), 0 1px 2px 0 rgb(0 0 0 / 6%);
+  } @else if $size == md {
+    @return 0 4px 6px -1px rgb(0 0 0 / 10%), 0 2px 4px -1px rgb(0 0 0 / 6%);
+  } @else if $size == lg {
+    @return 0 10px 15px -3px rgb(0 0 0 / 10%), 0 4px 6px -2px rgb(0 0 0 / 5%);
+  } @else if $size == xl {
+    @return 0 20px 25px -5px rgb(0 0 0 / 10%), 0 10px 10px -5px rgb(0 0 0 / 4%);
+  } @else {
+    @return 0 1px 3px 0 rgb(0 0 0 / 10%), 0 1px 2px 0 rgb(0 0 0 / 6%);
+  }
 }
 
 @function create-shadow($offset-x, $offset-y, $blur-radius, $spread-radius, $color) {
-  @return "#{$offset-x} #{$offset-y} #{$blur-radius} #{$spread-radius} #{$color}";
+  @return '#{$offset-x} #{$offset-y} #{$blur-radius} #{$spread-radius} #{$color}';
 }
 
 @function multiple-shadows($shadows...) {
-  @return join($shadows, comma);
+  @return list.join($shadows, comma);
 }

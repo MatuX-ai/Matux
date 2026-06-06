@@ -46,9 +46,7 @@ const routes: Routes = [
       {
         path: 'courses',
         loadComponent: () =>
-          import('./components/my-courses/my-courses.component').then(
-            (m) => m.MyCoursesComponent
-          ),
+          import('./components/my-courses/my-courses.component').then((m) => m.MyCoursesComponent),
       },
       {
         path: 'learning-profile',

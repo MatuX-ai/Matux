@@ -185,7 +185,105 @@ export interface ElectronAPI {
 declare global {
   interface Window {
     electronAPI?: ElectronAPI;
+    pluginAPI?: PluginAPI;
   }
 }
 
 export {};
+
+// ==================== 插件管理 API 类型 ====================
+
+/** 设备评估报告 */
+export interface DeviceProfile {
+  version: string;
+  assessedAt: string;
+  assessmentDurationMs: number;
+  hardware: HardwareProfile;
+  software: SoftwareProfile;
+  assessment: DeviceAssessment;
+  installedPlugins: string[];
+  pluginHistory: Array<{ plugin: string; action: string; reason?: string; at: string }>;
+}
+
+export interface HardwareProfile {
+  cpu: { arch: string; cores: number; model: string; benchmarkScore: number };
+  memory: { totalMB: number; availableMB: number };
+  gpu: {
+    hasDedicatedGPU: boolean;
+    gpuName: string;
+    vramMB: number;
+    supportsWebGL2: boolean;
+    supportsWebGPU: boolean;
+    supportsCUDA: boolean;
+    supportsOpenCL: boolean;
+  };
+  storage: { totalGB: number; freeGB: number; type: 'hdd' | 'ssd' };
+  peripherals: { hasCamera: boolean; hasMicrophone: boolean; hasUSBDevices: boolean; hasGamepad: boolean };
+  network: { type: string; bandwidthMbps: number; isMetered: boolean };
+  display: { resolution: { width: number; height: number }; pixelRatio: number; refreshRateHz: number };
+}
+
+export interface SoftwareProfile {
+  os: { platform: string; version: string; arch: string };
+  runtime: { pythonVersion: string; pythonPath: string; nodeVersion: string };
+  containers: { dockerInstalled: boolean; dockerRunning: boolean; dockerVersion: string; kubectlInstalled: boolean };
+  hardware_tools: { arduinoCliInstalled: boolean; platformioInstalled: boolean; edgeImpulseCli: boolean };
+  connectivity: { redisAvailable: boolean; neo4jAvailable: boolean; hyperledgerAvailable: boolean; vircadiaAvailable: boolean };
+}
+
+export type DeviceClass = 'basic' | 'standard' | 'advanced' | 'professional';
+
+export interface DeviceAssessment {
+  deviceClass: DeviceClass;
+  score: number;
+  scores: {
+    cpuScore: number;
+    memoryScore: number;
+    gpuScore: number;
+    storageScore: number;
+    networkScore: number;
+    peripheralScore: number;
+  };
+  compatiblePluginTiers: string[];
+  recommendedPlugins: string[];
+  incompatiblePlugins: string[];
+  warnings: string[];
+}
+
+/** 插件兼容性检查结果 */
+export interface PluginCompatibilityResult {
+  success: boolean;
+  deviceClass?: DeviceClass;
+  score?: number;
+  hardware?: HardwareProfile;
+  software?: SoftwareProfile;
+  compatibleTiers?: string[];
+  recommendedPlugins?: string[];
+  incompatiblePlugins?: string[];
+  error?: string;
+}
+
+/** 插件 API 接口 */
+export interface PluginAPI {
+  // 设备评估
+  getDeviceProfile(): Promise<{ success: boolean; profile?: DeviceProfile; error?: string }>;
+  reassessDevice(): Promise<{ success: boolean; profile?: DeviceProfile; error?: string }>;
+  assessPlugin(pluginId: string): Promise<PluginCompatibilityResult>;
+
+  // 插件商店 (Phase 2)
+  getPluginCatalog(): Promise<unknown>;
+  getRecommendedBundles(): Promise<unknown>;
+  searchPlugins(query: string): Promise<unknown>;
+
+  // 插件管理 (Phase 2)
+  installPlugin(pluginId: string, version?: string): Promise<unknown>;
+  uninstallPlugin(pluginId: string, keepData?: boolean): Promise<unknown>;
+  updatePlugin(pluginId: string): Promise<unknown>;
+  getInstalledPlugins(): Promise<unknown>;
+  togglePlugin(pluginId: string, enabled: boolean): Promise<unknown>;
+
+  // 事件监听
+  onInstallProgress(callback: (data: { pluginId: string; phase: string; progress: number; message: string }) => void): void;
+  onPluginStatusChange(callback: (data: { type: string; pluginId?: string; profile?: DeviceProfile }) => void): void;
+  onUpdatesAvailable(callback: (data: { updates: Array<{ pluginId: string; fromVersion: string; toVersion: string }> }) => void): void;
+}

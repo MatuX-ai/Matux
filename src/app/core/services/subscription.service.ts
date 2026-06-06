@@ -183,7 +183,7 @@ export class SubscriptionService {
   /**
    * 重新激活订阅（管理员）
    */
-  reactivateSubscription(subscriptionId: string): Observable<any> {
+  reactivateSubscription(subscriptionId: string): Observable<unknown> {
     return this.http
       .post(`${this.baseUrl}/${subscriptionId}/reactivate`, {})
       .pipe(catchError(this.handleError));
@@ -201,10 +201,10 @@ export class SubscriptionService {
   /**
    * 统一错误处理
    */
-  private handleError(error: any): Observable<never> {
+  private handleError = (error: Error): Observable<never> => {
     console.error('订阅服务错误:', error);
     return throwError(() => error);
-  }
+  };
 
   /**
    * 检查是否有活跃订阅

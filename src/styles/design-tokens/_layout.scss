@@ -2,6 +2,8 @@
 // 断点变量请使用 _matux-tokens.scss 中的 $breakpoint-*（单一来源）
 // 本文件仅保留 unique 内容：布局容器、网格系统 mixins 和函数
 
+@use 'sass:math';
+
 // ===== Unique: 容器和网格变量 =====
 $container-max-width: 1200px;
 $container-min-width: 320px;
@@ -16,53 +18,88 @@ $breakpoint-desktop-large-min: 1200px;
 // ===== Unique Mixins =====
 @mixin container($fluid: false, $max-width: $container-max-width) {
   width: 100%;
+
   @if not $fluid {
     max-width: $max-width;
     margin: 0 auto;
   }
+
   padding: 0 0.75rem;
-  @media (min-width: 768px) { padding: 0 1rem; }
-  @media (min-width: 1024px) { padding: 0 1.5rem; }
-  @media (min-width: 1200px) { padding: 0 2rem; }
+
+  @media (width >= 768px) {
+    padding: 0 1rem;
+  }
+
+  @media (width >= 1024px) {
+    padding: 0 1.5rem;
+  }
+
+  @media (width >= 1200px) {
+    padding: 0 2rem;
+  }
 }
 
 @mixin grid-container {
   display: flex;
   flex-wrap: wrap;
   margin: 0 -0.375rem;
-  @media (min-width: 768px) { margin: 0 -0.5rem; }
-  @media (min-width: 1024px) { margin: 0 -0.75rem; }
+
+  @media (width >= 768px) {
+    margin: 0 -0.5rem;
+  }
+
+  @media (width >= 1024px) {
+    margin: 0 -0.75rem;
+  }
 }
 
 @mixin grid-column($columns: 1, $total-columns: $grid-columns) {
-  flex: 0 0 percentage($columns / $total-columns);
-  max-width: percentage($columns / $total-columns);
+  flex: 0 0 math.percentage($columns / $total-columns);
+  max-width: math.percentage($columns / $total-columns);
   padding: 0 0.375rem;
-  @media (min-width: 768px) { padding: 0 0.5rem; }
-  @media (min-width: 1024px) { padding: 0 0.75rem; }
+
+  @media (width >= 768px) {
+    padding: 0 0.5rem;
+  }
+
+  @media (width >= 1024px) {
+    padding: 0 0.75rem;
+  }
 }
 
 @mixin hidden-at($breakpoint) {
   @if $breakpoint == mobile {
-    @media (max-width: 767px) { display: none; }
+    @media (width <= 767px) {
+      display: none;
+    }
   } @else if $breakpoint == tablet {
-    @media (min-width: 768px) and (max-width: 1023px) { display: none; }
+    @media (width >= 768px) and (width <= 1023px) {
+      display: none;
+    }
   } @else if $breakpoint == desktop {
-    @media (min-width: 1024px) { display: none; }
+    @media (width >= 1024px) {
+      display: none;
+    }
   }
 }
 
 @mixin visible-at($breakpoint) {
   @if $breakpoint == mobile {
-    @media (max-width: 767px) { display: block; }
+    @media (width <= 767px) {
+      display: block;
+    }
   } @else if $breakpoint == tablet {
-    @media (min-width: 768px) and (max-width: 1023px) { display: block; }
+    @media (width >= 768px) and (width <= 1023px) {
+      display: block;
+    }
   } @else if $breakpoint == desktop {
-    @media (min-width: 1024px) { display: block; }
+    @media (width >= 1024px) {
+      display: block;
+    }
   }
 }
 
 // ===== Unique Functions =====
 @function grid-width($columns, $total-columns: $grid-columns) {
-  @return percentage($columns / $total-columns);
+  @return math.percentage($columns / $total-columns);
 }

@@ -57,8 +57,15 @@ export interface EmotionLog {
 /** 学习里程碑 */
 export interface LearningMilestone {
   id: string;
-  type: 'first_blockly' | 'python_intro' | 'first_independent_project' | 'first_debug' |
-        'streak_30_days' | 'breakthrough' | 'project_master' | 'custom';
+  type:
+    | 'first_blockly'
+    | 'python_intro'
+    | 'first_independent_project'
+    | 'first_debug'
+    | 'streak_30_days'
+    | 'breakthrough'
+    | 'project_master'
+    | 'custom';
   title: string;
   description: string;
   achievedAt: string;
@@ -121,14 +128,14 @@ export interface StudentLearningProfile {
 
 /** 多维能力评估 */
 export interface AbilityDimensions {
-  programmingThinking: number;  // 编程思维 0-100
-  algorithmAbility: number;     // 算法能力
-  debuggingSkill: number;       // 调试能力
-  projectPractice: number;      // 项目实践
-  stemExperiment: number;       // STEM实验
-  codeQuality: number;          // 代码规范
+  programmingThinking: number; // 编程思维 0-100
+  algorithmAbility: number; // 算法能力
+  debuggingSkill: number; // 调试能力
+  projectPractice: number; // 项目实践
+  stemExperiment: number; // STEM实验
+  codeQuality: number; // 代码规范
   independentCompletion: number; // 独立完成率
-  questionQuality: number;      // 提问质量
+  questionQuality: number; // 提问质量
 }
 
 // ==================== 上下文记忆 ====================
@@ -172,7 +179,7 @@ export interface ChatMessage {
 /** 知识状态 */
 export interface KnowledgeStateItem {
   knowledgePoint: string;
-  mastery: number;       // 0.0 - 1.0
+  mastery: number; // 0.0 - 1.0
   status: KnowledgeStatus;
   prerequisites: string[];
   nextTopics: string[];

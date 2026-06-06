@@ -16,12 +16,8 @@ import {
   NetworkStatus,
 } from '../../../core/services/network-monitor.service';
 import { OfflineStorageService } from '../../../core/services/offline-storage.service';
-import {
-  OfflineCourseStorageService,
-} from '../../services/offline-course-storage.service';
-import {
-  OfflineProgressStorageService,
-} from '../../services/offline-progress-storage.service';
+import { OfflineCourseStorageService } from '../../services/offline-course-storage.service';
+import { OfflineProgressStorageService } from '../../services/offline-progress-storage.service';
 import { OfflineSyncService, SyncStatus } from '../../services/offline-sync.service';
 
 @Component({
@@ -64,7 +60,7 @@ export class OfflineDashboardComponent implements OnInit, OnDestroy {
     private offlineStorage: OfflineStorageService,
     private courseStorage: OfflineCourseStorageService,
     private progressStorage: OfflineProgressStorageService,
-    private syncService: OfflineSyncService,
+    private syncService: OfflineSyncService
   ) {}
 
   ngOnInit(): void {

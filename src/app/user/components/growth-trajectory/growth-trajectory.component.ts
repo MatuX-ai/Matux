@@ -6,25 +6,26 @@
  */
 
 import { CommonModule } from '@angular/common';
-import { ChangeDetectionStrategy, ChangeDetectorRef, Component, OnDestroy, OnInit } from '@angular/core';
+import {
+  ChangeDetectionStrategy,
+  ChangeDetectorRef,
+  Component,
+  OnDestroy,
+  OnInit,
+} from '@angular/core';
 import { MatIconModule } from '@angular/material/icon';
 import { Subject } from 'rxjs';
 import { takeUntil } from 'rxjs/operators';
 
+import type { GrowthTrajectory } from '../../../core/models/ai-teacher.models';
 import { AITeacherService } from '../../../core/services/ai-teacher.service';
 import { AuthService } from '../../../core/services/auth.service';
 import { GrowthTrajectoryComponent } from '../../../shared/components/growth-trajectory/growth-trajectory.component';
-import type { GrowthTrajectory } from '../../../core/models/ai-teacher.models';
-import type { User } from '../../../core/models/auth.models';
 
 @Component({
   selector: 'app-growth-trajectory-page',
   standalone: true,
-  imports: [
-    CommonModule,
-    MatIconModule,
-    GrowthTrajectoryComponent,
-  ],
+  imports: [CommonModule, MatIconModule, GrowthTrajectoryComponent],
   changeDetection: ChangeDetectionStrategy.OnPush,
   template: `
     <div class="growth-page">
@@ -33,10 +34,7 @@ import type { User } from '../../../core/models/auth.models';
         <span class="update-time" *ngIf="currentDate">{{ currentDate }}</span>
       </div>
 
-      <app-growth-trajectory
-        *ngIf="trajectory"
-        [trajectory]="trajectory"
-      ></app-growth-trajectory>
+      <app-growth-trajectory *ngIf="trajectory" [trajectory]="trajectory"></app-growth-trajectory>
 
       <div class="loading-state" *ngIf="!trajectory && !error">
         <mat-icon>hourglass_empty</mat-icon>
@@ -49,44 +47,50 @@ import type { User } from '../../../core/models/auth.models';
       </div>
     </div>
   `,
-  styles: [`
-    .growth-page {
-      max-width: 1200px;
-      margin: 0 auto;
-      padding: 24px;
-    }
-    .page-header {
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      margin-bottom: 16px;
-    }
-    .page-title {
-      font-size: 28px;
-      font-weight: 700;
-      color: #0f172a;
-      margin: 0;
-    }
-    .update-time {
-      font-size: 13px;
-      color: #94a3b8;
-    }
-    .loading-state, .error-state {
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      justify-content: center;
-      padding: 80px;
-      color: #94a3b8;
-    }
-    .loading-state mat-icon, .error-state mat-icon {
-      font-size: 48px;
-      width: 48px;
-      height: 48px;
-      margin-bottom: 16px;
-    }
-    .error-state { color: #ef4444; }
-  `],
+  styles: [
+    `
+      .growth-page {
+        max-width: 1200px;
+        margin: 0 auto;
+        padding: 24px;
+      }
+      .page-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 16px;
+      }
+      .page-title {
+        font-size: 28px;
+        font-weight: 700;
+        color: #0f172a;
+        margin: 0;
+      }
+      .update-time {
+        font-size: 13px;
+        color: #94a3b8;
+      }
+      .loading-state,
+      .error-state {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        padding: 80px;
+        color: #94a3b8;
+      }
+      .loading-state mat-icon,
+      .error-state mat-icon {
+        font-size: 48px;
+        width: 48px;
+        height: 48px;
+        margin-bottom: 16px;
+      }
+      .error-state {
+        color: #ef4444;
+      }
+    `,
+  ],
 })
 export class GrowthTrajectoryPageComponent implements OnInit, OnDestroy {
   private destroy$ = new Subject<void>();
@@ -98,7 +102,7 @@ export class GrowthTrajectoryPageComponent implements OnInit, OnDestroy {
   constructor(
     private aiTeacherService: AITeacherService,
     private authService: AuthService,
-    private cdr: ChangeDetectorRef,
+    private cdr: ChangeDetectorRef
   ) {}
 
   ngOnInit(): void {
@@ -114,18 +118,19 @@ export class GrowthTrajectoryPageComponent implements OnInit, OnDestroy {
 
   private loadGrowthTrajectory(userId: number): void {
     this.error = false;
-    this.aiTeacherService.getGrowthTrajectory(String(userId)).pipe(
-      takeUntil(this.destroy$),
-    ).subscribe({
-      next: (trajectory) => {
-        this.trajectory = trajectory;
-        this.cdr.markForCheck();
-      },
-      error: () => {
-        this.error = true;
-        this.cdr.markForCheck();
-      },
-    });
+    this.aiTeacherService
+      .getGrowthTrajectory(String(userId))
+      .pipe(takeUntil(this.destroy$))
+      .subscribe({
+        next: (trajectory) => {
+          this.trajectory = trajectory;
+          this.cdr.markForCheck();
+        },
+        error: () => {
+          this.error = true;
+          this.cdr.markForCheck();
+        },
+      });
   }
 
   ngOnDestroy(): void {

@@ -1,134 +1,185 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="zh-CN">
-<head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>图标加载测试</title>
-  <style>
-    body { font-family: sans-serif; padding: 20px; background: #f5f5f7; }
-    .test-section { margin: 20px 0; padding: 20px; background: white; border-radius: 12px; }
-    .icon-row { display: flex; align-items: center; gap: 10px; margin: 10px 0; }
-    .icon-row img { width: 32px; height: 32px; }
-    .icon-name { font-weight: 600; min-width: 100px; }
-    .status { padding: 4px 12px; border-radius: 20px; font-size: 14px; }
-    .success { background: #d1fae5; color: #065f46; }
-    .error { background: #fee2e2; color: #991b1b; }
-    .loading { background: #fef3c7; color: #92400e; }
-  </style>
-</head>
-<body>
-  <h1>🧩 图标加载测试</h1>
-  
-  <div class="test-section">
-    <h2>1. 直接图片标签测试</h2>
-    <div id="directTest"></div>
-  </div>
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>图标加载测试</title>
+    <style>
+      body {
+        font-family: sans-serif;
+        padding: 20px;
+        background: #f5f5f7;
+      }
+      .test-section {
+        margin: 20px 0;
+        padding: 20px;
+        background: white;
+        border-radius: 12px;
+      }
+      .icon-row {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        margin: 10px 0;
+      }
+      .icon-row img {
+        width: 32px;
+        height: 32px;
+      }
+      .icon-name {
+        font-weight: 600;
+        min-width: 100px;
+      }
+      .status {
+        padding: 4px 12px;
+        border-radius: 20px;
+        font-size: 14px;
+      }
+      .success {
+        background: #d1fae5;
+        color: #065f46;
+      }
+      .error {
+        background: #fee2e2;
+        color: #991b1b;
+      }
+      .loading {
+        background: #fef3c7;
+        color: #92400e;
+      }
+    </style>
+  </head>
+  <body>
+    <h1>🧩 图标加载测试</h1>
 
-  <div class="test-section">
-    <h2>2. 路径对比测试</h2>
-    <div id="pathTest"></div>
-  </div>
+    <div class="test-section">
+      <h2>1. 直接图片标签测试</h2>
+      <div id="directTest"></div>
+    </div>
 
-  <div class="test-section">
-    <h2>3. 加载状态统计</h2>
-    <div id="stats"></div>
-  </div>
+    <div class="test-section">
+      <h2>2. 路径对比测试</h2>
+      <div id="pathTest"></div>
+    </div>
 
-  <script>
-    const icons = [
-      'rocket', 'gamepad', 'brain', 'wifi', 'robot', 'lock_open', 'star', 'ar',
-      'school', 'award', 'trending_up', 'phone', 'desktop', 'gift', 'link',
-      'cube', 'cpu', 'database', 'globe', 'check_circle', 'location_on'
-    ];
+    <div class="test-section">
+      <h2>3. 加载状态统计</h2>
+      <div id="stats"></div>
+    </div>
 
-    let successCount = 0;
-    let failCount = 0;
+    <script>
+      const icons = [
+        'rocket',
+        'gamepad',
+        'brain',
+        'wifi',
+        'robot',
+        'lock_open',
+        'star',
+        'ar',
+        'school',
+        'award',
+        'trending_up',
+        'phone',
+        'desktop',
+        'gift',
+        'link',
+        'cube',
+        'cpu',
+        'database',
+        'globe',
+        'check_circle',
+        'location_on',
+      ];
 
-    // 测试1: 直接图片标签
-    function testDirectImages() {
-      const container = document.getElementById('directTest');
-      icons.forEach(icon => {
-        const row = document.createElement('div');
-        row.className = 'icon-row';
-        row.innerHTML = `
+      let successCount = 0;
+      let failCount = 0;
+
+      // 测试1: 直接图片标签
+      function testDirectImages() {
+        const container = document.getElementById('directTest');
+        icons.forEach((icon) => {
+          const row = document.createElement('div');
+          row.className = 'icon-row';
+          row.innerHTML = `
           <span class="icon-name">${icon}.svg</span>
           <img src="assets/icons/${icon}.svg" alt="${icon}" 
                onerror="this.parentElement.innerHTML='<span class=\\'icon-name\\'>${icon}</span><span class=\\'status error\\'>加载失败</span>'">
           <span class="status loading">加载中...</span>
         `;
-        container.appendChild(row);
+          container.appendChild(row);
 
-        const img = row.querySelector('img');
-        const status = row.querySelector('.status');
-        
-        img.onload = () => {
-          status.className = 'status success';
-          status.textContent = '✓ 加载成功';
-          successCount++;
-          updateStats();
-        };
-        
-        img.onerror = () => {
-          status.className = 'status error';
-          status.textContent = '✗ 加载失败';
-          failCount++;
-          updateStats();
-        };
-      });
-    }
+          const img = row.querySelector('img');
+          const status = row.querySelector('.status');
 
-    // 测试2: 路径对比
-    function testPaths() {
-      const container = document.getElementById('pathTest');
-      const testIcon = 'rocket';
-      
-      const row = document.createElement('div');
-      row.className = 'icon-row';
-      row.innerHTML = `
+          img.onload = () => {
+            status.className = 'status success';
+            status.textContent = '✓ 加载成功';
+            successCount++;
+            updateStats();
+          };
+
+          img.onerror = () => {
+            status.className = 'status error';
+            status.textContent = '✗ 加载失败';
+            failCount++;
+            updateStats();
+          };
+        });
+      }
+
+      // 测试2: 路径对比
+      function testPaths() {
+        const container = document.getElementById('pathTest');
+        const testIcon = 'rocket';
+
+        const row = document.createElement('div');
+        row.className = 'icon-row';
+        row.innerHTML = `
         <span class="icon-name">路径对比</span>
         <div>
           <strong>相对路径:</strong> assets/icons/${testIcon}.svg<br>
           <strong>绝对路径:</strong> /assets/icons/${testIcon}.svg
         </div>
       `;
-      container.appendChild(row);
+        container.appendChild(row);
 
-      // 测试相对路径
-      const relativeImg = document.createElement('img');
-      relativeImg.src = `assets/icons/${testIcon}.svg`;
-      relativeImg.style.width = '24px';
-      relativeImg.style.height = '24px';
-      container.appendChild(relativeImg);
-      
-      relativeImg.onload = () => {
-        relativeImg.title = '相对路径加载成功 ✓';
-      };
-      
-      relativeImg.onerror = () => {
-        relativeImg.src = '/assets/icons/rocket.svg';
-        relativeImg.title = '相对路径失败,尝试绝对路径';
-      };
+        // 测试相对路径
+        const relativeImg = document.createElement('img');
+        relativeImg.src = `assets/icons/${testIcon}.svg`;
+        relativeImg.style.width = '24px';
+        relativeImg.style.height = '24px';
+        container.appendChild(relativeImg);
 
-      // 测试绝对路径
-      const absoluteImg = document.createElement('img');
-      absoluteImg.src = `/assets/icons/${testIcon}.svg`;
-      absoluteImg.style.width = '24px';
-      absoluteImg.style.height = '24px';
-      container.appendChild(absoluteImg);
-      
-      absoluteImg.onload = () => {
-        absoluteImg.title = '绝对路径加载成功 ✓';
-      };
-      
-      absoluteImg.onerror = () => {
-        absoluteImg.title = '绝对路径也失败 ✗';
-      };
-    }
+        relativeImg.onload = () => {
+          relativeImg.title = '相对路径加载成功 ✓';
+        };
 
-    // 更新统计
-    function updateStats() {
-      const container = document.getElementById('stats');
-      container.innerHTML = `
+        relativeImg.onerror = () => {
+          relativeImg.src = '/assets/icons/rocket.svg';
+          relativeImg.title = '相对路径失败,尝试绝对路径';
+        };
+
+        // 测试绝对路径
+        const absoluteImg = document.createElement('img');
+        absoluteImg.src = `/assets/icons/${testIcon}.svg`;
+        absoluteImg.style.width = '24px';
+        absoluteImg.style.height = '24px';
+        container.appendChild(absoluteImg);
+
+        absoluteImg.onload = () => {
+          absoluteImg.title = '绝对路径加载成功 ✓';
+        };
+
+        absoluteImg.onerror = () => {
+          absoluteImg.title = '绝对路径也失败 ✗';
+        };
+      }
+
+      // 更新统计
+      function updateStats() {
+        const container = document.getElementById('stats');
+        container.innerHTML = `
         <div class="icon-row">
           <span class="icon-name">成功:</span>
           <span class="status success">${successCount}</span>
@@ -142,12 +193,12 @@
           <span>${successCount + failCount}</span>
         </div>
       `;
-    }
+      }
 
-    // 初始化
-    testDirectImages();
-    testPaths();
-    updateStats();
-  </script>
-</body>
+      // 初始化
+      testDirectImages();
+      testPaths();
+      updateStats();
+    </script>
+  </body>
 </html>

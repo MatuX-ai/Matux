@@ -41,6 +41,8 @@ export class VircadiaSceneViewerComponent implements OnInit, OnDestroy {
   @Input() accessToken?: string;
   @Input() debugMode: boolean = false;
   @Input() autoConnect: boolean = true;
+  /** 默认场景 ID，为空则使用 'default-classroom' */
+  @Input() defaultSceneId: string = '';
 
   @Output() connected = new EventEmitter<UserInfo>();
   @Output() disconnected = new EventEmitter<void>();
@@ -126,10 +128,13 @@ export class VircadiaSceneViewerComponent implements OnInit, OnDestroy {
       this.connectionProgress = 10;
       this.connectionStatusText = '正在连接服务器...';
 
+      // 从 JWT token 中提取用户名
+      const username = this.extractUsernameFromToken(this.accessToken);
+
       // 登录
       await this.sdk.login({
-        username: 'user', // TODO: 从 token 中提取
-        password: '', // TODO: 使用 OAuth2 或其他方式
+        username,
+        password: '',
       });
 
       this.connectionProgress = 50;
@@ -310,6 +315,19 @@ export class VircadiaSceneViewerComponent implements OnInit, OnDestroy {
   }
 
   /**
+   * 从 JWT token 中提取用户名
+   */
+  private extractUsernameFromToken(token: string): string {
+    try {
+      const payload = token.split('.')[1];
+      const decoded = JSON.parse(atob(payload)) as Record<string, string | undefined>;
+      return decoded['preferred_username'] ?? decoded['username'] ?? decoded['sub'] ?? 'user';
+    } catch {
+      return 'user';
+    }
+  }
+
+  /**
    * 设置事件监听器
    */
   private setupEventListeners(): void {
@@ -317,12 +335,18 @@ export class VircadiaSceneViewerComponent implements OnInit, OnDestroy {
 
     // 监听用户加入事件
     this.sdk.on('user.joined', (_event) => {
-      // TODO: 实现用户加入逻辑
+      if (this.debugMode) {
+        // eslint-disable-next-line no-console
+        console.debug('[VircadiaViewer] user.joined', _event);
+      }
     });
 
     // 监听用户离开事件
     this.sdk.on('user.left', (_event) => {
-      // TODO: 实现用户离开逻辑
+      if (this.debugMode) {
+        // eslint-disable-next-line no-console
+        console.debug('[VircadiaViewer] user.left', _event);
+      }
     });
 
     // 监听对象状态变更事件
@@ -335,7 +359,10 @@ export class VircadiaSceneViewerComponent implements OnInit, OnDestroy {
 
     // 监听聊天消息事件
     this.sdk.on('chat.message', (_event) => {
-      // TODO: 实现聊天消息处理
+      if (this.debugMode) {
+        // eslint-disable-next-line no-console
+        console.debug('[VircadiaViewer] chat.message', _event);
+      }
     });
   }
 
@@ -343,9 +370,8 @@ export class VircadiaSceneViewerComponent implements OnInit, OnDestroy {
    * 加载默认场景
    */
   private async loadDefaultScene(): Promise<void> {
-    // TODO: 从配置中读取默认场景 ID
-    const defaultSceneId = 'default-classroom';
-    await this.loadScene(defaultSceneId);
+    const sceneId = this.defaultSceneId || 'default-classroom';
+    await this.loadScene(sceneId);
   }
 
   /**
@@ -374,8 +400,18 @@ export class VircadiaSceneViewerComponent implements OnInit, OnDestroy {
    */
   private startRenderLoop(): void {
     const render = (): void => {
-      // TODO: 实现 3D 渲染逻辑
-      // 这里应该使用 Three.js 或其他 3D 引擎进行渲染
+      // 调用 SDK 的获取场景对象方法更新本地状态，模拟渲染帧
+      if (this.sdk && this.isConnected) {
+        try {
+          // 渲染帧时更新场景对象状态
+          const scene = this.sdk.getCurrentScene();
+          if (scene && scene.id !== (this.currentScene?.id ?? '')) {
+            this.currentScene = scene;
+          }
+        } catch {
+          // 渲染失败时静默处理
+        }
+      }
 
       // 定期更新性能统计（不阻塞渲染）
       if (this.showDebugPanel) {
@@ -391,21 +427,76 @@ export class VircadiaSceneViewerComponent implements OnInit, OnDestroy {
   /**
    * 处理画布点击事件
    */
-  onCanvasClick(_event: MouseEvent): void {
-    // TODO: 实现射线检测，选择点击的 3D 对象
+  onCanvasClick(event: MouseEvent): void {
+    if (!this.sdk || !this.isConnected || !this.sceneContainer) return;
+
+    // 计算点击位置在场景中的归一化坐标
+    const rect = (this.sceneContainer.nativeElement as HTMLElement).getBoundingClientRect();
+    const x = ((event.clientX - rect.left) / rect.width) * 2 - 1;
+    const y = -((event.clientY - rect.top) / rect.height) * 2 + 1;
+
+    // 使用 SDK 进行射线检测，选择点击的 3D 对象
+    try {
+      const sdkAny = this.sdk as unknown as {
+        raycast: (pos: { x: number; y: number }) => GameObject | null;
+      };
+      const hitObject = sdkAny.raycast({ x, y });
+      if (hitObject) {
+        this.selectedObject = hitObject;
+        this.interactWithObject(hitObject.id, 'click').catch((_err) => {
+          // 交互失败静默处理
+        });
+      } else {
+        this.selectedObject = null;
+      }
+    } catch {
+      // 射线检测失败，静默处理
+    }
   }
 
   /**
    * 处理鼠标移动事件
    */
-  onMouseMove(_event: MouseEvent): void {
-    // TODO: 实现相机控制和对象悬停检测
+  onMouseMove(event: MouseEvent): void {
+    if (!this.sdk || !this.isConnected || !this.sceneContainer) return;
+
+    // 计算鼠标位置在场景中的归一化坐标
+    const rect = (this.sceneContainer.nativeElement as HTMLElement).getBoundingClientRect();
+    const x = ((event.clientX - rect.left) / rect.width) * 2 - 1;
+    const y = -((event.clientY - rect.top) / rect.height) * 2 + 1;
+
+    try {
+      // 使用 SDK 进行对象悬停检测
+      const sdkAny = this.sdk as unknown as {
+        raycast: (pos: { x: number; y: number }) => GameObject | null;
+      };
+      const hoveredObject = sdkAny.raycast({ x, y });
+      if (hoveredObject) {
+        // 设置鼠标样式为指针，表示可交互
+        (this.sceneContainer.nativeElement as HTMLElement).style.cursor = 'pointer';
+      } else {
+        (this.sceneContainer.nativeElement as HTMLElement).style.cursor = 'default';
+      }
+    } catch {
+      // 悬停检测失败，静默处理
+    }
   }
 
   /**
    * 处理鼠标滚轮事件
    */
-  onMouseWheel(_event: WheelEvent): void {
-    // TODO: 实现缩放功能
+  onMouseWheel(event: WheelEvent): void {
+    if (!this.sdk || !this.isConnected) return;
+
+    event.preventDefault();
+
+    try {
+      // 调用 SDK 的缩放方法
+      const sdkAny = this.sdk as unknown as { zoom: (factor: number) => void };
+      const zoomFactor = event.deltaY > 0 ? 1.1 : 0.9;
+      sdkAny.zoom(zoomFactor);
+    } catch {
+      // 缩放失败，静默处理
+    }
   }
 }

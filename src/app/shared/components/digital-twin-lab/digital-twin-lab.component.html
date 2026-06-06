@@ -28,7 +28,7 @@
       </div>
 
       <div class="connection-status">
-        <mat-icon [ngClass]="{'connected': isConnected, 'disconnected': !isConnected}">
+        <mat-icon [ngClass]="{ connected: isConnected, disconnected: !isConnected }">
           {{ isConnected ? 'link' : 'link_off' }}
         </mat-icon>
         <span>{{ isConnected ? '已连接' : '未连接' }}</span>
@@ -48,8 +48,7 @@
     <div class="main-content">
       <!-- Unity WebGL容器 -->
       <div class="unity-section">
-        <div #unityContainer class="unity-container"
-             [class.fullscreen]="isFullscreen">
+        <div #unityContainer class="unity-container" [class.fullscreen]="isFullscreen">
           <div *ngIf="!isUnityLoaded" class="unity-loading">
             <mat-spinner></mat-spinner>
             <p>正在加载Unity实验室...</p>
@@ -66,9 +65,11 @@
           </mat-card-header>
           <mat-card-content>
             <div class="control-group">
-              <button mat-raised-button
-                      [color]="isSimulationRunning ? 'warn' : 'primary'"
-                      (click)="toggleSimulation()">
+              <button
+                mat-raised-button
+                [color]="isSimulationRunning ? 'warn' : 'primary'"
+                (click)="toggleSimulation()"
+              >
                 <mat-icon>{{ isSimulationRunning ? 'stop' : 'play_arrow' }}</mat-icon>
                 {{ isSimulationRunning ? '停止仿真' : '开始仿真' }}
               </button>
@@ -80,9 +81,9 @@
             </div>
 
             <div class="status-info" *ngIf="circuitState">
-              <p>总功率:{{ circuitState.total_power | number:'1.2-2' }} W</p>
-              <p>总电流:{{ circuitState.total_current | number:'1.2-2' }} A</p>
-              <p>仿真时间:{{ circuitState.simulation_time | number:'1.1-1' }} s</p>
+              <p>总功率:{{ circuitState.total_power | number: '1.2-2' }} W</p>
+              <p>总电流:{{ circuitState.total_current | number: '1.2-2' }} A</p>
+              <p>仿真时间:{{ circuitState.simulation_time | number: '1.1-1' }} s</p>
             </div>
           </mat-card-content>
         </mat-card>
@@ -94,8 +95,7 @@
           </mat-card-header>
           <mat-card-content>
             <div class="control-group">
-              <mat-slide-toggle [(ngModel)]="isDeviceSyncEnabled"
-                               (change)="toggleDeviceSync()">
+              <mat-slide-toggle [(ngModel)]="isDeviceSyncEnabled" (change)="toggleDeviceSync()">
                 AWS IoT同步
               </mat-slide-toggle>
             </div>
@@ -103,7 +103,7 @@
             <div class="device-stats">
               <p>连接设备: {{ deviceStates.size }}</p>
               <p *ngIf="deviceStates.size > 0">
-                平均电压: {{ getAverageVoltage() | number:'1.2-2' }} V
+                平均电压: {{ getAverageVoltage() | number: '1.2-2' }} V
               </p>
             </div>
           </mat-card-content>
@@ -151,15 +151,15 @@
                 <div class="element-values">
                   <div class="value-item">
                     <span class="label">电压:</span>
-                    <span class="value">{{ element?.voltage | number:'1.2-2' }}V</span>
+                    <span class="value">{{ element?.voltage | number: '1.2-2' }}V</span>
                   </div>
                   <div class="value-item">
                     <span class="label">电流:</span>
-                    <span class="value">{{ element?.current | number:'1.2-2' }}A</span>
+                    <span class="value">{{ element?.current | number: '1.2-2' }}A</span>
                   </div>
                   <div class="value-item">
                     <span class="label">功率:</span>
-                    <span class="value">{{ element?.power | number:'1.2-2' }}W</span>
+                    <span class="value">{{ element?.power | number: '1.2-2' }}W</span>
                   </div>
                 </div>
               </div>

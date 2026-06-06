@@ -1,4 +1,4 @@
-import { CommonModule } from '@angular/common';
+﻿import { CommonModule } from '@angular/common';
 import { DatePipe } from '@angular/common';
 import { HttpClient } from '@angular/common/http';
 import {
@@ -66,6 +66,24 @@ interface DocumentSuggestion {
   suggestion_reason?: string;
 }
 
+interface JoinSessionResponse {
+  session_id: string;
+}
+
+interface WebSocketMessage {
+  type: string;
+  operations?: DocumentOperation[];
+  comment?: DocumentComment;
+  suggestion?: DocumentSuggestion;
+  session_id?: string;
+  user_id?: number;
+  user_name?: string;
+  cursor_position?: number;
+  start_position?: number;
+  end_position?: number;
+  suggested_content?: string;
+}
+
 @Component({
   selector: 'app-collaborative-editor',
   templateUrl: './collaborative-editor.component.html',
@@ -125,10 +143,9 @@ export class CollaborativeEditorComponent implements OnInit, OnDestroy {
   private destroy$ = new Subject<void>();
 
   // 操作队列
-  private pendingOperations: any[] = [];
+  private pendingOperations: TextOperation[] = [];
   private lastSyncTime = Date.now();
   private syncInterval = 1000; // 1秒同步间隔
-
   constructor(
     private http: HttpClient,
     private snackBar: MatSnackBar
@@ -171,7 +188,7 @@ export class CollaborativeEditorComponent implements OnInit, OnDestroy {
         this.loadSuggestions();
         this.isLoading = false;
       },
-      error: (error) => {
+      error: (_error) => {
         this.snackBar.open('加载文档失败', '关闭', { duration: 3000 });
         this.isLoading = false;
       },
@@ -183,13 +200,15 @@ export class CollaborativeEditorComponent implements OnInit, OnDestroy {
 
     const url = `/api/v1/org/${this.orgId}/courses/${this.courseId}/collaborative-documents/${this.documentId}/sessions`;
 
-    this.http.post<any>(url, { client_id: this.clientId }).subscribe({
+    this.http.post<JoinSessionResponse>(url, { client_id: this.clientId }).subscribe({
       next: (response) => {
         this.sessionId = response.session_id;
         this.connectWebSocket();
         this.snackBar.open('已加入协作会话', '', { duration: 2000 });
       },
-      error: (error) => {},
+      error: (_error) => {
+        // 连接失败，由调用者处理
+      },
     });
   }
 
@@ -206,7 +225,7 @@ export class CollaborativeEditorComponent implements OnInit, OnDestroy {
         this.snackBar.open('实时连接已建立', '', { duration: 2000 });
       };
 
-      this.ws.onmessage = (event) => {
+      this.ws.onmessage = (event: MessageEvent<string>) => {
         this.handleWebSocketMessage(event.data);
       };
 
@@ -214,10 +233,10 @@ export class CollaborativeEditorComponent implements OnInit, OnDestroy {
         this.isConnected = false;
       };
 
-      this.ws.onerror = (error) => {
+      this.ws.onerror = (_error) => {
         this.isConnected = false;
       };
-    } catch (error) {
+    } catch (_error) {
       this.isConnected = false;
     }
   }
@@ -232,33 +251,39 @@ export class CollaborativeEditorComponent implements OnInit, OnDestroy {
 
   private handleWebSocketMessage(data: string): void {
     try {
-      const message = JSON.parse(data);
+      const message = JSON.parse(data) as WebSocketMessage;
+      this._routeMessage(message);
+    } catch (_error) {
+      // JSON 解析失败，忽略无效消息
+    }
+  }
 
-      switch (message.type) {
-        case 'operations_applied':
-          this.applyRemoteOperations(message.operations);
-          break;
-        case 'comment_added':
-          this.addRemoteComment(message.comment);
-          break;
-        case 'suggestion_added':
-          this.addRemoteSuggestion(message.suggestion);
-          break;
-        case 'cursor_update':
-          this.updateRemoteCursor(message);
-          break;
-        case 'user_left':
-          this.removeUser(message.session_id);
-          break;
-      }
-    } catch (error) {}
+  /** 路由 WebSocket 消息到对应处理器 */
+  private _routeMessage(message: WebSocketMessage): void {
+    switch (message.type) {
+      case 'operations_applied':
+        if (message.operations) this.applyRemoteOperations(message.operations);
+        break;
+      case 'comment_added':
+        if (message.comment) this.addRemoteComment(message.comment);
+        break;
+      case 'suggestion_added':
+        if (message.suggestion) this.addRemoteSuggestion(message.suggestion);
+        break;
+      case 'cursor_update':
+        this.updateRemoteCursor(message);
+        break;
+      case 'user_left':
+        if (message.session_id) this.removeUser(message.session_id);
+        break;
+    }
   }
 
   onContentChange(newContent: string): void {
     const oldContent = this.editorContent;
     this.editorContent = newContent;
 
-    // 计算操作差异
+    // 璁＄畻鎿嶄綔宸紓
     const operations = this.calculateOperations(oldContent, newContent);
 
     if (operations.length > 0) {
@@ -270,12 +295,10 @@ export class CollaborativeEditorComponent implements OnInit, OnDestroy {
   private calculateOperations(oldContent: string, newContent: string): TextOperation[] {
     const operations: TextOperation[] = [];
 
-    // 使用协作客户端处理本地编辑
     if (!this.collaborationClient) {
       this.collaborationClient = new CollaborationClient(this.clientId, oldContent);
     }
 
-    // 简单的差异检测算法
     let i = 0;
     let j = 0;
 
@@ -284,76 +307,75 @@ export class CollaborativeEditorComponent implements OnInit, OnDestroy {
         i++;
         j++;
       } else {
-        // 发现差异点
-        const startPos = j;
-
-        // 查找插入的内容
-        while (
-          j < newContent.length &&
-          (i >= oldContent.length || oldContent[i] !== newContent[j])
-        ) {
-          j++;
-        }
-
-        const insertedText = newContent.substring(startPos, j);
-        if (insertedText) {
-          const op = this.collaborationClient.localEdit('insert', startPos, insertedText);
-          operations.push({
-            type: 'insert',
-            position: op.position,
-            content: op.content,
-            clientId: op.clientId,
-            timestamp: op.timestamp,
-          });
-        }
-
-        // 查找删除的内容
-        const deleteStart = i;
-        while (
-          i < oldContent.length &&
-          (j >= newContent.length || oldContent[i] !== newContent[j])
-        ) {
-          i++;
-        }
-
-        if (i > deleteStart) {
-          const deleteContent = oldContent.substring(deleteStart, i);
-          const op = this.collaborationClient.localEdit('delete', deleteStart, deleteContent);
-          operations.push({
-            type: 'delete',
-            position: op.position,
-            content: op.content,
-            clientId: op.clientId,
-            timestamp: op.timestamp,
-          });
-        }
+        this._processDiffSegment(oldContent, newContent, operations, i, j);
+        break;
       }
     }
 
-    // 处理尾部内容
-    if (j < newContent.length) {
-      const op = this.collaborationClient.localEdit('insert', j, newContent.substring(j));
-      operations.push({
-        type: 'insert',
-        position: op.position,
-        content: op.content,
-        clientId: op.clientId,
-        timestamp: op.timestamp,
-      });
-    }
-
-    if (i < oldContent.length) {
-      const op = this.collaborationClient.localEdit('delete', i, oldContent.substring(i));
-      operations.push({
-        type: 'delete',
-        position: op.position,
-        content: op.content,
-        clientId: op.clientId,
-        timestamp: op.timestamp,
-      });
-    }
-
+    this._processTrailingContent(oldContent, newContent, operations, i, j);
     return operations;
+  }
+
+  private _processDiffSegment(
+    oldContent: string,
+    newContent: string,
+    operations: TextOperation[],
+    startI: number,
+    startJ: number
+  ): void {
+    let i = startI;
+    let j = startJ;
+
+    // 查找插入的内容
+    const insertStart = j;
+    while (j < newContent.length && (i >= oldContent.length || oldContent[i] !== newContent[j])) {
+      j++;
+    }
+    const insertedText = newContent.substring(insertStart, j);
+    if (insertedText) {
+      this._addOperation(operations, 'insert', insertStart, insertedText);
+    }
+
+    // 查找删除的内容
+    const deleteStart = i;
+    while (i < oldContent.length && (j >= newContent.length || oldContent[i] !== newContent[j])) {
+      i++;
+    }
+    const deleteContent = oldContent.substring(deleteStart, i);
+    if (i > deleteStart && deleteContent) {
+      this._addOperation(operations, 'delete', deleteStart, deleteContent);
+    }
+  }
+
+  private _processTrailingContent(
+    oldContent: string,
+    newContent: string,
+    operations: TextOperation[],
+    i: number,
+    j: number
+  ): void {
+    if (j < newContent.length) {
+      this._addOperation(operations, 'insert', j, newContent.substring(j));
+    }
+    if (i < oldContent.length) {
+      this._addOperation(operations, 'delete', i, oldContent.substring(i));
+    }
+  }
+
+  private _addOperation(
+    operations: TextOperation[],
+    type: 'insert' | 'delete',
+    position: number,
+    content: string
+  ): void {
+    const op = this.collaborationClient.localEdit(type, position, content);
+    operations.push({
+      type,
+      position: op.position,
+      content: op.content,
+      clientId: op.clientId,
+      timestamp: op.timestamp,
+    });
   }
 
   private setupAutoSync(): void {
@@ -370,7 +392,7 @@ export class CollaborativeEditorComponent implements OnInit, OnDestroy {
       .subscribe();
   }
 
-  private syncOperations(): Observable<any> {
+  private syncOperations(): Observable<unknown> {
     if (this.pendingOperations.length === 0) {
       return new Observable((observer) => observer.complete());
     }
@@ -400,7 +422,7 @@ export class CollaborativeEditorComponent implements OnInit, OnDestroy {
       }));
 
     // 使用OT算法处理远程操作
-    const transformedOps = this.collaborationClient.handleRemoteOperations(textOps);
+    const _transformedOps = this.collaborationClient.handleRemoteOperations(textOps);
 
     // 更新编辑器内容
     const newContent = this.collaborationClient.getCurrentContent();
@@ -446,11 +468,13 @@ export class CollaborativeEditorComponent implements OnInit, OnDestroy {
         cursor_position: this.currentCursorPosition,
       })
       .subscribe({
-        error: (error) => {},
+        error: (_error) => {
+          // 光标位置更新失败，静默处理
+        },
       });
   }
 
-  // 评论功能
+  // 璇勮鍔熻兘
   addComment(startPos: number, endPos: number, content: string): void {
     if (!this.documentInfo?.allow_comments) {
       this.snackBar.open('此文档不允许添加评论', '关闭', { duration: 3000 });
@@ -474,7 +498,7 @@ export class CollaborativeEditorComponent implements OnInit, OnDestroy {
           });
           this.snackBar.open('评论已添加', '', { duration: 2000 });
         },
-        error: (error) => {
+        error: (_error) => {
           this.snackBar.open('添加评论失败', '关闭', { duration: 3000 });
         },
       });
@@ -487,11 +511,13 @@ export class CollaborativeEditorComponent implements OnInit, OnDestroy {
       next: (comments) => {
         this.comments = comments;
       },
-      error: (error) => {},
+      error: (_error) => {
+        // 加载评论失败，静默处理
+      },
     });
   }
 
-  private addRemoteComment(comment: any): void {
+  private addRemoteComment(comment: DocumentComment): void {
     this.comments.push(comment);
   }
 
@@ -506,7 +532,7 @@ export class CollaborativeEditorComponent implements OnInit, OnDestroy {
         }
         this.snackBar.open('评论已标记为已解决', '', { duration: 2000 });
       },
-      error: (error) => {
+      error: (_error) => {
         this.snackBar.open('解决评论失败', '关闭', { duration: 3000 });
       },
     });
@@ -539,7 +565,7 @@ export class CollaborativeEditorComponent implements OnInit, OnDestroy {
           });
           this.snackBar.open('建议已添加', '', { duration: 2000 });
         },
-        error: (error) => {
+        error: (_error) => {
           this.snackBar.open('添加建议失败', '关闭', { duration: 3000 });
         },
       });
@@ -552,19 +578,21 @@ export class CollaborativeEditorComponent implements OnInit, OnDestroy {
       next: (suggestions) => {
         this.suggestions = suggestions;
       },
-      error: (error) => {},
+      error: (_error) => {
+        // 加载建议失败，静默处理
+      },
     });
   }
 
-  private addRemoteSuggestion(suggestion: any): void {
+  private addRemoteSuggestion(suggestion: DocumentSuggestion): void {
     this.suggestions.push(suggestion);
   }
 
   reviewSuggestion(suggestionId: number, status: 'accepted' | 'rejected'): void {
     const url = `/api/v1/org/${this.orgId}/courses/${this.courseId}/collaborative-documents/${this.documentId}/suggestions/${suggestionId}/review`;
 
-    this.http.put(url, { status }).subscribe({
-      next: (response: any) => {
+    this.http.put<{ suggestion: DocumentSuggestion }>(url, { status }).subscribe({
+      next: (response) => {
         const suggestion = this.suggestions.find((s) => s.id === suggestionId);
         if (suggestion) {
           suggestion.status = status;
@@ -579,13 +607,13 @@ export class CollaborativeEditorComponent implements OnInit, OnDestroy {
           duration: 2000,
         });
       },
-      error: (error) => {
+      error: (_error) => {
         this.snackBar.open('审核建议失败', '关闭', { duration: 3000 });
       },
     });
   }
 
-  private applySuggestion(suggestion: any): void {
+  private applySuggestion(suggestion: DocumentSuggestion): void {
     const before = this.editorContent.substring(0, suggestion.start_position);
     const after = this.editorContent.substring(suggestion.end_position);
     this.editorContent = before + suggestion.suggested_content + after;
@@ -593,20 +621,20 @@ export class CollaborativeEditorComponent implements OnInit, OnDestroy {
   }
 
   // 用户管理
-  private updateRemoteCursor(message: any): void {
+  private updateRemoteCursor(message: WebSocketMessage): void {
     const existingUser = this.activeUsers.find((u) => u.userId === message.user_id);
     if (existingUser) {
-      existingUser.cursorPosition = message.cursor_position;
+      existingUser.cursorPosition = message.cursor_position ?? 0;
     } else {
       this.activeUsers.push({
-        userId: message.user_id,
-        userName: message.user_name,
-        cursorPosition: message.cursor_position,
+        userId: message.user_id ?? 0,
+        userName: message.user_name ?? '',
+        cursorPosition: message.cursor_position ?? 0,
       });
     }
   }
 
-  private removeUser(sessionId: string): void {
+  private removeUser(_sessionId: string): void {
     // 这里可以根据sessionId移除用户
     // 需要在服务端维护session到user的映射
   }
@@ -621,30 +649,30 @@ export class CollaborativeEditorComponent implements OnInit, OnDestroy {
   }
 
   getConnectedUsersCount(): number {
-    return this.activeUsers.length + 1; // +1 表示自己
+    return this.activeUsers.length + 1; // +1 琛ㄧず鑷繁
   }
 
-  // 工具方法 - 计算光标位置
+  // 宸ュ叿鏂规硶 - 璁＄畻鍏夋爣浣嶇疆
   calculateCursorPosition(position: number): number {
-    // 根据文本内容计算光标的像素位置
-    // 这里需要根据实际编辑器实现来计算
-    const charWidth = 8; // 假设每个字符宽度为 8px
-    const lineHeight = 20; // 假设每行高度为 20px
+    // 鏍规嵁鏂囨湰鍐呭璁＄畻鍏夋爣鐨勫儚绱犱綅缃?
+    // 杩欓噷闇€瑕佹牴鎹疄闄呯紪杈戝櫒瀹炵幇鏉ヨ绠?
+    const charWidth = 8; // 鍋囪姣忎釜瀛楃瀹藉害涓?8px
+    const _lineHeight = 20; // 鍋囪姣忚楂樺害涓?20px
 
     const lines = this.editorContent.substring(0, position).split('\n');
-    const lineNumber = lines.length - 1;
+    const _lineNumber = lines.length - 1;
     const columnNumber = lines[lines.length - 1].length;
 
     return columnNumber * charWidth;
   }
 
-  // 获取评论类型标签
+  // 鑾峰彇璇勮绫诲瀷鏍囩
   getCommentTypeLabel(type: string): string {
     const labels: { [key: string]: string } = {
-      comment: '评论',
-      question: '问题',
-      suggestion: '建议',
-      note: '备注',
+      comment: '璇勮',
+      question: '闂',
+      suggestion: '寤鸿',
+      note: '澶囨敞',
     };
     return labels[type] || type;
   }
@@ -662,11 +690,11 @@ export class CollaborativeEditorComponent implements OnInit, OnDestroy {
   // 打开评论对话框
   openCommentDialog(): void {
     if (!this.selectedTextRange) {
-      this.snackBar.open('请先选择要评论的文本', '', { duration: 2000 });
+      this.snackBar.open('请先选择要评论文本', '', { duration: 2000 });
       return;
     }
 
-    const commentText = prompt('请输入评论内容:');
+    const commentText = prompt('请输入评论内容');
     if (commentText) {
       this.addComment(this.selectedTextRange.start, this.selectedTextRange.end, commentText);
     }
@@ -680,8 +708,8 @@ export class CollaborativeEditorComponent implements OnInit, OnDestroy {
       return;
     }
 
-    const suggestedText = prompt('请输入建议内容:');
-    const reason = prompt('请输入建议理由（可选）:') || undefined;
+    const suggestedText = prompt('请输入建议内容');
+    const reason = prompt('请输入建议理由（可选）:') ?? undefined;
 
     if (suggestedText) {
       this.addSuggestion(

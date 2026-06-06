@@ -26,14 +26,11 @@
 
   <!-- 进度条 -->
   <div *ngIf="showDetails && totalTokens > 0" class="balance-progress">
-    <mat-progress-bar
-      mode="determinate"
-      [value]="usagePercent"
-      [color]="getProgressColor()">
+    <mat-progress-bar mode="determinate" [value]="usagePercent" [color]="getProgressColor()">
     </mat-progress-bar>
     <div class="progress-labels">
       <span class="progress-label">使用进度</span>
-      <span class="progress-percent">{{ usagePercent | number:'1.0-0' }}%</span>
+      <span class="progress-percent">{{ usagePercent | number: '1.0-0' }}%</span>
     </div>
   </div>
 

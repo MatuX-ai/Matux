@@ -5,6 +5,9 @@
   --status-height: 48px;
 }
 
+// 字体变量
+$font-family-sensor: 'Courier New', monospace;
+
 .ar-lab-container {
   display: flex;
   flex-direction: column;
@@ -16,8 +19,8 @@
 .status-bar {
   display: flex;
   align-items: center;
-  padding: 8px 16px;
   height: var(--status-height);
+  padding: 8px 16px;
   border-bottom: 1px solid #e0e0e0;
   background-color: white;
   box-shadow: 0 2px 4px rgb(0 0 0 / 10%);
@@ -27,7 +30,7 @@
     align-items: center;
     margin-right: 24px;
     font-size: 14px;
-    
+
     mat-icon {
       margin-right: 8px;
     }
@@ -110,7 +113,7 @@
 
       .sensor-value {
         color: #333;
-        font-family: 'Courier New', monospace;
+        font-family: $font-family-sensor;
       }
     }
 
@@ -218,7 +221,9 @@
 
 // ===== 响应式：中屏 (≤1200px) =====
 @media (width <= 1200px) {
-  :host { --panel-width: 240px; }
+  :host {
+    --panel-width: 240px;
+  }
 }
 
 // ===== 响应式：平板 (≤992px) =====
@@ -246,8 +251,8 @@
 @media (width <= 768px) {
   .status-bar {
     flex-wrap: wrap;
-    padding: 4px 8px;
     height: auto;
+    padding: 4px 8px;
 
     .status-item {
       margin: 4px 12px 4px 0;
@@ -262,21 +267,43 @@
 }
 
 // ===== 响应式：大屏桌面 (≥1600px) =====
-@media (min-width: 1600px) {
-  :host { --panel-width: 340px; }
+@media (width >= 1600px) {
+  :host {
+    --panel-width: 340px;
+  }
 
-  .status-bar { padding: 12px 32px; }
-  .control-panel, .info-panel { padding: 20px; }
-  .unity-wrapper { padding: 20px; }
+  .status-bar {
+    padding: 12px 32px;
+  }
+
+  .control-panel,
+  .info-panel {
+    padding: 20px;
+  }
+
+  .unity-wrapper {
+    padding: 20px;
+  }
 }
 
 // ===== 响应式：超宽屏 (≥2000px) =====
-@media (min-width: 2000px) {
-  :host { --panel-width: 380px; }
+@media (width >= 2000px) {
+  :host {
+    --panel-width: 380px;
+  }
 
-  .status-bar { padding: 16px 48px; }
-  .control-panel, .info-panel { padding: 24px; }
-  .unity-wrapper { padding: 24px; }
+  .status-bar {
+    padding: 16px 48px;
+  }
+
+  .control-panel,
+  .info-panel {
+    padding: 24px;
+  }
+
+  .unity-wrapper {
+    padding: 24px;
+  }
 }
 
 // ===== 全屏模式 =====
@@ -284,13 +311,13 @@
   .status-bar {
     position: fixed;
     top: 0;
-    left: 0;
     right: 0;
+    left: 0;
     z-index: 1000;
     height: 40px;
     opacity: 0;
-    transition: opacity 0.3s ease;
     pointer-events: none;
+    transition: opacity 0.3s ease;
 
     &:hover {
       opacity: 1;

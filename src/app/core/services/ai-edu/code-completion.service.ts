@@ -11,7 +11,7 @@ export interface CompletionSuggestion {
   confidence: number;
   relevanceScore: number;
   languageFeatures: string[];
-  metadata: any;
+  metadata: Record<string, unknown>;
 }
 
 export interface CompletionResponse {
@@ -64,17 +64,17 @@ export class CodeCompletionService {
 
   // WebSocket连接相关
   private websocket: WebSocket | null = null;
-  private websocketSubject = new BehaviorSubject<any>(null);
+  private websocketSubject = new BehaviorSubject<unknown>(null);
   private reconnectAttempts = 0;
   private maxReconnectAttempts = 5;
   private baseDelay = 1000;
   private maxDelay = 30000;
   private jitterMax = 1000;
-  private reconnectTimer: any = null;
+  private reconnectTimer: ReturnType<typeof setTimeout> | null = null;
   private pingIntervalMs = 30000;
   private pongTimeoutMs = 10000;
-  private pingInterval: any = null;
-  private pongTimeoutTimer: any = null;
+  private pingInterval: ReturnType<typeof setInterval> | null = null;
+  private pongTimeoutTimer: ReturnType<typeof setInterval> | null = null;
   private lastPongTime: number = 0;
 
   constructor() {}
@@ -86,10 +86,10 @@ export class CodeCompletionService {
     const cacheKey = this.generateCacheKey(request);
 
     // 检查缓存
-    if (this.cache.has(cacheKey)) {
-      const cached = this.cache.get(cacheKey)!;
-      if (Date.now() - cached.timestamp < this.cacheTimeout) {
-        return of(cached.response);
+    const cachedData = this.cache.get(cacheKey);
+    if (cachedData) {
+      if (Date.now() - cachedData.timestamp < this.cacheTimeout) {
+        return of(cachedData.response);
       } else {
         this.cache.delete(cacheKey);
       }
@@ -182,7 +182,7 @@ export class CodeCompletionService {
   /**
    * 建立WebSocket连接
    */
-  connectWebSocket(): Observable<any> {
+  connectWebSocket(): Observable<unknown> {
     if (this.websocket && this.websocket.readyState === WebSocket.OPEN) {
       return this.websocketSubject.asObservable();
     }
@@ -198,16 +198,18 @@ export class CodeCompletionService {
       this.startPongTimeout();
     };
 
-    this.websocket.onmessage = (event) => {
+    this.websocket.onmessage = (event: MessageEvent) => {
       try {
-        const message = JSON.parse(event.data);
+        const message = JSON.parse(event.data as string) as Record<string, unknown>;
 
-        if (message.type === 'pong') {
+        if (message['type'] === 'pong') {
           this.lastPongTime = Date.now();
         }
 
         this.websocketSubject.next(message);
-      } catch (error) {}
+      } catch {
+        /* 忽略 WebSocket 消息解析错误 */
+      }
     };
 
     this.websocket.onclose = (event) => {
@@ -285,10 +287,7 @@ export class CodeCompletionService {
    * 计算指数退避延迟（带抖动）
    */
   private calculateBackoff(attempt: number): number {
-    const exponentialDelay = Math.min(
-      this.maxDelay,
-      this.baseDelay * Math.pow(2, attempt - 1)
-    );
+    const exponentialDelay = Math.min(this.maxDelay, this.baseDelay * Math.pow(2, attempt - 1));
     const jitter = Math.random() * this.jitterMax;
     return Math.floor(exponentialDelay + jitter);
   }
@@ -345,16 +344,19 @@ export class CodeCompletionService {
   private startPongTimeout(): void {
     this.stopPongTimeout();
 
-    this.pongTimeoutTimer = setInterval(() => {
-      if (!this.websocket || this.websocket.readyState !== WebSocket.OPEN) {
-        return;
-      }
+    this.pongTimeoutTimer = setInterval(
+      () => {
+        if (!this.websocket || this.websocket.readyState !== WebSocket.OPEN) {
+          return;
+        }
 
-      const elapsed = Date.now() - this.lastPongTime;
-      if (elapsed > this.pongTimeoutMs) {
-        this.forceReconnect();
-      }
-    }, Math.min(this.pongTimeoutMs, 5000));
+        const elapsed = Date.now() - this.lastPongTime;
+        if (elapsed > this.pongTimeoutMs) {
+          this.forceReconnect();
+        }
+      },
+      Math.min(this.pongTimeoutMs, 5000)
+    );
   }
 
   /**
@@ -400,12 +402,13 @@ export class CodeCompletionService {
   /**
    * 获取服务健康状态
    */
-  async getHealthStatus(): Promise<any> {
+  async getHealthStatus(): Promise<Record<string, unknown>> {
     try {
       const response = await unifiedHttpClient.get(`${this.API_BASE_URL}/health`);
-      return response.data;
-    } catch (error: any) {
-      return { status: 'unhealthy', error: error.message };
+      return response.data as Record<string, unknown>;
+    } catch (error) {
+      const err = error as Error;
+      return { status: 'unhealthy', error: err.message };
     }
   }
 
@@ -480,12 +483,12 @@ export class CodeCompletionService {
    * 获取认证令牌
    */
   private getAuthToken(): string {
-    return localStorage.getItem('access_token') || '';
+    return localStorage.getItem('access_token') ?? '';
   }
 }
 
-// 缓存条目接口
-interface CacheEntry {
+// 缓存条目接口（已导出供其他模块使用）
+export interface CacheEntry {
   response: CompletionResponse;
   timestamp: number;
 }

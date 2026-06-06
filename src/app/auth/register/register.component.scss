@@ -1,42 +1,45 @@
 // Register 组件样式 — MatuX 设计系统
 
+// 动画变量
+$animation-spin: spin 0.8s linear infinite;
+
 .register-container {
-  min-height: 100vh;
   display: flex;
-  align-items: center;
   justify-content: center;
+  align-items: center;
+  min-height: 100vh;
+  padding: 16px;
   background: linear-gradient(
     135deg,
     var(--matux-color-primary, #3b82f6) 0%,
     var(--matux-color-primary-dark, #2563eb) 100%
   );
-  padding: 16px;
 }
 
 .register-card {
-  background: var(--matux-color-surface, white);
-  border-radius: var(--matux-radius-card, 16px);
-  padding: 48px;
   width: 100%;
   max-width: 460px;
-  box-shadow: var(--matux-shadow-lg, 0 20px 60px rgba(0, 0, 0, 0.15));
+  padding: 48px;
+  border-radius: var(--matux-radius-card, 16px);
+  background: var(--matux-color-surface, white);
+  box-shadow: var(--matux-shadow-lg, 0 20px 60px rgb(0 0 0 / 15%));
 }
 
 .register-header {
-  text-align: center;
   margin-bottom: 32px;
+  text-align: center;
 }
 
 .register-title {
+  margin-bottom: 8px;
+  color: var(--matux-color-text-primary, #1d1d1f);
   font-size: var(--matux-font-size-h2, 28px);
   font-weight: 700;
-  color: var(--matux-color-text-primary, #1d1d1f);
-  margin-bottom: 8px;
 }
 
 .register-subtitle {
-  font-size: var(--matux-font-size-sm, 14px);
   color: var(--matux-color-text-tertiary, #86868b);
+  font-size: var(--matux-font-size-sm, 14px);
 }
 
 .register-form {
@@ -52,25 +55,25 @@
 }
 
 .form-label {
+  color: var(--matux-color-text-secondary, #3a3a3c);
   font-size: var(--matux-font-size-sm, 14px);
   font-weight: 500;
-  color: var(--matux-color-text-secondary, #3a3a3c);
 }
 
 .form-input {
+  box-sizing: border-box;
   width: 100%;
   padding: 14px 16px;
   border: 1px solid var(--matux-color-divider, #d2d2d7);
   border-radius: var(--matux-radius-sm, 8px);
+  background: var(--matux-color-surface, white);
   font-size: var(--matux-font-size-body, 16px);
   transition: all 0.3s ease;
-  background: var(--matux-color-surface, white);
-  box-sizing: border-box;
 
   &:focus {
-    outline: none;
     border-color: var(--matux-color-primary, #3b82f6);
-    box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
+    outline: none;
+    box-shadow: 0 0 0 3px rgb(59 130 246 / 10%);
   }
 
   &::placeholder {
@@ -91,28 +94,28 @@
 .toggle-password {
   position: absolute;
   right: 8px;
-  background: none;
-  border: none;
-  cursor: pointer;
   padding: 8px;
+  border: none;
+  background: none;
+  color: var(--matux-color-text-tertiary, #86868b);
   font-size: 18px;
   line-height: 1;
-  color: var(--matux-color-text-tertiary, #86868b);
+  cursor: pointer;
 
   &:hover {
     color: var(--matux-color-text-secondary, #3a3a3c);
   }
 
   mat-icon {
-    font-size: 20px;
     width: 20px;
     height: 20px;
+    font-size: 20px;
   }
 }
 
 .error-message {
-  font-size: var(--matux-font-size-xs, 12px);
   color: var(--matux-color-error, #ff3b30);
+  font-size: var(--matux-font-size-xs, 12px);
 }
 
 .terms-group {
@@ -123,16 +126,16 @@
   display: flex;
   align-items: center;
   gap: 8px;
-  font-size: var(--matux-font-size-sm, 14px);
   color: var(--matux-color-text-secondary, #3a3a3c);
+  font-size: var(--matux-font-size-sm, 14px);
   cursor: pointer;
 }
 
 .terms-checkbox {
+  flex-shrink: 0;
   width: 16px;
   height: 16px;
   cursor: pointer;
-  flex-shrink: 0;
 }
 
 .terms-text {
@@ -150,43 +153,43 @@
 
 .error-alert {
   padding: 12px 16px;
-  background: var(--matux-color-error-bg, #ffebee);
   border: 1px solid var(--matux-color-error-border, #ffcdd2);
   border-radius: var(--matux-radius-sm, 8px);
+  background: var(--matux-color-error-bg, #ffebee);
   color: var(--matux-color-error-dark, #c62828);
   font-size: var(--matux-font-size-sm, 14px);
 }
 
 .success-alert {
   padding: 12px 16px;
-  background: var(--matux-color-success-bg, #e8f5e8);
   border: 1px solid var(--matux-color-success-border, #c8e6c9);
   border-radius: var(--matux-radius-sm, 8px);
+  background: var(--matux-color-success-bg, #e8f5e8);
   color: var(--matux-color-success-dark, #2e7d32);
   font-size: var(--matux-font-size-sm, 14px);
 }
 
 .register-button {
+  display: flex;
+  justify-content: center;
+  align-items: center;
   padding: 14px 24px;
+  border: none;
+  border-radius: var(--matux-radius-sm, 8px);
   background: linear-gradient(
     135deg,
     var(--matux-color-primary, #3b82f6) 0%,
     var(--matux-color-primary-dark, #2563eb) 100%
   );
   color: white;
-  border: none;
-  border-radius: var(--matux-radius-sm, 8px);
   font-size: var(--matux-font-size-body, 16px);
   font-weight: 600;
   cursor: pointer;
   transition: all 0.3s ease;
-  display: flex;
-  align-items: center;
-  justify-content: center;
 
   &:hover:not(:disabled) {
+    box-shadow: 0 4px 12px rgb(59 130 246 / 40%);
     transform: translateY(-2px);
-    box-shadow: 0 4px 12px rgba(59, 130, 246, 0.4);
   }
 
   &:disabled {
@@ -198,10 +201,10 @@
 .loading-spinner {
   width: 20px;
   height: 20px;
-  border: 2px solid rgba(255, 255, 255, 0.3);
+  border: 2px solid rgb(255 255 255 / 30%);
   border-top-color: white;
   border-radius: 50%;
-  animation: spin 0.8s linear infinite;
+  animation: $animation-spin;
 }
 
 @keyframes spin {
@@ -211,16 +214,16 @@
 }
 
 .login-link {
-  text-align: center;
   margin-top: 24px;
-  font-size: var(--matux-font-size-sm, 14px);
   color: var(--matux-color-text-tertiary, #86868b);
+  font-size: var(--matux-font-size-sm, 14px);
+  text-align: center;
 
   a {
-    color: var(--matux-color-primary, #3b82f6);
-    text-decoration: none;
-    font-weight: 500;
     margin-left: 4px;
+    color: var(--matux-color-primary, #3b82f6);
+    font-weight: 500;
+    text-decoration: none;
 
     &:hover {
       text-decoration: underline;
@@ -228,17 +231,14 @@
   }
 }
 
-@media (max-width: 767px) {
+@media (width <= 767px) {
   .register-card {
+    max-width: 100%;
     padding: 32px 24px;
   }
 
   .register-container {
     padding: 12px;
-  }
-
-  .register-card {
-    max-width: 100%;
   }
 
   .register-title {

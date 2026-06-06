@@ -210,7 +210,7 @@ export class AIEduService {
     const colors: Record<string, string> = {
       common: '#10b981', // 绿色
       rare: '#3b82f6', // 蓝色
-      epic: '#8b5cf6', // 紫色
+      epic: '#60a5fa', // 蓝色
       legendary: '#f59e0b', // 橙色
       mythic: '#ef4444', // 红色
     };

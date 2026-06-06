@@ -93,13 +93,13 @@ export class AuthService {
   /**
    * GitHub OAuth登录
    */
-  async signInWithGitHub(
+  signInWithGitHub(
     options: {
       redirectUri?: string;
       scopes?: string[];
       state?: string;
     } = {}
-  ): Promise<void> {
+  ): void {
     const {
       redirectUri = `${window.location.origin}/auth/callback`,
       scopes = ['user:email'],
@@ -133,13 +133,13 @@ export class AuthService {
   /**
    * Google OAuth登录
    */
-  async signInWithGoogle(
+  signInWithGoogle(
     options: {
       redirectUri?: string;
       scopes?: string[];
       state?: string;
     } = {}
-  ): Promise<void> {
+  ): void {
     const {
       redirectUri = `${window.location.origin}/auth/callback`,
       scopes = ['openid', 'email', 'profile'],
@@ -173,13 +173,13 @@ export class AuthService {
   /**
    * 微信OAuth登录
    */
-  async signInWithWeChat(
+  signInWithWeChat(
     options: {
       redirectUri?: string;
       scope?: 'snsapi_login' | 'snsapi_userinfo';
       state?: string;
     } = {}
-  ): Promise<void> {
+  ): void {
     const {
       redirectUri = `${window.location.origin}/auth/callback`,
       scope = 'snsapi_login',
@@ -213,13 +213,13 @@ export class AuthService {
   /**
    * QQ OAuth登录
    */
-  async signInWithQQ(
+  signInWithQQ(
     options: {
       redirectUri?: string;
       scope?: string;
       state?: string;
     } = {}
-  ): Promise<void> {
+  ): void {
     const {
       redirectUri = `${window.location.origin}/auth/callback`,
       scope = 'get_user_info',
@@ -359,7 +359,7 @@ export class AuthService {
       return response.data;
     } catch (error) {
       // 刷新失败则登出
-      this.logout();
+      void this.logout();
       this.handleError(error);
       throw error;
     }
@@ -539,7 +539,7 @@ export class AuthService {
   /**
    * 统一错误处理
    */
-  private handleError(error: any): void {
+  private handleError(error: unknown): void {
     // 可以在这里添加全局错误处理逻辑
     // 比如显示通知、记录日志等
 

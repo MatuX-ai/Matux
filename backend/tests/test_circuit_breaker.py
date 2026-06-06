@@ -1,473 +1,414 @@
 """
-Sentinel 熔断器单元测试
-测试熔断器的状态转换、降级策略和统计功能
+模块级熔断器单元测试
+
+测试 ModuleCircuitBreaker 的三态机转换、执行包装、降级调用
 """
 
-import pytest
-import asyncio
-from datetime import datetime
-from unittest.mock import AsyncMock, Mock
-
-from backend.middleware.circuit_breaker import (
-    CircuitBreaker,
+from core.module_circuit_breaker import (
+    ModuleCircuitBreaker,
     CircuitBreakerConfig,
-    CircuitBreakerManager,
     CircuitState,
     CircuitBreakerOpenError,
-    default_fallback_response,
-    circuit_breaker
+    ModuleCircuitBreakerRegistry,
 )
+import asyncio
+import sys
+import os
+import time
+
+import pytest
+
+# 确保 backend 目录在 sys.path 中
+_backend_dir = os.path.abspath(os.path.join(os.path.dirname(__file__), ".."))
+if _backend_dir not in sys.path:
+    sys.path.insert(0, os.path.abspath(_backend_dir))
 
 
-class TestCircuitBreakerBasic:
-    """基础功能测试"""
+# ==================== 状态转换测试 ====================
 
-    @pytest.fixture
-    def breaker(self):
-        """创建默认熔断器"""
-        return CircuitBreaker(
-            "Test_Breaker",
-            config=CircuitBreakerConfig(
-                failure_threshold=3,
-                success_threshold=2,
-                timeout=1.0,  # 缩短超时时间用于测试
-                half_open_max_calls=2
-            )
-        )
+class TestStateTransitions:
+    """熔断器状态转换测试"""
 
-    @pytest.mark.asyncio
-    async def test_initial_state_closed(self, breaker):
-        """测试初始状态为关闭"""
+    def test_initial_state_is_closed(self):
+        """测试初始状态为 CLOSED"""
+        breaker = ModuleCircuitBreaker("test_module")
+
         assert breaker.state == CircuitState.CLOSED
-        assert breaker.failure_count == 0
-        assert breaker.success_count == 0
+        assert breaker.is_closed is True
+        assert breaker.is_open is False
+        assert breaker.is_half_open is False
 
     @pytest.mark.asyncio
-    async def test_successful_call_increments_success_count(self, breaker):
-        """测试成功调用增加成功计数"""
-        async def successful_func():
-            return "success"
-
-        result = await breaker.call(successful_func)
-
-        assert result == "success"
-        assert breaker.total_calls == 1
-        assert breaker.total_successes == 1
-        assert breaker.total_failures == 0
-
-    @pytest.mark.asyncio
-    async def test_failed_call_increments_failure_count(self, breaker):
-        """测试失败调用增加失败计数"""
-        async def failing_func():
-            raise Exception("Test exception")
-
-        with pytest.raises(Exception):
-            await breaker.call(failing_func)
-
-        assert breaker.total_failures == 1
-        assert breaker.failure_count == 1
-
-    @pytest.mark.asyncio
-    async def test_stats_collection(self, breaker):
-        """测试统计信息收集"""
-        async def successful_func():
-            return "ok"
-
-        await breaker.call(successful_func)
-        await breaker.call(successful_func)
-
-        stats = breaker.get_stats()
-
-        assert stats["name"] == "Test_Breaker"
-        assert stats["state"] == CircuitState.CLOSED
-        assert stats["total_calls"] == 2
-        assert stats["total_successes"] == 2
-        assert stats["total_failures"] == 0
-
-
-class TestCircuitBreakerStateTransitions:
-    """状态转换测试"""
-
-    @pytest.fixture
-    def breaker_config(self):
-        """创建测试配置"""
-        return CircuitBreakerConfig(
-            failure_threshold=3,
-            success_threshold=2,
-            timeout=1.0,
-            half_open_max_calls=2
-        )
-
-    @pytest.mark.asyncio
-    async def test_closed_to_open_on_failures(self, breaker_config):
-        """测试连续失败导致熔断器打开"""
-        breaker = CircuitBreaker("Test_Open", config=breaker_config)
+    async def test_closed_to_open_on_failures(self):
+        """测试连续失败应从 CLOSED 转为 OPEN"""
+        config = CircuitBreakerConfig(failure_threshold=3, timeout=60.0)
+        breaker = ModuleCircuitBreaker("test_module", config)
 
         async def failing_func():
-            raise Exception("Failure")
+            raise ValueError("Test error")
 
         # 连续失败 3 次
-        for i in range(3):
+        for _ in range(3):
             try:
-                await breaker.call(failing_func)
-            except Exception:
-                pass
-
-        # 应该变为打开状态
-        assert breaker.state == CircuitState.OPEN
-        assert breaker.failure_count == 3
-
-    @pytest.mark.asyncio
-    async def test_open_rejects_requests(self, breaker_config):
-        """测试打开状态拒绝请求"""
-        breaker = CircuitBreaker("Test_Reject", config=breaker_config)
-
-        async def failing_func():
-            raise Exception("Failure")
-
-        # 先让熔断器打开
-        for i in range(3):
-            try:
-                await breaker.call(failing_func)
-            except Exception:
+                await breaker.execute(failing_func)
+            except ValueError:
                 pass
 
         assert breaker.state == CircuitState.OPEN
+        assert breaker.stats.total_failure == 3
 
-        # 后续请求应该被拒绝（触发降级）
-        async def normal_func():
-            return "should not reach"
+    def test_open_to_half_open_after_timeout(self):
+        """测试超时后应从 OPEN 转为 HALF_OPEN"""
+        config = CircuitBreakerConfig(failure_threshold=1, timeout=0.1)
+        breaker = ModuleCircuitBreaker("test_module", config)
 
-        with pytest.raises(CircuitBreakerOpenError):
-            await breaker.call(normal_func)
+        # 手动设置为 OPEN
+        breaker._state = CircuitState.OPEN
+        breaker._opened_at = time.time() - 0.2  # 200ms 前打开
 
-    @pytest.mark.asyncio
-    async def test_open_to_half_open_after_timeout(self, breaker_config):
-        """测试超时后从打开转为半开"""
-        breaker = CircuitBreaker("Test_Half_Open", config=breaker_config)
-
-        async def failing_func():
-            raise Exception("Failure")
-
-        # 让熔断器打开
-        for i in range(3):
-            try:
-                await breaker.call(failing_func)
-            except Exception:
-                pass
-
-        assert breaker.state == CircuitState.OPEN
-
-        # 等待超时
-        await asyncio.sleep(1.5)  # timeout=1.0
-
-        # 下一个请求应该触发转为半开
-        async def success_func():
-            return "success"
-
-        result = await breaker.call(success_func)
-        assert result == "success"
+        # 检查状态应自动转为 HALF_OPEN
         assert breaker.state == CircuitState.HALF_OPEN
 
     @pytest.mark.asyncio
-    async def test_half_open_to_closed_on_success(self, breaker_config):
-        """测试半开状态成功恢复为关闭"""
-        breaker = CircuitBreaker("Test_Recover", config=breaker_config)
+    async def test_half_open_to_closed_on_success(self):
+        """测试 HALF_OPEN 状态下成功应关闭熔断器"""
+        config = CircuitBreakerConfig(
+            failure_threshold=1,
+            timeout=0.01,
+            success_threshold=1,
+        )
+        breaker = ModuleCircuitBreaker("test_module", config)
 
+        # 先触发熔断
         async def failing_func():
-            raise Exception("Failure")
+            raise ValueError("Test error")
 
-        # 让熔断器打开
-        for i in range(3):
-            try:
-                await breaker.call(failing_func)
-            except Exception:
-                pass
-
-        # 等待超时
-        await asyncio.sleep(1.5)
-
-        # 在半开状态成功调用
-        async def success_func():
-            return "success"
-
-        # 第一次成功
-        await breaker.call(success_func)
-        assert breaker.state == CircuitState.HALF_OPEN
-        assert breaker.success_count == 1
-
-        # 第二次成功（达到阈值）
-        await breaker.call(success_func)
-        assert breaker.state == CircuitState.CLOSED
-        assert breaker.failure_count == 0
-
-    @pytest.mark.asyncio
-    async def test_half_open_to_open_on_failure(self, breaker_config):
-        """测试半开状态失败重新打开"""
-        breaker = CircuitBreaker("Test_Retry_Fail", config=breaker_config)
-
-        async def failing_func():
-            raise Exception("Failure")
-
-        # 让熔断器打开
-        for i in range(3):
-            try:
-                await breaker.call(failing_func)
-            except Exception:
-                pass
-
-        # 等待超时
-        await asyncio.sleep(1.5)
-
-        # 半开状态再次失败
         try:
-            await breaker.call(failing_func)
-        except Exception:
+            await breaker.execute(failing_func)
+        except ValueError:
             pass
 
-        # 应该立即回到打开状态
+        assert breaker.state == CircuitState.OPEN
+
+        # 等待超时进入 HALF_OPEN
+        await asyncio.sleep(0.02)
+
+        # 执行成功函数
+        async def success_func():
+            return "ok"
+
+        result = await breaker.execute(success_func)
+
+        assert result == "ok"
+        assert breaker.state == CircuitState.CLOSED
+
+    @pytest.mark.asyncio
+    async def test_half_open_to_open_on_failure(self):
+        """测试 HALF_OPEN 状态下失败应重新打开"""
+        config = CircuitBreakerConfig(failure_threshold=1, timeout=0.01)
+        breaker = ModuleCircuitBreaker("test_module", config)
+
+        # 先触发熔断
+        async def failing_func():
+            raise ValueError("Test error")
+
+        try:
+            await breaker.execute(failing_func)
+        except ValueError:
+            pass
+
+        # 等待超时进入 HALF_OPEN
+        await asyncio.sleep(0.02)
+
+        # 再次失败
+        try:
+            await breaker.execute(failing_func)
+        except ValueError:
+            pass
+
         assert breaker.state == CircuitState.OPEN
 
 
-class TestFallbackMechanism:
-    """降级机制测试"""
+# ==================== 执行测试 ====================
 
-    @pytest.fixture
-    def breaker_with_fallback(self):
-        """创建带降级的熔断器"""
-        async def fallback_func(*args, **kwargs):
-            return {"fallback": True, "data": "fallback_data"}
-
-        config = CircuitBreakerConfig(
-            failure_threshold=2,
-            timeout=1.0,
-            fallback_function=fallback_func
-        )
-
-        return CircuitBreaker("Test_Fallback", config=config)
+class TestExecute:
+    """熔断器执行测试"""
 
     @pytest.mark.asyncio
-    async def test_fallback_on_failure(self, breaker_with_fallback):
-        """测试失败时触发降级"""
-        async def failing_func():
-            raise Exception("Failure")
+    async def test_execute_success_in_closed_state(self):
+        """测试 CLOSED 状态下执行成功"""
+        breaker = ModuleCircuitBreaker("test_module")
 
-        result = await breaker_with_fallback.call(failing_func)
+        async def success_func():
+            return 42
 
-        assert result["fallback"] == True
-        assert result["data"] == "fallback_data"
-        assert breaker_with_fallback.total_fallbacks == 1
+        result = await breaker.execute(success_func)
 
-    @pytest.mark.asyncio
-    async def test_fallback_when_open(self, breaker_with_fallback):
-        """测试熔断器打开时使用降级"""
-        async def failing_func():
-            raise Exception("Failure")
-
-        # 让熔断器打开
-        for i in range(2):
-            try:
-                await breaker_with_fallback.call(failing_func)
-            except Exception:
-                pass
-
-        assert breaker_with_fallback.state == CircuitState.OPEN
-
-        # 打开状态下调用应该使用降级
-        async def normal_func():
-            return "normal"
-
-        result = await breaker_with_fallback.call(normal_func)
-
-        assert result["fallback"] == True
-        assert breaker_with_fallback.total_fallbacks == 3  # 2 次失败 + 1 次打开
+        assert result == 42
+        assert breaker.stats.total_calls == 1
+        assert breaker.stats.total_success == 1
 
     @pytest.mark.asyncio
-    async def test_default_fallback_response(self):
-        """测试默认降级响应"""
-        result = await default_fallback_response()
-
-        assert result["fallback"] == True
-        assert "message" in result
-        assert "timestamp" in result
-
-
-class TestCircuitBreakerManager:
-    """熔断器管理器测试"""
-
-    @pytest.fixture(autouse=True)
-    def reset_manager(self):
-        """每个测试前重置管理器"""
-        manager = CircuitBreakerManager.get_instance()
-        manager._breakers = {}
-        yield
-        manager._breakers = {}
-
-    def test_get_instance_singleton(self):
-        """测试单例模式"""
-        manager1 = CircuitBreakerManager.get_instance()
-        manager2 = CircuitBreakerManager.get_instance()
-
-        assert manager1 is manager2
-
-    def test_get_breaker_creates_new(self):
-        """测试获取熔断器会创建新的实例"""
-        manager = CircuitBreakerManager.get_instance()
-
-        breaker = manager.get_breaker("New_Breaker")
-
-        assert breaker.name == "New_Breaker"
-        assert len(manager.get_all_breakers()) == 1
-
-    def test_get_breaker_returns_existing(self):
-        """测试获取已存在的熔断器返回同一实例"""
-        manager = CircuitBreakerManager.get_instance()
-
-        breaker1 = manager.get_breaker("Existing_Breaker")
-        breaker2 = manager.get_breaker("Existing_Breaker")
-
-        assert breaker1 is breaker2
-        assert len(manager.get_all_breakers()) == 1
-
-    def test_get_all_stats(self):
-        """测试获取所有统计信息"""
-        manager = CircuitBreakerManager.get_instance()
-
-        breaker1 = manager.get_breaker("Breaker_1")
-        breaker2 = manager.get_breaker("Breaker_2")
-
-        stats = manager.get_all_stats()
-
-        assert len(stats) == 2
-        assert "Breaker_1" in stats
-        assert "Breaker_2" in stats
-
-    def test_reset_all(self):
-        """测试重置所有熔断器"""
-        manager = CircuitBreakerManager.get_instance()
-
-        breaker = manager.get_breaker("To_Reset")
-        breaker.failure_count = 5
-        breaker.state = CircuitState.OPEN
-
-        manager.reset_all()
-
-        assert breaker.state == CircuitState.CLOSED
-        assert breaker.failure_count == 0
-
-
-class TestCircuitBreakerDecorator:
-    """装饰器语法测试"""
-
-    @pytest.fixture(autouse=True)
-    def setup(self):
-        """设置测试环境"""
-        manager = CircuitBreakerManager.get_instance()
-        manager._breakers = {}
-        yield
-        manager._breakers = {}
-
-    @pytest.mark.asyncio
-    async def test_decorator_basic_usage(self):
-        """测试装饰器基本用法"""
-        call_count = 0
-
-        @circuit_breaker(name="Decorated_Service", failure_threshold=3)
-        async def decorated_service():
-            nonlocal call_count
-            call_count += 1
-            return "result"
-
-        result = await decorated_service()
-
-        assert result == "result"
-        assert call_count == 1
-
-        # 验证熔断器已创建
-        manager = CircuitBreakerManager.get_instance()
-        assert "Decorated_Service" in manager.get_all_breakers()
-
-    @pytest.mark.asyncio
-    async def test_decorator_with_fallback(self):
-        """测试带降级的装饰器"""
-        async def my_fallback(*args, **kwargs):
-            return {"fallback": True}
-
-        @circuit_breaker(
-            name="Service_With_Fallback",
-            failure_threshold=1,
-            fallback=my_fallback
-        )
-        async def service_with_fallback():
-            raise Exception("Always fails")
-
-        result = await service_with_fallback()
-
-        assert result["fallback"] == True
-
-
-class TestEdgeCases:
-    """边界情况测试"""
-
-    @pytest.mark.asyncio
-    async def test_half_open_max_calls_limit(self):
-        """测试半开状态最大请求数限制"""
-        config = CircuitBreakerConfig(
-            failure_threshold=2,
-            timeout=0.5,
-            half_open_max_calls=2
-        )
-
-        breaker = CircuitBreaker("Test_Limit", config=config)
+    async def test_execute_failure_in_closed_state(self):
+        """测试 CLOSED 状态下执行失败"""
+        breaker = ModuleCircuitBreaker("test_module")
 
         async def failing_func():
-            raise Exception("Fail")
+            raise ValueError("Test error")
 
-        # 让熔断器打开
-        for i in range(2):
-            try:
-                await breaker.call(failing_func)
-            except Exception:
-                pass
+        with pytest.raises(ValueError, match="Test error"):
+            await breaker.execute(failing_func)
 
-        # 等待超时
-        await asyncio.sleep(0.6)
+        assert breaker.stats.total_failure == 1
+
+    @pytest.mark.asyncio
+    async def test_execute_fallback_in_open_state(self):
+        """测试 OPEN 状态下应执行 fallback"""
+        breaker = ModuleCircuitBreaker("test_module")
+        breaker._state = CircuitState.OPEN
+        breaker._opened_at = time.time()
+
+        async def main_func():
+            raise ValueError("Should not be called")
+
+        async def fallback_func():
+            return "fallback_result"
+
+        result = await breaker.execute(main_func, fallback_func)
+
+        assert result == "fallback_result"
+        assert breaker.stats.total_fallback == 1
+
+    @pytest.mark.asyncio
+    async def test_execute_no_fallback_raises_exception(self):
+        """测试 OPEN 状态且无 fallback 应抛出异常"""
+        breaker = ModuleCircuitBreaker("test_module")
+        breaker._state = CircuitState.OPEN
+        breaker._opened_at = time.time()
+
+        async def main_func():
+            pass
+
+        with pytest.raises(CircuitBreakerOpenError):
+            await breaker.execute(main_func)
+
+    @pytest.mark.asyncio
+    async def test_execute_sync_function(self):
+        """测试执行同步函数"""
+        breaker = ModuleCircuitBreaker("test_module")
+
+        def sync_func():
+            return "sync_result"
+
+        result = await breaker.execute(sync_func)
+
+        assert result == "sync_result"
+
+
+# ==================== 统计测试 ====================
+
+class TestStatistics:
+    """统计数据测试"""
+
+    @pytest.mark.asyncio
+    async def test_stats_tracking(self):
+        """测试统计数据追踪"""
+        breaker = ModuleCircuitBreaker("test_module")
 
         async def success_func():
             return "ok"
 
-        # 允许 2 个请求
-        await breaker.call(success_func)
-        await breaker.call(success_func)
+        async def failing_func():
+            raise ValueError("Error")
 
-        # 第 3 个请求应该被拒绝
-        with pytest.raises(Exception):
-            await breaker.call(success_func)
+        # 执行 3 次成功,2 次失败
+        for _ in range(3):
+            await breaker.execute(success_func)
 
-    @pytest.mark.asyncio
-    async def test_concurrent_calls_thread_safety(self):
-        """测试并发调用的线程安全性"""
-        breaker = CircuitBreaker(
-            "Test_Concurrent",
-            config=CircuitBreakerConfig(failure_threshold=10)
+        for _ in range(2):
+            try:
+                await breaker.execute(failing_func)
+            except ValueError:
+                pass
+
+        assert breaker.stats.total_calls == 5
+        assert breaker.stats.total_success == 3
+        assert breaker.stats.total_failure == 2
+        assert breaker.stats.last_success_time is not None
+        assert breaker.stats.last_failure_time is not None
+
+    def test_get_status(self):
+        """测试获取熔断器状态"""
+        breaker = ModuleCircuitBreaker("test_module")
+
+        status = breaker.get_status()
+
+        assert status["name"] == "test_module"
+        assert status["state"] == "closed"
+        assert "failure_threshold" in status
+        assert "stats" in status
+
+
+# ==================== 重置测试 ====================
+
+class TestReset:
+    """重置测试"""
+
+    def test_reset_breaker(self):
+        """测试手动重置熔断器"""
+        breaker = ModuleCircuitBreaker("test_module")
+        breaker._state = CircuitState.OPEN
+        breaker._failure_count = 5
+        breaker.stats.total_calls = 10
+
+        breaker.reset()
+
+        assert breaker.state == CircuitState.CLOSED
+        assert breaker._failure_count == 0
+        assert breaker.stats.total_calls == 0
+
+
+# ==================== 注册表测试 ====================
+
+class TestRegistry:
+    """熔断器注册表测试"""
+
+    def test_get_or_create_breaker(self):
+        """测试获取或创建熔断器"""
+        registry = ModuleCircuitBreakerRegistry()
+
+        breaker1 = registry.get_or_create("module_a")
+        breaker2 = registry.get_or_create("module_a")
+
+        # 同一模块应返回相同实例
+        assert breaker1 is breaker2
+
+    def test_get_nonexistent_breaker(self):
+        """测试获取不存在的熔断器"""
+        registry = ModuleCircuitBreakerRegistry()
+
+        breaker = registry.get("nonexistent")
+
+        assert breaker is None
+
+    def test_get_all_status(self):
+        """测试获取所有熔断器状态"""
+        registry = ModuleCircuitBreakerRegistry()
+
+        registry.get_or_create("module_a")
+        registry.get_or_create("module_b")
+
+        status = registry.get_all_status()
+
+        assert len(status) == 2
+        assert "module_a" in status
+        assert "module_b" in status
+
+    def test_reset_all_breakers(self):
+        """测试重置所有熔断器"""
+        registry = ModuleCircuitBreakerRegistry()
+
+        breaker_a = registry.get_or_create("module_a")
+        breaker_b = registry.get_or_create("module_b")
+
+        breaker_a._state = CircuitState.OPEN
+        breaker_b._state = CircuitState.HALF_OPEN
+
+        registry.reset_all()
+
+        assert breaker_a.state == CircuitState.CLOSED
+        assert breaker_b.state == CircuitState.CLOSED
+
+    def test_open_count(self):
+        """测试 OPEN 状态计数"""
+        registry = ModuleCircuitBreakerRegistry()
+
+        breaker_a = registry.get_or_create("module_a")
+        breaker_b = registry.get_or_create("module_b")
+        breaker_c = registry.get_or_create("module_c")
+
+        breaker_a._state = CircuitState.OPEN
+        breaker_b._state = CircuitState.OPEN
+
+        assert registry.open_count == 2
+
+    def test_degraded_modules(self):
+        """测试获取降级模块列表"""
+        registry = ModuleCircuitBreakerRegistry()
+
+        breaker_a = registry.get_or_create("module_a")
+        breaker_b = registry.get_or_create("module_b")
+        breaker_c = registry.get_or_create("module_c")
+
+        breaker_a._state = CircuitState.OPEN
+        breaker_b._state = CircuitState.HALF_OPEN
+
+        degraded = registry.degraded_modules
+
+        assert len(degraded) == 2
+        assert "module_a" in degraded
+        assert "module_b" in degraded
+        assert "module_c" not in degraded
+
+
+# ==================== 全局实例测试 ====================
+
+class TestGlobalInstance:
+    """全局实例测试"""
+
+    def test_init_and_get_registry(self):
+        """测试初始化和获取全局注册表"""
+        from core.module_circuit_breaker import init_breaker_registry, get_breaker_registry
+
+        registry = init_breaker_registry()
+
+        assert registry is not None
+        assert get_breaker_registry() is registry
+
+    def test_get_registry_before_init(self):
+        """测试未初始化时获取应抛出异常"""
+        from core.module_circuit_breaker import _registry_instance, get_breaker_registry
+        import core.module_circuit_breaker as breaker_module
+
+        old_instance = _registry_instance
+
+        try:
+            breaker_module._registry_instance = None
+
+            with pytest.raises(RuntimeError, match="尚未初始化"):
+                get_breaker_registry()
+        finally:
+            breaker_module._registry_instance = old_instance
+
+
+# ==================== 配置测试 ====================
+
+class TestConfiguration:
+    """配置测试"""
+
+    def test_default_config(self):
+        """测试默认配置"""
+        config = CircuitBreakerConfig()
+
+        assert config.failure_threshold == 3
+        assert config.timeout == 60.0
+        assert config.half_open_max_calls == 1
+        assert config.success_threshold == 1
+
+    def test_custom_config(self):
+        """测试自定义配置"""
+        config = CircuitBreakerConfig(
+            failure_threshold=5,
+            timeout=120.0,
+            half_open_max_calls=3,
+            success_threshold=2,
         )
 
-        call_count = 0
-
-        async def increment_func():
-            nonlocal call_count
-            await asyncio.sleep(0.01)
-            call_count += 1
-            return call_count
-
-        # 并发调用 10 次
-        tasks = [breaker.call(increment_func) for _ in range(10)]
-        results = await asyncio.gather(*tasks)
-
-        # 所有调用都应该成功
-        assert len(results) == 10
-        assert all(isinstance(r, int) for r in results)
+        assert config.failure_threshold == 5
+        assert config.timeout == 120.0
+        assert config.half_open_max_calls == 3
+        assert config.success_threshold == 2
 
 
 if __name__ == "__main__":
-    pytest.main([__file__, "-v", "-s"])
+    pytest.main([__file__, "-v"])

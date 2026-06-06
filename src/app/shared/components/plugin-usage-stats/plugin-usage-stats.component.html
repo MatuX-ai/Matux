@@ -1,0 +1,103 @@
+<div class="usage-stats-container">
+  <h3>
+    <mat-icon class="section-icon">analytics</mat-icon>
+    使用统计
+  </h3>
+
+  <div *ngIf="loading" class="loading-container">
+    <mat-spinner diameter="40"></mat-spinner>
+    <p>正在加载使用统计...</p>
+  </div>
+
+  <div *ngIf="error && !loading" class="error-container">
+    <mat-icon color="warn">error_outline</mat-icon>
+    <p>{{ error }}</p>
+  </div>
+
+  <div *ngIf="!loading && !error && stats" class="stats-grid">
+    <!-- 总使用时间 -->
+    <mat-card class="stat-card">
+      <mat-card-content>
+        <div class="stat-icon time-icon">
+          <mat-icon>schedule</mat-icon>
+        </div>
+        <div class="stat-info">
+          <div class="stat-value">{{ formatTime(stats.totalUsageTime) }}</div>
+          <div class="stat-label">总使用时间</div>
+        </div>
+      </mat-card-content>
+    </mat-card>
+
+    <!-- 使用次数 -->
+    <mat-card class="stat-card">
+      <mat-card-content>
+        <div class="stat-icon count-icon">
+          <mat-icon>repeat</mat-icon>
+        </div>
+        <div class="stat-info">
+          <div class="stat-value">{{ stats.usageCount }}</div>
+          <div class="stat-label">使用次数</div>
+        </div>
+      </mat-card-content>
+    </mat-card>
+
+    <!-- 平均会话时间 -->
+    <mat-card class="stat-card">
+      <mat-card-content>
+        <div class="stat-icon average-icon">
+          <mat-icon>timer</mat-icon>
+        </div>
+        <div class="stat-info">
+          <div class="stat-value">{{ formatTime(stats.averageSessionTime) }}</div>
+          <div class="stat-label">平均会话</div>
+        </div>
+      </mat-card-content>
+    </mat-card>
+
+    <!-- 使用趋势 -->
+    <mat-card class="stat-card">
+      <mat-card-content>
+        <div class="stat-icon trend-icon" [style.color]="getTrendColor(stats.trend)">
+          <mat-icon>{{ getTrendIcon(stats.trend) }}</mat-icon>
+        </div>
+        <div class="stat-info">
+          <div class="stat-value" [style.color]="getTrendColor(stats.trend)">
+            {{ getTrendLabel(stats.trend) }}
+          </div>
+          <div class="stat-label">使用趋势</div>
+        </div>
+      </mat-card-content>
+    </mat-card>
+
+    <!-- 最后使用时间 -->
+    <mat-card class="stat-card" *ngIf="stats.lastUsedAt">
+      <mat-card-content>
+        <div class="stat-icon last-icon">
+          <mat-icon>history</mat-icon>
+        </div>
+        <div class="stat-info">
+          <div class="stat-value">{{ stats.lastUsedAt | date:'MM月dd日' }}</div>
+          <div class="stat-label">最后使用</div>
+        </div>
+      </mat-card-content>
+    </mat-card>
+
+    <!-- 用户评分 -->
+    <mat-card class="stat-card" *ngIf="stats.userRating > 0">
+      <mat-card-content>
+        <div class="stat-icon rating-icon">
+          <mat-icon>star</mat-icon>
+        </div>
+        <div class="stat-info">
+          <div class="stat-value">{{ stats.userRating }} / 5</div>
+          <div class="stat-label">您的评分</div>
+        </div>
+      </mat-card-content>
+    </mat-card>
+  </div>
+
+  <div *ngIf="!loading && !error && !stats" class="empty-state">
+    <mat-icon>analytics</mat-icon>
+    <p>暂无使用统计数据</p>
+  </div>
+</div>

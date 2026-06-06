@@ -34,7 +34,12 @@
     <mat-card class="profile-card">
       <mat-card-header>
         <div mat-card-avatar class="avatar-container">
-          <img *ngIf="userProfile?.avatar" [src]="userProfile?.avatar || ''" alt="用户头像" class="avatar-image" />
+          <img
+            *ngIf="userProfile?.avatar"
+            [src]="userProfile?.avatar || ''"
+            alt="用户头像"
+            class="avatar-image"
+          />
           <mat-icon *ngIf="!userProfile?.avatar" class="avatar-icon">person</mat-icon>
         </div>
         <mat-card-title>{{ userProfile?.username || '用户名' }}</mat-card-title>
@@ -66,12 +71,14 @@
 
           <div class="field-row">
             <span class="field-label">注册时间：</span>
-            <span class="field-value">{{ userProfile?.createdAt | date:'yyyy-MM-dd HH:mm' }}</span>
+            <span class="field-value">{{ userProfile?.createdAt | date: 'yyyy-MM-dd HH:mm' }}</span>
           </div>
 
           <div class="field-row" *ngIf="userProfile?.updatedAt">
             <span class="field-label">最后更新：</span>
-            <span class="field-value">{{ (userProfile?.updatedAt || '') | date:'yyyy-MM-dd HH:mm' }}</span>
+            <span class="field-value">{{
+              userProfile?.updatedAt || '' | date: 'yyyy-MM-dd HH:mm'
+            }}</span>
           </div>
         </div>
 
@@ -90,8 +97,19 @@
                 <img *ngIf="formData.avatar" [src]="formData.avatar" alt="预览头像" />
                 <mat-icon *ngIf="!formData.avatar">person</mat-icon>
               </div>
-              <input type="file" #fileInput accept="image/*" (change)="uploadAvatar($event)" hidden />
-              <button mat-stroked-button type="button" (click)="fileInput.click()" [disabled]="saving">
+              <input
+                type="file"
+                #fileInput
+                accept="image/*"
+                (change)="uploadAvatar($event)"
+                hidden
+              />
+              <button
+                mat-stroked-button
+                type="button"
+                (click)="fileInput.click()"
+                [disabled]="saving"
+              >
                 <mat-icon>upload</mat-icon>
                 上传头像
               </button>
@@ -146,9 +164,7 @@
           <mat-spinner diameter="20" *ngIf="saving"></mat-spinner>
           <span *ngIf="!saving">保存</span>
         </button>
-        <button mat-stroked-button (click)="cancelEdit()" [disabled]="saving">
-          取消
-        </button>
+        <button mat-stroked-button (click)="cancelEdit()" [disabled]="saving">取消</button>
       </mat-card-actions>
     </mat-card>
 
@@ -167,9 +183,7 @@
             <span class="item-title">登录密码</span>
             <span class="item-desc">定期更换密码有助于保护账户安全</span>
           </div>
-          <button mat-raised-button color="primary" (click)="changePassword()">
-            修改密码
-          </button>
+          <button mat-raised-button color="primary" (click)="changePassword()">修改密码</button>
         </div>
 
         <mat-divider></mat-divider>
@@ -179,9 +193,7 @@
             <span class="item-title">两步验证</span>
             <span class="item-desc">增强账户安全性，建议开启</span>
           </div>
-          <button mat-stroked-button disabled>
-            即将开放
-          </button>
+          <button mat-stroked-button disabled>即将开放</button>
         </div>
       </mat-card-content>
     </mat-card>
@@ -224,9 +236,7 @@
           <h4>通知设置</h4>
 
           <div class="preference-item">
-            <mat-checkbox [(ngModel)]="emailNotify" name="emailNotify">
-              邮件通知
-            </mat-checkbox>
+            <mat-checkbox [(ngModel)]="emailNotify" name="emailNotify"> 邮件通知 </mat-checkbox>
           </div>
 
           <div class="preference-item">
@@ -236,9 +246,7 @@
           </div>
 
           <div class="preference-item">
-            <mat-checkbox [(ngModel)]="pushNotify" name="pushNotify">
-              推送通知
-            </mat-checkbox>
+            <mat-checkbox [(ngModel)]="pushNotify" name="pushNotify"> 推送通知 </mat-checkbox>
           </div>
         </div>
 
@@ -249,15 +257,11 @@
           <h4>隐私设置</h4>
 
           <div class="preference-item">
-            <mat-checkbox [(ngModel)]="showEmail" name="showEmail">
-              公开邮箱地址
-            </mat-checkbox>
+            <mat-checkbox [(ngModel)]="showEmail" name="showEmail"> 公开邮箱地址 </mat-checkbox>
           </div>
 
           <div class="preference-item">
-            <mat-checkbox [(ngModel)]="showPhone" name="showPhone">
-              公开手机号
-            </mat-checkbox>
+            <mat-checkbox [(ngModel)]="showPhone" name="showPhone"> 公开手机号 </mat-checkbox>
           </div>
         </div>
       </mat-card-content>

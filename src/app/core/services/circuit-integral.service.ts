@@ -8,9 +8,11 @@
  * @version 1.0.0
  */
 
-import { Injectable } from '@angular/core';
+import { HttpClient } from '@angular/common/http';
+import { Injectable, Injector } from '@angular/core';
+import { lastValueFrom } from 'rxjs';
 
-import { AssemblyStep, CircuitAssemblyService } from './circuit-assembly.service';
+import { AssemblyStatus, AssemblyStep, CircuitAssemblyService } from './circuit-assembly.service';
 import { VircadiaSdkService } from './vircadia-sdk.service';
 
 /**
@@ -99,6 +101,8 @@ export interface IntegralServiceInterface {
   providedIn: 'root',
 })
 export class CircuitIntegralService implements IntegralServiceInterface {
+  private http?: HttpClient;
+  private readonly API_BASE = '/api/v1/integral';
   // 奖励配置表
   private readonly REWARD_CONFIGS: Record<RewardActionType, RewardConfig> = {
     circuit_assembly_success: {
@@ -178,8 +182,12 @@ export class CircuitIntegralService implements IntegralServiceInterface {
 
   constructor(
     private assemblyService: CircuitAssemblyService,
-    private vircadiaSdk: VircadiaSdkService
+    private vircadiaSdk: VircadiaSdkService,
+    private injector: Injector
   ) {
+    setTimeout(() => {
+      this.http = this.injector.get(HttpClient);
+    }, 0);
     this.setupAssemblyListener();
   }
 
@@ -217,7 +225,7 @@ export class CircuitIntegralService implements IntegralServiceInterface {
     }
 
     // 1. 基础成功奖励
-    this.rewardUser({
+    void this.rewardUser({
       eventId: `reward_${step.stepId}`,
       userId: step.userId,
       action: 'circuit_assembly_success',
@@ -233,7 +241,7 @@ export class CircuitIntegralService implements IntegralServiceInterface {
     // 2. 检查是否为首次尝试成功
     if (step.attemptNumber === 1) {
       const config = this.REWARD_CONFIGS['first_try_success'];
-      this.rewardUser({
+      void this.rewardUser({
         eventId: `reward_first_${step.stepId}`,
         userId: step.userId,
         action: 'first_try_success',
@@ -247,13 +255,13 @@ export class CircuitIntegralService implements IntegralServiceInterface {
     }
 
     // 3. 更新连击数
-    const currentCombo = (this.comboCount.get(this.currentUserId) || 0) + 1;
+    const currentCombo = (this.comboCount.get(this.currentUserId) ?? 0) + 1;
     this.comboCount.set(this.currentUserId, currentCombo);
 
     // 4. 检查是否完成整个电路
     const progress = this.assemblyService.getAssemblyProgress();
-    if (progress.status === 'completed') {
-      this.handleCircuitCompleted(progress.installed);
+    if (progress.status === AssemblyStatus.COMPLETED) {
+      void this.handleCircuitCompleted(progress.installed);
     }
   }
 
@@ -264,8 +272,8 @@ export class CircuitIntegralService implements IntegralServiceInterface {
     const config = this.REWARD_CONFIGS['circuit_completed'];
 
     // 计算连击加成
-    const combo = this.comboCount.get(this.currentUserId) || 0;
-    const comboBonus = Math.min(combo * 5, config.maxComboBonus || 0);
+    const combo = this.comboCount.get(this.currentUserId) ?? 0;
+    const comboBonus = Math.min(combo * 5, config.maxComboBonus ?? 0);
 
     const totalPoints = config.basePoints + comboBonus;
 
@@ -302,7 +310,9 @@ export class CircuitIntegralService implements IntegralServiceInterface {
     // 3. 发送到后端积分服务
     try {
       await this.syncToBackend(event);
-    } catch (error) {}
+    } catch {
+      /* 积分同步失败不阻塞主流程 */
+    }
 
     // 4. 触发 Vircadia 事件
     this.emitVircadiaEvent(event);
@@ -312,12 +322,38 @@ export class CircuitIntegralService implements IntegralServiceInterface {
    * 播放奖励动画
    */
   private playRewardAnimation(points: number): void {
-    console.log('[Integral] 🎉 播放奖励动画：+{} 分'.replace('{}', String(points)));
+    // 创建临时积分动画元素
+    const toast = document.createElement('div');
+    toast.style.cssText = `
+      position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%);
+      padding: 16px 32px; background: linear-gradient(135deg, #f59e0b, #ef4444);
+      color: white; border-radius: 12px; font-size: 24px; font-weight: bold;
+      z-index: 9999; animation: rewardFloat 1.5s ease-out forwards;
+      box-shadow: 0 4px 16px rgba(0,0,0,0.3);
+    `;
+    toast.textContent = `+${points} 积分! 🎉`;
+    document.body.appendChild(toast);
 
-    // TODO: 实现 UI 动画效果
-    // 可以使用 Angular CDK Toast 或自定义动画组件
+    // 添加动画关键帧
+    if (!document.getElementById('reward-animation-style')) {
+      const style = document.createElement('style');
+      style.id = 'reward-animation-style';
+      style.textContent = `
+        @keyframes rewardFloat {
+          0% { opacity: 1; transform: translate(-50%, -50%) scale(0.5); }
+          50% { opacity: 1; transform: translate(-50%, -80%) scale(1.2); }
+          100% { opacity: 0; transform: translate(-50%, -150%) scale(0.8); }
+        }
+      `;
+      document.head.appendChild(style);
+    }
 
-    // 示例：发送消息到 Vircadia 聊天系统
+    // 1.5 秒后移除
+    setTimeout(() => {
+      toast.remove();
+    }, 1500);
+
+    // 同时通过 Vircadia 发送事件
     this.vircadiaSdk
       .interact({
         objectId: 'ui_system',
@@ -335,9 +371,24 @@ export class CircuitIntegralService implements IntegralServiceInterface {
    * 同步到后端
    */
   private async syncToBackend(event: RewardEvent): Promise<void> {
-    // TODO: 调用后端 API
-    // 示例 API 调用:
-    // await this.httpClient.post('/api/integral/reward', event).toPromise();
+    if (!this.http) return;
+
+    try {
+      await lastValueFrom(
+        this.http.post(`${this.API_BASE}/reward`, {
+          event_id: event.eventId,
+          user_id: event.userId,
+          action: event.action,
+          points_awarded: event.pointsAwarded,
+          description: event.description,
+          metadata: event.metadata,
+          timestamp: event.timestamp.toISOString(),
+        })
+      );
+      console.warn(`[Integral] ✅ 积分记录已同步: ${event.eventId}`);
+    } catch (error) {
+      console.error('[Integral] 积分同步失败:', error);
+    }
   }
 
   /**
@@ -368,8 +419,21 @@ export class CircuitIntegralService implements IntegralServiceInterface {
    * 获取用户积分
    */
   async getUserPoints(userId: string): Promise<number> {
-    // TODO: 从后端获取
-    // 临时返回缓存的总和
+    if (!this.http) {
+      return this.getLocalUserPoints(userId);
+    }
+
+    try {
+      const response = await lastValueFrom(
+        this.http.get<{ total_points: number }>(`${this.API_BASE}/user/${userId}/points`)
+      );
+      return response.total_points;
+    } catch {
+      return this.getLocalUserPoints(userId);
+    }
+  }
+
+  private getLocalUserPoints(userId: string): number {
     return this.rewardHistory
       .filter((e) => e.userId === userId)
       .reduce((sum, e) => sum + e.pointsAwarded, 0);
@@ -378,14 +442,17 @@ export class CircuitIntegralService implements IntegralServiceInterface {
   /**
    * 获取奖励历史
    */
-  async getRewardHistory(userId: string): Promise<RewardEvent[]> {
-    return this.rewardHistory.filter((e) => e.userId === userId);
+  getRewardHistory(userId: string): Promise<RewardEvent[]> {
+    return Promise.resolve(this.rewardHistory.filter((e) => e.userId === userId));
   }
 
   /**
    * 手动触发奖励 (用于特殊成就等)
    */
-  async triggerManualReward(action: RewardActionType, metadata?: any): Promise<void> {
+  async triggerManualReward(
+    action: RewardActionType,
+    metadata?: Record<string, unknown>
+  ): Promise<void> {
     const config = this.REWARD_CONFIGS[action];
 
     if (!config) {

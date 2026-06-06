@@ -90,6 +90,25 @@ module.exports = {
     '*.min.js',
     'vendor/',
     'scripts/', // 忽略脚本目录
+    // 以下文件/目录被 tsconfig.app.json 排除，eslint 不应对其检查
+    'src/ai-sdk/**/*',
+    'src/shared/**/*',
+    'src/design-tokens/**/*',
+    'src/environments/environment.prod.ts',
+    'src/assets/i18n/helpers.ts',
+    'src/assets/i18n/index.ts',
+    'src/assets/i18n/types.ts',
+    'src/assets/icons/icon-index.ts',
+    'src/assets/icons/icon.module.ts',
+    'src/app/admin/dashboard/dashboard.module.ts',
+    'src/app/ai-code-generator/**/*',
+    'src/app/education/**/*',
+    'src/app/features/**/*',
+    'src/app/management/**/*',
+    'src/app/models/**/*',
+    'src/app/offline-mode/**/*',
+    'src/app/services/**/*',
+    'src/app/routes.const.ts',
   ],
   // 忽略特定包的安全警告（xlsx 0.20.3 已修复安全问题，但工具可能误报）
   overrides: [

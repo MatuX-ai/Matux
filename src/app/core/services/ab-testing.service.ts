@@ -13,7 +13,7 @@ export interface ABTestConfig {
 export interface ABTestVariant {
   id: string;
   name: string;
-  config: Record<string, any>;
+  config: Record<string, unknown>;
 }
 
 export interface ABTestExperiment {
@@ -74,7 +74,7 @@ export class ABTestingService {
     const saved = localStorage.getItem('ab-experiments');
     if (saved) {
       try {
-        this.currentExperiments = JSON.parse(saved);
+        this.currentExperiments = JSON.parse(saved) as Record<string, string>;
         this.experimentsSubject.next(this.currentExperiments);
       } catch (error) {
         console.error('加载A/B测试配置失败:', error);
@@ -153,13 +153,13 @@ export class ABTestingService {
 
     // 返回已分配的变体
     const variantId = this.currentExperiments[testName];
-    return config.variants.find((v) => v.id === variantId) || null;
+    return config.variants.find((v) => v.id === variantId) ?? null;
   }
 
   /**
    * 获取变体配置
    */
-  getVariantConfig<T = any>(testName: string, defaultValue: T): T {
+  getVariantConfig<T = unknown>(testName: string, defaultValue: T): T {
     const variant = this.getVariant(testName);
     return (variant?.config as T) || defaultValue;
   }
@@ -209,7 +209,7 @@ export class ABTestingService {
       userId,
     };
 
-    console.log('AB Test Assignment:', experiment);
+    console.warn('AB Test Assignment:', experiment);
 
     // 实际项目中应该发送到分析服务
     // this.analyticsService.track('ab_test_assignment', experiment);
@@ -233,7 +233,7 @@ export class ABTestingService {
       userId: this.getUserId(),
     };
 
-    console.log('AB Test Conversion:', event);
+    console.warn('AB Test Conversion:', event);
 
     // 实际项目中应该发送到分析服务
     // this.analyticsService.track('ab_test_conversion', event);
@@ -272,7 +272,7 @@ export class ABTestingService {
       return {
         testName: config?.name || testName,
         variantId,
-        variantName: variant?.name || variantId,
+        variantName: variant?.name ?? variantId,
       };
     });
   }

@@ -4,7 +4,7 @@ import { BehaviorSubject, of } from 'rxjs';
 import { catchError } from 'rxjs/operators';
 
 export interface I18nTranslations {
-  [key: string]: any;
+  [key: string]: unknown;
 }
 
 @Injectable({
@@ -95,14 +95,18 @@ export class I18nService {
    */
   translate(key: string): string {
     const lang = this.currentLang.value;
-    const translations = this.translations[lang];
+    const translations = this.translations[lang] as Record<string, unknown> | undefined;
 
     const keys = key.split('.');
-    let value: any = translations;
+    let value: unknown = translations;
 
     for (const k of keys) {
-      if (value && value[k] !== undefined) {
-        value = value[k];
+      if (
+        value &&
+        typeof value === 'object' &&
+        (value as Record<string, unknown>)[k] !== undefined
+      ) {
+        value = (value as Record<string, unknown>)[k];
       } else {
         console.warn(`Translation key not found: ${key}`);
         return key;
@@ -120,7 +124,7 @@ export class I18nService {
    * 获取所有翻译
    */
   getTranslations(): I18nTranslations {
-    return this.translations[this.currentLang.value];
+    return this.translations[this.currentLang.value] as I18nTranslations;
   }
 
   /**

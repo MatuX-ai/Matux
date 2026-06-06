@@ -3,17 +3,17 @@
  */
 
 .profile-container {
-  padding: 24px;
   max-width: 1200px;
   margin: 0 auto;
+  padding: 24px;
 }
 
 // 加载状态
 .loading-container {
   display: flex;
   flex-direction: column;
-  align-items: center;
   justify-content: center;
+  align-items: center;
   padding: 48px;
 
   p {
@@ -24,15 +24,15 @@
 
 // 错误信息
 .error-container {
-  text-align: center;
   padding: 48px;
+  text-align: center;
 
   .error-icon {
-    font-size: 48px;
     width: 48px;
     height: 48px;
-    color: var(--mat-error-color);
     margin-bottom: 16px;
+    color: var(--mat-error-color);
+    font-size: 48px;
   }
 
   .error-message {
@@ -52,9 +52,9 @@
 
     h2 {
       margin: 0;
+      color: var(--mat-text-primary);
       font-size: 24px;
       font-weight: 500;
-      color: var(--mat-text-primary);
     }
 
     .header-actions {
@@ -72,24 +72,24 @@
 mat-card {
   margin-bottom: 24px;
   border-radius: 12px;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+  box-shadow: 0 2px 8px rgb(0 0 0 / 8%);
   transition: box-shadow 0.3s ease;
 
   &:hover {
-    box-shadow: 0 4px 16px rgba(0, 0, 0, 0.12);
+    box-shadow: 0 4px 16px rgb(0 0 0 / 12%);
   }
 }
 
 // 头像容器
 .avatar-container {
+  display: flex;
+  overflow: hidden;
+  justify-content: center;
+  align-items: center;
   width: 48px;
   height: 48px;
   border-radius: 50%;
   background: linear-gradient(135deg, var(--mat-primary-color) 0%, var(--mat-accent-color) 100%);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  overflow: hidden;
 
   .avatar-image {
     width: 100%;
@@ -98,10 +98,10 @@ mat-card {
   }
 
   .avatar-icon {
-    font-size: 24px;
     width: 24px;
     height: 24px;
     color: white;
+    font-size: 24px;
   }
 }
 
@@ -119,15 +119,15 @@ mat-card {
     }
 
     .field-label {
-      font-weight: 500;
-      color: var(--mat-text-primary);
       min-width: 100px;
+      color: var(--mat-text-primary);
+      font-weight: 500;
     }
 
     .field-value {
+      flex: 1;
       color: var(--mat-text-secondary);
       text-align: right;
-      flex: 1;
     }
   }
 }
@@ -140,16 +140,16 @@ mat-card {
     display: flex;
     align-items: center;
     gap: 8px;
-    color: var(--mat-error-color);
     margin-bottom: 16px;
     padding: 12px;
-    background-color: rgba(var(--mat-error-rgb), 0.1);
     border-radius: 8px;
+    background-color: rgb(var(--mat-error-rgb), 0.1);
+    color: var(--mat-error-color);
 
     mat-icon {
-      font-size: 20px;
       width: 20px;
       height: 20px;
+      font-size: 20px;
     }
   }
 }
@@ -163,15 +163,15 @@ mat-card {
   margin-bottom: 24px;
 
   .avatar-preview {
+    display: flex;
+    overflow: hidden;
+    justify-content: center;
+    align-items: center;
     width: 80px;
     height: 80px;
     border-radius: 50%;
     background: linear-gradient(135deg, var(--mat-primary-color) 0%, var(--mat-accent-color) 100%);
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    overflow: hidden;
-    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+    box-shadow: 0 4px 8px rgb(0 0 0 / 10%);
 
     img {
       width: 100%;
@@ -180,10 +180,10 @@ mat-card {
     }
 
     mat-icon {
-      font-size: 40px;
       width: 40px;
       height: 40px;
       color: white;
+      font-size: 40px;
     }
   }
 }
@@ -228,13 +228,13 @@ mat-card {
     gap: 4px;
 
     .item-title {
-      font-weight: 500;
       color: var(--mat-text-primary);
+      font-weight: 500;
     }
 
     .item-desc {
-      font-size: 14px;
       color: var(--mat-text-secondary);
+      font-size: 14px;
     }
   }
 
@@ -254,10 +254,10 @@ mat-card {
   padding: 16px;
 
   h4 {
-    margin: 0 0 16px 0;
+    margin: 0 0 16px;
+    color: var(--mat-text-primary);
     font-size: 16px;
     font-weight: 500;
-    color: var(--mat-text-primary);
   }
 }
 
@@ -268,8 +268,8 @@ mat-card {
   padding: 12px 0;
 
   .item-label {
-    font-weight: 500;
     color: var(--mat-text-primary);
+    font-weight: 500;
   }
 
   mat-checkbox {
@@ -278,14 +278,14 @@ mat-card {
 }
 
 // 响应式设计
-@media (max-width: 768px) {
+@media (width <= 768px) {
   .profile-container {
     padding: 16px;
   }
 
   .profile-header {
     flex-direction: column;
-    align-items: flex-start !important;
+    align-items: flex-start;
     gap: 16px;
 
     h2 {
@@ -302,22 +302,22 @@ mat-card {
   }
 
   .field-row {
-    flex-direction: column !important;
-    align-items: flex-start !important;
+    flex-direction: column;
+    align-items: flex-start;
     gap: 8px;
 
     .field-label {
-      min-width: auto !important;
+      min-width: auto;
     }
 
     .field-value {
-      text-align: left !important;
+      text-align: left;
     }
   }
 
   .security-item {
-    flex-direction: column !important;
-    align-items: flex-start !important;
+    flex-direction: column;
+    align-items: flex-start;
     gap: 16px;
 
     button {
@@ -326,8 +326,8 @@ mat-card {
   }
 
   .preference-item {
-    flex-direction: column !important;
-    align-items: flex-start !important;
+    flex-direction: column;
+    align-items: flex-start;
     gap: 12px;
   }
 }

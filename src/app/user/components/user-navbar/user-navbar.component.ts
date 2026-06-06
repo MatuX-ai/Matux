@@ -14,6 +14,7 @@ import { MatToolbarModule } from '@angular/material/toolbar';
 import { Router, RouterModule } from '@angular/router';
 import { Subject } from 'rxjs';
 
+import { User } from '../../../core/models/auth.models';
 import { AuthService } from '../../../core/services/auth.service';
 import { SidebarService } from '../../services/sidebar.service';
 import { UserCenterService } from '../../services/user-center.service';
@@ -46,25 +47,15 @@ import { UserCenterService } from '../../services/user-center.service';
 
         <!-- 导航菜单（仅移动端显示，桌面端由侧边栏接管） -->
         <nav class="navbar-nav" *ngIf="isMobile">
-          <a routerLink="/user/dashboard" routerLinkActive="active" class="nav-link">
-            首页
-          </a>
-          <a routerLink="/ai-edu" routerLinkActive="active" class="nav-link">
-            课程
-          </a>
-          <a routerLink="/ar-lab" routerLinkActive="active" class="nav-link">
-            AR实验室
-          </a>
+          <a routerLink="/user/dashboard" routerLinkActive="active" class="nav-link"> 首页 </a>
+          <a routerLink="/ai-edu" routerLinkActive="active" class="nav-link"> 课程 </a>
+          <a routerLink="/ar-lab" routerLinkActive="active" class="nav-link"> AR实验室 </a>
         </nav>
 
         <!-- 桌面端快捷导航（精简版，侧边栏已有完整导航） -->
         <nav class="navbar-nav desktop-nav" *ngIf="!isMobile">
-          <a routerLink="/user/dashboard" routerLinkActive="active" class="nav-link">
-            首页
-          </a>
-          <a routerLink="/ai-edu" routerLinkActive="active" class="nav-link">
-            课程
-          </a>
+          <a routerLink="/user/dashboard" routerLinkActive="active" class="nav-link"> 首页 </a>
+          <a routerLink="/ai-edu" routerLinkActive="active" class="nav-link"> 课程 </a>
         </nav>
 
         <!-- 搜索和通知 -->
@@ -74,7 +65,9 @@ import { UserCenterService } from '../../services/user-center.service';
           </button>
           <button mat-icon-button class="action-btn notification-btn" title="通知">
             <mat-icon>notifications</mat-icon>
-            <span class="notification-badge" *ngIf="unreadNotifications > 0">{{ unreadNotifications }}</span>
+            <span class="notification-badge" *ngIf="unreadNotifications > 0">{{
+              unreadNotifications
+            }}</span>
           </button>
         </div>
 
@@ -310,7 +303,7 @@ import { UserCenterService } from '../../services/user-center.service';
   ],
 })
 export class UserNavbarComponent implements OnInit, OnDestroy {
-  currentUser: any = null;
+  currentUser: User | null = null;
   userType: string | undefined;
   isMobile = false;
   unreadNotifications = 0; // 未读通知数量
@@ -358,7 +351,7 @@ export class UserNavbarComponent implements OnInit, OnDestroy {
   }
 
   navigateTo(path: string): void {
-    this.router.navigate([path]);
+    void this.router.navigate([path]);
   }
 
   logout(): void {

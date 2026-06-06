@@ -1,23 +1,23 @@
-@use '../../../../styles/shared/variables' as *;
+@use '../../../../styles/design-tokens' as dt;
 @use '../../../../styles/shared/mixins' as *;
 
 .offline-dashboard {
   max-width: 1200px;
   margin: 0 auto;
-  padding: $spacing-xl;
-
+  padding: dt.$spacing-xl;
+  
   .dashboard-header {
-    margin-bottom: $spacing-xxl;
+    margin-bottom: dt.$spacing-xxl;
     text-align: center;
 
     h1 {
-      margin: 0 0 $spacing-sm;
+      margin: 0 0 dt.$spacing-sm;
       color: #3b82f6;
       font-size: 2rem;
       font-weight: 300;
 
       .header-icon {
-        margin-right: $spacing-md;
+        margin-right: dt.$spacing-md;
         font-size: 2.2rem;
         vertical-align: middle;
       }
@@ -25,21 +25,23 @@
 
     .subtitle {
       margin: 0;
-      color: $text-secondary;
+      color: dt.$color-text-secondary;
       font-size: 1.1rem;
     }
   }
 
   .status-card {
-    margin-bottom: $spacing-xl;
+    margin-bottom: dt.$spacing-xl;
 
     mat-card-header {
       @include flex-between;
+
       align-items: center;
 
       mat-card-title {
         @include flex-center;
-        gap: $spacing-md;
+
+        gap: dt.$spacing-md;
 
         mat-icon {
           font-size: 1.8rem;
@@ -51,22 +53,28 @@
       .status-info {
         display: grid;
         grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-        gap: $spacing-lg;
+        gap: dt.$spacing-lg;
 
         .status-item {
           @include flex-between;
-          padding: $spacing-sm 0;
+
+          padding: dt.$spacing-sm 0;
 
           .label {
-            color: $text-secondary;
+            color: dt.$color-text-secondary;
             font-weight: 500;
           }
 
           .value {
             font-weight: 600;
 
-            &.online { color: $status-completed; }
-            &.offline { color: $status-error; }
+            &.online {
+              color: dt.$color-success;
+            }
+
+            &.offline {
+              color: dt.$color-error;
+            }
           }
         }
       }
@@ -76,13 +84,15 @@
       .storage-info {
         .storage-summary {
           @include flex-between;
-          margin-bottom: $spacing-lg;
 
-          .size-info, .pending-info {
+          margin-bottom: dt.$spacing-lg;
+
+          .size-info,
+          .pending-info {
             .label {
               display: block;
-              margin-bottom: $spacing-xs;
-              color: $text-secondary;
+              margin-bottom: dt.$spacing-xs;
+              color: dt.$color-text-secondary;
               font-size: 0.9rem;
             }
 
@@ -90,15 +100,17 @@
               font-size: 1.2rem;
               font-weight: 600;
 
+              // stylelint-disable-next-line max-nesting-depth
               &.badge {
-                padding: $spacing-xs $spacing-md;
-                border-radius: $border-radius-xl;
+                padding: dt.$spacing-xs dt.$spacing-md;
+                border-radius: dt.$border-radius-xl;
                 background: #e0e0e0;
                 font-size: 0.9rem;
 
+                /* stylelint-disable-next-line max-nesting-depth, selector-max-specificity */
                 &.warning {
                   background: #fff3e0;
-                  color: $status-in-progress;
+                  color: dt.$color-warning;
                 }
               }
             }
@@ -106,42 +118,67 @@
         }
 
         .item-counts {
-          margin-top: $spacing-lg;
+          margin-top: dt.$spacing-lg;
 
           .count-item {
             @include flex-between;
-            padding: $spacing-sm 0;
+
+            padding: dt.$spacing-sm 0;
             border-bottom: 1px solid #eee;
 
-            &:last-child { border-bottom: none; }
+            &:last-child {
+              border-bottom: none;
+            }
 
-            .item-label { color: $text-secondary; }
-            .item-count { color: #3b82f6; font-weight: 600; }
+            .item-label {
+              color: dt.$color-text-secondary;
+            }
+
+            .item-count {
+              color: #3b82f6;
+              font-weight: 600;
+            }
           }
         }
-      }
-    }
 
-    &.storage-stats {
-      .extra-stats {
-        margin-top: $spacing-lg;
+        .extra-stats {
+          margin-top: dt.$spacing-lg;
 
-        .stat-row {
-          display: flex;
-          justify-content: space-between;
-          align-items: center;
-          padding: $spacing-sm 0;
-          border-bottom: 1px solid #eee;
+          .stat-row {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: dt.$spacing-sm 0;
+            border-bottom: 1px solid #eee;
 
-          &:last-child { border-bottom: none; }
-          .label { color: $text-secondary; }
-          .value {
-            font-weight: 500;
-            color: $text-primary;
+            &:last-child {
+              border-bottom: none;
+            }
 
-            &.success { color: #2e7d32; }
-            &.warning { color: #ef6c00; }
-            &.conflict { color: #c62828; font-weight: 600; }
+            .label {
+              color: dt.$color-text-secondary;
+            }
+
+            .value {
+              color: dt.$color-text-primary;
+              font-weight: 500;
+
+              // stylelint-disable-next-line max-nesting-depth
+              &.success {
+                color: #2e7d32;
+              }
+
+              // stylelint-disable-next-line max-nesting-depth
+              &.warning {
+                color: #ef6c00;
+              }
+
+              // stylelint-disable-next-line max-nesting-depth
+              &.conflict {
+                color: #c62828;
+                font-weight: 600;
+              }
+            }
           }
         }
       }
@@ -153,29 +190,37 @@
           display: flex;
           justify-content: space-between;
           align-items: center;
-          padding: $spacing-sm 0;
+          padding: dt.$spacing-sm 0;
 
-          .label { color: $text-secondary; }
+          .label {
+            color: dt.$color-text-secondary;
+          }
+
           .value {
+            color: dt.$color-text-primary;
             font-weight: 500;
-            color: $text-primary;
 
-            &.syncing { color: #2196f3; }
+            &.syncing {
+              color: #2196f3;
+            }
           }
         }
 
         .progress-wrapper {
           display: flex;
           align-items: center;
-          gap: $spacing-md;
-          margin-top: $spacing-lg;
+          gap: dt.$spacing-md;
+          margin-top: dt.$spacing-lg;
 
-          mat-progress-bar { flex: 1; }
+          mat-progress-bar {
+            flex: 1;
+          }
+
           .progress-text {
+            min-width: 40px;
+            color: #2196f3;
             font-size: 0.85rem;
             font-weight: 500;
-            color: #2196f3;
-            min-width: 40px;
             text-align: right;
           }
         }
@@ -188,39 +233,41 @@
     height: 100%;
 
     mat-card-content {
-      padding: $spacing-xl;
+      padding: dt.$spacing-xl;
       text-align: center;
 
       .action-icon {
-        margin-bottom: $spacing-lg;
+        margin-bottom: dt.$spacing-lg;
         color: #3b82f6;
         font-size: 3rem;
       }
 
       h3 {
-        margin: $spacing-lg 0 $spacing-sm;
+        margin: dt.$spacing-lg 0 dt.$spacing-sm;
         font-size: 1.3rem;
         font-weight: 500;
       }
 
       p {
         min-height: 40px;
-        margin-bottom: $spacing-xl;
-        color: $text-secondary;
+        margin-bottom: dt.$spacing-xl;
+        color: dt.$color-text-secondary;
       }
 
-      button { width: 120px; }
+      button {
+        width: 120px;
+      }
     }
   }
 
   .info-card {
-    margin-top: $spacing-xxl;
+    margin-top: dt.$spacing-xxl;
 
     .tips-list {
-      padding-left: $spacing-xl;
+      padding-left: dt.$spacing-xl;
 
       li {
-        margin: $spacing-sm 0;
+        margin: dt.$spacing-sm 0;
         color: #555;
         line-height: 1.5;
       }
@@ -231,31 +278,44 @@
 // 响应式设计
 @media (width <= 768px) {
   .offline-dashboard {
-    padding: $spacing-lg;
+    padding: dt.$spacing-lg;
 
-    .dashboard-header h1 { font-size: 2rem; }
-    .dashboard-header .header-icon { font-size: 2.2rem; }
+    .dashboard-header h1 {
+      font-size: 2rem;
+    }
+
+    .dashboard-header .header-icon {
+      font-size: 2.2rem;
+    }
 
     .status-card .storage-summary {
       flex-direction: column;
-      gap: $spacing-lg;
+      gap: dt.$spacing-lg;
     }
   }
 }
 
 @media (width <= 480px) {
   .offline-dashboard {
-    .dashboard-header h1 { font-size: 1.6rem; }
+    .dashboard-header h1 {
+      font-size: 1.6rem;
+    }
 
     .status-card mat-card-content {
-      padding: $spacing-md !important;
+      padding: dt.$spacing-md !important;
     }
 
     .quick-action-card mat-card-content {
-      padding: $spacing-lg;
+      padding: dt.$spacing-lg;
 
-      .action-icon { font-size: 2rem; }
-      h3 { font-size: 1rem; }
+      .action-icon {
+        font-size: 2rem;
+      }
+
+      h3 {
+        font-size: 1rem;
+      }
+
       button {
         width: 100px;
         font-size: 0.9rem;

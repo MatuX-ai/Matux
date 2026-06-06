@@ -25,7 +25,13 @@ import { ActivatedRoute, Router } from '@angular/router';
       <div class="detail-layout">
         <div class="detail-main">
           <div class="detail-hero" [class]="'hero-' + content?.contentType">
-            <span class="hero-emoji">{{ content?.contentType === 'course' ? '📚' : content?.contentType === 'resource' ? '📦' : '🔧' }}</span>
+            <span class="hero-emoji">{{
+              content?.contentType === 'course'
+                ? '📚'
+                : content?.contentType === 'resource'
+                  ? '📦'
+                  : '🔧'
+            }}</span>
           </div>
 
           <mat-card class="detail-card">
@@ -45,10 +51,20 @@ import { ActivatedRoute, Router } from '@angular/router';
               </div>
 
               <div class="detail-actions">
-                <button mat-raised-button color="primary" class="action-btn" *ngIf="!content?.isPurchased">
+                <button
+                  mat-raised-button
+                  color="primary"
+                  class="action-btn"
+                  *ngIf="!content?.isPurchased"
+                >
                   {{ content?.isFree ? '免费获取' : '¥' + (content?.price ?? 0) + ' 购买' }}
                 </button>
-                <button mat-raised-button color="accent" class="action-btn" *ngIf="content?.isPurchased">
+                <button
+                  mat-raised-button
+                  color="accent"
+                  class="action-btn"
+                  *ngIf="content?.isPurchased"
+                >
                   开始学习
                 </button>
               </div>
@@ -84,43 +100,119 @@ import { ActivatedRoute, Router } from '@angular/router';
       </div>
     </div>
   `,
-  styles: [`
-    .detail-container { padding: 24px; max-width: 1200px; margin: 0 auto; }
-    .back-btn { margin-bottom: 16px; }
-    .detail-layout { display: grid; grid-template-columns: 1fr 300px; gap: 24px; }
-    .detail-hero {
-      height: 200px; border-radius: 16px; display: flex; align-items: center;
-      justify-content: center; margin-bottom: 16px;
-    }
-    .hero-course { background: linear-gradient(135deg, #3b82f6, #6366f1); }
-    .hero-resource { background: linear-gradient(135deg, #22c55e, #10b981); }
-    .hero-template { background: linear-gradient(135deg, #f59e0b, #ef4444); }
-    .hero-emoji { font-size: 64px; }
-    .detail-card { border-radius: 16px; }
-    .detail-title { font-size: 24px; font-weight: 700; color: #0f172a; margin: 0 0 12px; }
-    .detail-desc { font-size: 15px; line-height: 1.6; color: #475569; margin: 0 0 16px; }
-    .detail-meta { display: flex; gap: 16px; margin-bottom: 16px; }
-    .meta-rating { color: #f59e0b; font-weight: 500; }
-    .meta-type { color: #3b82f6; }
-    .detail-tags { margin-bottom: 20px; }
-    .action-btn { min-width: 200px; height: 44px; font-size: 16px; border-radius: 12px; }
-    .info-row { display: flex; justify-content: space-between; padding: 8px 0; border-bottom: 1px solid #f1f5f9; }
-    .info-label { color: #64748b; font-size: 13px; }
-    .info-value { color: #0f172a; font-size: 14px; font-weight: 500; }
-    @media (max-width: 768px) { .detail-layout { grid-template-columns: 1fr; } }
-  `],
+  styles: [
+    `
+      .detail-container {
+        padding: 24px;
+        max-width: 1200px;
+        margin: 0 auto;
+      }
+      .back-btn {
+        margin-bottom: 16px;
+      }
+      .detail-layout {
+        display: grid;
+        grid-template-columns: 1fr 300px;
+        gap: 24px;
+      }
+      .detail-hero {
+        height: 200px;
+        border-radius: 16px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        margin-bottom: 16px;
+      }
+      .hero-course {
+        background: linear-gradient(135deg, #3b82f6, #2563eb);
+      }
+      .hero-resource {
+        background: linear-gradient(135deg, #22c55e, #10b981);
+      }
+      .hero-template {
+        background: linear-gradient(135deg, #f59e0b, #ef4444);
+      }
+      .hero-emoji {
+        font-size: 64px;
+      }
+      .detail-card {
+        border-radius: 16px;
+      }
+      .detail-title {
+        font-size: 24px;
+        font-weight: 700;
+        color: #0f172a;
+        margin: 0 0 12px;
+      }
+      .detail-desc {
+        font-size: 15px;
+        line-height: 1.6;
+        color: #475569;
+        margin: 0 0 16px;
+      }
+      .detail-meta {
+        display: flex;
+        gap: 16px;
+        margin-bottom: 16px;
+      }
+      .meta-rating {
+        color: #f59e0b;
+        font-weight: 500;
+      }
+      .meta-type {
+        color: #3b82f6;
+      }
+      .detail-tags {
+        margin-bottom: 20px;
+      }
+      .action-btn {
+        min-width: 200px;
+        height: 44px;
+        font-size: 16px;
+        border-radius: 12px;
+      }
+      .info-row {
+        display: flex;
+        justify-content: space-between;
+        padding: 8px 0;
+        border-bottom: 1px solid #f1f5f9;
+      }
+      .info-label {
+        color: #64748b;
+        font-size: 13px;
+      }
+      .info-value {
+        color: #0f172a;
+        font-size: 14px;
+        font-weight: 500;
+      }
+      @media (max-width: 768px) {
+        .detail-layout {
+          grid-template-columns: 1fr;
+        }
+      }
+    `,
+  ],
 })
 export class StoreContentDetailComponent implements OnInit {
   content: {
-    id: string; title: string; description: string; price: number; rating: number;
-    contentType: 'course' | 'resource' | 'template'; category: string;
-    isFree: boolean; isPurchased: boolean; tags: string[];
-    difficulty?: string; duration?: string;
+    id: string;
+    title: string;
+    description: string;
+    price: number;
+    rating: number;
+    contentType: 'course' | 'resource' | 'template';
+    category: string;
+    isFree: boolean;
+    isPurchased: boolean;
+    tags: string[];
+    difficulty?: string;
+    duration?: string;
   } | null = null;
 
   constructor(
     private route: ActivatedRoute,
-    private router: Router,
+    private router: Router
   ) {}
 
   ngOnInit(): void {
@@ -129,7 +221,8 @@ export class StoreContentDetailComponent implements OnInit {
     this.content = {
       id: id ?? 'c1',
       title: 'Python 游戏开发入门',
-      description: '学习使用 Pygame 开发经典小游戏。本课程适合零基础学生，从安装环境到完成第一个游戏项目，循序渐进。',
+      description:
+        '学习使用 Pygame 开发经典小游戏。本课程适合零基础学生，从安装环境到完成第一个游戏项目，循序渐进。',
       price: 0,
       rating: 4.8,
       contentType: 'course',
@@ -148,6 +241,6 @@ export class StoreContentDetailComponent implements OnInit {
   }
 
   goBack(): void {
-    this.router.navigate(['/store']);
+    void this.router.navigate(['/store']);
   }
 }

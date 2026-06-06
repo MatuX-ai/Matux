@@ -87,7 +87,10 @@ const DEFAULT_RETRY_DELAY = 1000;
 /**
  * 创建请求头
  */
-function createHeaders(config: HttpRequestConfig, tokenProvider?: TokenProvider): Record<string, string> {
+function createHeaders(
+  config: HttpRequestConfig,
+  tokenProvider?: TokenProvider
+): Record<string, string> {
   const headers: Record<string, string> = {
     'Content-Type': 'application/json',
     ...config.headers,
@@ -111,7 +114,7 @@ async function executeRequest(
   tokenProvider?: TokenProvider,
   interceptors: HttpInterceptor[] = []
 ): Promise<HttpResponse> {
-  const { url, method, body, timeout = DEFAULT_TIMEOUT } = config;
+  const { url, body, timeout = DEFAULT_TIMEOUT } = config;
 
   const headers = createHeaders(config, tokenProvider);
 
@@ -149,7 +152,9 @@ async function executeRequest(
       status: response.status,
       headers: (() => {
         const h: Record<string, string> = {};
-        response.headers.forEach((value: string, key: string) => { h[key] = value; });
+        response.headers.forEach((value: string, key: string) => {
+          h[key] = value;
+        });
         return h;
       })(),
     };
@@ -166,10 +171,16 @@ async function executeRequest(
       let errorMessage = `HTTP ${response.status}: ${response.statusText}`;
       if (typeof responseData === 'object' && responseData !== null) {
         const errorObj = responseData as Record<string, unknown>;
-        errorMessage = (errorObj['message'] as string) || (errorObj['error'] as string) || errorMessage;
+        errorMessage =
+          (errorObj['message'] as string) || (errorObj['error'] as string) || errorMessage;
       }
 
-      const httpError = new HttpError(errorMessage, response.status, response.statusText, responseData);
+      const httpError = new HttpError(
+        errorMessage,
+        response.status,
+        response.statusText,
+        responseData
+      );
 
       if (response.status === 401 && tokenProvider?.onUnauthorized) {
         tokenProvider.onUnauthorized();
@@ -258,7 +269,10 @@ export class HttpClient {
     return response as HttpResponse<T>;
   }
 
-  async get<T = unknown>(url: string, config?: Partial<HttpRequestConfig>): Promise<HttpResponse<T>> {
+  async get<T = unknown>(
+    url: string,
+    config?: Partial<HttpRequestConfig>
+  ): Promise<HttpResponse<T>> {
     return this.request<T>({
       url,
       method: HttpMethod.GET,
@@ -266,7 +280,11 @@ export class HttpClient {
     });
   }
 
-  async post<T = unknown>(url: string, body?: unknown, config?: Partial<HttpRequestConfig>): Promise<HttpResponse<T>> {
+  async post<T = unknown>(
+    url: string,
+    body?: unknown,
+    config?: Partial<HttpRequestConfig>
+  ): Promise<HttpResponse<T>> {
     return this.request<T>({
       url,
       method: HttpMethod.POST,
@@ -275,7 +293,11 @@ export class HttpClient {
     });
   }
 
-  async put<T = unknown>(url: string, body?: unknown, config?: Partial<HttpRequestConfig>): Promise<HttpResponse<T>> {
+  async put<T = unknown>(
+    url: string,
+    body?: unknown,
+    config?: Partial<HttpRequestConfig>
+  ): Promise<HttpResponse<T>> {
     return this.request<T>({
       url,
       method: HttpMethod.PUT,
@@ -284,7 +306,11 @@ export class HttpClient {
     });
   }
 
-  async patch<T = unknown>(url: string, body?: unknown, config?: Partial<HttpRequestConfig>): Promise<HttpResponse<T>> {
+  async patch<T = unknown>(
+    url: string,
+    body?: unknown,
+    config?: Partial<HttpRequestConfig>
+  ): Promise<HttpResponse<T>> {
     return this.request<T>({
       url,
       method: HttpMethod.PATCH,
@@ -293,7 +319,10 @@ export class HttpClient {
     });
   }
 
-  async delete<T = unknown>(url: string, config?: Partial<HttpRequestConfig>): Promise<HttpResponse<T>> {
+  async delete<T = unknown>(
+    url: string,
+    config?: Partial<HttpRequestConfig>
+  ): Promise<HttpResponse<T>> {
     return this.request<T>({
       url,
       method: HttpMethod.DELETE,

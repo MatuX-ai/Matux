@@ -6,8 +6,20 @@
  */
 
 import { CommonModule } from '@angular/common';
-import { ChangeDetectionStrategy, ChangeDetectorRef, Component, OnDestroy, OnInit } from '@angular/core';
-import { FormsModule, ReactiveFormsModule, FormBuilder, FormGroup, Validators } from '@angular/forms';
+import {
+  ChangeDetectionStrategy,
+  ChangeDetectorRef,
+  Component,
+  OnDestroy,
+  OnInit,
+} from '@angular/core';
+import {
+  FormBuilder,
+  FormGroup,
+  FormsModule,
+  ReactiveFormsModule,
+  Validators,
+} from '@angular/forms';
 import { MatButtonModule } from '@angular/material/button';
 import { MatCardModule } from '@angular/material/card';
 import { MatDividerModule } from '@angular/material/divider';
@@ -18,9 +30,9 @@ import { MatSnackBar, MatSnackBarModule } from '@angular/material/snack-bar';
 import { Subject } from 'rxjs';
 import { takeUntil } from 'rxjs/operators';
 
+import { TeacherPersona } from '../../../core/models/ai-teacher.models';
 import { AITeacherService } from '../../../core/services/ai-teacher.service';
 import { AuthService } from '../../../core/services/auth.service';
-import type { TeacherPersona } from '../../../core/models/ai-teacher.models';
 
 @Component({
   selector: 'app-ai-teacher-settings',
@@ -50,8 +62,12 @@ import type { TeacherPersona } from '../../../core/models/ai-teacher.models';
           <mat-card-content>
             <h3 class="settings-label">称呼方式</h3>
             <mat-radio-group formControlName="addressMode" class="radio-group">
-              <mat-radio-button value="name">叫我的名字{{ userName ? '"' + userName + '"' : '' }}</mat-radio-button>
-              <mat-radio-button value="nickname">叫我的昵称{{ userNickname ? '"' + userNickname + '"' : '' }}</mat-radio-button>
+              <mat-radio-button value="name"
+                >叫我的名字{{ userName ? '"' + userName + '"' : '' }}</mat-radio-button
+              >
+              <mat-radio-button value="nickname"
+                >叫我的昵称{{ userNickname ? '"' + userNickname + '"' : '' }}</mat-radio-button
+              >
               <mat-radio-button value="classmate">叫我"同学"</mat-radio-button>
             </mat-radio-group>
           </mat-card-content>
@@ -153,85 +169,87 @@ import type { TeacherPersona } from '../../../core/models/ai-teacher.models';
       </mat-card>
     </div>
   `,
-  styles: [`
-    .settings-container {
-      max-width: 800px;
-      margin: 0 auto;
-      padding: 24px;
-    }
+  styles: [
+    `
+      .settings-container {
+        max-width: 800px;
+        margin: 0 auto;
+        padding: 24px;
+      }
 
-    .page-header {
-      margin-bottom: 24px;
-    }
-    .page-title {
-      font-size: 28px;
-      font-weight: 700;
-      color: #0f172a;
-      margin: 0;
-    }
+      .page-header {
+        margin-bottom: 24px;
+      }
+      .page-title {
+        font-size: 28px;
+        font-weight: 700;
+        color: #0f172a;
+        margin: 0;
+      }
 
-    .settings-section {
-      margin-bottom: 16px;
-    }
-    .settings-label {
-      font-size: 16px;
-      font-weight: 600;
-      color: #0f172a;
-      margin: 0 0 16px 0;
-      padding-bottom: 12px;
-      border-bottom: 1px solid #f1f5f9;
-    }
+      .settings-section {
+        margin-bottom: 16px;
+      }
+      .settings-label {
+        font-size: 16px;
+        font-weight: 600;
+        color: #0f172a;
+        margin: 0 0 16px 0;
+        padding-bottom: 12px;
+        border-bottom: 1px solid #f1f5f9;
+      }
 
-    .radio-group {
-      display: flex;
-      flex-direction: column;
-      gap: 12px;
-    }
+      .radio-group {
+        display: flex;
+        flex-direction: column;
+        gap: 12px;
+      }
 
-    .radio-group mat-radio-button {
-      padding: 8px 12px;
-      border-radius: 8px;
-      transition: background 0.2s;
-    }
+      .radio-group mat-radio-button {
+        padding: 8px 12px;
+        border-radius: 8px;
+        transition: background 0.2s;
+      }
 
-    .radio-group mat-radio-button:hover {
-      background: #f8fafc;
-    }
+      .radio-group mat-radio-button:hover {
+        background: #f8fafc;
+      }
 
-    .action-row {
-      display: flex;
-      justify-content: center;
-      margin: 24px 0;
-    }
+      .action-row {
+        display: flex;
+        justify-content: center;
+        margin: 24px 0;
+      }
 
-    .save-btn {
-      min-width: 160px;
-      padding: 8px 32px;
-      font-size: 15px;
-    }
+      .save-btn {
+        min-width: 160px;
+        padding: 8px 32px;
+        font-size: 15px;
+      }
 
-    .reset-section {
-      border: 1px solid #fecaca;
-      background: #fef2f2;
-    }
-    .reset-content {
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      gap: 24px;
-    }
-    .reset-text h3 {
-      font-size: 16px;
-      font-weight: 600;
-      color: #dc2626;
-      margin: 0 0 4px 0;
-    }
-    .reset-text p {
-      font-size: 14px;
-      color: #64748b;
-      margin: 0;
-    }
-  `],
+      .reset-section {
+        border: 1px solid #fecaca;
+        background: #fef2f2;
+      }
+      .reset-content {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        gap: 24px;
+      }
+      .reset-text h3 {
+        font-size: 16px;
+        font-weight: 600;
+        color: #dc2626;
+        margin: 0 0 4px 0;
+      }
+      .reset-text p {
+        font-size: 14px;
+        color: #64748b;
+        margin: 0;
+      }
+    `,
+  ],
 })
 export class AITeacherSettingsComponent implements OnInit, OnDestroy {
   private destroy$ = new Subject<void>();
@@ -249,15 +267,15 @@ export class AITeacherSettingsComponent implements OnInit, OnDestroy {
     private aiTeacherService: AITeacherService,
     private authService: AuthService,
     private snackBar: MatSnackBar,
-    private cdr: ChangeDetectorRef,
+    private cdr: ChangeDetectorRef
   ) {
     this.settingsForm = this.fb.group({
-      addressMode: ['name', Validators.required],
-      languageStyle: ['lively', Validators.required],
-      hintLevel: ['guided_thinking', Validators.required],
-      encouragementFrequency: ['moderate', Validators.required],
-      emojiUsage: ['moderate', Validators.required],
-      strictness: ['standard', Validators.required],
+      addressMode: ['name', Validators.required.bind(undefined)],
+      languageStyle: ['lively', Validators.required.bind(undefined)],
+      hintLevel: ['guided_thinking', Validators.required.bind(undefined)],
+      encouragementFrequency: ['moderate', Validators.required.bind(undefined)],
+      emojiUsage: ['moderate', Validators.required.bind(undefined)],
+      strictness: ['standard', Validators.required.bind(undefined)],
     });
   }
 
@@ -265,49 +283,54 @@ export class AITeacherSettingsComponent implements OnInit, OnDestroy {
     this.authService.currentUser$.pipe(takeUntil(this.destroy$)).subscribe((user) => {
       if (user?.id) {
         this.userId = String(user.id);
-        this.userName = user.username || '';
-        this.userNickname = (user as any).nickname || this.userName;
+        this.userName = user.username ?? '';
+        this.userNickname = (user as { nickname?: string }).nickname ?? this.userName;
         this.loadPersona();
       }
     });
   }
 
   private loadPersona(): void {
-    this.aiTeacherService.getPersona(this.userId).pipe(
-      takeUntil(this.destroy$),
-    ).subscribe((persona) => {
-      this.settingsForm.patchValue({
-        addressMode: persona.addressMode,
-        languageStyle: persona.languageStyle,
-        hintLevel: persona.hintLevel,
-        encouragementFrequency: persona.encouragementFrequency,
-        emojiUsage: persona.emojiUsage,
-        strictness: persona.strictness,
-      }, { emitEvent: false });
-      this.settingsForm.markAsPristine();
-      this.cdr.markForCheck();
-    });
+    this.aiTeacherService
+      .getPersona(this.userId)
+      .pipe(takeUntil(this.destroy$))
+      .subscribe((persona) => {
+        this.settingsForm.patchValue(
+          {
+            addressMode: persona.addressMode,
+            languageStyle: persona.languageStyle,
+            hintLevel: persona.hintLevel,
+            encouragementFrequency: persona.encouragementFrequency,
+            emojiUsage: persona.emojiUsage,
+            strictness: persona.strictness,
+          },
+          { emitEvent: false }
+        );
+        this.settingsForm.markAsPristine();
+        this.cdr.markForCheck();
+      });
   }
 
   saveSettings(): void {
     if (this.settingsForm.invalid) return;
 
     this.saving = true;
-    this.aiTeacherService.updatePersona(this.userId, this.settingsForm.value).pipe(
-      takeUntil(this.destroy$),
-    ).subscribe({
-      next: () => {
-        this.saving = false;
-        this.settingsForm.markAsPristine();
-        this.snackBar.open('✅ AI 教师设置已保存！', '关闭', { duration: 3000 });
-        this.cdr.markForCheck();
-      },
-      error: () => {
-        this.saving = false;
-        this.snackBar.open('❌ 保存失败，请稍后重试', '关闭', { duration: 3000 });
-        this.cdr.markForCheck();
-      },
-    });
+    this.aiTeacherService
+      .updatePersona(this.userId, this.settingsForm.value as Partial<TeacherPersona>)
+      .pipe(takeUntil(this.destroy$))
+      .subscribe({
+        next: () => {
+          this.saving = false;
+          this.settingsForm.markAsPristine();
+          this.snackBar.open('✅ AI 教师设置已保存！', '关闭', { duration: 3000 });
+          this.cdr.markForCheck();
+        },
+        error: () => {
+          this.saving = false;
+          this.snackBar.open('❌ 保存失败，请稍后重试', '关闭', { duration: 3000 });
+          this.cdr.markForCheck();
+        },
+      });
   }
 
   confirmResetMemory(): void {
@@ -322,20 +345,21 @@ export class AITeacherSettingsComponent implements OnInit, OnDestroy {
 
   private resetMemory(): void {
     this.resetting = true;
-    this.aiTeacherService.resetMemory(this.userId).pipe(
-      takeUntil(this.destroy$),
-    ).subscribe({
-      next: () => {
-        this.resetting = false;
-        this.snackBar.open('🔄 AI 教师记忆已重置', '关闭', { duration: 3000 });
-        this.cdr.markForCheck();
-      },
-      error: () => {
-        this.resetting = false;
-        this.snackBar.open('❌ 重置失败，请稍后重试', '关闭', { duration: 3000 });
-        this.cdr.markForCheck();
-      },
-    });
+    this.aiTeacherService
+      .resetMemory(this.userId)
+      .pipe(takeUntil(this.destroy$))
+      .subscribe({
+        next: () => {
+          this.resetting = false;
+          this.snackBar.open('🔄 AI 教师记忆已重置', '关闭', { duration: 3000 });
+          this.cdr.markForCheck();
+        },
+        error: () => {
+          this.resetting = false;
+          this.snackBar.open('❌ 重置失败，请稍后重试', '关闭', { duration: 3000 });
+          this.cdr.markForCheck();
+        },
+      });
   }
 
   ngOnDestroy(): void {

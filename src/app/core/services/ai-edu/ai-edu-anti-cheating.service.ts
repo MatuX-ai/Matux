@@ -1,14 +1,10 @@
-/**
- * AI-Edu 防作弊服务
- * 提供多种防作弊功能：切屏检测、时间监控、随机化、全屏强制
- * 
- * 桌面端增强：
- * - Electron 窗口失焦检测（main.js → IPC → preload.js）
- * - 全屏模式强制答题
- * - 本地事件监听（visibilitychange + blur/focus）
- */
-import { Injectable, Inject, PLATFORM_ID } from '@angular/core';
+﻿/**
+ * AI-Edu 闃蹭綔寮婃湇鍔? * 鎻愪緵澶氱闃蹭綔寮婂姛鑳斤細鍒囧睆妫€娴嬨€佹椂闂寸洃鎺с€侀殢鏈哄寲銆佸叏灞忓己鍒? *
+ * 妗岄潰绔寮猴細
+ * - Electron 绐楀彛澶辩劍妫€娴嬶紙main.js 鈫?IPC 鈫?preload.js锛? * - 鍏ㄥ睆妯″紡寮哄埗绛旈
+ * - 鏈湴浜嬩欢鐩戝惉锛坴isibilitychange + blur/focus锛? */
 import { isPlatformBrowser } from '@angular/common';
+import { Inject, Injectable, PLATFORM_ID } from '@angular/core';
 import { BehaviorSubject, Observable, Subject } from 'rxjs';
 
 export interface AntiCheatingConfig {
@@ -18,9 +14,9 @@ export interface AntiCheatingConfig {
   enableQuestionRandomization: boolean;
   maxScreenChanges: number;
   minTimePerQuestion: number;
-  /** 桌面端：是否启用 Electron 窗口失焦检测 */
+  /** 妗岄潰绔細鏄惁鍚敤 Electron 绐楀彛澶辩劍妫€娴?*/
   enableElectronBlurDetection?: boolean;
-  /** 是否强制全屏模式 */
+  /** 鏄惁寮哄埗鍏ㄥ睆妯″紡 */
   forceFullscreen?: boolean;
 }
 
@@ -28,7 +24,7 @@ export interface ScreenChangeEvent {
   timestamp: number;
   visible: boolean;
   count: number;
-  /** 来源：browser | electron */
+  /** 鏉ユ簮锛歜rowser | electron */
   source?: 'browser' | 'electron';
 }
 
@@ -58,7 +54,7 @@ export class AIEduAntiCheatingService {
   private screenChangeEvents$ = new Subject<ScreenChangeEvent>();
   private timeViolationEvents$ = new Subject<TimeViolationEvent>();
   private visibilityWarnings$ = new BehaviorSubject<number>(0);
-  /** 全屏状态 */
+  /** 鍏ㄥ睆鐘舵€?*/
   private fullscreenSubject = new BehaviorSubject<boolean>(false);
   public fullscreen$ = this.fullscreenSubject.asObservable();
 
@@ -74,8 +70,7 @@ export class AIEduAntiCheatingService {
   }
 
   /**
-   * 初始化切屏检测（Web + Electron 双通道）
-   */
+   * 鍒濆鍖栧 RuntimeException 鍙岄€氶亾锛?   */
   private initScreenDetection(): void {
     if (!this.config.enableScreenChangeDetection) return;
 
@@ -102,19 +97,22 @@ export class AIEduAntiCheatingService {
   }
 
   /**
-   * Electron 窗口失焦检测
-   */
+   * Electron 经典剑舞妫€娴?   */
   private initElectronDetection(): void {
     if (!this.config.enableElectronBlurDetection) return;
 
     try {
-      const electronAPI = (window as unknown as { electronAPI?: {
-        on: (event: string, callback: (...args: unknown[]) => void) => void;
-        removeAllListeners?: (event: string) => void;
-      } }).electronAPI;
+      const electronAPI = (
+        window as unknown as {
+          electronAPI?: {
+            on: (event: string, callback: (...args: unknown[]) => void) => void;
+            removeAllListeners?: (event: string) => void;
+          };
+        }
+      ).electronAPI;
 
       if (electronAPI?.on) {
-        // 监听 Electron 主进程的窗口失焦事件
+        // 鐩戝惉 Electron 涓昏繘绋嬬殑绐楀彛澶辩劍浜嬩欢
         electronAPI.on('window-blur', () => {
           this.handleScreenChange(false, 'electron');
         });
@@ -129,7 +127,7 @@ export class AIEduAntiCheatingService {
   }
 
   /**
-   * 处理切屏事件
+   * 处理切换事件
    */
   private handleScreenChange(visible: boolean, source: 'browser' | 'electron' = 'browser'): void {
     if (!visible) {
@@ -147,13 +145,13 @@ export class AIEduAntiCheatingService {
       this.visibilityWarnings$.next(this.screenChangeCount);
 
       if (this.screenChangeCount >= this.config.maxScreenChanges) {
-        this.triggerWarning('切屏次数过多，可能被警告！');
+        this.triggerWarning('切换次数过多，可能被警告');
       }
     }
   }
 
   /**
-   * 强制全屏模式
+   * 寮哄埗鍏ㄥ睆妯″紡
    */
   requestFullscreen(): void {
     if (!this.config.forceFullscreen) return;
@@ -162,8 +160,12 @@ export class AIEduAntiCheatingService {
       const elem = document.documentElement;
       if (elem.requestFullscreen) {
         void elem.requestFullscreen();
-      } else if ((elem as unknown as { webkitRequestFullscreen?: () => void }).webkitRequestFullscreen) {
-        void (elem as unknown as { webkitRequestFullscreen: () => Promise<void> }).webkitRequestFullscreen();
+      } else if (
+        (elem as unknown as { webkitRequestFullscreen?: () => void }).webkitRequestFullscreen
+      ) {
+        void (
+          elem as unknown as { webkitRequestFullscreen: () => Promise<void> }
+        ).webkitRequestFullscreen();
       }
 
       this.fullscreenSubject.next(true);
@@ -181,7 +183,7 @@ export class AIEduAntiCheatingService {
     }
   }
 
-  /** 退出全屏 */
+  /** 閫€鍑哄叏灞?*/
   exitFullscreen(): void {
     if (document.fullscreenElement) {
       void document.exitFullscreen();
@@ -190,7 +192,7 @@ export class AIEduAntiCheatingService {
   }
 
   /**
-   * 开始监控某题的答题时间
+   * 寮€濮嬬洃鎺ф煇棰樼殑绛旈鏃堕棿
    */
   startMonitoringQuestion(questionId: number): void {
     if (!this.config.enableTimeMonitoring) {
@@ -201,8 +203,7 @@ export class AIEduAntiCheatingService {
   }
 
   /**
-   * 停止监控并检查时间违规
-   */
+   * 鍋滄鐩戞帶骞舵鏌ユ椂闂磋繚瑙?   */
   stopMonitoringQuestion(questionId: number): TimeViolationEvent | null {
     if (!this.config.enableTimeMonitoring) {
       return null;
@@ -234,8 +235,7 @@ export class AIEduAntiCheatingService {
   }
 
   /**
-   * 随机打乱数组（Fisher-Yates 算法）
-   */
+   * 闅忔満鎵撲贡鏁扮粍锛團isher-Yates 绠楁硶锛?   */
   shuffleArray<T>(array: T[]): T[] {
     if (!this.config.enableOptionRandomization && !this.config.enableQuestionRandomization) {
       return array;
@@ -250,7 +250,7 @@ export class AIEduAntiCheatingService {
   }
 
   /**
-   * 随机打乱选择题选项
+   * 闅忔満鎵撲贡閫夋嫨棰橀€夐」
    */
   shuffleOptions(options: string[]): { shuffled: string[]; originalIndex: number[] } {
     if (!this.config.enableOptionRandomization) {
@@ -259,7 +259,7 @@ export class AIEduAntiCheatingService {
 
     const indexed = options.map((opt, index) => ({ opt, index }));
 
-    // Fisher-Yates 洗牌
+    // Fisher-Yates 娲楃墝
     for (let i = indexed.length - 1; i > 0; i--) {
       const j = Math.floor(Math.random() * (i + 1));
       [indexed[i], indexed[j]] = [indexed[j], indexed[i]];
@@ -272,36 +272,33 @@ export class AIEduAntiCheatingService {
   }
 
   /**
-   * 获取切屏事件流
-   */
+   * 鑾峰彇鍒囧睆浜嬩欢娴?   */
   getScreenChangeEvents(): Observable<ScreenChangeEvent> {
     return this.screenChangeEvents$.asObservable();
   }
 
   /**
-   * 获取时间违规事件流
-   */
+   * 鑾峰彇鏃堕棿杩濊浜嬩欢娴?   */
   getTimeViolations(): Observable<TimeViolationEvent> {
     return this.timeViolationEvents$.asObservable();
   }
 
   /**
-   * 获取切屏警告计数
+   * 鑾峰彇鍒囧睆璀﹀憡璁℃暟
    */
   getVisibilityWarnings(): Observable<number> {
     return this.visibilityWarnings$.asObservable();
   }
 
   /**
-   * 获取当前切屏次数
+   * 鑾峰彇褰撳墠鍒囧睆娆℃暟
    */
   getScreenChangeCount(): number {
     return this.screenChangeCount;
   }
 
   /**
-   * 重置计数器
-   */
+   * 閲嶇疆璁℃暟鍣?   */
   reset(): void {
     this.screenChangeCount = 0;
     this.suspiciousActivityCount = 0;
@@ -310,15 +307,14 @@ export class AIEduAntiCheatingService {
   }
 
   /**
-   * 获取可疑活动总数
+   * 鑾峰彇鍙枒娲诲姩鎬绘暟
    */
   getSuspiciousActivityCount(): number {
     return this.suspiciousActivityCount;
   }
 
   /**
-   * 生成防作弊报告
-   */
+   * 鐢熸垚闃蹭綔寮婃姤鍛?   */
   generateReport(): {
     totalScreenChanges: number;
     suspiciousActivities: number;
@@ -328,11 +324,11 @@ export class AIEduAntiCheatingService {
     const details: string[] = [];
 
     if (this.screenChangeCount > 0) {
-      details.push(`切屏次数：${this.screenChangeCount}`);
+      details.push(`鍒囧睆娆℃暟锛?{this.screenChangeCount}`);
     }
 
     if (this.suspiciousActivityCount > 0) {
-      details.push(`可疑活动：${this.suspiciousActivityCount}`);
+      details.push(`鍙枒娲诲姩锛?{this.suspiciousActivityCount}`);
     }
 
     const isSuspicious =
@@ -347,21 +343,21 @@ export class AIEduAntiCheatingService {
   }
 
   /**
-   * 触发警告
+   * 瑙﹀彂璀﹀憡
    */
-  private triggerWarning(message: string): void {
-    // 可以通过 Toast 或其他方式通知用户
+  private triggerWarning(_message: string): void {
+    // 鍙互閫氳繃 Toast 鎴栧叾浠栨柟寮忛€氱煡鐢ㄦ埛
   }
 
   /**
-   * 更新配置
+   * 鏇存柊閰嶇疆
    */
   updateConfig(config: Partial<AntiCheatingConfig>): void {
     this.config = { ...this.config, ...config };
   }
 
   /**
-   * 获取当前配置
+   * 鑾峰彇褰撳墠閰嶇疆
    */
   getConfig(): AntiCheatingConfig {
     return { ...this.config };

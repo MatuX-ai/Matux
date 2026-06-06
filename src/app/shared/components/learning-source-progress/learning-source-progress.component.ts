@@ -399,7 +399,7 @@ export interface LearningSourceDisplayItem {
       }
 
       .source-online_platform {
-        border-left: 4px solid #8b5cf6;
+        border-left: 4px solid #3b82f6;
       }
 
       .source-competition {

@@ -6,21 +6,26 @@
  */
 
 import { CommonModule } from '@angular/common';
-import { ChangeDetectionStrategy, ChangeDetectorRef, Component, OnDestroy, OnInit } from '@angular/core';
+import {
+  ChangeDetectionStrategy,
+  ChangeDetectorRef,
+  Component,
+  OnDestroy,
+  OnInit,
+} from '@angular/core';
 import { MatButtonModule } from '@angular/material/button';
 import { MatCardModule } from '@angular/material/card';
 import { MatIconModule } from '@angular/material/icon';
 import { MatProgressBarModule } from '@angular/material/progress-bar';
 import { MatTooltipModule } from '@angular/material/tooltip';
 import { NgxEchartsModule } from 'ngx-echarts';
-import type { EChartsOption } from 'echarts';
 import { Subject } from 'rxjs';
 import { takeUntil } from 'rxjs/operators';
 
-import { AuthService } from '../../../core/services/auth.service';
-import { AITeacherService } from '../../../core/services/ai-teacher.service';
-import type { StudentLearningProfile, SkillTreeNode } from '../../../core/models/ai-teacher.models';
+import type { SkillTreeNode, StudentLearningProfile } from '../../../core/models/ai-teacher.models';
 import type { User } from '../../../core/models/auth.models';
+import { AITeacherService } from '../../../core/services/ai-teacher.service';
+import { AuthService } from '../../../core/services/auth.service';
 
 @Component({
   selector: 'app-learning-profile',
@@ -40,7 +45,7 @@ import type { User } from '../../../core/models/auth.models';
       <div class="page-header">
         <h1 class="page-title">我的学习画像</h1>
         <span class="update-time" *ngIf="profile?.updatedAt">
-          最后更新：{{ profile!.updatedAt | date:'yyyy-MM-dd HH:mm' }}
+          最后更新：{{ profile!.updatedAt | date: 'yyyy-MM-dd HH:mm' }}
         </span>
       </div>
 
@@ -85,12 +90,8 @@ import type { User } from '../../../core/models/auth.models';
           <mat-card-content>
             <div echarts [options]="radarOption" class="radar-chart"></div>
             <div class="radar-legend">
-              <span class="legend-item current">
-                <span class="dot"></span> 本月
-              </span>
-              <span class="legend-item previous">
-                <span class="dot"></span> 上月
-              </span>
+              <span class="legend-item current"> <span class="dot"></span> 本月 </span>
+              <span class="legend-item previous"> <span class="dot"></span> 上月 </span>
             </div>
           </mat-card-content>
         </mat-card>
@@ -118,19 +119,29 @@ import type { User } from '../../../core/models/auth.models';
                 ></mat-progress-bar>
               </div>
               <div class="skill-children" *ngIf="expandAll || expandedCategories.has(category.id)">
-                <div *ngFor="let skill of category.children" class="skill-item"
+                <div
+                  *ngFor="let skill of category.children"
+                  class="skill-item"
                   [class.mastered]="skill.status === 'mastered'"
                   [class.learning]="skill.status === 'learning'"
-                  [class.locked]="skill.status === 'not_started'">
+                  [class.locked]="skill.status === 'not_started'"
+                >
                   <span class="skill-status-icon">
-                    {{ skill.status === 'mastered' ? '✅' : skill.status === 'learning' ? '🔄' : '🔒' }}
+                    {{
+                      skill.status === 'mastered' ? '✅' : skill.status === 'learning' ? '🔄' : '🔒'
+                    }}
                   </span>
                   <span class="skill-name">{{ skill.name }}</span>
                   <span class="skill-progress" *ngIf="skill.status !== 'not_started'">
                     ({{ Math.round(skill.progress * 100) }}%)
                   </span>
-                  <span class="skill-badge current-badge" *ngIf="skill.status === 'learning'">当前学习</span>
-                  <span class="skill-badge locked-badge" *ngIf="skill.status === 'not_started' && skill.unlockRequirement">
+                  <span class="skill-badge current-badge" *ngIf="skill.status === 'learning'"
+                    >当前学习</span
+                  >
+                  <span
+                    class="skill-badge locked-badge"
+                    *ngIf="skill.status === 'not_started' && skill.unlockRequirement"
+                  >
                     需解锁：{{ skill.unlockRequirement }}
                   </span>
                   <mat-progress-bar
@@ -173,245 +184,271 @@ import type { User } from '../../../core/models/auth.models';
       </mat-card>
     </div>
   `,
-  styles: [`
-    .profile-container {
-      max-width: 1200px;
-      margin: 0 auto;
-      padding: 24px;
-      display: flex;
-      flex-direction: column;
-      gap: 24px;
-    }
-
-    .page-header {
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-    }
-    .page-title {
-      font-size: 28px;
-      font-weight: 700;
-      color: #0f172a;
-      margin: 0;
-    }
-    .update-time {
-      font-size: 13px;
-      color: #94a3b8;
-    }
-
-    /* 双栏布局 */
-    .dual-column-section {
-      display: grid;
-      grid-template-columns: 1fr 1fr;
-      gap: 20px;
-    }
-
-    /* AI 教师摘要卡片 */
-    .teacher-summary-card { }
-    .ai-avatar {
-      font-size: 40px;
-      background: linear-gradient(135deg, #dbeafe, #ede9fe);
-      border-radius: 50%;
-      padding: 8px;
-      color: #3b82f6;
-    }
-    .summary-quote {
-      font-size: 14px;
-      line-height: 1.8;
-      color: #334155;
-      padding: 16px;
-      background: #f8fafc;
-      border-radius: 12px;
-      border-left: 4px solid #8b5cf6;
-    }
-    .summary-meta {
-      display: flex;
-      flex-direction: column;
-      gap: 8px;
-      margin-top: 16px;
-    }
-    .meta-item {
-      display: flex;
-      align-items: center;
-      gap: 8px;
-      font-size: 14px;
-      color: #475569;
-    }
-    .meta-item mat-icon {
-      font-size: 18px;
-      width: 18px;
-      height: 18px;
-      color: #64748b;
-    }
-    .profile-empty {
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      padding: 48px;
-      color: #94a3b8;
-    }
-    .profile-empty mat-icon {
-      font-size: 48px;
-      width: 48px;
-      height: 48px;
-      margin-bottom: 12px;
-    }
-
-    /* 雷达图 */
-    .radar-card { }
-    .radar-chart {
-      width: 100%;
-      height: 300px;
-    }
-    .radar-legend {
-      display: flex;
-      justify-content: center;
-      gap: 24px;
-      margin-top: 8px;
-    }
-    .legend-item {
-      display: flex;
-      align-items: center;
-      gap: 6px;
-      font-size: 13px;
-      color: #64748b;
-    }
-    .legend-item .dot {
-      width: 10px;
-      height: 10px;
-      border-radius: 50%;
-    }
-    .legend-item.current .dot { background: #3b82f6; }
-    .legend-item.previous .dot { background: #94a3b8; }
-
-    /* 技能树 */
-    .skill-tree-card { }
-    .skill-tree { }
-    .skill-category {
-      border: 1px solid #e2e8f0;
-      border-radius: 8px;
-      margin-bottom: 12px;
-      overflow: hidden;
-    }
-    .category-header {
-      display: flex;
-      align-items: center;
-      gap: 8px;
-      padding: 12px 16px;
-      background: #f8fafc;
-      cursor: pointer;
-      transition: background 0.2s;
-    }
-    .category-header:hover { background: #f1f5f9; }
-    .category-name {
-      font-size: 15px;
-      font-weight: 600;
-      color: #0f172a;
-      flex: 1;
-    }
-    .category-progress {
-      font-size: 13px;
-      font-weight: 600;
-      color: #3b82f6;
-      margin-right: 8px;
-    }
-    .category-progress-bar {
-      width: 80px;
-      height: 6px;
-    }
-    .skill-children {
-      padding: 8px 16px 8px 44px;
-    }
-    .skill-item {
-      display: flex;
-      align-items: center;
-      gap: 8px;
-      padding: 8px 12px;
-      border-radius: 6px;
-      margin-bottom: 4px;
-      transition: background 0.2s;
-    }
-    .skill-item:hover { background: #f8fafc; }
-    .skill-item.locked { opacity: 0.5; }
-    .skill-status-icon { font-size: 16px; }
-    .skill-name {
-      font-size: 14px;
-      color: #334155;
-      font-weight: 500;
-      min-width: 120px;
-    }
-    .skill-progress {
-      font-size: 12px;
-      color: #64748b;
-    }
-    .skill-badge {
-      font-size: 11px;
-      padding: 2px 8px;
-      border-radius: 10px;
-      font-weight: 500;
-    }
-    .current-badge {
-      background: #dbeafe;
-      color: #2563eb;
-    }
-    .locked-badge {
-      background: #f1f5f9;
-      color: #94a3b8;
-    }
-    .skill-progress-bar {
-      flex: 1;
-      height: 4px;
-      max-width: 100px;
-    }
-
-    /* 薄弱环节 */
-    .weak-points-card { }
-    .warn-avatar {
-      font-size: 40px;
-      background: linear-gradient(135deg, #fef3c7, #fde68a);
-      border-radius: 50%;
-      padding: 8px;
-      color: #f59e0b;
-    }
-    .weak-points-list { }
-    .weak-point-item {
-      padding: 16px;
-      border: 1px solid #f1f5f9;
-      border-radius: 8px;
-      margin-bottom: 12px;
-    }
-    .wp-header {
-      display: flex;
-      align-items: center;
-      gap: 8px;
-      margin-bottom: 8px;
-    }
-    .wp-icon { font-size: 16px; }
-    .wp-name {
-      font-size: 14px;
-      font-weight: 600;
-      color: #0f172a;
-      flex: 1;
-    }
-    .wp-mastery {
-      font-size: 13px;
-      font-weight: 600;
-      color: #22c55e;
-    }
-    .wp-mastery.low { color: #ef4444; }
-    .wp-suggestion {
-      font-size: 13px;
-      color: #64748b;
-      margin-top: 8px;
-    }
-
-    @media (max-width: 768px) {
-      .dual-column-section {
-        grid-template-columns: 1fr;
+  styles: [
+    `
+      .profile-container {
+        max-width: 1200px;
+        margin: 0 auto;
+        padding: 24px;
+        display: flex;
+        flex-direction: column;
+        gap: 24px;
       }
-      .radar-chart { height: 250px; }
-    }
-  `],
+
+      .page-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+      }
+      .page-title {
+        font-size: 28px;
+        font-weight: 700;
+        color: #0f172a;
+        margin: 0;
+      }
+      .update-time {
+        font-size: 13px;
+        color: #94a3b8;
+      }
+
+      /* 双栏布局 */
+      .dual-column-section {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 20px;
+      }
+
+      /* AI 教师摘要卡片 */
+      .teacher-summary-card {
+      }
+      .ai-avatar {
+        font-size: 40px;
+        background: linear-gradient(135deg, #dbeafe, #bfdbfe);
+        border-radius: 50%;
+        padding: 8px;
+        color: #3b82f6;
+      }
+      .summary-quote {
+        font-size: 14px;
+        line-height: 1.8;
+        color: #334155;
+        padding: 16px;
+        background: #f8fafc;
+        border-radius: 12px;
+        border-left: 4px solid #3b82f6;
+      }
+      .summary-meta {
+        display: flex;
+        flex-direction: column;
+        gap: 8px;
+        margin-top: 16px;
+      }
+      .meta-item {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        font-size: 14px;
+        color: #475569;
+      }
+      .meta-item mat-icon {
+        font-size: 18px;
+        width: 18px;
+        height: 18px;
+        color: #64748b;
+      }
+      .profile-empty {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        padding: 48px;
+        color: #94a3b8;
+      }
+      .profile-empty mat-icon {
+        font-size: 48px;
+        width: 48px;
+        height: 48px;
+        margin-bottom: 12px;
+      }
+
+      /* 雷达图 */
+      .radar-card {
+      }
+      .radar-chart {
+        width: 100%;
+        height: 300px;
+      }
+      .radar-legend {
+        display: flex;
+        justify-content: center;
+        gap: 24px;
+        margin-top: 8px;
+      }
+      .legend-item {
+        display: flex;
+        align-items: center;
+        gap: 6px;
+        font-size: 13px;
+        color: #64748b;
+      }
+      .legend-item .dot {
+        width: 10px;
+        height: 10px;
+        border-radius: 50%;
+      }
+      .legend-item.current .dot {
+        background: #3b82f6;
+      }
+      .legend-item.previous .dot {
+        background: #94a3b8;
+      }
+
+      /* 技能树 */
+      .skill-tree-card {
+      }
+      .skill-tree {
+      }
+      .skill-category {
+        border: 1px solid #e2e8f0;
+        border-radius: 8px;
+        margin-bottom: 12px;
+        overflow: hidden;
+      }
+      .category-header {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        padding: 12px 16px;
+        background: #f8fafc;
+        cursor: pointer;
+        transition: background 0.2s;
+      }
+      .category-header:hover {
+        background: #f1f5f9;
+      }
+      .category-name {
+        font-size: 15px;
+        font-weight: 600;
+        color: #0f172a;
+        flex: 1;
+      }
+      .category-progress {
+        font-size: 13px;
+        font-weight: 600;
+        color: #3b82f6;
+        margin-right: 8px;
+      }
+      .category-progress-bar {
+        width: 80px;
+        height: 6px;
+      }
+      .skill-children {
+        padding: 8px 16px 8px 44px;
+      }
+      .skill-item {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        padding: 8px 12px;
+        border-radius: 6px;
+        margin-bottom: 4px;
+        transition: background 0.2s;
+      }
+      .skill-item:hover {
+        background: #f8fafc;
+      }
+      .skill-item.locked {
+        opacity: 0.5;
+      }
+      .skill-status-icon {
+        font-size: 16px;
+      }
+      .skill-name {
+        font-size: 14px;
+        color: #334155;
+        font-weight: 500;
+        min-width: 120px;
+      }
+      .skill-progress {
+        font-size: 12px;
+        color: #64748b;
+      }
+      .skill-badge {
+        font-size: 11px;
+        padding: 2px 8px;
+        border-radius: 10px;
+        font-weight: 500;
+      }
+      .current-badge {
+        background: #dbeafe;
+        color: #2563eb;
+      }
+      .locked-badge {
+        background: #f1f5f9;
+        color: #94a3b8;
+      }
+      .skill-progress-bar {
+        flex: 1;
+        height: 4px;
+        max-width: 100px;
+      }
+
+      /* 薄弱环节 */
+      .weak-points-card {
+      }
+      .warn-avatar {
+        font-size: 40px;
+        background: linear-gradient(135deg, #fef3c7, #fde68a);
+        border-radius: 50%;
+        padding: 8px;
+        color: #f59e0b;
+      }
+      .weak-points-list {
+      }
+      .weak-point-item {
+        padding: 16px;
+        border: 1px solid #f1f5f9;
+        border-radius: 8px;
+        margin-bottom: 12px;
+      }
+      .wp-header {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        margin-bottom: 8px;
+      }
+      .wp-icon {
+        font-size: 16px;
+      }
+      .wp-name {
+        font-size: 14px;
+        font-weight: 600;
+        color: #0f172a;
+        flex: 1;
+      }
+      .wp-mastery {
+        font-size: 13px;
+        font-weight: 600;
+        color: #22c55e;
+      }
+      .wp-mastery.low {
+        color: #ef4444;
+      }
+      .wp-suggestion {
+        font-size: 13px;
+        color: #64748b;
+        margin-top: 8px;
+      }
+
+      @media (max-width: 768px) {
+        .dual-column-section {
+          grid-template-columns: 1fr;
+        }
+        .radar-chart {
+          height: 250px;
+        }
+      }
+    `,
+  ],
 })
 export class LearningProfileComponent implements OnInit, OnDestroy {
   private destroy$ = new Subject<void>();
@@ -425,6 +462,7 @@ export class LearningProfileComponent implements OnInit, OnDestroy {
   skillTreeCategories: Array<{ id: string; name: string; children: SkillTreeNode[] }> = [];
 
   // 雷达图配置
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   radarOption: any = {};
 
   currentUser: User | null = null;
@@ -435,7 +473,7 @@ export class LearningProfileComponent implements OnInit, OnDestroy {
   constructor(
     private aiTeacherService: AITeacherService,
     private authService: AuthService,
-    private cdr: ChangeDetectorRef,
+    private cdr: ChangeDetectorRef
   ) {}
 
   ngOnInit(): void {
@@ -448,17 +486,19 @@ export class LearningProfileComponent implements OnInit, OnDestroy {
   }
 
   private loadProfile(userId: number): void {
-    this.aiTeacherService.getProfile(String(userId)).pipe(
-      takeUntil(this.destroy$),
-    ).subscribe((profile) => {
-      this.profile = profile;
-      this.teacherSummary = this.aiTeacherService.generatePersonaSeed(profile);
-      this.buildSkillTree(profile);
-      this.buildRadarChart(profile);
-      this.cdr.markForCheck();
-    });
+    this.aiTeacherService
+      .getProfile(String(userId))
+      .pipe(takeUntil(this.destroy$))
+      .subscribe((profile) => {
+        this.profile = profile;
+        this.teacherSummary = this.aiTeacherService.generatePersonaSeed(profile);
+        this.buildSkillTree(profile);
+        this.buildRadarChart(profile);
+        this.cdr.markForCheck();
+      });
   }
 
+  // eslint-disable-next-line max-lines-per-function
   private buildRadarChart(profile: StudentLearningProfile): void {
     this.radarOption = {
       radar: {
@@ -551,25 +591,25 @@ export class LearningProfileComponent implements OnInit, OnDestroy {
   }
 
   private buildSkillTree(profile: StudentLearningProfile): void {
-    const pythonSkills = profile.skillTree.find(t => t.id === 'python_basics');
-    const stemSkills = profile.skillTree.find(t => t.id === 'stem_basics');
+    const pythonSkills = profile.skillTree.find((t) => t.id === 'python_basics');
+    const stemSkills = profile.skillTree.find((t) => t.id === 'stem_basics');
 
     this.skillTreeCategories = [
       {
         id: 'python',
-        name: pythonSkills?.name || 'Python 基础',
+        name: pythonSkills?.name ?? 'Python 基础',
         children: pythonSkills?.children ?? [],
       },
       {
         id: 'stem',
-        name: stemSkills?.name || 'STEM 实验',
+        name: stemSkills?.name ?? 'STEM 实验',
         children: stemSkills?.children ?? [],
       },
     ];
   }
 
   getCategoryProgress(categoryId: string): number {
-    const cat = this.skillTreeCategories.find(c => c.id === categoryId);
+    const cat = this.skillTreeCategories.find((c) => c.id === categoryId);
     if (!cat || cat.children.length === 0) return 0;
     const total = cat.children.reduce((sum, skill) => sum + skill.progress * 100, 0);
     return Math.round(total / cat.children.length);
@@ -591,7 +631,7 @@ export class LearningProfileComponent implements OnInit, OnDestroy {
       robotics: '机器人',
       '3d_modeling': '3D建模',
     };
-    return this.profile.interestPreferences.map(k => map[k] || k).join('、');
+    return this.profile.interestPreferences.map((k) => map[k] || k).join('、');
   }
 
   ngOnDestroy(): void {

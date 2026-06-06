@@ -10,7 +10,9 @@
 
 import { Injectable, OnDestroy } from '@angular/core';
 import { BehaviorSubject, Observable, Subject } from 'rxjs';
-import { filter, map, takeUntil } from 'rxjs/operators';
+import { filter, map } from 'rxjs/operators';
+
+import { environment } from '../../../environments/environment';
 
 /**
  * WebSocket 消息类型
@@ -90,7 +92,7 @@ export interface WsReconnectState {
 })
 export class WebSocketNotificationService implements OnDestroy {
   private ws: WebSocket | null = null;
-  private readonly WS_URL = 'ws://localhost:8080/ws/notifications'; // TODO: 替换为实际地址
+  private readonly WS_URL = `${environment.wsUrl}/ws/notifications`;
 
   // 消息接收器
   private messageSubject = new Subject<WsMessage>();
@@ -111,7 +113,7 @@ export class WebSocketNotificationService implements OnDestroy {
   private heartbeatTimer: any = null;
   private readonly HEARTBEAT_INTERVAL = 30000; // 30 秒
   private pongTimeoutMs = 10000;
-  private pongTimeoutTimer: any = null;
+  private pongTimeoutTimer: ReturnType<typeof setTimeout> | null = null;
   private lastPongTime: number = 0;
 
   // 重连配置
@@ -120,7 +122,7 @@ export class WebSocketNotificationService implements OnDestroy {
   private baseDelay = 2000;
   private maxDelay = 30000;
   private jitterMax = 1000;
-  private reconnectTimer: any = null;
+  private reconnectTimer: ReturnType<typeof setTimeout> | null = null;
 
   // 重连状态流
   private reconnectStateSubject = new BehaviorSubject<WsReconnectState>({
@@ -141,6 +143,7 @@ export class WebSocketNotificationService implements OnDestroy {
   /**
    * 连接到 WebSocket 服务器
    */
+  // eslint-disable-next-line max-lines-per-function
   connect(): void {
     if (!this.enabled || typeof WebSocket === 'undefined') {
       console.warn('WebSocket 不支持或未启用');
@@ -271,10 +274,7 @@ export class WebSocketNotificationService implements OnDestroy {
    * 计算指数退避延迟（带抖动）
    */
   private calculateBackoff(attempt: number): number {
-    const exponentialDelay = Math.min(
-      this.maxDelay,
-      this.baseDelay * Math.pow(2, attempt - 1)
-    );
+    const exponentialDelay = Math.min(this.maxDelay, this.baseDelay * Math.pow(2, attempt - 1));
     const jitter = Math.random() * this.jitterMax;
     return Math.floor(exponentialDelay + jitter);
   }
@@ -330,16 +330,19 @@ export class WebSocketNotificationService implements OnDestroy {
   private startPongTimeout(): void {
     this.stopPongTimeout();
 
-    this.pongTimeoutTimer = setInterval(() => {
-      if (!this.isConnected()) {
-        return;
-      }
+    this.pongTimeoutTimer = setInterval(
+      () => {
+        if (!this.isConnected()) {
+          return;
+        }
 
-      const elapsed = Date.now() - this.lastPongTime;
-      if (elapsed > this.pongTimeoutMs) {
-        this.forceReconnect();
-      }
-    }, Math.min(this.pongTimeoutMs, 5000));
+        const elapsed = Date.now() - this.lastPongTime;
+        if (elapsed > this.pongTimeoutMs) {
+          this.forceReconnect();
+        }
+      },
+      Math.min(this.pongTimeoutMs, 5000)
+    );
   }
 
   /**

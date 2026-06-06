@@ -3,12 +3,7 @@ import { Injectable } from '@angular/core';
 import { BehaviorSubject, Observable } from 'rxjs';
 import { tap } from 'rxjs/operators';
 
-import {
-  Group,
-  GroupInvitation,
-  GroupMember,
-  GroupMemberRole,
-} from '../models/group.models';
+import { Group, GroupInvitation, GroupMember, GroupMemberRole } from '../models/group.models';
 
 @Injectable({
   providedIn: 'root',

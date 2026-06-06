@@ -4,6 +4,19 @@
   "tabWidth": 2,
   "trailingComma": "es5",
   "printWidth": 100,
-  "parser": "typescript",
-  "endOfLine": "lf"
+  "endOfLine": "lf",
+  "overrides": [
+    {
+      "files": "*.ts",
+      "options": {
+        "parser": "typescript"
+      }
+    },
+    {
+      "files": "*.scss",
+      "options": {
+        "parser": "scss"
+      }
+    }
+  ]
 }

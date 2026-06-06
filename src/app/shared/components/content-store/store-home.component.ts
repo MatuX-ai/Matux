@@ -441,7 +441,11 @@ export class StoreHomeComponent implements OnInit {
         originalPrice: 299,
         rating: 4.8,
         reviewCount: 1234,
-        imageUrl: 'data:image/svg+xml,' + encodeURIComponent('<svg xmlns="http://www.w3.org/2000/svg" width="320" height="180" viewBox="0 0 320 180"><rect fill="#1976D2" width="320" height="180"/><text fill="white" font-size="18" font-family="Arial" x="160" y="90" text-anchor="middle" dominant-baseline="middle">Python全栈开发实战</text></svg>'),
+        imageUrl:
+          'data:image/svg+xml,' +
+          encodeURIComponent(
+            '<svg xmlns="http://www.w3.org/2000/svg" width="320" height="180" viewBox="0 0 320 180"><rect fill="#1976D2" width="320" height="180"/><text fill="white" font-size="18" font-family="Arial" x="160" y="90" text-anchor="middle" dominant-baseline="middle">Python全栈开发实战</text></svg>'
+          ),
         contentType: 'course',
         category: '编程开发',
         isFree: false,
@@ -455,7 +459,11 @@ export class StoreHomeComponent implements OnInit {
         price: 0,
         rating: 4.6,
         reviewCount: 856,
-        imageUrl: 'data:image/svg+xml,' + encodeURIComponent('<svg xmlns="http://www.w3.org/2000/svg" width="320" height="180" viewBox="0 0 320 180"><rect fill="#388E3C" width="320" height="180"/><text fill="white" font-size="18" font-family="Arial" x="160" y="90" text-anchor="middle" dominant-baseline="middle">数据可视化模板包</text></svg>'),
+        imageUrl:
+          'data:image/svg+xml,' +
+          encodeURIComponent(
+            '<svg xmlns="http://www.w3.org/2000/svg" width="320" height="180" viewBox="0 0 320 180"><rect fill="#388E3C" width="320" height="180"/><text fill="white" font-size="18" font-family="Arial" x="160" y="90" text-anchor="middle" dominant-baseline="middle">数据可视化模板包</text></svg>'
+          ),
         contentType: 'template',
         category: '数据分析',
         isFree: true,

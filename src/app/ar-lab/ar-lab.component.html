@@ -48,7 +48,8 @@
               mat-raised-button
               color="primary"
               (click)="searchHardwareDevices()"
-              [disabled]="isLoading">
+              [disabled]="isLoading"
+            >
               <mat-icon>search</mat-icon>
               搜索设备
             </button>
@@ -56,9 +57,7 @@
             <mat-form-field appearance="fill" class="port-selector">
               <mat-label>选择串口</mat-label>
               <mat-select [(value)]="selectedPort" [disabled]="!availablePorts.length || isLoading">
-                <mat-option
-                  *ngFor="let port of availablePorts"
-                  [value]="port">
+                <mat-option *ngFor="let port of availablePorts" [value]="port">
                   {{ port }}
                 </mat-option>
               </mat-select>
@@ -69,14 +68,16 @@
                 mat-raised-button
                 color="primary"
                 (click)="connectHardware(selectedPort)"
-                [disabled]="!selectedPort || isLoading">
+                [disabled]="!selectedPort || isLoading"
+              >
                 连接
               </button>
               <button
                 mat-raised-button
                 color="warn"
                 (click)="disconnectHardware()"
-                [disabled]="!hardwareConnected || isLoading">
+                [disabled]="!hardwareConnected || isLoading"
+              >
                 断开
               </button>
             </div>
@@ -87,7 +88,8 @@
             <mat-slide-toggle
               [(ngModel)]="isTracking"
               (change)="toggleARTracking()"
-              [disabled]="!isUnityLoaded">
+              [disabled]="!isUnityLoaded"
+            >
               启用AR跟踪
             </mat-slide-toggle>
 
@@ -95,7 +97,8 @@
               mat-raised-button
               color="primary"
               (click)="startExperiment()"
-              [disabled]="!hardwareConnected || isExperimentRunning || isLoading">
+              [disabled]="!hardwareConnected || isExperimentRunning || isLoading"
+            >
               <mat-icon>play_arrow</mat-icon>
               开始实验
             </button>
@@ -104,7 +107,8 @@
               mat-raised-button
               color="warn"
               (click)="stopExperiment()"
-              [disabled]="!isExperimentRunning">
+              [disabled]="!isExperimentRunning"
+            >
               <mat-icon>stop</mat-icon>
               停止实验
             </button>
@@ -122,11 +126,9 @@
           <div class="sensor-data">
             <div class="sensor-item" *ngFor="let item of sensorData | keyvalue">
               <span class="sensor-name">{{ item.key }}:</span>
-              <span class="sensor-value">{{ getSensorValue(item.key) | number:'1.2-2' }}</span>
+              <span class="sensor-value">{{ getSensorValue(item.key) | number: '1.2-2' }}</span>
             </div>
-            <div class="last-update">
-              更新时间: {{ lastUpdateTime | date:'HH:mm:ss' }}
-            </div>
+            <div class="last-update">更新时间: {{ lastUpdateTime | date: 'HH:mm:ss' }}</div>
           </div>
         </mat-card-content>
       </mat-card>
@@ -146,9 +148,7 @@
           <mat-icon color="warn">error</mat-icon>
           <h2>加载失败</h2>
           <p>{{ errorMessage }}</p>
-          <button mat-raised-button color="primary" (click)="loadUnityApplication()">
-            重试
-          </button>
+          <button mat-raised-button color="primary" (click)="loadUnityApplication()">重试</button>
         </div>
 
         <!-- Unity内容区域 -->
@@ -167,7 +167,7 @@
         <mat-card-content>
           <div *ngIf="currentExperiment" class="experiment-info">
             <p><strong>实验名称:</strong> {{ currentExperiment.name }}</p>
-            <p><strong>开始时间:</strong> {{ getExperimentStartTime() | date:'medium' }}</p>
+            <p><strong>开始时间:</strong> {{ getExperimentStartTime() | date: 'medium' }}</p>
             <p><strong>状态:</strong> {{ currentExperiment.status }}</p>
           </div>
           <div *ngIf="!currentExperiment" class="no-experiment">

@@ -12,6 +12,7 @@ import { catchError, map, tap } from 'rxjs/operators';
 
 import { TokenPackage } from '../../models/token.models';
 import {
+  BillingCycle,
   CalculatePriceRequest,
   CalculatePriceResponse,
   formatPrice,
@@ -20,6 +21,7 @@ import {
   PriceGroup,
   PriceType,
   PricingConfig,
+  ProductTier,
   UnifiedPriceItem,
 } from '../models/pricing.models';
 import { SubscriptionPlan } from '../models/subscription.models';
@@ -62,7 +64,7 @@ export class PricingService {
       map((items) => this.filterAndSortPrices(items, request)),
       map((filteredItems) => this.groupPrices(filteredItems)),
       map((groupedItems) => ({
-        config: this.pricingConfig$.value || this.defaultConfig,
+        config: this.pricingConfig$.value ?? this.defaultConfig,
         items: this.allPrices$.value,
         groupedItems,
         metadata: {
@@ -95,14 +97,14 @@ export class PricingService {
    * 获取价格配置
    */
   getPricingConfig(): Observable<PricingConfig> {
-    return this.pricingConfig$.pipe(map((config) => config || this.defaultConfig));
+    return this.pricingConfig$.pipe(map((config) => config ?? this.defaultConfig));
   }
 
   /**
    * 根据ID获取价格项
    */
   getPriceItemById(id: string): Observable<UnifiedPriceItem | null> {
-    return this.allPrices$.pipe(map((items) => items.find((item) => item.id === id) || null));
+    return this.allPrices$.pipe(map((items) => items.find((item) => item.id === id) ?? null));
   }
 
   /**
@@ -115,11 +117,11 @@ export class PricingService {
           throw new Error(`未找到价格项: ${request.itemId}`);
         }
 
-        const quantity = request.quantity || 1;
+        const quantity = request.quantity ?? 1;
         const subtotal = item.price.current * quantity;
 
         // 简单折扣计算（实际项目中可能更复杂）
-        const discountRate = item.price.discount || 0;
+        const discountRate = item.price.discount ?? 0;
         const discountAmount = Math.round(subtotal * discountRate);
         const finalPrice = subtotal - discountAmount;
 
@@ -152,7 +154,7 @@ export class PricingService {
   /**
    * 获取价格比较
    */
-  comparePrices(itemIdA: string, itemIdB: string): Observable<any> {
+  comparePrices(itemIdA: string, itemIdB: string): Observable<unknown> {
     return combineLatest([this.getPriceItemById(itemIdA), this.getPriceItemById(itemIdB)]).pipe(
       map(([itemA, itemB]) => {
         if (!itemA || !itemB) {
@@ -165,8 +167,8 @@ export class PricingService {
         const priceDifferencePercentage = priceA > 0 ? (priceDifference / priceA) * 100 : 0;
 
         // 简单的性价比计算（根据功能和价格）
-        const featuresA = itemA.features?.length || 0;
-        const featuresB = itemB.features?.length || 0;
+        const featuresA = itemA.features?.length ?? 0;
+        const featuresB = itemB.features?.length ?? 0;
         const valueScoreA = priceA > 0 ? featuresA / priceA : Infinity;
         const valueScoreB = priceB > 0 ? featuresB / priceB : Infinity;
 
@@ -192,7 +194,7 @@ export class PricingService {
     return this.loadPricesFromServer().pipe(
       tap((success) => {
         if (success) {
-          console.log('价格数据刷新成功');
+          console.warn('价格数据刷新成功');
         }
       }),
       catchError((error) => {
@@ -259,12 +261,14 @@ export class PricingService {
 
     // 类型过滤
     if (request?.types?.length) {
-      filtered = filtered.filter((item) => request.types!.includes(item.type));
+      const types = request.types;
+      filtered = filtered.filter((item) => types.includes(item.type));
     }
 
     // 层级过滤
     if (request?.tiers?.length) {
-      filtered = filtered.filter((item) => item.tier && request.tiers!.includes(item.tier));
+      const tiers = request.tiers;
+      filtered = filtered.filter((item) => item.tier && tiers.includes(item.tier));
     }
 
     // 启用状态过滤
@@ -279,6 +283,7 @@ export class PricingService {
 
     // 排序
     if (request?.sortBy) {
+      // eslint-disable-next-line complexity
       filtered.sort((a, b) => {
         let valueA, valueB;
 
@@ -292,8 +297,8 @@ export class PricingService {
             valueB = b.name;
             break;
           case 'tier':
-            valueA = a.tier || '';
-            valueB = b.tier || '';
+            valueA = a.tier ?? '';
+            valueB = b.tier ?? '';
             break;
           case 'popularity':
             valueA = a.isPopular ? 1 : 0;
@@ -322,10 +327,12 @@ export class PricingService {
     // 按类型分组
     const byType = new Map<PriceType, UnifiedPriceItem[]>();
     items.forEach((item) => {
-      if (!byType.has(item.type)) {
-        byType.set(item.type, []);
+      const group = byType.get(item.type);
+      if (group) {
+        group.push(item);
+      } else {
+        byType.set(item.type, [item]);
       }
-      byType.get(item.type)!.push(item);
     });
 
     // 转换为PriceGroup
@@ -422,10 +429,10 @@ export class PricingService {
           current: 9900, // ¥99
           original: 14900, // ¥149
           currency: 'CNY',
-          billingCycle: 'one_time' as any,
+          billingCycle: BillingCycle.ONE_TIME,
           discount: 0.34,
         },
-        tier: 'basic' as any,
+        tier: ProductTier.BASIC,
         isPopular: true,
         isRecommended: true,
         isActive: true,
@@ -444,10 +451,10 @@ export class PricingService {
           current: 29900, // ¥299
           original: 39900, // ¥399
           currency: 'CNY',
-          billingCycle: 'one_time' as any,
+          billingCycle: BillingCycle.ONE_TIME,
           discount: 0.25,
         },
-        tier: 'professional' as any,
+        tier: ProductTier.PROFESSIONAL,
         isPopular: true,
         isRecommended: false,
         isActive: true,
@@ -473,9 +480,9 @@ export class PricingService {
         price: {
           current: 2990, // ¥29.9
           currency: 'CNY',
-          billingCycle: 'monthly' as any,
+          billingCycle: BillingCycle.MONTHLY,
         },
-        tier: 'basic' as any,
+        tier: ProductTier.BASIC,
         isPopular: false,
         isRecommended: false,
         isActive: true,
@@ -494,10 +501,10 @@ export class PricingService {
           current: 9990, // ¥99.9
           original: 12990, // ¥129.9
           currency: 'CNY',
-          billingCycle: 'monthly' as any,
+          billingCycle: BillingCycle.MONTHLY,
           discount: 0.23,
         },
-        tier: 'professional' as any,
+        tier: ProductTier.PROFESSIONAL,
         isPopular: true,
         isRecommended: true,
         isActive: true,
@@ -524,10 +531,10 @@ export class PricingService {
           current: 19900, // ¥199
           original: 29900, // ¥299
           currency: 'CNY',
-          billingCycle: 'one_time' as any,
+          billingCycle: BillingCycle.ONE_TIME,
           discount: 0.33,
         },
-        tier: 'professional' as any,
+        tier: ProductTier.PROFESSIONAL,
         isPopular: true,
         isRecommended: true,
         isActive: true,
@@ -554,7 +561,7 @@ export class PricingService {
         current: tokenPackage.priceCents,
         original: tokenPackage.originalPriceCents,
         currency: 'CNY',
-        billingCycle: tokenPackage.billingCycle as any,
+        billingCycle: this._mapTokenBillingCycle(tokenPackage.billingCycle),
         discount: tokenPackage.discount,
       },
       tier: this.mapPackageTypeToTier(tokenPackage.packageType),
@@ -582,9 +589,9 @@ export class PricingService {
       price: {
         current: plan.price * 100, // 转换为分
         currency: plan.currency || 'CNY',
-        billingCycle: plan.billingCycle as any,
+        billingCycle: this._mapSubBillingCycle(plan.billingCycle),
       },
-      tier: plan.planType as any,
+      tier: this._mapPlanTypeToTier(plan.planType),
       isPopular: plan.isPopular,
       isRecommended: false,
       isActive: plan.isActive,
@@ -600,15 +607,54 @@ export class PricingService {
   /**
    * 映射PackageType到ProductTier
    */
-  private mapPackageTypeToTier(packageType: string): any {
-    const map: Record<string, any> = {
-      starter: 'basic',
-      basic: 'basic',
-      pro: 'professional',
-      enterprise: 'enterprise',
-      custom: 'custom',
+  private mapPackageTypeToTier(packageType: string): ProductTier {
+    const map: Record<string, ProductTier> = {
+      starter: ProductTier.BASIC,
+      basic: ProductTier.BASIC,
+      pro: ProductTier.PROFESSIONAL,
+      enterprise: ProductTier.ENTERPRISE,
+      custom: ProductTier.CUSTOM,
     };
-    return map[packageType] || 'custom';
+    return map[packageType] || ProductTier.CUSTOM;
+  }
+
+  /**
+   * 映射 token.models.BillingCycle 到 pricing.models.BillingCycle
+   */
+  private _mapTokenBillingCycle(bc: string): BillingCycle {
+    const map: Record<string, BillingCycle> = {
+      'one-time': BillingCycle.ONE_TIME,
+      monthly: BillingCycle.MONTHLY,
+      yearly: BillingCycle.YEARLY,
+    };
+    return map[bc] || BillingCycle.MONTHLY;
+  }
+
+  /**
+   * 映射 subscription.models.BillingCycle 到 pricing.models.BillingCycle
+   */
+  private _mapSubBillingCycle(bc: string): BillingCycle {
+    const map: Record<string, BillingCycle> = {
+      weekly: BillingCycle.WEEKLY,
+      monthly: BillingCycle.MONTHLY,
+      quarterly: BillingCycle.QUARTERLY,
+      yearly: BillingCycle.YEARLY,
+      custom: BillingCycle.MONTHLY,
+    };
+    return map[bc] || BillingCycle.MONTHLY;
+  }
+
+  /**
+   * 映射 SubscriptionPlanType 到 ProductTier
+   */
+  private _mapPlanTypeToTier(planType: string): ProductTier {
+    const map: Record<string, ProductTier> = {
+      basic: ProductTier.BASIC,
+      professional: ProductTier.PROFESSIONAL,
+      enterprise: ProductTier.ENTERPRISE,
+      custom: ProductTier.CUSTOM,
+    };
+    return map[planType] || ProductTier.CUSTOM;
   }
 
   /**

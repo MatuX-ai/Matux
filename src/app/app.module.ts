@@ -1,4 +1,4 @@
-import { HttpClientModule, HTTP_INTERCEPTORS } from '@angular/common/http';
+import { HTTP_INTERCEPTORS, HttpClientModule } from '@angular/common/http';
 import { NgModule } from '@angular/core';
 import { ReactiveFormsModule } from '@angular/forms';
 import { MatButtonModule } from '@angular/material/button';
@@ -19,11 +19,11 @@ import { BrowserAnimationsModule } from '@angular/platform-browser/animations';
 // import { ServiceWorkerModule } from '@angular/service-worker'; // 已禁用
 import { MonacoEditorModule } from 'ngx-monaco-editor-v2';
 
+import { HttpTimeoutInterceptor } from './core/interceptors/http-timeout.interceptor';
+import { StatusBarComponent } from './shared/components/status-bar/status-bar.component';
 import { SharedModule } from './shared/shared.module';
 import { AppComponent } from './app.component';
 import { AppRoutingModule } from './app-routing.module';
-import { StatusBarComponent } from './shared/components/status-bar/status-bar.component';
-import { HttpTimeoutInterceptor } from './core/interceptors/http-timeout.interceptor';
 
 @NgModule({
   declarations: [AppComponent],

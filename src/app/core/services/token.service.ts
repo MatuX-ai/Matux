@@ -22,6 +22,7 @@ import {
   APIKey,
   ApplyCouponRequest,
   ApplyCouponResponse,
+  BillingCycle,
   CostEstimateParams,
   CostEstimateResponse,
   Coupon,
@@ -71,6 +72,7 @@ export class TokenService {
    * @param packageType 套餐类型过滤（可选）
    * @param billingCycle 计费周期过滤（可选）
    */
+  // eslint-disable-next-line max-lines-per-function
   getTokenPackages(
     packageType?: PackageType,
     billingCycle?: 'one-time' | 'monthly' | 'yearly'
@@ -86,7 +88,7 @@ export class TokenService {
           originalPriceCents: 1990,
           discount: 0.5,
           packageType: PackageTypeEnum.ONE_TIME,
-          billingCycle: 'one-time' as any,
+          billingCycle: 'one-time' as BillingCycle,
           isActive: true,
           features: ['AI对话', '基础课程访问', '标准响应速度'],
           isPopular: true,
@@ -100,7 +102,7 @@ export class TokenService {
           originalPriceCents: 9990,
           discount: 0.5,
           packageType: PackageTypeEnum.ONE_TIME,
-          billingCycle: 'one-time' as any,
+          billingCycle: 'one-time' as BillingCycle,
           isActive: true,
           features: ['AI对话', '课程访问', '快速响应', '优先支持'],
           isPopular: false,
@@ -114,7 +116,7 @@ export class TokenService {
           originalPriceCents: 19990,
           discount: 0.5,
           packageType: PackageTypeEnum.ONE_TIME,
-          billingCycle: 'one-time' as any,
+          billingCycle: 'one-time' as BillingCycle,
           isActive: true,
           features: ['AI对话', '课程访问', '极速响应', '专属支持', 'API访问'],
           isPopular: false,
@@ -128,7 +130,7 @@ export class TokenService {
           originalPriceCents: undefined,
           discount: undefined,
           packageType: PackageTypeEnum.MONTHLY,
-          billingCycle: 'monthly' as any,
+          billingCycle: 'monthly' as BillingCycle,
           isActive: true,
           features: ['每月自动充值', '专属客服', '月度报表'],
           isPopular: true,
@@ -222,6 +224,7 @@ export class TokenService {
    * @param page 页码
    * @param limit 每页数量
    */
+  // eslint-disable-next-line max-lines-per-function
   getTransactions(
     page: number = 1,
     limit: number = 20
@@ -564,7 +567,8 @@ export class TokenService {
   /**
    * 统一错误处理
    */
-  private handleError(error: unknown): Observable<never> {
+  // eslint-disable-next-line complexity
+  private handleError = (error: unknown): Observable<never> => {
     let errorMessage = '操作失败';
 
     if (typeof error === 'object' && error !== null && 'error' in error) {
@@ -589,5 +593,5 @@ export class TokenService {
 
     console.error('[TokenService] Error:', error);
     return throwError(() => new Error(errorMessage));
-  }
+  };
 }

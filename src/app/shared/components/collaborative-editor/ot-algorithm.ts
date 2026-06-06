@@ -1,4 +1,4 @@
-/**
+﻿/**
  * Operational Transformation 算法实现
  * 用于处理实时协同编辑中的并发操作
  */
@@ -82,8 +82,7 @@ export class OperationalTransformation {
   }
 
   /**
-   * 转换插入和删除操作
-   */
+   * 转换插入和删除操作 */
   private static transformInsertDelete(
     op1: TextOperation,
     op2: TextOperation
@@ -106,7 +105,7 @@ export class OperationalTransformation {
         originalPosition: insertPos,
       };
     } else {
-      // 插入位置在删除范围内，这种情况理论上不应该发生
+      // 插入位置在删除范围之内，这种情况理论上不应该发生
       // 因为删除操作应该先于插入操作处理
       return {
         ...op1,
@@ -117,8 +116,7 @@ export class OperationalTransformation {
   }
 
   /**
-   * 转换删除和插入操作
-   */
+   * 转换删除和插入操作 */
   private static transformDeleteInsert(
     op1: TextOperation,
     op2: TextOperation
@@ -143,7 +141,7 @@ export class OperationalTransformation {
     } else {
       // 插入在删除范围内，需要分割删除操作
       const beforeLength = insertPos - deletePos;
-      const afterLength = deleteLength - beforeLength - op2.content.length;
+      const _afterLength = deleteLength - beforeLength - op2.content.length;
 
       return {
         ...op1,
@@ -199,8 +197,7 @@ export class OperationalTransformation {
    * 将操作应用到文本内容
    * @param content 原始文本内容
    * @param operation 操作对象
-   * @returns 应用操作后的新内容
-   */
+   * @returns 应用操作后的新内容   */
   static applyOperation(content: string, operation: TextOperation): string {
     if (operation.type === 'insert') {
       if (operation.position >= content.length) {
@@ -254,8 +251,7 @@ export class OperationalTransformation {
   /**
    * 生成操作唯一标识
    * @param operation 操作对象
-   * @returns 唯一标识字符串
-   */
+   * @returns 唯一标识字符串 */
   static generateOperationId(operation: TextOperation): string {
     const data = `${operation.clientId}-${operation.type}-${operation.position}-${operation.content}-${operation.timestamp}`;
     return btoa(data).replace(/[^a-zA-Z0-9]/g, '');
@@ -326,8 +322,7 @@ export class DocumentStateManager {
   /**
    * 批量应用操作
    * @param operations 操作列表
-   * @returns 成功应用的操作数量
-   */
+   * @returns 成功应用的操作数量 */
   applyOperations(operations: TextOperation[]): number {
     let successCount = 0;
 
@@ -341,15 +336,14 @@ export class DocumentStateManager {
   }
 
   /**
-   * 获取当前文档内容
+   * 鑾峰彇褰撳墠鏂囨。鍐呭
    */
   getContent(): string {
     return this.content;
   }
 
   /**
-   * 获取当前修订版本号
-   */
+   * 获取当前修订版本号 */
   getRevision(): number {
     return this.revision;
   }
@@ -362,8 +356,7 @@ export class DocumentStateManager {
   }
 
   /**
-   * 重置文档状态
-   */
+   * 重置文档状态  */
   reset(content: string = ''): void {
     this.content = content;
     this.operations = [];
@@ -391,8 +384,7 @@ export class CollaborationClient {
    * @param type 操作类型
    * @param position 操作位置
    * @param content 操作内容
-   * @returns 生成的操作对象
-   */
+   * @returns 生成的操作对象 */
   localEdit(type: 'insert' | 'delete', position: number, content: string): TextOperation {
     const operation: TextOperation = {
       type,
@@ -440,7 +432,7 @@ export class CollaborationClient {
   }
 
   /**
-   * 获取当前文档内容
+   * 鑾峰彇褰撳墠鏂囨。鍐呭
    */
   getCurrentContent(): string {
     return this.stateManager.getContent();

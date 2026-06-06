@@ -118,16 +118,19 @@ export class IconDebugComponent {
   ];
 
   logInfo(): void {
+    /* eslint-disable no-console */
     console.log('=== 图标调试信息 ===');
     console.log('测试图标列表:', this.testIcons);
     console.log('当前URL:', window.location.href);
     console.log('Base HREF:', document.querySelector('base')?.getAttribute('href'));
+    /* eslint-enable no-console */
 
     // 测试fetch
     this.testIcons.forEach((icon) => {
       const url = `assets/icons/${icon}.svg`;
       fetch(url)
         .then((response) => {
+          /* eslint-disable-next-line no-console */
           console.log(`✓ ${icon}:`, response.ok ? '成功' : '失败', response.status);
         })
         .catch((error) => {
@@ -137,6 +140,7 @@ export class IconDebugComponent {
   }
 
   constructor() {
+    /* eslint-disable-next-line no-console */
     console.log('IconDebugComponent 已加载');
     // 自动打印调试信息
     setTimeout(() => this.logInfo(), 1000);

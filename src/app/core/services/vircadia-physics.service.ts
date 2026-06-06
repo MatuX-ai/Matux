@@ -12,6 +12,7 @@ import { Injectable } from '@angular/core';
 
 import { GameObject, Vector3, VirtualWorldEvent } from '../../models/vircadia.models';
 
+import { CircuitAssemblyService, SolderPad } from './circuit-assembly.service';
 import { VircadiaSdkService } from './vircadia-sdk.service';
 
 /**
@@ -177,7 +178,10 @@ export class VircadiaPhysicsService {
   // 已注册的刚体列表
   private rigidBodies: Map<string, RigidBodyConfig> = new Map();
 
-  constructor(private vircadiaSdk: VircadiaSdkService) {
+  constructor(
+    private vircadiaSdk: VircadiaSdkService,
+    private circuitAssemblyService: CircuitAssemblyService
+  ) {
     this.setupCollisionDetection();
   }
 
@@ -412,8 +416,26 @@ export class VircadiaPhysicsService {
   private triggerSnapLogic(collisionEvent: CollisionEvent): void {
     // 如果碰撞速度很小，说明元件接近静止，可以执行吸附
     if (collisionEvent.relativeVelocity < 0.1) {
-      // TODO: 调用组装服务的吸附方法
-      // this.circuitAssemblyService.snapToPad(component, pad);
+      const ce = collisionEvent;
+      const component = ce.entityA.metadata?.['category'] ? ce.entityA : ce.entityB;
+      const padEntity = ce.entityA.metadata?.['type'] === 'solder_pad' ? ce.entityA : ce.entityB;
+
+      // 从 entity 元数据构造焊盘对象
+      const pad: SolderPad = {
+        id: padEntity.id,
+        name: padEntity.name,
+        position: padEntity.position,
+        rotation: padEntity.rotation,
+        padType: (padEntity.metadata?.['padType'] as 'tht' | 'smd' | 'socket') ?? 'tht',
+        pinCount: (padEntity.metadata?.['pinCount'] as number) ?? 2,
+        pitch: padEntity.metadata?.['pitch'] as number | undefined,
+        holeSize: padEntity.metadata?.['holeSize'] as number | undefined,
+        polarity: (padEntity.metadata?.['polarity'] as 'positive' | 'negative' | 'none') ?? 'none',
+        netLabel: padEntity.metadata?.['netLabel'] as string | undefined,
+        silkscreenInfo: padEntity.metadata?.['silkscreenInfo'] as string | undefined,
+      };
+
+      void this.circuitAssemblyService.snapToPad(component, pad);
     }
   }
 

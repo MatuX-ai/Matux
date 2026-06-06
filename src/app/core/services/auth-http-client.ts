@@ -38,14 +38,14 @@ export class AuthHttpClient {
   /**
    * 发送HTTP请求
    */
-  async request<T = any>(config: HttpRequestConfig): Promise<HttpResponse<T>> {
+  async request<T = unknown>(config: HttpRequestConfig): Promise<HttpResponse<T>> {
     return unifiedHttpClient.request<T>(config);
   }
 
   /**
    * GET请求
    */
-  get<T = any>(
+  get<T = unknown>(
     url: string,
     config: Omit<HttpRequestConfig, 'method' | 'url'> = {}
   ): Promise<HttpResponse<T>> {
@@ -55,9 +55,9 @@ export class AuthHttpClient {
   /**
    * POST请求
    */
-  post<T = any>(
+  post<T = unknown>(
     url: string,
-    body?: any,
+    body?: unknown,
     config: Omit<HttpRequestConfig, 'method' | 'url' | 'body'> = {}
   ): Promise<HttpResponse<T>> {
     return unifiedHttpClient.post<T>(url, body, config);
@@ -66,9 +66,9 @@ export class AuthHttpClient {
   /**
    * PUT请求
    */
-  put<T = any>(
+  put<T = unknown>(
     url: string,
-    body?: any,
+    body?: unknown,
     config: Omit<HttpRequestConfig, 'method' | 'url' | 'body'> = {}
   ): Promise<HttpResponse<T>> {
     return unifiedHttpClient.put<T>(url, body, config);
@@ -77,7 +77,7 @@ export class AuthHttpClient {
   /**
    * DELETE请求
    */
-  delete<T = any>(
+  delete<T = unknown>(
     url: string,
     config: Omit<HttpRequestConfig, 'method' | 'url'> = {}
   ): Promise<HttpResponse<T>> {
@@ -87,9 +87,9 @@ export class AuthHttpClient {
   /**
    * PATCH请求
    */
-  patch<T = any>(
+  patch<T = unknown>(
     url: string,
-    body?: any,
+    body?: unknown,
     config: Omit<HttpRequestConfig, 'method' | 'url' | 'body'> = {}
   ): Promise<HttpResponse<T>> {
     return unifiedHttpClient.patch<T>(url, body, config);
@@ -100,7 +100,7 @@ export class AuthHttpClient {
  * 带重试机制的HTTP请求函数（已整合到统一客户端中）
  * 保持向后兼容性
  */
-async function requestWithRetry<T = any>(
+async function requestWithRetry<T = unknown>(
   client: AuthHttpClient,
   config: HttpRequestConfig,
   maxRetries: number = 3,
@@ -117,7 +117,7 @@ async function requestWithRetry<T = any>(
 /**
  * 判断是否应该重试（已整合到统一客户端中）
  */
-function shouldRetry(error: any, retries: number, maxRetries: number): boolean {
+function shouldRetry(_error: unknown, _retries: number, _maxRetries: number): boolean {
   // 此函数现在由统一客户端内部处理
   return false;
 }
@@ -125,7 +125,7 @@ function shouldRetry(error: any, retries: number, maxRetries: number): boolean {
 /**
  * 延迟函数（已整合到统一客户端中）
  */
-function delay(ms: number): Promise<void> {
+function delay(_ms: number): Promise<void> {
   // 此函数现在由统一客户端内部处理
   return Promise.resolve();
 }

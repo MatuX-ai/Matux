@@ -33,18 +33,18 @@
   --matux-color-warning-dark: #d97706;
   --matux-color-error: #ef4444;
   --matux-color-error-dark: #dc2626;
-  --matux-color-info: #8b5cf6;
-  --matux-color-info-dark: #7c3aed;
+  --matux-color-info: #60a5fa; /* Blue-400 */
+  --matux-color-info-dark: #3b82f6; /* Blue-500 */
 
   // ===== 语义色 =====
   --matux-color-bg: #f8fafc;
-  --matux-color-surface: #ffffff;
+  --matux-color-surface: #fff;
   --matux-color-border: #e2e8f0;
   --matux-color-divider: #e2e8f0;
   --matux-color-text-primary: #0f172a;
   --matux-color-text-secondary: #475569;
   --matux-color-text-disabled: #94a3b8;
-  --matux-color-text-inverse: #ffffff;
+  --matux-color-text-inverse: #fff;
 
   // ===== 渐变色 =====
   --matux-gradient-primary-start: #0f172a;
@@ -70,10 +70,10 @@
   --matux-radius-card: 1rem;
 
   // ===== 阴影 (Tailwind 风格) =====
-  --matux-shadow-sm: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
-  --matux-shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
-  --matux-shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.1);
-  --matux-shadow-xl: 0 20px 25px -5px rgba(0, 0, 0, 0.1);
+  --matux-shadow-sm: 0 1px 2px 0 rgb(0 0 0 / 5%);
+  --matux-shadow-md: 0 4px 6px -1px rgb(0 0 0 / 10%);
+  --matux-shadow-lg: 0 10px 15px -3px rgb(0 0 0 / 10%);
+  --matux-shadow-xl: 0 20px 25px -5px rgb(0 0 0 / 10%);
 
   // ===== 过渡 =====
   --matux-transition-fast: 150ms cubic-bezier(0.4, 0, 0.2, 1);
@@ -81,7 +81,8 @@
   --matux-transition-slow: 500ms cubic-bezier(0.4, 0, 0.2, 1);
 
   // ===== 字体 (PRD v1.1: Geist Sans) =====
-  --matux-font-family: 'Geist Sans', 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+  --matux-font-family:
+    'Geist Sans', 'Inter', -apple-system, blinkmacsystemfont, 'Segoe UI', roboto, sans-serif;
   --matux-font-size-xs: 0.75rem;
   --matux-font-size-sm: 0.875rem;
   --matux-font-size-base: 1rem;
@@ -102,33 +103,27 @@
   --color-brand-700: var(--matux-color-brand-700);
   --color-brand-800: var(--matux-color-brand-800);
   --color-brand-900: var(--matux-color-brand-900);
-
   --gradient-primary-start: var(--matux-gradient-primary-start);
   --gradient-primary-end: var(--matux-gradient-primary-end);
-
   --spacing-xs: var(--matux-spacing-xs);
   --spacing-sm: var(--matux-spacing-sm);
   --spacing-md: var(--matux-spacing-md);
   --spacing-lg: var(--matux-spacing-lg);
   --spacing-xl: var(--matux-spacing-xl);
   --spacing-2xl: var(--matux-spacing-2xl);
-
   --radius-sm: var(--matux-radius-sm);
   --radius-md: var(--matux-radius-md);
   --radius-lg: var(--matux-radius-lg);
   --radius-xl: var(--matux-radius-xl);
   --radius-2xl: var(--matux-radius-2xl);
   --radius-full: var(--matux-radius-full);
-
   --shadow-sm: var(--matux-shadow-sm);
   --shadow-md: var(--matux-shadow-md);
   --shadow-lg: var(--matux-shadow-lg);
   --shadow-xl: var(--matux-shadow-xl);
-
   --transition-fast: var(--matux-transition-fast);
   --transition-normal: var(--matux-transition-normal);
   --transition-slow: var(--matux-transition-slow);
-
   --font-family: var(--matux-font-family);
   --font-size-xs: var(--matux-font-size-xs);
   --font-size-sm: var(--matux-font-size-sm);
@@ -138,7 +133,6 @@
   --font-size-2xl: var(--matux-font-size-2xl);
   --font-size-3xl: var(--matux-font-size-3xl);
   --font-size-4xl: var(--matux-font-size-4xl);
-
   --color-success-500: var(--matux-color-success);
   --color-success-700: var(--matux-color-success-dark);
   --color-error-500: var(--matux-color-error);
@@ -147,4 +141,144 @@
   --color-warning-700: var(--matux-color-warning-dark);
   --color-info-500: var(--matux-color-info);
   --color-info-700: var(--matux-color-info-dark);
+
+  // ===== 排版层级 (edu-proto 原型标准) =====
+  --matux-typo-hero-size: clamp(2.25rem, 5vw, 3.75rem);
+  --matux-typo-hero-weight: 800;
+  --matux-typo-hero-tracking: -0.025em;
+  --matux-typo-page-title-size: clamp(1.875rem, 4vw, 2.25rem);
+  --matux-typo-page-title-weight: 700;
+  --matux-typo-section-title-size: clamp(1.25rem, 2.5vw, 1.5rem);
+  --matux-typo-section-title-weight: 700;
+  --matux-typo-card-title-size: 1.125rem;
+  --matux-typo-card-title-weight: 700;
+  --matux-typo-subtitle-size: 1rem;
+  --matux-typo-subtitle-weight: 600;
+  --matux-typo-body-size: 0.875rem;
+  --matux-typo-caption-size: 0.75rem;
+  --matux-typo-tiny-size: 0.625rem;
+  --matux-typo-button-size: 0.875rem;
+  --matux-typo-button-weight: 500;
+
+  // ===== 按钮 (edu-proto: rounded-full, bg-primary/bg-accent) =====
+  --matux-btn-height-sm: 2.25rem;
+  --matux-btn-height-md: 2.5rem;
+  --matux-btn-height-lg: 3rem;
+  --matux-btn-padding-x-sm: 1rem;
+  --matux-btn-padding-x-md: 1.5rem;
+  --matux-btn-padding-x-lg: 2rem;
+  --matux-btn-radius-full: 9999px;
+  --matux-btn-radius-xl: 0.75rem;
+  --matux-btn-radius-lg: 0.5rem;
+  --matux-btn-font-size-sm: 0.75rem;
+  --matux-btn-font-size-md: 0.875rem;
+  --matux-btn-font-size-lg: 1rem;
+  --matux-btn-font-weight: 500;
+  --matux-btn-font-weight-bold: 700;
+  --matux-btn-shadow: 0 4px 6px -1px rgb(0 0 0 / 10%), 0 2px 4px -1px rgb(0 0 0 / 6%);
+  --matux-btn-shadow-hover: 0 10px 15px -3px rgb(0 0 0 / 10%), 0 4px 6px -2px rgb(0 0 0 / 5%);
+  --matux-btn-transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+
+  // ===== 卡片 (edu-proto: rounded-2xl, shadow-sm, border) =====
+  --matux-card-radius-lg: 1rem;
+  --matux-card-radius-md: 0.75rem;
+  --matux-card-radius-sm: 0.5rem;
+  --matux-card-padding-sm: 0.75rem;
+  --matux-card-padding-md: 1rem;
+  --matux-card-padding-lg: 1.25rem;
+  --matux-card-padding-xl: 1.5rem;
+  --matux-card-shadow: 0 1px 3px 0 rgb(0 0 0 / 10%), 0 1px 2px 0 rgb(0 0 0 / 6%);
+  --matux-card-shadow-hover: 0 20px 25px -5px rgb(0 0 0 / 10%), 0 10px 10px -5px rgb(0 0 0 / 4%);
+  --matux-card-border: 1px solid #e2e8f0;
+  --matux-card-bg: #fff;
+
+  // ===== 输入框 (edu-proto: rounded-full, border-2, focus:accent) =====
+  --matux-input-radius-full: 9999px;
+  --matux-input-radius-md: 0.5rem;
+  --matux-input-border-width: 2px;
+  --matux-input-border-color: #e2e8f0;
+  --matux-input-focus-border: #3b82f6;
+  --matux-input-focus-ring: 0 0 0 3px rgb(59 130 246 / 20%);
+  --matux-input-padding-x: 1rem;
+  --matux-input-padding-y: 0.5rem;
+  --matux-input-font-size: 0.875rem;
+  --matux-input-bg: #fff;
+  --matux-input-placeholder: #94a3b8;
+
+  // ===== 徽章/标签 (edu-proto: rounded-full, text-[9-10px]) =====
+  --matux-badge-radius: 9999px;
+  --matux-badge-padding-x: 0.5rem;
+  --matux-badge-padding-y: 0.125rem;
+  --matux-badge-font-size: 0.5625rem;
+  --matux-badge-font-size-sm: 0.625rem;
+
+  // ===== 导航栏 (edu-proto: sticky, h-16, backdrop-blur) =====
+  --matux-navbar-height: 4rem;
+  --matux-navbar-bg: rgb(255 255 255 / 95%);
+  --matux-navbar-backdrop: blur(8px);
+  --matux-navbar-border: 1px solid #e2e8f0;
+  --matux-navbar-logo-size: 1.75rem;
+  --matux-navbar-link-size: 0.875rem;
+  --matux-navbar-link-weight: 500;
+
+  // ===== 标签页 (edu-proto: rounded-full, bg-primary/bg-white) =====
+  --matux-tab-radius: 9999px;
+  --matux-tab-padding-x: 0.75rem;
+  --matux-tab-padding-y: 0.375rem;
+  --matux-tab-font-size: 0.625rem;
+  --matux-tab-active-bg: #0f172a;
+  --matux-tab-active-color: #fff;
+  --matux-tab-inactive-bg: #fff;
+  --matux-tab-inactive-color: #475569;
+
+  // ===== 进度条 (edu-proto: h-1.5, rounded-full, bg-accent) =====
+  --matux-progress-height: 0.375rem;
+  --matux-progress-radius: 9999px;
+  --matux-progress-bg: #f1f5f9;
+  --matux-progress-fill: #3b82f6;
+  --matux-progress-fill-gradient: linear-gradient(90deg, #3b82f6, #2563eb);
+
+  // ===== 头像 (edu-proto: rounded-full, bg-accent/10) =====
+  --matux-avatar-radius: 9999px;
+  --matux-avatar-size-sm: 2.5rem;
+  --matux-avatar-size-md: 3.5rem;
+  --matux-avatar-size-lg: 5rem;
+  --matux-avatar-bg: rgb(59 130 246 / 10%);
+
+  // ===== 图标容器 (edu-proto: rounded-xl/2xl, bg-color-100) =====
+  --matux-icon-container-radius-sm: 0.75rem;
+  --matux-icon-container-radius-md: 1rem;
+  --matux-icon-container-size-sm: 2.5rem;
+  --matux-icon-container-size-md: 3rem;
+  --matux-icon-container-size-lg: 4rem;
+
+  // ===== 浮动操作按钮 (edu-proto: rounded-full, shadow-xl) =====
+  --matux-fab-size-sm: 3.5rem;
+  --matux-fab-size-md: 4rem;
+  --matux-fab-radius: 9999px;
+  --matux-fab-shadow: 0 20px 25px -5px rgb(0 0 0 / 10%), 0 10px 10px -5px rgb(0 0 0 / 4%);
+  --matux-fab-bg-gradient: linear-gradient(135deg, #3b82f6, #2563eb);
+
+  // ===== 弹窗/模态框 (edu-proto: rounded-3xl, shadow-2xl) =====
+  --matux-modal-radius-lg: 1.5rem;
+  --matux-modal-radius-md: 1rem;
+  --matux-modal-shadow: 0 25px 50px -12px rgb(0 0 0 / 25%);
+  --matux-modal-backdrop-bg: rgb(0 0 0 / 50%);
+  --matux-modal-backdrop-blur: blur(4px);
+
+  // ===== 底部导航栏 (edu-proto: h-16, bg-white, border-t) =====
+  --matux-bottom-nav-height: 4rem;
+  --matux-bottom-nav-bg: #fff;
+  --matux-bottom-nav-border: 1px solid #e2e8f0;
+  --matux-bottom-nav-icon-size: 1.25rem;
+  --matux-bottom-nav-label-size: 0.5625rem;
+  --matux-bottom-nav-active-color: #3b82f6;
+  --matux-bottom-nav-inactive-color: #94a3b8;
+
+  // ===== 功能色板 (edu-proto 图标区分色) =====
+  --matux-palette-blue: #3b82f6;
+  --matux-palette-green: #10b981;
+  --matux-palette-orange: #f59e0b;
+  --matux-palette-red: #ef4444;
+  --matux-palette-cyan: #06b6d4;
 }

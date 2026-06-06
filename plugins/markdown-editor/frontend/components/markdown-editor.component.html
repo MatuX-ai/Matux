@@ -1,0 +1,195 @@
+<div class="markdown-editor-container" [class.dark-theme]="theme === 'dark'">
+  <!-- 工具栏 -->
+  <mat-toolbar class="editor-toolbar" color="primary">
+    <!-- 文档操作 -->
+    <button mat-icon-button (click)="newDocument()" matTooltip="新建文档">
+      <mat-icon>note_add</mat-icon>
+    </button>
+    
+    <button mat-icon-button [matMenuTriggerFor]="documentsMenu" matTooltip="打开文档">
+      <mat-icon>folder_open</mat-icon>
+    </button>
+    
+    <mat-menu #documentsMenu="matMenu">
+      <button mat-menu-item *ngFor="let doc of documents" (click)="loadDocument(doc.id)">
+        <mat-icon>description</mat-icon>
+        <span>{{ doc.title }}</span>
+      </button>
+      <mat-divider *ngIf="documents.length > 0"></mat-divider>
+      <button mat-menu-item disabled *ngIf="documents.length === 0">
+        暂无文档
+      </button>
+    </mat-menu>
+    
+    <button mat-icon-button (click)="saveDocument()" [disabled]="!isDirty" matTooltip="保存 (Ctrl+S)">
+      <mat-icon>{{ isSaving ? 'hourglass_empty' : 'save' }}</mat-icon>
+    </button>
+    
+    <mat-divider [vertical]="true"></mat-divider>
+    
+    <!-- 格式化 -->
+    <button mat-icon-button (click)="insertHeading(1)" matTooltip="一级标题">
+      <mat-icon>title</mat-icon>
+    </button>
+    
+    <button mat-icon-button (click)="insertBold()" matTooltip="粗体 (Ctrl+B)">
+      <mat-icon>format_bold</mat-icon>
+    </button>
+    
+    <button mat-icon-button (click)="insertItalic()" matTooltip="斜体 (Ctrl+I)">
+      <mat-icon>format_italic</mat-icon>
+    </button>
+    
+    <button mat-icon-button (click)="insertStrikethrough()" matTooltip="删除线">
+      <mat-icon>strikethrough_s</mat-icon>
+    </button>
+    
+    <mat-divider [vertical]="true"></mat-divider>
+    
+    <!-- 插入元素 -->
+    <button mat-icon-button (click)="insertList(false)" matTooltip="无序列表">
+      <mat-icon>format_list_bulleted</mat-icon>
+    </button>
+    
+    <button mat-icon-button (click)="insertList(true)" matTooltip="有序列表">
+      <mat-icon>format_list_numbered</mat-icon>
+    </button>
+    
+    <button mat-icon-button (click)="insertCheckbox()" matTooltip="复选框">
+      <mat-icon>check_box</mat-icon>
+    </button>
+    
+    <button mat-icon-button (click)="insertQuote()" matTooltip="引用">
+      <mat-icon>format_quote</mat-icon>
+    </button>
+    
+    <button mat-icon-button (click)="insertCode()" matTooltip="行内代码">
+      <mat-icon>code</mat-icon>
+    </button>
+    
+    <button mat-icon-button (click)="insertCodeBlock()" matTooltip="代码块">
+      <mat-icon>data_object</mat-icon>
+    </button>
+    
+    <button mat-icon-button (click)="insertLink()" matTooltip="链接">
+      <mat-icon>link</mat-icon>
+    </button>
+    
+    <button mat-icon-button (click)="insertImage()" matTooltip="图片">
+      <mat-icon>image</mat-icon>
+    </button>
+    
+    <button mat-icon-button (click)="insertTable()" matTooltip="表格">
+      <mat-icon>table_chart</mat-icon>
+    </button>
+    
+    <button mat-icon-button (click)="insertHorizontalRule()" matTooltip="分割线">
+      <mat-icon>horizontal_rule</mat-icon>
+    </button>
+    
+    <span class="toolbar-spacer"></span>
+    
+    <!-- 模板 -->
+    <button mat-icon-button [matMenuTriggerFor]="templatesMenu" matTooltip="模板">
+      <mat-icon>auto_awesome</mat-icon>
+    </button>
+    
+    <mat-menu #templatesMenu="matMenu">
+      <button mat-menu-item *ngFor="let template of templates" (click)="applyTemplate(template)">
+        <mat-icon>description</mat-icon>
+        <span>{{ template.name }}</span>
+      </button>
+    </mat-menu>
+    
+    <!-- 导出 -->
+    <button mat-icon-button [matMenuTriggerFor]="exportMenu" matTooltip="导出">
+      <mat-icon>download</mat-icon>
+    </button>
+    
+    <mat-menu #exportMenu="matMenu">
+      <button mat-menu-item (click)="exportHTML()">
+        <mat-icon>html</mat-icon>
+        <span>导出为 HTML</span>
+      </button>
+      <button mat-menu-item (click)="exportPDF()">
+        <mat-icon>picture_as_pdf</mat-icon>
+        <span>导出为 PDF</span>
+      </button>
+    </mat-menu>
+    
+    <!-- 设置 -->
+    <button mat-icon-button (click)="togglePreview()" matTooltip="切换预览">
+      <mat-icon>{{ showPreview ? 'visibility' : 'visibility_off' }}</mat-icon>
+    </button>
+    
+    <button mat-icon-button [matMenuTriggerFor]="themeMenu" matTooltip="主题">
+      <mat-icon>palette</mat-icon>
+    </button>
+    
+    <mat-menu #themeMenu="matMenu">
+      <button mat-menu-item (click)="changeTheme('light')">
+        <mat-icon>light_mode</mat-icon>
+        <span>浅色主题</span>
+      </button>
+      <button mat-menu-item (click)="changeTheme('dark')">
+        <mat-icon>dark_mode</mat-icon>
+        <span>深色主题</span>
+      </button>
+      <mat-divider></mat-divider>
+      <button mat-menu-item (click)="changePreviewTheme('default')">
+        <span>预览: 默认</span>
+      </button>
+      <button mat-menu-item (click)="changePreviewTheme('github')">
+        <span>预览: GitHub</span>
+      </button>
+      <button mat-menu-item (click)="changePreviewTheme('dark')">
+        <span>预览: 深色</span>
+      </button>
+    </mat-menu>
+  </mat-toolbar>
+  
+  <!-- 标题栏 -->
+  <div class="title-bar">
+    <input
+      type="text"
+      class="document-title-input"
+      [(ngModel)]="documentTitle"
+      (ngModelChange)="isDirty = true"
+      placeholder="文档标题"
+    />
+    
+    <div class="document-stats">
+      <span class="stat-item">{{ getWordCount() }} 词</span>
+      <span class="stat-item">{{ getCharCount() }} 字符</span>
+      <span class="stat-item">{{ getLineCount() }} 行</span>
+      <span class="stat-item" *ngIf="isDirty" style="color: #f44336;">● 未保存</span>
+      <span class="stat-item" *ngIf="!isDirty && documentId" style="color: #4caf50;">✓ 已保存</span>
+    </div>
+  </div>
+  
+  <!-- 编辑区域 -->
+  <div class="editor-body">
+    <!-- Markdown 编辑器 -->
+    <div class="editor-pane" [class.full-width]="!showPreview">
+      <textarea
+        #editorTextarea
+        class="markdown-textarea"
+        [(ngModel)]="markdownContent"
+        (ngModelChange)="onContentChange()"
+        (scroll)="onEditorScroll($event)"
+        placeholder="开始编写 Markdown..."
+        [style.fontSize.px]="fontSize"
+        spellcheck="false"
+      ></textarea>
+    </div>
+    
+    <!-- 预览面板 -->
+    <div class="preview-pane" *ngIf="showPreview">
+      <div class="preview-header">
+        <mat-icon>visibility</mat-icon>
+        <span>预览</span>
+      </div>
+      <div class="preview-content" [innerHTML]="htmlPreview"></div>
+    </div>
+  </div>
+</div>

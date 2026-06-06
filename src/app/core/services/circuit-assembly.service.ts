@@ -8,7 +8,9 @@
  * @version 1.0.0
  */
 
-import { Injectable } from '@angular/core';
+import { HttpClient } from '@angular/common/http';
+import { Injectable, Injector } from '@angular/core';
+import { lastValueFrom } from 'rxjs';
 
 import { GameObject, Quaternion, Vector3 } from '../../models/vircadia.models';
 
@@ -101,6 +103,8 @@ export enum AssemblyStatus {
   providedIn: 'root',
 })
 export class CircuitAssemblyService {
+  private http?: HttpClient;
+
   // 当前装配会话的焊盘映射
   private solderPads: Map<string, SolderPad> = new Map();
 
@@ -128,7 +132,14 @@ export class CircuitAssemblyService {
     maxAttempts: 3,
   };
 
-  constructor(private vircadiaSdk: VircadiaSdkService) {}
+  constructor(
+    private vircadiaSdk: VircadiaSdkService,
+    private injector: Injector
+  ) {
+    setTimeout(() => {
+      this.http = this.injector.get(HttpClient);
+    }, 0);
+  }
 
   /**
    * 注册焊盘到组装系统
@@ -402,10 +413,24 @@ export class CircuitAssemblyService {
   /**
    * 同步组装记录到后端
    */
-  private async syncToBackend(_step: AssemblyStep): Promise<void> {
-    // TODO: 调用后端 API 保存记录
-    // 示例 API 调用
-    // await this.httpClient.post('/api/circuit/assembly/record', step).toPromise();
+  private async syncToBackend(step: AssemblyStep): Promise<void> {
+    if (!this.http) return;
+
+    try {
+      await lastValueFrom(
+        this.http.post('/api/v1/circuit/assembly/record', {
+          session_id: step.stepId,
+          component_id: step.componentId,
+          pad_id: step.padId,
+          user_id: step.userId,
+          attempt_number: step.attemptNumber,
+          is_success: step.isSuccess,
+          timestamp: step.timestamp.toISOString(),
+        })
+      );
+    } catch (error) {
+      console.error('[CircuitAssembly] 同步组装记录失败:', error);
+    }
   }
 
   /**

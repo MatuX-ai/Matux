@@ -15,15 +15,42 @@ const path = require('path');
 const { spawn, execSync } = require('child_process');
 const fs = require('fs');
 
+// 导入分阶段启动模块
+const { createPhasedStartup, registerModuleIpcHandlers } = require('./phased-startup');
+
+// 导入设备评估引擎
+const {
+  assessDevice,
+  loadDeviceProfile,
+  saveDeviceProfile,
+  shouldReassess,
+} = require('./device-profiler');
+
+// 导入插件管理器（Phase 2）
+const { PluginInstaller, registerPluginInstallerIPC } = require('./plugin-installer');
+const { PluginDownloader, registerPluginDownloaderIPC } = require('./plugin-downloader');
+const { PluginRegistry } = require('./plugin-registry');
+
+// 导入 Phase 5 推荐引擎和安装包精简模块
+const { PluginRecommendationEngine } = require('./plugin-recommender');
+const { InstallConfigManager } = require('./install-config');
+const { PluginStoreEnhancer } = require('./plugin-store-enhancer');
+
 // ==================== 配置 ====================
 
 const BACKEND_PORT = 8000;
 const BACKEND_HOST = 'localhost';
 const BACKEND_URL = `http://${BACKEND_HOST}:${BACKEND_PORT}`;
-const BACKEND_START_TIMEOUT = 45000; // 后端启动超时 45 秒
+const BACKEND_START_TIMEOUT = 5000;  // 核心启动超时 5 秒（仅等待 Tier 0 就绪）
+const TIER1_PRELOAD_TIMEOUT = 15000; // Tier 1 预加载超时 15 秒（不阻塞 UI）
 const BACKEND_RESTART_DELAY = 3000;  // 崩溃后 3 秒重启
 const MAX_RESTART_ATTEMPTS = 3;
 const HEALTH_CHECK_INTERVAL = 10000; // 健康检查间隔 10 秒
+const MODULE_STATUS_INTERVAL = 5000; // 模块状态轮询间隔 5 秒
+
+const HEALTH_URL = `${BACKEND_URL}/health`;
+const HEALTH_DETAIL_URL = `${BACKEND_URL}/api/v1/system/health-detail`;
+const MODULES_URL = `${BACKEND_URL}/api/v1/system/modules`;
 
 const isDev = process.env.NODE_ENV === 'development';
 
@@ -46,6 +73,19 @@ let restartAttempts = 0;
 let isQuitting = false;
 let isStarting = false; // 防止 startBackend 并发调用
 let tray = null;
+let moduleStatusCache = null;  // 缓存模块状态
+let moduleStatusTimer = null;  // 模块状态轮询定时器
+let backendOverallStatus = 'unknown'; // 'healthy' | 'degraded' | 'unhealthy' | 'unknown'
+
+// 插件管理器实例（Phase 2）
+let pluginInstaller = null;
+let pluginDownloader = null;
+let pluginRegistry = null;
+
+// Phase 5 推荐引擎和增强组件实例
+let pluginRecommender = null;
+let installConfigManager = null;
+let pluginStoreEnhancer = null;
 
 // ==================== 窗口状态持久化 ====================
 
@@ -89,9 +129,9 @@ function isPythonVersionGte39(versionStr) {
 /**
  * 向 Splash 窗口发送状态更新
  */
-function sendSplashStatus(phase, text, progress, detail) {
+function sendSplashStatus(phase, text, progress, detail, modules) {
   if (splashWindow && !splashWindow.isDestroyed()) {
-    splashWindow.webContents.send('splash-status', { phase, text, progress, detail });
+    splashWindow.webContents.send('splash-status', { phase, text, progress, detail, modules });
   }
   // 同时打印到控制台
   const prefix = phase === 'error' || phase === 'backend-error' ? '[ERROR]' : '[INFO]';
@@ -466,6 +506,18 @@ function createTray() {
         }
       },
     },
+    { type: 'separator' },
+    {
+      label: '⚪ 状态未知',
+      enabled: false,
+    },
+    { type: 'separator' },
+    {
+      label: '重启后端',
+      click: () => {
+        restartBackend();
+      },
+    },
     {
       label: '学习提醒',
       click: () => {
@@ -799,7 +851,7 @@ function startBackend() {
 }
 
 /**
- * 等待后端服务就绪
+ * 等待后端服务就绪（分阶段启动 Phase 1：仅等待核心 Tier 0 就绪）
  */
 async function waitForBackend(timeout = BACKEND_START_TIMEOUT) {
   const waitPort = require('wait-port');
@@ -824,6 +876,12 @@ async function waitForBackend(timeout = BACKEND_START_TIMEOUT) {
       output: 'silent',
     });
     clearInterval(progressInterval);
+    console.log('[INFO] 后端端口已开放，验证健康状态...');
+    sendSplashStatus('waiting-backend', '后端服务已就绪，正在验证...', 88);
+
+    // 短等待让 uvicorn 完全就绪
+    await new Promise((r) => setTimeout(r, 500));
+
     console.log('[INFO] 后端服务已就绪！');
     sendSplashStatus('backend-ready', '后端服务就绪 ✓', 90);
     restartAttempts = 0; // 重置重启计数
@@ -844,7 +902,7 @@ async function healthCheck() {
   try {
     const controller = new AbortController();
     const timeoutId = setTimeout(() => controller.abort(), 5000);
-    const response = await fetch(`${BACKEND_URL}/health`, {
+    const response = await fetch(HEALTH_URL, {
       signal: controller.signal,
     });
     clearTimeout(timeoutId);
@@ -876,14 +934,24 @@ async function healthCheck() {
 function startHealthCheck() {
   if (healthCheckTimer) clearInterval(healthCheckTimer);
   healthCheckTimer = setInterval(async () => {
-    const healthy = await healthCheck();
-    if (!healthy && !isQuitting) {
+    const result = await healthCheck();
+    if (!result.success && !isQuitting) {
       console.warn('[WARN] 健康检查失败，后端可能已崩溃');
       if (mainWindow && !mainWindow.isDestroyed()) {
         mainWindow.webContents.send('app-event', { type: 'backend-disconnected' });
       }
     }
   }, HEALTH_CHECK_INTERVAL);
+}
+
+/**
+ * 停止健康检查
+ */
+function stopHealthCheck() {
+  if (healthCheckTimer) {
+    clearInterval(healthCheckTimer);
+    healthCheckTimer = null;
+  }
 }
 
 /**
@@ -914,6 +982,277 @@ function stopBackend() {
 }
 
 /**
+ * 重启后端服务 (Phase 4 新增)
+ */
+function restartBackend() {
+  console.log('[INFO] 🔄 正在重启后端服务...');
+  
+  // 停止状态轮询
+  stopModuleStatusPolling();
+  stopHealthCheck();
+  
+  // 停止后端进程
+  stopBackend();
+  
+  // 等待 2 秒后重启
+  setTimeout(() => {
+    restartAttempts = 0;
+    isStarting = false;
+    startBackend();
+    waitForBackend().then((ready) => {
+      if (ready) {
+        startHealthCheck();
+        startModuleStatusPolling();
+        
+        // 通知渲染进程
+        if (mainWindow && !mainWindow.isDestroyed()) {
+          mainWindow.webContents.send('app-event', { type: 'backend-restarted' });
+        }
+      }
+    });
+  }, 2000);
+}
+
+// ==================== 模块状态管理 ====================
+
+/**
+ * 后台预加载 Tier 1 模块（分阶段启动 Phase 2：不阻塞 UI）
+ */
+async function preloadTier1Modules() {
+  // 等待 1 秒让 Tier 0 稳定
+  await new Promise((r) => setTimeout(r, 1000));
+
+  console.log('[INFO] 开始后台预加载 Tier 1 模块...');
+
+  try {
+    const controller = new AbortController();
+    const timeoutId = setTimeout(() => controller.abort(), TIER1_PRELOAD_TIMEOUT);
+    const response = await fetch(MODULES_URL, { signal: controller.signal });
+    clearTimeout(timeoutId);
+
+    if (!response.ok) {
+      console.warn('[WARN] 获取模块状态失败:', response.status);
+      return;
+    }
+
+    const data = await response.json();
+    const summary = data.summary || {};
+    const modules = data.modules || [];
+
+    console.log(
+      `[INFO] 模块状态: ${summary.active}/${summary.total} 已激活, ` +
+      `${summary.degraded || 0} 降级, ${summary.failed || 0} 失败`
+    );
+
+    // 发送模块进度到 Splash
+    sendSplashStatus('modules', `模块加载中 (${summary.active}/${summary.total})...`, 
+      Math.round((summary.active / Math.max(summary.total, 1)) * 100),
+      null, modules);
+
+    // 通知渲染进程模块状态
+    if (mainWindow && !mainWindow.isDestroyed()) {
+      mainWindow.webContents.send('backend:module-status', data);
+    }
+
+    // 缓存初始状态
+    moduleStatusCache = data;
+  } catch (err) {
+    console.warn('[WARN] Tier 1 预加载检查失败:', err.message);
+  }
+}
+
+/**
+ * 轮询模块状态并推送到渲染进程
+ */
+async function pollModuleStatus() {
+  try {
+    const controller = new AbortController();
+    const timeoutId = setTimeout(() => controller.abort(), 5000);
+    const response = await fetch(HEALTH_DETAIL_URL, { signal: controller.signal });
+    clearTimeout(timeoutId);
+
+    if (!response.ok) return;
+
+    const data = await response.json();
+    const previousStatus = backendOverallStatus;
+    backendOverallStatus = data.status || 'unknown';
+    moduleStatusCache = data.modules || null;
+
+    // 推送到渲染进程
+    if (mainWindow && !mainWindow.isDestroyed()) {
+      mainWindow.webContents.send('backend:module-status', moduleStatusCache);
+    }
+
+    // 更新托盘状态
+    updateTrayStatus();
+
+    // 状态变化时通知前端
+    if (previousStatus !== backendOverallStatus && mainWindow && !mainWindow.isDestroyed()) {
+      mainWindow.webContents.send('app-event', {
+        type: 'backend-status-change',
+        status: backendOverallStatus,
+        previousStatus,
+      });
+    }
+  } catch (err) {
+    // 静默失败
+  }
+}
+
+/**
+ * 开始模块状态轮询
+ */
+function startModuleStatusPolling() {
+  if (moduleStatusTimer) clearInterval(moduleStatusTimer);
+  moduleStatusTimer = setInterval(pollModuleStatus, MODULE_STATUS_INTERVAL);
+  // 立即执行一次
+  pollModuleStatus();
+}
+
+/**
+ * 停止模块状态轮询
+ */
+function stopModuleStatusPolling() {
+  if (moduleStatusTimer) {
+    clearInterval(moduleStatusTimer);
+    moduleStatusTimer = null;
+  }
+}
+
+/**
+ * 更新系统托盘图标和菜单（反映后端状态）
+ */
+function updateTrayStatus() {
+  if (!tray) return;
+
+  let statusLabel = '';
+  let statusEmoji = '';
+
+  switch (backendOverallStatus) {
+    case 'healthy':
+      statusLabel = '所有服务正常';
+      statusEmoji = '🟢';
+      break;
+    case 'degraded':
+      statusLabel = '部分模块降级运行';
+      statusEmoji = '🟡';
+      break;
+    case 'unhealthy':
+      statusLabel = '核心服务异常';
+      statusEmoji = '🔴';
+      break;
+    default:
+      statusLabel = '状态未知';
+      statusEmoji = '⚪';
+  }
+
+  tray.setToolTip(`MatuX - ${statusLabel}`);
+
+  // 构建模块摘要菜单项
+  const moduleItems = [];
+  if (moduleStatusCache && moduleStatusCache.summary) {
+    const s = moduleStatusCache.summary;
+    moduleItems.push({
+      label: `模块: ${s.active}/${s.total} 活跃`,
+      enabled: false,
+    });
+    if (s.degraded > 0) {
+      moduleItems.push({ label: `${s.degraded} 个模块降级`, enabled: false });
+    }
+    if (s.failed > 0) {
+      moduleItems.push({ label: `${s.failed} 个模块失败`, enabled: false });
+    }
+  }
+
+  const contextMenu = Menu.buildFromTemplate([
+    {
+      label: '显示主窗口',
+      click: () => {
+        if (mainWindow) {
+          mainWindow.show();
+          mainWindow.focus();
+        }
+      },
+    },
+    { type: 'separator' },
+    {
+      label: `${statusEmoji} ${statusLabel}`,
+      enabled: false,
+    },
+    ...moduleItems,
+    { type: 'separator' },
+    {
+      label: '重启后端',
+      click: () => {
+        restartBackend();
+      },
+    },
+    {
+      label: '学习提醒',
+      click: () => {
+        showNotification('学习提醒', '该继续今天的学习啦！坚持就是胜利 💪');
+      },
+    },
+    { type: 'separator' },
+    {
+      label: '检查更新',
+      click: () => {
+        checkForUpdates();
+      },
+    },
+    { type: 'separator' },
+    {
+      label: '退出 MatuX',
+      click: () => {
+        isQuitting = true;
+        gracefulShutdown();
+        app.quit();
+      },
+    },
+  ]);
+
+  tray.setContextMenu(contextMenu);
+}
+
+/**
+ * 重启后端服务
+ */
+async function restartBackend() {
+  console.log('[INFO] 🔄 用户请求重启后端...');
+  
+  // 停止状态轮询
+  stopModuleStatusPolling();
+  stopHealthCheck();
+  
+  // 停止后端进程
+  stopBackend();
+  
+  // 等待 2 秒后重启
+  await new Promise((r) => setTimeout(r, 2000));
+  
+  restartAttempts = 0;
+  isStarting = false;
+  
+  startBackend();
+  const ready = await waitForBackend();
+  
+  if (ready) {
+    // 重启状态轮询
+    startHealthCheck();
+    startModuleStatusPolling();
+    
+    // 通知渲染进程
+    if (mainWindow && !mainWindow.isDestroyed()) {
+      mainWindow.webContents.send('app-event', { type: 'backend-restarted' });
+    }
+    
+    showNotification('后端已重启', '后端服务已成功重启', 'backend');
+  } else {
+    showNotification('后端重启失败', '请检查日志并联系管理员', 'backend');
+  }
+}
+
+/**
  * 优雅关闭所有进程
  */
 function gracefulShutdown() {
@@ -928,6 +1267,8 @@ function gracefulShutdown() {
     clearInterval(healthCheckTimer);
     healthCheckTimer = null;
   }
+
+  stopModuleStatusPolling();
 
   try { stopBackend(); } catch (err) {
     console.error('[SHUTDOWN] 停止后端失败:', err.message);
@@ -969,6 +1310,9 @@ function registerIpcHandlers() {
     arch: process.arch,
     isDev,
   }));
+
+  // 注册模块管理 IPC 处理器 (Phase 4 新增)
+  registerModuleIpcHandlers();
 
   // 文件系统操作（安全桥接）
   ipcMain.handle('fs-read-file', async (_event, filePath) => {
@@ -1202,6 +1546,428 @@ function registerIpcHandlers() {
     return { success: true };
   });
 
+  // ===== 模块状态 IPC（Phase 4 懒加载架构） =====
+
+  /**
+   * 获取模块状态缓存
+   */
+  ipcMain.handle('backend:module-status', () => {
+    return {
+      success: true,
+      modules: moduleStatusCache,
+      backendStatus: backendOverallStatus,
+    };
+  });
+
+  /**
+   * 重启后端
+   */
+  ipcMain.handle('backend:restart', async () => {
+    restartBackend();
+    return { success: true, message: '后端重启中' };
+  });
+
+  // ===== 设备评估 IPC（插件化架构 Phase 1） =====
+
+  /**
+   * 获取设备评估报告
+   */
+  ipcMain.handle('plugin:device-profile', async () => {
+    try {
+      const profile = loadDeviceProfile();
+      if (profile && !shouldReassess(profile)) {
+        return { success: true, profile };
+      }
+      // 需要重新评估
+      const newProfile = await assessDevice();
+      saveDeviceProfile(newProfile);
+      return { success: true, profile: newProfile };
+    } catch (err) {
+      console.error('[ERROR] 获取设备评估报告失败:', err.message);
+      return { success: false, error: err.message };
+    }
+  });
+
+  /**
+   * 重新评估设备
+   */
+  ipcMain.handle('plugin:reassess-device', async () => {
+    try {
+      console.log('[INFO] 用户请求重新评估设备');
+      const profile = await assessDevice();
+      saveDeviceProfile(profile);
+      // 通知渲染进程
+      if (mainWindow && !mainWindow.isDestroyed()) {
+        mainWindow.webContents.send('plugin:status-change', {
+          type: 'device-reassessed',
+          profile,
+        });
+      }
+      return { success: true, profile };
+    } catch (err) {
+      console.error('[ERROR] 重新评估设备失败:', err.message);
+      return { success: false, error: err.message };
+    }
+  });
+
+  /**
+   * 评估指定插件兼容性
+   */
+  ipcMain.handle('plugin:assess', async (_event, pluginId) => {
+    try {
+      const profile = loadDeviceProfile();
+      if (!profile) {
+        return { success: false, error: '设备评估报告不存在，请先执行评估' };
+      }
+      // 返回设备信息供前端做兼容性判断
+      return {
+        success: true,
+        deviceClass: profile.assessment?.deviceClass,
+        score: profile.assessment?.score,
+        hardware: profile.hardware,
+        software: profile.software,
+        compatibleTiers: profile.assessment?.compatiblePluginTiers || [],
+        recommendedPlugins: profile.assessment?.recommendedPlugins || [],
+        incompatiblePlugins: profile.assessment?.incompatiblePlugins || [],
+      };
+    } catch (err) {
+      return { success: false, error: err.message };
+    }
+  });
+
+  // ===== 插件管理 IPC（插件化架构 Phase 2） =====
+
+  // 注册插件安装器 IPC
+  if (pluginInstaller) {
+    registerPluginInstallerIPC(pluginInstaller);
+  }
+
+  // 注册插件下载器 IPC
+  if (pluginDownloader) {
+    registerPluginDownloaderIPC(pluginDownloader);
+  }
+
+  // ===== Phase 5: 推荐引擎 IPC =====
+
+  // 获取个性化推荐
+  ipcMain.handle('plugin:recommendations', async (_event, options = {}) => {
+    try {
+      if (!pluginRecommender) {
+        return { success: false, error: '推荐引擎未初始化' };
+      }
+      const recommendations = await pluginRecommender.getRecommendations(options);
+      return { success: true, data: recommendations };
+    } catch (err) {
+      return { success: false, error: err.message };
+    }
+  });
+
+  // 记录插件使用事件
+  ipcMain.handle('plugin:record-usage', async (_event, pluginId, eventType, duration = 0, features = {}) => {
+    try {
+      if (!pluginRecommender) {
+        return { success: false, error: '推荐引擎未初始化' };
+      }
+      pluginRecommender.recordPluginUsage(pluginId, eventType, duration, features);
+      return { success: true };
+    } catch (err) {
+      return { success: false, error: err.message };
+    }
+  });
+
+  // 设置插件评分
+  ipcMain.handle('plugin:set-rating', async (_event, pluginId, rating, feedback = '') => {
+    try {
+      if (!pluginRecommender) {
+        return { success: false, error: '推荐引擎未初始化' };
+      }
+      pluginRecommender.setUserRating(pluginId, rating, feedback);
+      return { success: true };
+    } catch (err) {
+      return { success: false, error: err.message };
+    }
+  });
+
+  // 获取热门插件
+  ipcMain.handle('plugin:popular', async (_event, limit = 10) => {
+    try {
+      if (!pluginRecommender) {
+        return { success: false, error: '推荐引擎未初始化' };
+      }
+      const popular = await pluginRecommender.getPopularPlugins(limit);
+      return { success: true, data: popular };
+    } catch (err) {
+      return { success: false, error: err.message };
+    }
+  });
+
+  // 获取插件详情
+  ipcMain.handle('plugin:details', async (_event, pluginId) => {
+    try {
+      if (!pluginRecommender) {
+        return { success: false, error: '推荐引擎未初始化' };
+      }
+      const details = await pluginRecommender.getPluginDetails(pluginId);
+      return { success: true, data: details };
+    } catch (err) {
+      return { success: false, error: err.message };
+    }
+  });
+
+  // ===== Phase 5: 安装包精简 IPC =====
+
+  // 获取首次运行引导步骤
+  ipcMain.handle('plugin:first-run-guide', async () => {
+    try {
+      if (!installConfigManager) {
+        return { success: false, error: '安装配置管理器未初始化' };
+      }
+      const guide = installConfigManager.getFirstRunGuide();
+      return { success: true, data: guide };
+    } catch (err) {
+      return { success: false, error: err.message };
+    }
+  });
+
+  // 检查是否已完成首次运行
+  ipcMain.handle('plugin:first-run-check', async () => {
+    try {
+      if (!installConfigManager) {
+        return { success: false, error: '安装配置管理器未初始化' };
+      }
+      const isFirstRunCompleted = installConfigManager.isFirstRunCompleted();
+      return { success: true, data: isFirstRunCompleted };
+    } catch (err) {
+      return { success: false, error: err.message };
+    }
+  });
+
+  // 标记首次运行完成
+  ipcMain.handle('plugin:first-run-complete', async () => {
+    try {
+      if (!installConfigManager) {
+        return { success: false, error: '安装配置管理器未初始化' };
+      }
+      await installConfigManager.markFirstRunCompleted();
+      return { success: true };
+    } catch (err) {
+      return { success: false, error: err.message };
+    }
+  });
+
+  // 获取核心模块列表
+  ipcMain.handle('plugin:core-modules', async () => {
+    try {
+      if (!installConfigManager) {
+        return { success: false, error: '安装配置管理器未初始化' };
+      }
+      const modules = installConfigManager.getCoreModules();
+      return { success: true, data: modules };
+    } catch (err) {
+      return { success: false, error: err.message };
+    }
+  });
+
+  // 获取可选模块列表
+  ipcMain.handle('plugin:optional-modules', async (_event, deviceClass = null) => {
+    try {
+      if (!installConfigManager) {
+        return { success: false, error: '安装配置管理器未初始化' };
+      }
+      const modules = installConfigManager.getOptionalModules(deviceClass);
+      return { success: true, data: modules };
+    } catch (err) {
+      return { success: false, error: err.message };
+    }
+  });
+
+  // 获取推荐模块
+  ipcMain.handle('plugin:recommended-modules', async (_event, deviceClass) => {
+    try {
+      if (!installConfigManager) {
+        return { success: false, error: '安装配置管理器未初始化' };
+      }
+      const modules = installConfigManager.getRecommendedModules(deviceClass);
+      return { success: true, data: modules };
+    } catch (err) {
+      return { success: false, error: err.message };
+    }
+  });
+
+  // 获取安装统计
+  ipcMain.handle('plugin:install-stats', async () => {
+    try {
+      if (!installConfigManager) {
+        return { success: false, error: '安装配置管理器未初始化' };
+      }
+      const stats = installConfigManager.getInstallStats();
+      return { success: true, data: stats };
+    } catch (err) {
+      return { success: false, error: err.message };
+    }
+  });
+
+  // 添加已安装模块
+  ipcMain.handle('plugin:installed-module', async (_event, moduleId) => {
+    try {
+      if (!installConfigManager) {
+        return { success: false, error: '安装配置管理器未初始化' };
+      }
+      await installConfigManager.addInstalledModule(moduleId);
+      return { success: true };
+    } catch (err) {
+      return { success: false, error: err.message };
+    }
+  });
+
+  // 跳过模块安装
+  ipcMain.handle('plugin:skip-module', async (_event, moduleId) => {
+    try {
+      if (!installConfigManager) {
+        return { success: false, error: '安装配置管理器未初始化' };
+      }
+      await installConfigManager.skipModule(moduleId);
+      return { success: true };
+    } catch (err) {
+      return { success: false, error: err.message };
+    }
+  });
+
+  // ===== Phase 5: 插件商店增强 IPC =====
+
+  // 添加插件评论
+  ipcMain.handle('plugin:add-review', async (_event, reviewData) => {
+    try {
+      if (!pluginStoreEnhancer) {
+        return { success: false, error: '插件商店增强组件未初始化' };
+      }
+      const review = await pluginStoreEnhancer.addReview(reviewData);
+      return { success: true, data: review };
+    } catch (err) {
+      return { success: false, error: err.message };
+    }
+  });
+
+  // 获取插件评论
+  ipcMain.handle('plugin:get-reviews', async (_event, pluginId, options = {}) => {
+    try {
+      if (!pluginStoreEnhancer) {
+        return { success: false, error: '插件商店增强组件未初始化' };
+      }
+      const reviews = pluginStoreEnhancer.getReviews(pluginId, options);
+      return { success: true, data: reviews };
+    } catch (err) {
+      return { success: false, error: err.message };
+    }
+  });
+
+  // 获取插件平均评分
+  ipcMain.handle('plugin:average-rating', async (_event, pluginId) => {
+    try {
+      if (!pluginStoreEnhancer) {
+        return { success: false, error: '插件商店增强组件未初始化' };
+      }
+      const rating = pluginStoreEnhancer.getAverageRating(pluginId);
+      return { success: true, data: rating };
+    } catch (err) {
+      return { success: false, error: err.message };
+    }
+  });
+
+  // 标记评论为有帮助
+  ipcMain.handle('plugin:mark-helpful', async (_event, reviewId, pluginId) => {
+    try {
+      if (!pluginStoreEnhancer) {
+        return { success: false, error: '插件商店增强组件未初始化' };
+      }
+      const result = await pluginStoreEnhancer.markReviewHelpful(reviewId, pluginId);
+      return { success: true, data: result };
+    } catch (err) {
+      return { success: false, error: err.message };
+    }
+  });
+
+  // 检查插件更新
+  ipcMain.handle('plugin:check-updates', async (_event, installedPlugins) => {
+    try {
+      if (!pluginStoreEnhancer) {
+        return { success: false, error: '插件商店增强组件未初始化' };
+      }
+      // 需要从 pluginRegistry 获取插件目录
+      const pluginCatalog = pluginRegistry ? pluginRegistry.getCatalog() : [];
+      const updates = await pluginStoreEnhancer.checkForUpdates(pluginCatalog, installedPlugins);
+      return { success: true, data: updates };
+    } catch (err) {
+      return { success: false, error: err.message };
+    }
+  });
+
+  // 获取待处理更新通知
+  ipcMain.handle('plugin:pending-notifications', async () => {
+    try {
+      if (!pluginStoreEnhancer) {
+        return { success: false, error: '插件商店增强组件未初始化' };
+      }
+      const notifications = pluginStoreEnhancer.getPendingNotifications();
+      return { success: true, data: notifications };
+    } catch (err) {
+      return { success: false, error: err.message };
+    }
+  });
+
+  // 关闭更新通知
+  ipcMain.handle('plugin:dismiss-notification', async (_event, notificationId) => {
+    try {
+      if (!pluginStoreEnhancer) {
+        return { success: false, error: '插件商店增强组件未初始化' };
+      }
+      const result = await pluginStoreEnhancer.dismissNotification(notificationId);
+      return { success: true, data: result };
+    } catch (err) {
+      return { success: false, error: err.message };
+    }
+  });
+
+  // 标记通知已安装
+  ipcMain.handle('plugin:mark-installed', async (_event, notificationId) => {
+    try {
+      if (!pluginStoreEnhancer) {
+        return { success: false, error: '插件商店增强组件未初始化' };
+      }
+      const result = await pluginStoreEnhancer.markNotificationInstalled(notificationId);
+      return { success: true, data: result };
+    } catch (err) {
+      return { success: false, error: err.message };
+    }
+  });
+
+  // 获取插件使用统计
+  ipcMain.handle('plugin:usage-stats', async (_event, pluginId) => {
+    try {
+      if (!pluginRecommender) {
+        return { success: false, error: '推荐引擎未初始化' };
+      }
+      const usageStatsMap = pluginRecommender.usageStatsMap;
+      const stats = pluginStoreEnhancer.getPluginUsageStats(pluginId, usageStatsMap);
+      return { success: true, data: stats };
+    } catch (err) {
+      return { success: false, error: err.message };
+    }
+  });
+
+  // 获取商店统计
+  ipcMain.handle('plugin:store-stats', async () => {
+    try {
+      if (!pluginStoreEnhancer) {
+        return { success: false, error: '插件商店增强组件未初始化' };
+      }
+      const stats = pluginStoreEnhancer.getStoreStats();
+      return { success: true, data: stats };
+    } catch (err) {
+      return { success: false, error: err.message };
+    }
+  });
+
   // 渲染进程发送的消息
   ipcMain.on('to-backend', (_event, data) => {
     console.log('[IPC] 来自渲染进程的数据:', data);
@@ -1241,11 +2007,14 @@ function registerIpcHandlers() {
   ipcMain.on('splash-retry', async () => {
     console.log('[INFO] 用户请求重试启动');
     restartAttempts = 0;
+    stopModuleStatusPolling();
     stopBackend();
     await new Promise((r) => setTimeout(r, 1000));
     startBackend();
     const ready = await waitForBackend();
     if (ready) {
+      startModuleStatusPolling();
+      preloadTier1Modules();
       sendSplashStatus('loading-app', '正在加载应用...', 95);
       if (!mainWindow || mainWindow.isDestroyed()) {
         createMainWindow();
@@ -1375,14 +2144,14 @@ app.whenReady().then(async () => {
 
   // 确认后端健康（排除端口被其他程序占用的场景）
   sendSplashStatus('verifying-health', '正在验证后端服务...', 90);
-  let isHealthy = await healthCheck();
+  let healthResult = await healthCheck();
   // 首次失败后短等待重试（应对端口刚开但 uvicorn 未完全就绪的竞态）
-  if (!isHealthy) {
+  if (!healthResult.success) {
     console.log('[INFO] 首次健康检查未通过，1 秒后重试...');
     await new Promise((r) => setTimeout(r, 1000));
-    isHealthy = await healthCheck();
+    healthResult = await healthCheck();
   }
-  if (!isHealthy) {
+  if (!healthResult.success) {
     console.error('[ERROR] 端口已开放但健康检查未通过，端口可能被其他程序占用');
     sendSplashStatus('backend-error', '端口 8000 被占用，无法连接后端服务', 0,
       '健康检查失败，请检查是否有其他程序占用了 8000 端口');
@@ -1401,25 +2170,88 @@ app.whenReady().then(async () => {
   // 5. 启动健康检查
   startHealthCheck();
 
-  // 6. 创建主窗口
+  // 6. 启动模块状态轮询
+  startModuleStatusPolling();
+
+  // 7. 创建主窗口（核心就绪即显示）
   sendSplashStatus('loading-app', '正在加载应用...', 95);
   createMainWindow();
 
-  // 7. 创建系统托盘
+  // 8. 后台预加载 Tier 1 模块（不阻塞 UI）
+  preloadTier1Modules();
+
+  // 9. 创建设备评估（首次启动时自动评估，后续启动检查是否需要重新评估）
+  sendSplashStatus('assessing-device', '正在评估设备能力...', 96);
+  try {
+    const existingProfile = loadDeviceProfile();
+    if (!existingProfile || shouldReassess(existingProfile)) {
+      const deviceProfile = await assessDevice();
+      saveDeviceProfile(deviceProfile);
+      console.log(`[INFO] 设备评级: ${deviceProfile.assessment.deviceClass} (${deviceProfile.assessment.score}分)`);
+    } else {
+      console.log(`[INFO] 使用缓存设备评级: ${existingProfile.assessment.deviceClass}`);
+    }
+  } catch (err) {
+    console.warn('[WARN] 设备评估失败（不阻塞启动）:', err.message);
+  }
+
+  // 9.5 初始化插件管理器（Phase 2）
+  try {
+    console.log('[INFO] 初始化插件管理器...');
+    
+    // 创建插件安装器
+    pluginInstaller = new PluginInstaller();
+    
+    // 创建插件下载器
+    pluginDownloader = new PluginDownloader();
+    
+    // 创建并初始化插件注册表
+    pluginRegistry = new PluginRegistry();
+    await pluginRegistry.initialize();
+    
+    console.log('[INFO] ✓ 插件管理器初始化完成');
+  } catch (err) {
+    console.warn('[WARN] 插件管理器初始化失败（不阻塞启动）:', err.message);
+  }
+
+  // 9.6 初始化 Phase 5 推荐引擎和安装包精简模块
+  try {
+    console.log('[INFO] 初始化推荐引擎和安装包配置...');
+    
+    // 创建安装配置管理器
+    installConfigManager = new InstallConfigManager();
+    
+    // 创建推荐引擎
+    pluginRecommender = new PluginRecommendationEngine();
+    
+    // 创建插件商店增强组件
+    pluginStoreEnhancer = new PluginStoreEnhancer();
+    
+    // 更新设备评估报告到推荐引擎
+    if (deviceProfile) {
+      pluginRecommender.updateDeviceProfile(deviceProfile);
+    }
+    
+    console.log('[INFO] ✓ Phase 5 模块初始化完成');
+  } catch (err) {
+    console.warn('[WARN] Phase 5 模块初始化失败（不阻塞启动）:', err.message);
+  }
+
+  // 10. 创建系统托盘
   createTray();
 
-  // 8. 注册全局快捷键
+  // 11. 注册全局快捷键
   registerGlobalShortcuts();
 
-  // 9. 设置文件关联
+  // 12. 设置文件关联
   setupFileAssociation();
 
-  // 10. 通知主窗口已就绪（用于文件关联）
+  // 13. 通知主窗口已就绪（用于文件关联）
   mainWindow.once('ready-to-show', () => {
     app.emit('main-window-ready');
   });
 
-  // 11. 启动后检查更新（延迟 30 秒避免影响启动速度）
+  // 14. 启动后检查更新（延迟 30 秒避免影响启动速度）
   setTimeout(() => {
     checkForUpdates().catch((err) => {
       console.warn('[WARN] 更新检查失败:', err.message);
@@ -1470,4 +2302,10 @@ module.exports = {
   registerGlobalShortcuts,
   showNotification,
   checkForUpdates,
+  preloadTier1Modules,
+  pollModuleStatus,
+  restartBackend,
+  startModuleStatusPolling,
+  stopModuleStatusPolling,
+  updateTrayStatus,
 };

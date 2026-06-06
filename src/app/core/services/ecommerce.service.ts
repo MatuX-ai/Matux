@@ -13,6 +13,7 @@ import {
   PaymentRequest,
   PaymentResponse,
   PaymentStatistics,
+  PaymentStatus,
   ShippingAddress,
 } from '../models/payment.models';
 
@@ -119,7 +120,9 @@ export class EcommerceService {
   private saveCartToStorage(): void {
     try {
       localStorage.setItem('ecommerce_cart', JSON.stringify(this.cartItemsSubject.value));
-    } catch (error) {}
+    } catch {
+      /* 存储失败不阻塞 */
+    }
   }
 
   /**
@@ -129,11 +132,12 @@ export class EcommerceService {
     try {
       const savedCart = localStorage.getItem('ecommerce_cart');
       if (savedCart) {
-        const cartItems = JSON.parse(savedCart);
+        const cartItems = JSON.parse(savedCart) as CartItem[];
         this.cartItemsSubject.next(cartItems);
         this.updateCartTotal();
       }
-    } catch (error) {
+    } catch {
+      /* JSON 解析失败使用空购物车 */
       this.cartItemsSubject.next([]);
     }
   }
@@ -147,31 +151,27 @@ export class EcommerceService {
     shippingAddress?: ShippingAddress,
     note?: string
   ): Promise<PaymentResponse> {
-    try {
-      const total = this.calculateTotal(cartItems);
+    const total = this.calculateTotal(cartItems);
 
-      const paymentRequest: PaymentRequest = {
-        items: cartItems,
-        total,
-        userId: '', // 实际应用中应从认证服务获取
-        paymentMethod,
-        shippingAddress,
-        note,
-      };
+    const paymentRequest: PaymentRequest = {
+      items: cartItems,
+      total,
+      userId: '', // 实际应用中应从认证服务获取
+      paymentMethod,
+      shippingAddress,
+      note,
+    };
 
-      const response = await unifiedHttpClient.post<PaymentResponse>(
-        `${this.baseUrl}/checkout`,
-        paymentRequest
-      );
+    const response = await unifiedHttpClient.post<PaymentResponse>(
+      `${this.baseUrl}/checkout`,
+      paymentRequest
+    );
 
-      // 支付成功后清空购物车
-      if (response.data.status === 'success') {
-        this.clearCart();
-      }
-      return response.data;
-    } catch (error) {
-      throw error;
+    // 支付成功后清空购物车
+    if (response.data.status === PaymentStatus.SUCCESS) {
+      this.clearCart();
     }
+    return response.data;
   }
 
   /**
@@ -247,8 +247,8 @@ export class EcommerceService {
   /**
    * 获取支付状态
    */
-  async getPaymentStatus(paymentId: string): Promise<any> {
-    const response = await unifiedHttpClient.get<any>(
+  async getPaymentStatus(paymentId: string): Promise<Record<string, unknown>> {
+    const response = await unifiedHttpClient.get<Record<string, unknown>>(
       `${this.baseUrl}/payment-status/${paymentId}`
     );
     return response.data;
@@ -272,7 +272,7 @@ export class EcommerceService {
    * 处理支付结果
    */
   handlePaymentResult(paymentResponse: PaymentResponse): void {
-    if (paymentResponse.status === 'success') {
+    if (paymentResponse.status === PaymentStatus.SUCCESS) {
       // 可以在这里触发成功通知或其他业务逻辑
     } else {
       // 可以在这里触发失败通知

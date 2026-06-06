@@ -9,9 +9,9 @@
 // 基础样式重置
 // ============================================
 .matux-marketing-page {
-  font-family: var(--font-family);
   background: var(--color-brand-50);
   color: var(--color-brand-800);
+  font-family: var(--font-family);
   line-height: var(--line-height-normal, 1.5);
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
@@ -31,37 +31,36 @@
 // ============================================
 .matux-hero {
   position: relative;
-  padding: 120px 0;
-  text-align: center;
-  background: linear-gradient(135deg,
-    var(--gradient-primary-start) 0%,
-    var(--gradient-primary-end) 100%);
-  color: white;
   overflow: hidden;
+  padding: 120px 0;
+  background: linear-gradient(
+    135deg,
+    var(--gradient-primary-start) 0%,
+    var(--gradient-primary-end) 100%
+  );
+  color: white;
+  text-align: center;
 
   &::before {
-    content: '';
     position: absolute;
-    top: 0;
-    left: 0;
-    right: 0;
-    bottom: 0;
-    background: radial-gradient(circle at 20% 50%, rgba(255, 255, 255, 0.1) 0%, transparent 50%);
+    inset: 0;
+    background: radial-gradient(circle at 20% 50%, rgb(255 255 255 / 10%) 0%, transparent 50%);
+    content: '';
     pointer-events: none;
   }
 
   .hero-title {
+    margin-bottom: var(--spacing-lg, 24px);
     font-size: var(--font-size-4xl, 48px);
     font-weight: 700;
-    margin-bottom: var(--spacing-lg, 24px);
     letter-spacing: -0.02em;
   }
 
   .hero-subtitle {
-    font-size: var(--font-size-xl, 20px);
-    opacity: 0.95;
     max-width: 600px;
     margin: 0 auto;
+    opacity: 0.95;
+    font-size: var(--font-size-xl, 20px);
   }
 }
 
@@ -77,47 +76,45 @@
 }
 
 .section-title {
+  margin-bottom: var(--spacing-2xl, 60px);
+  color: var(--color-brand-800);
   font-size: var(--font-size-3xl, 36px);
   font-weight: 700;
   text-align: center;
-  margin-bottom: var(--spacing-2xl, 60px);
-  color: var(--color-brand-800);
   letter-spacing: -0.01em;
 }
 
 .section-subtitle {
-  font-size: var(--font-size-lg, 18px);
-  color: var(--color-brand-400);
-  text-align: center;
   margin-top: calc(var(--spacing-xl, 32px) * -1);
   margin-bottom: var(--spacing-2xl, 60px);
+  color: var(--color-brand-400);
+  font-size: var(--font-size-lg, 18px);
+  text-align: center;
 }
 
 // ============================================
 // 卡片系统
 // ============================================
 .matux-card {
-  background: white;
-  border-radius: var(--radius-xl, 16px);
   padding: var(--spacing-2xl, 40px);
-  transition: all var(--transition-normal);
   border: 2px solid transparent;
+  border-radius: var(--radius-xl, 16px);
+  background: white;
+  transition: all var(--transition-normal);
 
   &:hover {
-    transform: translateY(-8px);
     box-shadow: var(--shadow-xl);
+    transform: translateY(-8px);
   }
 
   &--featured {
     border-color: var(--gradient-primary-start);
-    background: linear-gradient(135deg,
-      rgba(102, 126, 234, 0.05) 0%,
-      rgba(118, 75, 162, 0.05) 100%);
+    background: linear-gradient(135deg, rgb(102 126 234 / 5%) 0%, rgb(118 75 162 / 5%) 100%);
   }
 
   &--opensource {
     border-color: var(--color-success-500);
-    background: rgba(52, 199, 89, 0.05);
+    background: rgb(52 199 89 / 5%);
   }
 }
 
@@ -147,23 +144,25 @@
 .matux-button {
   display: inline-block;
   padding: var(--spacing-md) var(--spacing-xl);
+  border: none;
+  border-radius: var(--radius-lg, 12px);
   font-size: var(--font-size-base);
   font-weight: 600;
   text-decoration: none;
-  border: none;
-  border-radius: var(--radius-lg, 12px);
   cursor: pointer;
   transition: all var(--transition-fast);
 
   &--primary {
-    background: linear-gradient(135deg,
+    background: linear-gradient(
+      135deg,
       var(--gradient-primary-start) 0%,
-      var(--gradient-primary-end) 100%);
+      var(--gradient-primary-end) 100%
+    );
     color: white;
 
     &:hover {
+      box-shadow: 0 8px 20px rgb(102 126 234 / 40%);
       transform: translateY(-2px);
-      box-shadow: 0 8px 20px rgba(102, 126, 234, 0.4);
     }
   }
 
@@ -188,58 +187,61 @@
 .matux-badge {
   display: inline-block;
   padding: 6px 16px;
+  border-radius: 20px;
+  background: linear-gradient(
+    135deg,
+    var(--gradient-primary-start) 0%,
+    var(--gradient-primary-end) 100%
+  );
+  color: white;
   font-size: 13px;
   font-weight: 600;
-  border-radius: 20px;
-  background: linear-gradient(135deg,
-    var(--gradient-primary-start) 0%,
-    var(--gradient-primary-end) 100%);
-  color: white;
 }
 
 // ============================================
 // 价格卡片专用
 // ============================================
 .matux-pricing-card {
-  @extend .matux-card;
-  text-align: center;
+  @extend .matux-card; /* stylelint-disable-line scss/at-extend-no-missing-placeholder */
+
   position: relative;
+  text-align: center;
 
   .price {
     display: flex;
-    align-items: baseline;
     justify-content: center;
+    align-items: baseline;
     gap: 4px;
     margin: var(--spacing-lg) 0;
 
     .currency {
-      font-size: var(--font-size-2xl, 24px);
       color: var(--color-brand-400);
+      font-size: var(--font-size-2xl, 24px);
     }
 
     .amount {
+      color: var(--color-brand-800);
       font-size: var(--font-size-4xl, 56px);
       font-weight: 700;
-      color: var(--color-brand-800);
     }
 
     .period {
-      font-size: var(--font-size-base);
       color: var(--color-brand-400);
+      font-size: var(--font-size-base);
     }
   }
 
   .features {
     list-style: none;
-    padding: 0;
     margin: var(--spacing-xl) 0;
+    padding: 0;
     text-align: left;
 
     li {
       padding: var(--spacing-sm) 0;
       border-bottom: 1px solid var(--color-brand-100);
-      font-size: var(--font-size-sm);
       color: var(--color-brand-700);
+      font-size: var(--font-size-sm);
 
       &:last-child {
         border-bottom: none;
@@ -254,16 +256,16 @@
 .matux-tabs {
   .tab-buttons {
     display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
     gap: var(--spacing-md);
     margin-bottom: var(--spacing-xl);
-    justify-content: center;
-    flex-wrap: wrap;
 
     button {
       padding: var(--spacing-sm) var(--spacing-lg);
       border: 2px solid var(--color-brand-200);
-      background: white;
       border-radius: var(--radius-lg, 12px);
+      background: white;
       font-size: var(--font-size-sm);
       font-weight: 600;
       cursor: pointer;
@@ -271,18 +273,20 @@
 
       &.active {
         border-color: var(--gradient-primary-start);
-        background: linear-gradient(135deg,
+        background: linear-gradient(
+          135deg,
           var(--gradient-primary-start) 0%,
-          var(--gradient-primary-end) 100%);
+          var(--gradient-primary-end) 100%
+        );
         color: white;
       }
     }
   }
 
   .tab-content {
-    background: white;
     padding: var(--spacing-xl);
     border-radius: var(--radius-xl);
+    background: white;
   }
 }
 
@@ -291,35 +295,37 @@
 // ============================================
 .matux-cta {
   padding: 100px 0;
-  background: linear-gradient(135deg,
+  background: linear-gradient(
+    135deg,
     var(--gradient-primary-start) 0%,
-    var(--gradient-primary-end) 100%);
+    var(--gradient-primary-end) 100%
+  );
   color: white;
   text-align: center;
 
   h2 {
-    font-size: var(--font-size-4xl, 42px);
     margin-bottom: var(--spacing-lg);
+    font-size: var(--font-size-4xl, 42px);
   }
 
   p {
-    font-size: var(--font-size-xl, 20px);
-    opacity: 0.95;
     margin-bottom: var(--spacing-2xl);
+    opacity: 0.95;
+    font-size: var(--font-size-xl, 20px);
   }
 
   .cta-buttons {
     display: flex;
-    gap: var(--spacing-lg);
-    justify-content: center;
     flex-wrap: wrap;
+    justify-content: center;
+    gap: var(--spacing-lg);
   }
 }
 
 // ============================================
 // 响应式
 // ============================================
-@media (max-width: 768px) {
+@media (width <= 768px) {
   .matux-hero {
     padding: 80px 0;
 

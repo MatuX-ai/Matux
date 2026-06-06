@@ -17,7 +17,13 @@ export interface DashboardWidget {
 const DEFAULT_WIDGETS: DashboardWidget[] = [
   { id: 'stats', label: '统计卡片', icon: 'bar_chart', visible: true, order: 0 },
   { id: 'learning_sources', label: '学习来源', icon: 'hub', visible: true, order: 1 },
-  { id: 'source_details', label: '学习来源详情', icon: 'account_balance', visible: false, order: 2 },
+  {
+    id: 'source_details',
+    label: '学习来源详情',
+    icon: 'account_balance',
+    visible: false,
+    order: 2,
+  },
   { id: 'heatmap', label: '学习日历热力图', icon: 'calendar_month', visible: true, order: 3 },
   { id: 'achievements', label: '成就墙', icon: 'emoji_events', visible: true, order: 4 },
   { id: 'enrolled_courses', label: '正在学习', icon: 'menu_book', visible: true, order: 5 },
@@ -39,9 +45,7 @@ export class DashboardLayoutService {
 
   /** 获取可见组件（按 order 排序） */
   getVisibleWidgets(): DashboardWidget[] {
-    return this.widgetsSubject.value
-      .filter((w) => w.visible)
-      .sort((a, b) => a.order - b.order);
+    return this.widgetsSubject.value.filter((w) => w.visible).sort((a, b) => a.order - b.order);
   }
 
   /** 判断组件是否可见 */
@@ -80,13 +84,17 @@ export class DashboardLayoutService {
         });
         return merged;
       }
-    } catch { /* ignore */ }
+    } catch {
+      /* ignore */
+    }
     return DEFAULT_WIDGETS.map((w) => ({ ...w }));
   }
 
   private saveWidgets(widgets: DashboardWidget[]): void {
     try {
       localStorage.setItem(STORAGE_KEY, JSON.stringify(widgets));
-    } catch { /* ignore */ }
+    } catch {
+      /* ignore */
+    }
   }
 }

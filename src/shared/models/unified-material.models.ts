@@ -2,7 +2,14 @@
  * 统一课件素材数据模型
  */
 
-export type MaterialType = 'document' | 'video' | 'image' | 'interactive' | 'ar_model' | 'vr_experience' | 'arvr_scene';
+export type MaterialType =
+  | 'document'
+  | 'video'
+  | 'image'
+  | 'interactive'
+  | 'ar_model'
+  | 'vr_experience'
+  | 'arvr_scene';
 
 export interface UnifiedMaterial {
   id: number;

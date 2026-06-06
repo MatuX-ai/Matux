@@ -14,21 +14,21 @@ export * from './unified-material.models';
 
 // ==================== 订阅与支付 ====================
 // subscription.models 和 pricing.models 都有 BillingCycle 枚举(不同值)，显式导出避免冲突
+export * from './payment.models';
 export {
-  SubscriptionStatus,
-  SubscriptionPlanType,
-  SubscriptionPlan,
-  UserSubscription,
-  SubscriptionPayment,
-  SubscriptionCycle,
+  BillingCycle,
   CreateSubscriptionPlanRequest,
   SubscribeRequest,
-  SubscriptionStatistics,
-  SubscriptionFilterOptions,
+  SubscriptionCycle,
   SubscriptionDashboardData,
-  BillingCycle,
+  SubscriptionFilterOptions,
+  SubscriptionPayment,
+  SubscriptionPlan,
+  SubscriptionPlanType,
+  SubscriptionStatistics,
+  SubscriptionStatus,
+  UserSubscription,
 } from './subscription.models';
-export * from './payment.models';
 
 // ==================== 定价 ====================
 export * from './pricing.models';

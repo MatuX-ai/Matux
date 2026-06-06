@@ -31,16 +31,16 @@ class LicenseMiddleware(BaseHTTPMiddleware):
         super().__init__(app)
         self.exclude_paths: List[str] = (
             exclude_paths if exclude_paths is not None else [
-            "/docs",
-            "/redoc",
-            "/openapi.json",
-            "/health",
-            "/api/v1/health",
-            "/api/v1/auth/token",      # ✅ 登录接口豁免
-            "/api/v1/auth/register",   # ✅ 注册接口豁免
-            "/api/v1/finance",         # ✅ 财务管理接口豁免（开发环境）
-            "/api/v1/local-knowledge-graph",  # ✅ 本地知识图谱接口豁免
-        ])
+                "/docs",
+                "/redoc",
+                "/openapi.json",
+                "/health",
+                "/api/v1/health",
+                "/api/v1/auth/token",      # ✅ 登录接口豁免
+                "/api/v1/auth/register",   # ✅ 注册接口豁免
+                "/api/v1/finance",         # ✅ 财务管理接口豁免（开发环境）
+                "/api/v1/local-knowledge-graph",  # ✅ 本地知识图谱接口豁免
+            ])
 
     async def dispatch(self, request: Request, call_next):
         # ✅ 跳过 OPTIONS 预检请求 (CORS)
@@ -274,9 +274,28 @@ def api_access_required(func: Callable):
 
 # 异常处理器
 async def license_exception_handler(request: Request, exc: Exception):
-    """许可证相关异常处理器"""
+    """许可证相关异常处理器
+
+    仅处理许可证相关的 401/403 异常，其他 HTTP 异常（如 404）正常传递。
+    """
     status_code = getattr(exc, 'status_code', 500)
     detail = getattr(exc, 'detail', str(exc))
+
+    # 仅处理许可证相关的异常（401/403 且 detail 包含许可证关键词）
+    license_keywords = ['许可证', 'license', 'api_access', '权限验证']
+    is_license_error = (
+        status_code in (401, 403)
+        and any(kw in str(detail).lower() for kw in license_keywords)
+    )
+
+    if not is_license_error:
+        # 非许可证错误，使用标准 HTTP 异常响应
+        from starlette.responses import JSONResponse as StarletteJSON
+        return StarletteJSON(
+            status_code=status_code,
+            content={"detail": detail},
+        )
+
     logger.warning(f"许可证异常: {detail} - Path: {request.url.path}")
     return JSONResponse(
         status_code=status_code,

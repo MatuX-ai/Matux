@@ -9,23 +9,12 @@
   <div class="config-panel">
     <div class="form-group">
       <label for="userId">用户ID:</label>
-      <input
-        type="text"
-        id="userId"
-        [(ngModel)]="userId"
-        placeholder="输入用户ID"
-      />
+      <input type="text" id="userId" [(ngModel)]="userId" placeholder="输入用户ID" />
     </div>
 
     <div class="form-group">
       <label for="age">年龄:</label>
-      <input
-        type="number"
-        id="age"
-        [(ngModel)]="age"
-        min="6"
-        max="25"
-      />
+      <input type="number" id="age" [(ngModel)]="age" min="6" max="25" />
     </div>
 
     <div class="form-group">
@@ -39,34 +28,17 @@
     </div>
 
     <div class="button-group">
-      <button
-        class="btn btn-primary"
-        (click)="generatePath()"
-        [disabled]="isLoading"
-      >
+      <button class="btn btn-primary" (click)="generatePath()" [disabled]="isLoading">
         <span *ngIf="!isLoading">生成路径</span>
         <span *ngIf="isLoading">生成中...</span>
       </button>
 
-      <button
-        class="btn btn-secondary"
-        (click)="loadSamplePath()"
-        [disabled]="isLoading"
-      >
+      <button class="btn btn-secondary" (click)="loadSamplePath()" [disabled]="isLoading">
         加载示例
       </button>
 
-      <button
-        class="btn btn-outline"
-        (click)="clearChart()"
-      >
-        清空
-      </button>
-      <button
-        class="btn btn-mock"
-        (click)="useMockDataNow()"
-        [disabled]="isLoading"
-      >
+      <button class="btn btn-outline" (click)="clearChart()">清空</button>
+      <button class="btn btn-mock" (click)="useMockDataNow()" [disabled]="isLoading">
         <span *ngIf="!isLoading">模拟数据</span>
         <span *ngIf="isLoading">加载中...</span>
       </button>
@@ -133,8 +105,10 @@
     <div class="distribution-chart">
       <h3>节点类型分布</h3>
       <div class="distribution-bars">
-        <div *ngFor="let item of learningPath.summary.type_distribution | keyvalue"
-             class="distribution-item">
+        <div
+          *ngFor="let item of learningPath.summary.type_distribution | keyvalue"
+          class="distribution-item"
+        >
           <div class="dist-label">{{ getNodeCategoryLabel(item.key) }}</div>
           <div class="dist-bar-container">
             <div
@@ -155,12 +129,13 @@
     <div class="node-list">
       <h3>路径节点详情</h3>
       <div class="nodes">
-        <div *ngFor="let node of learningPath.path_nodes; let i = index"
-             class="node-card"
-             [class.course-unit]="node.node_type === 'course_unit'"
-             [class.transition-project]="node.node_type === 'transition_project'"
-             [class.textbook-chapter]="node.node_type === 'textbook_chapter'"
-             [class.hardware-project]="node.node_type === 'hardware_project'"
+        <div
+          *ngFor="let node of learningPath.path_nodes; let i = index"
+          class="node-card"
+          [class.course-unit]="node.node_type === 'course_unit'"
+          [class.transition-project]="node.node_type === 'transition_project'"
+          [class.textbook-chapter]="node.node_type === 'textbook_chapter'"
+          [class.hardware-project]="node.node_type === 'hardware_project'"
         >
           <div class="node-header">
             <span class="node-index">{{ i + 1 }}</span>
@@ -179,10 +154,19 @@
           <div *ngIf="node.description" class="node-description">
             {{ node.description }}
           </div>
-          <div class="node-status" [class.completed]="node.status === 'completed'"
-               [class.in-progress]="node.status === 'in_progress'"
-               [class.pending]="node.status === 'pending'">
-            {{ node.status === 'completed' ? '✅ 已完成' : node.status === 'in_progress' ? '⏳ 进行中' : '⏰ 待学习' }}
+          <div
+            class="node-status"
+            [class.completed]="node.status === 'completed'"
+            [class.in-progress]="node.status === 'in_progress'"
+            [class.pending]="node.status === 'pending'"
+          >
+            {{
+              node.status === 'completed'
+                ? '✅ 已完成'
+                : node.status === 'in_progress'
+                  ? '⏳ 进行中'
+                  : '⏰ 待学习'
+            }}
           </div>
         </div>
       </div>

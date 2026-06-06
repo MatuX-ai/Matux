@@ -63,7 +63,8 @@ export class OfflineCourseStorageService {
   public cachedCourses$: Observable<CachedCourse[]> = this.cachedCoursesSubject.asObservable();
 
   private downloadProgressSubject = new BehaviorSubject<Record<string, number>>({});
-  public downloadProgress$: Observable<Record<string, number>> = this.downloadProgressSubject.asObservable();
+  public downloadProgress$: Observable<Record<string, number>> =
+    this.downloadProgressSubject.asObservable();
 
   constructor(private offlineStorage: OfflineStorageService) {}
 
@@ -75,7 +76,7 @@ export class OfflineCourseStorageService {
     title: string,
     data: Record<string, unknown>,
     resources: { url: string; mimeType: string; size: number }[] = [],
-    ttlMs = 7 * 24 * 60 * 60 * 1000,
+    ttlMs = 7 * 24 * 60 * 60 * 1000
   ): Promise<void> {
     const now = new Date();
     const course: CachedCourse = {
@@ -130,7 +131,7 @@ export class OfflineCourseStorageService {
     courseId: string,
     resourceUrl: string,
     data: Blob,
-    mimeType: string,
+    mimeType: string
   ): Promise<void> {
     const resource: OfflineCourseResource = {
       id: this.generateId(),
@@ -153,7 +154,7 @@ export class OfflineCourseStorageService {
    */
   async getCachedResource(resourceUrl: string): Promise<OfflineCourseResource | undefined> {
     const assets = await this.offlineStorage.getAllData<OfflineCourseResource>(
-      OfflineStorageKey.ASSETS,
+      OfflineStorageKey.ASSETS
     );
     return assets.find((a) => a.resourceUrl === resourceUrl);
   }
@@ -163,7 +164,7 @@ export class OfflineCourseStorageService {
    */
   async getCourseResources(courseId: string): Promise<OfflineCourseResource[]> {
     const assets = await this.offlineStorage.getAllData<OfflineCourseResource>(
-      OfflineStorageKey.ASSETS,
+      OfflineStorageKey.ASSETS
     );
     return assets.filter((a) => a.courseId === courseId);
   }
@@ -206,7 +207,7 @@ export class OfflineCourseStorageService {
   }> {
     const courses = await this.getCachedCourses();
     const assets = await this.offlineStorage.getAllData<OfflineCourseResource>(
-      OfflineStorageKey.ASSETS,
+      OfflineStorageKey.ASSETS
     );
 
     const totalSize = assets.reduce((sum, a) => sum + a.size, 0);
@@ -223,7 +224,7 @@ export class OfflineCourseStorageService {
    */
   async batchDownloadResources(
     courseId: string,
-    resources: { url: string; mimeType: string }[],
+    resources: { url: string; mimeType: string }[]
   ): Promise<void> {
     let completed = 0;
     const total = resources.length;

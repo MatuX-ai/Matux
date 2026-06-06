@@ -1,16 +1,16 @@
-/**
- * Angular服务包装器
- * 用于在Angular应用中更容易地使用AI服务
+﻿/**
+ * Angular 服务包装器
+ * 用于在 Angular 应用中更容易地使用 AI 服务
  *
  * @deprecated 请直接使用 AIServiceClient 或通过 Angular DI 注入 AIServiceClient。
  * 此类仅保留以保持 ai-code-generator 等现有组件的向后兼容。
  */
 
-// 注意：此文件需要Angular和RxJS依赖
-// 如果不在Angular环境中，请使用ai-client.ts中的AIServiceClient
+// 注意：此文件需要 Angular 和 RxJS 依赖
+// 如果不在 Angular 环境中，请使用 ai-client.ts 中的 AIServiceClient
 
 import { AIServiceClient } from './ai-client';
-import {
+import type {
   AIRequestRecord,
   AIServiceConfig,
   AvailableModelsResponse,
@@ -19,8 +19,8 @@ import {
   UsageStats,
 } from './types';
 
-// 模拟Angular Injectable装饰器（如果在非Angular环境中）
-const Injectable = (options: any) => (target: any) => target;
+// 模拟 Angular Injectable 装饰器（如果在非 Angular 环境中）
+const Injectable = (_options: any) => (target: any) => target;
 
 @Injectable({
   providedIn: 'root',
@@ -29,7 +29,7 @@ const Injectable = (options: any) => (target: any) => target;
  * @deprecated 请直接使用 AIServiceClient。此类仅用于向后兼容。
  */
 export class AngularAIService {
-  private aiClient: AIServiceClient;
+  private aiClient!: AIServiceClient;
 
   constructor() {
     // 默认配置 - 实际使用时应该从环境变量或配置服务获取

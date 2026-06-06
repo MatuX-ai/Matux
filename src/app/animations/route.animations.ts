@@ -1,11 +1,4 @@
-import {
-  animate,
-  query,
-  style,
-  transition,
-  trigger,
-  stagger,
-} from '@angular/animations';
+import { animate, query, stagger, style, transition, trigger } from '@angular/animations';
 
 /**
  * PRD v1.1 动效规范：

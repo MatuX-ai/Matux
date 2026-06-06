@@ -2,98 +2,14 @@
   min-height: 100vh;
   background-color: var(--background-color, #fff);
   color: var(--text-primary-color, #212121);
-  transition: background-color 0.3s ease, color 0.3s ease;
+  transition-timing-function: ease;
+  transition-duration: 0.3s;
+  transition-property: background-color, color;
 }
 
-.app-header {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  padding: 1rem 2rem;
-  border-bottom: 1px solid var(--border-color, #e0e0e0);
-  background-color: var(--surface-color, #fff);
-}
-
-.app-header h1 {
-  margin: 0;
-  color: var(--text-primary-color, #212121);
-}
-
-.app-main {
-  padding: 2rem;
-}
-
-.demo-section {
-  max-width: 800px;
-  margin: 0 auto;
-}
-
-.demo-section h2 {
-  margin-bottom: 1rem;
-  color: var(--text-primary-color, #212121);
-}
-
-.controls {
-  margin: 1rem 0;
-}
-
-.controls button {
-  margin: 0 8px 8px 0;
-  padding: 8px 16px;
-  border: none;
-  border-radius: 4px;
-  background-color: var(--primary-color, #2196f3);
-  color: white;
-  cursor: pointer;
-  transition: opacity 0.2s ease;
-}
-
-.controls button:hover {
-  opacity: 0.8;
-}
-
-.color-demo {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 1rem;
-  margin: 2rem 0;
-}
-
-.color-box {
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  width: 100px;
-  height: 100px;
-  border-radius: 8px;
-  box-shadow: 0 2px 4px rgb(0 0 0 / 10%);
-  color: white;
-  font-weight: bold;
-}
-
-.component-demo {
-  margin: 2rem 0;
-}
-
-/* 暗色主题适配 */
-[data-theme="dark"] .app-container,
+// 暗色主题适配
+[data-theme='dark'] .app-container,
 .theme-dark .app-container {
   background-color: var(--background-color, #121212);
-  color: var(--text-primary-color, #fff);
-}
-
-[data-theme="dark"] .app-header,
-.theme-dark .app-header {
-  border-bottom: 1px solid var(--border-color, #333);
-  background-color: var(--surface-color, #1e1e1e);
-}
-
-[data-theme="dark"] .app-header h1,
-.theme-dark .app-header h1 {
-  color: var(--text-primary-color, #fff);
-}
-
-[data-theme="dark"] .demo-section h2,
-.theme-dark .demo-section h2 {
   color: var(--text-primary-color, #fff);
 }

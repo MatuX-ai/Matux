@@ -1,5 +1,5 @@
-import { Injectable, Inject, PLATFORM_ID } from '@angular/core';
 import { isPlatformBrowser } from '@angular/common';
+import { Inject, Injectable, PLATFORM_ID } from '@angular/core';
 import { BehaviorSubject } from 'rxjs';
 
 import {
@@ -67,91 +67,96 @@ export class OfflineStorageService {
   /**
    * 初始化IndexedDB数据库
    */
+  // eslint-disable-next-line max-lines-per-function, complexity
   private async initializeDatabase(): Promise<void> {
-    return new Promise((resolve, reject) => {
-      const request = indexedDB.open(this.DB_NAME, this.DB_VERSION);
+    return new Promise(
+      // eslint-disable-next-line max-lines-per-function
+      (resolve, reject) => {
+        const request = indexedDB.open(this.DB_NAME, this.DB_VERSION);
 
-      request.onerror = () => {
-        reject(request.error);
-      };
+        request.onerror = () => {
+          reject(request.error);
+        };
 
-      request.onsuccess = () => {
-        this.db = request.result;
-        resolve();
-      };
+        request.onsuccess = () => {
+          this.db = request.result;
+          resolve();
+        };
 
-      request.onupgradeneeded = (event) => {
-        const db = (event.target as IDBOpenDBRequest).result;
+        // eslint-disable-next-line max-lines-per-function, complexity
+        request.onupgradeneeded = (event) => {
+          const db = (event.target as IDBOpenDBRequest).result;
 
-        // 创建对象存储
-        if (!db.objectStoreNames.contains('userData')) {
-          const userStore = db.createObjectStore('userData', { keyPath: 'id' });
-          userStore.createIndex('username', 'username', { unique: true });
-          userStore.createIndex('email', 'email', { unique: true });
-        }
+          // 创建对象存储
+          if (!db.objectStoreNames.contains('userData')) {
+            const userStore = db.createObjectStore('userData', { keyPath: 'id' });
+            userStore.createIndex('username', 'username', { unique: true });
+            userStore.createIndex('email', 'email', { unique: true });
+          }
 
-        if (!db.objectStoreNames.contains('courseData')) {
-          const courseStore = db.createObjectStore('courseData', { keyPath: 'id' });
-          courseStore.createIndex('teacherId', 'teacherId');
-          courseStore.createIndex('status', 'status');
-        }
+          if (!db.objectStoreNames.contains('courseData')) {
+            const courseStore = db.createObjectStore('courseData', { keyPath: 'id' });
+            courseStore.createIndex('teacherId', 'teacherId');
+            courseStore.createIndex('status', 'status');
+          }
 
-        if (!db.objectStoreNames.contains('taskData')) {
-          const taskStore = db.createObjectStore('taskData', { keyPath: 'id' });
-          taskStore.createIndex('assigneeId', 'assigneeId');
-          taskStore.createIndex('status', 'status');
-          taskStore.createIndex('dueDate', 'dueDate');
-        }
+          if (!db.objectStoreNames.contains('taskData')) {
+            const taskStore = db.createObjectStore('taskData', { keyPath: 'id' });
+            taskStore.createIndex('assigneeId', 'assigneeId');
+            taskStore.createIndex('status', 'status');
+            taskStore.createIndex('dueDate', 'dueDate');
+          }
 
-        if (!db.objectStoreNames.contains('settings')) {
-          db.createObjectStore('settings', { keyPath: 'key' });
-        }
+          if (!db.objectStoreNames.contains('settings')) {
+            db.createObjectStore('settings', { keyPath: 'key' });
+          }
 
-        if (!db.objectStoreNames.contains('cache')) {
-          const cacheStore = db.createObjectStore('cache', { keyPath: 'key' });
-          cacheStore.createIndex('expiresAt', 'expiresAt');
-        }
+          if (!db.objectStoreNames.contains('cache')) {
+            const cacheStore = db.createObjectStore('cache', { keyPath: 'key' });
+            cacheStore.createIndex('expiresAt', 'expiresAt');
+          }
 
-        if (!db.objectStoreNames.contains('syncQueue')) {
-          const queueStore = db.createObjectStore('syncQueue', { keyPath: 'id' });
-          queueStore.createIndex('status', 'status');
-          queueStore.createIndex('tableName', 'tableName');
-          queueStore.createIndex('createdAt', 'createdAt');
-        }
+          if (!db.objectStoreNames.contains('syncQueue')) {
+            const queueStore = db.createObjectStore('syncQueue', { keyPath: 'id' });
+            queueStore.createIndex('status', 'status');
+            queueStore.createIndex('tableName', 'tableName');
+            queueStore.createIndex('createdAt', 'createdAt');
+          }
 
-        // v2: 大文件分片存储 (Electron 离线实验数据)
-        if (!db.objectStoreNames.contains('fileChunks')) {
-          const chunkStore = db.createObjectStore('fileChunks', { keyPath: 'id' });
-          chunkStore.createIndex('fileId', 'fileId');
-          chunkStore.createIndex('chunkIndex', 'chunkIndex');
-        }
+          // v2: 大文件分片存储 (Electron 离线实验数据)
+          if (!db.objectStoreNames.contains('fileChunks')) {
+            const chunkStore = db.createObjectStore('fileChunks', { keyPath: 'id' });
+            chunkStore.createIndex('fileId', 'fileId');
+            chunkStore.createIndex('chunkIndex', 'chunkIndex');
+          }
 
-        // v3: 课程内容离线缓存
-        if (!db.objectStoreNames.contains('courses')) {
-          const courseStore = db.createObjectStore('courses', { keyPath: 'id' });
-          courseStore.createIndex('courseId', 'courseId', { unique: true });
-          courseStore.createIndex('downloadedAt', 'downloadedAt');
-          courseStore.createIndex('expiresAt', 'expiresAt');
-        }
+          // v3: 课程内容离线缓存
+          if (!db.objectStoreNames.contains('courses')) {
+            const courseStore = db.createObjectStore('courses', { keyPath: 'id' });
+            courseStore.createIndex('courseId', 'courseId', { unique: true });
+            courseStore.createIndex('downloadedAt', 'downloadedAt');
+            courseStore.createIndex('expiresAt', 'expiresAt');
+          }
 
-        // v3: 学习进度离线存储
-        if (!db.objectStoreNames.contains('progress')) {
-          const progressStore = db.createObjectStore('progress', { keyPath: 'id' });
-          progressStore.createIndex('userId', 'userId');
-          progressStore.createIndex('courseId', 'courseId');
-          progressStore.createIndex('synced', 'synced');
-          progressStore.createIndex('updatedAt', 'updatedAt');
-        }
+          // v3: 学习进度离线存储
+          if (!db.objectStoreNames.contains('progress')) {
+            const progressStore = db.createObjectStore('progress', { keyPath: 'id' });
+            progressStore.createIndex('userId', 'userId');
+            progressStore.createIndex('courseId', 'courseId');
+            progressStore.createIndex('synced', 'synced');
+            progressStore.createIndex('updatedAt', 'updatedAt');
+          }
 
-        // v3: 音频/图片等资源文件 blob 存储
-        if (!db.objectStoreNames.contains('assets')) {
-          const assetStore = db.createObjectStore('assets', { keyPath: 'id' });
-          assetStore.createIndex('resourceUrl', 'resourceUrl', { unique: true });
-          assetStore.createIndex('mimeType', 'mimeType');
-          assetStore.createIndex('expiresAt', 'expiresAt');
-        }
-      };
-    });
+          // v3: 音频/图片等资源文件 blob 存储
+          if (!db.objectStoreNames.contains('assets')) {
+            const assetStore = db.createObjectStore('assets', { keyPath: 'id' });
+            assetStore.createIndex('resourceUrl', 'resourceUrl', { unique: true });
+            assetStore.createIndex('mimeType', 'mimeType');
+            assetStore.createIndex('expiresAt', 'expiresAt');
+          }
+        };
+      }
+    );
   }
 
   /**
@@ -188,7 +193,7 @@ export class OfflineStorageService {
       const request = store.put(data);
 
       request.onsuccess = () => {
-        this.updateStats();
+        void this.updateStats();
         resolve();
       };
 
@@ -211,7 +216,7 @@ export class OfflineStorageService {
       const request = store.get(id);
 
       request.onsuccess = () => {
-        resolve(request.result);
+        resolve(request.result as T);
       };
 
       request.onerror = () => {
@@ -255,7 +260,7 @@ export class OfflineStorageService {
       const request = store.delete(id);
 
       request.onsuccess = () => {
-        this.updateStats();
+        void this.updateStats();
         resolve();
       };
 
@@ -278,7 +283,7 @@ export class OfflineStorageService {
       const request = store.clear();
 
       request.onsuccess = () => {
-        this.updateStats();
+        void this.updateStats();
         resolve();
       };
 
@@ -382,7 +387,9 @@ export class OfflineStorageService {
         itemCounts,
         pendingOperations,
       });
-    } catch (error) {}
+    } catch {
+      /* 统计更新失败不阻塞 */
+    }
   }
 
   /**
@@ -457,15 +464,15 @@ export class OfflineStorageService {
     const store = this.getObjectStore(OfflineStorageKey.CACHE, 'readwrite');
     const index = store.index('expiresAt');
 
-    const expiredItems: any[] = [];
+    const expiredItems: Array<{ key: IDBValidKey }> = [];
 
     return new Promise((resolve, reject) => {
       const request = index.openCursor(IDBKeyRange.upperBound(now));
 
-      request.onsuccess = (event) => {
+      request.onsuccess = (event: Event) => {
         const cursor = (event.target as IDBRequest<IDBCursorWithValue>).result;
         if (cursor) {
-          expiredItems.push(cursor.value);
+          expiredItems.push(cursor.value as { key: IDBValidKey });
           cursor.continue();
         } else {
           const deletePromises = expiredItems.map(
@@ -479,7 +486,7 @@ export class OfflineStorageService {
 
           Promise.all(deletePromises)
             .then(() => {
-              this.updateStats();
+              void this.updateStats();
               resolve();
             })
             .catch(reject);
@@ -530,7 +537,10 @@ export class OfflineStorageService {
     if (!this.db) return null;
 
     const meta = await this.getData<{
-      key: string; fileId: string; totalChunks: number; totalSize: number;
+      key: string;
+      fileId: string;
+      totalChunks: number;
+      totalSize: number;
     }>(OfflineStorageKey.CACHE, `file_meta_${fileId}`);
 
     if (!meta) return null;
@@ -559,7 +569,8 @@ export class OfflineStorageService {
     if (!this.db) return;
 
     const meta = await this.getData<{ key: string; totalChunks: number }>(
-      OfflineStorageKey.CACHE, `file_meta_${fileId}`
+      OfflineStorageKey.CACHE,
+      `file_meta_${fileId}`
     );
 
     const deletePromises: Promise<void>[] = [];
@@ -570,9 +581,7 @@ export class OfflineStorageService {
       }
     }
 
-    deletePromises.push(
-      this.deleteData(OfflineStorageKey.CACHE, `file_meta_${fileId}`)
-    );
+    deletePromises.push(this.deleteData(OfflineStorageKey.CACHE, `file_meta_${fileId}`));
 
     await Promise.all(deletePromises);
   }
