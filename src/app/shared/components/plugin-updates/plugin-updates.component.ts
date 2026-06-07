@@ -68,7 +68,7 @@ export class PluginUpdatesComponent implements OnInit {
         throw new Error('Plugin API 不可用');
       }
       
-      const result = await window.pluginAPI.getPendingNotifications();
+      const result = (await window.pluginAPI.getPendingNotifications()) as { success: boolean; data: UpdateNotification[] };
       if (result.success && result.data) {
         this.notifications = result.data;
       }
@@ -151,7 +151,7 @@ export class PluginUpdatesComponent implements OnInit {
       this.snackBar.open('正在检查更新...', '关闭', { duration: 2000 });
       
       // 这里需要获取已安装插件列表
-      const installedResult = await window.pluginAPI.getInstalledPlugins();
+      const installedResult = (await window.pluginAPI.getInstalledPlugins()) as { success: boolean; data: unknown };
       if (installedResult.success && installedResult.data) {
         await window.pluginAPI.checkForUpdates(installedResult.data);
         await this.loadNotifications();

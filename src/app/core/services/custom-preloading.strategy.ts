@@ -163,11 +163,12 @@ export class CustomPreloadingStrategy implements PreloadingStrategy {
 
   /**
    * 检查网络是否空闲
+   *
+   * 默认不再预加载 network-idle 路由（开发环境会一次性拉下 5.95MB 的 token-dashboard 等大模块）
+   * 如果确实需要，调用 adjustStrategyForDevice() 或在 dashboard 加 console 手动打开
    */
   private checkNetworkIdle(): void {
-    // 这里可以实现更复杂的网络空闲检测逻辑
-    // 简化版：假设网络总是空闲
-    this.isNetworkIdle = true;
+    this.isNetworkIdle = false;
   }
 
   /**

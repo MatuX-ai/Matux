@@ -70,6 +70,9 @@ class Settings(BaseSettings):
     # CORS配置
     ALLOWED_ORIGINS: str = "http://localhost:3000,http://localhost:4200"
 
+    # 许可证验证配置
+    ENABLE_LICENSE_CHECK: bool = True  # 生产环境启用，DEBUG模式可禁用
+
     # 日志配置
     LOG_LEVEL: str = "INFO"
     LOG_FILE: str = "logs/ai_service.log"
@@ -188,7 +191,23 @@ class Settings(BaseSettings):
     @validator("ALLOWED_ORIGINS")
     def validate_origins(cls, v):
         if isinstance(v, str):
-            return [origin.strip() for origin in v.split(",")]
+            origins = [origin.strip() for origin in v.split(",")]
+            if "*" in origins:
+                raise ValueError("Wildcard '*' not allowed in ALLOWED_ORIGINS")
+            return origins
+        return v
+
+    @validator("PRELOAD_DELAY_SECONDS")
+    def validate_preload_delay(cls, v):
+        if v < 0 or v > 60:
+            raise ValueError("PRELOAD_DELAY_SECONDS must be between 0 and 60")
+        return v
+
+    @validator("OPENHYDRA_API_KEY")
+    def validate_openhydra_key(cls, v):
+        if v and "test" in v.lower():
+            import warnings
+            warnings.warn("OPENHYDRA_API_KEY contains 'test', please set production key")
         return v
 
 

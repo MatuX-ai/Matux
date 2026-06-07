@@ -94,11 +94,11 @@ export class PluginRecommendationsComponent implements OnInit, OnDestroy {
         throw new Error('Plugin API 不可用（非 Electron 环境）');
       }
       
-      const result = await window.pluginAPI.getRecommendations({
+      const result = (await window.pluginAPI.getRecommendations({
         maxRecommendations: 10,
         includeBundles: true,
         excludeInstalled: true,
-      });
+      })) as { success: boolean; data: RecommendationResult };
       
       if (result.success && result.data) {
         const data: RecommendationResult = result.data;

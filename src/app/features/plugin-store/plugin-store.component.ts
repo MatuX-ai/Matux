@@ -137,7 +137,7 @@ export class PluginStoreComponent implements OnInit, OnDestroy {
         options.category = this.selectedCategory;
       }
       
-      this.plugins = await this.pluginService.getPlugins(options).toPromise();
+      this.plugins = (await this.pluginService.getPlugins(options).toPromise()) ?? [];
       this.applyFilters();
     } catch (err) {
       this.error = `加载插件列表失败: ${(err as Error).message}`;
@@ -152,7 +152,7 @@ export class PluginStoreComponent implements OnInit, OnDestroy {
    */
   async loadStats(): Promise<void> {
     try {
-      this.stats = await this.pluginService.getPluginStats().toPromise();
+      this.stats = (await this.pluginService.getPluginStats().toPromise()) ?? null;
     } catch (err) {
       console.warn('加载统计信息失败:', err);
     }

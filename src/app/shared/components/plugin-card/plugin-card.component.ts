@@ -19,7 +19,7 @@ import { MatTooltipModule } from '@angular/material/tooltip';
 import { MatProgressBarModule } from '@angular/material/progress-bar';
 import { MatSnackBar, MatSnackBarModule } from '@angular/material/snack-bar';
 
-import { PluginStoreService, PluginListItem, InstallProgress } from '../../core/services/plugin-store.service';
+import { PluginStoreService, PluginListItem, InstallProgress } from '../../../core/services/plugin-store.service';
 
 @Component({
   selector: 'app-plugin-card',
@@ -51,7 +51,7 @@ export class PluginCardComponent implements OnInit {
   ngOnInit(): void {
     // 监听安装进度
     if (this.plugin) {
-      this.pluginService.getInstallProgress(this.plugin.id).subscribe(progress => {
+      this.pluginService.getInstallProgress(this.plugin.id).subscribe((progress: any) => {
         this.installProgress = progress;
         
         if (progress?.status === 'completed') {
@@ -118,7 +118,7 @@ export class PluginCardComponent implements OnInit {
    * 获取分类标签
    */
   getCategoryLabels(): string[] {
-    return this.plugin.categories.map(cat => this.pluginService.getCategoryLabel(cat));
+    return this.plugin.categories.map((cat: string) => this.pluginService.getCategoryLabel(cat));
   }
   
   /**

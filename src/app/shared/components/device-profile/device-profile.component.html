@@ -71,8 +71,8 @@
             <mat-icon class="metric-icon">straighten</mat-icon>
             <span class="metric-label">内存</span>
             <span class="metric-value">{{ memoryGB }} GB</span>
-            <span class="metric-sub" *ngIf="hardware?.memory?.availableMB">
-              可用 {{ (hardware.memory.availableMB / 1024).toFixed(0) }} GB
+            <span class="metric-sub" *ngIf="hardware?.memory?.availableMB as availableMB">
+              可用 {{ (availableMB / 1024).toFixed(0) }} GB
             </span>
           </div>
 
@@ -92,14 +92,14 @@
             </span>
           </div>
 
-          <div class="metric-card" *ngIf="hardware?.peripherals">
+          <div class="metric-card" *ngIf="hardware?.peripherals as peripherals">
             <mat-icon class="metric-icon">devices</mat-icon>
             <span class="metric-label">外设</span>
             <span class="metric-value">
-              {{ hardware.peripherals.hasCamera ? '📷 摄像头' : '' }}
-              {{ hardware.peripherals.hasMicrophone ? '🎤 麦克风' : '' }}
+              {{ peripherals.hasCamera ? '📷 摄像头' : '' }}
+              {{ peripherals.hasMicrophone ? '🎤 麦克风' : '' }}
             </span>
-            <span class="metric-sub" *ngIf="hardware.peripherals.hasUSBDevices">USB 设备已连接</span>
+            <span class="metric-sub" *ngIf="peripherals.hasUSBDevices">USB 设备已连接</span>
           </div>
 
           <div class="metric-card">
@@ -121,10 +121,10 @@
           软件环境
         </h3>
         <div class="metrics-grid">
-          <div class="metric-card" *ngIf="software?.runtime?.pythonVersion">
+          <div class="metric-card" *ngIf="software?.runtime?.pythonVersion as pythonVersion">
             <mat-icon class="metric-icon">code</mat-icon>
             <span class="metric-label">Python</span>
-            <span class="metric-value">{{ software.runtime.pythonVersion }}</span>
+            <span class="metric-value">{{ pythonVersion }}</span>
           </div>
 
           <div class="metric-card">
@@ -133,7 +133,7 @@
             <span class="metric-value" [class.ok]="software?.containers?.dockerRunning" [class.warn]="!software?.containers?.dockerInstalled">
               {{ software?.containers?.dockerRunning ? '运行中' : software?.containers?.dockerInstalled ? '已安装' : '未安装' }}
             </span>
-            <span class="metric-sub" *ngIf="software?.containers?.dockerVersion">v{{ software.containers.dockerVersion }}</span>
+            <span class="metric-sub" *ngIf="software?.containers?.dockerVersion as dockerVersion">v{{ dockerVersion }}</span>
           </div>
 
           <div class="metric-card">
@@ -169,7 +169,7 @@
 
           <!-- 警告信息 -->
           <div class="warnings" *ngIf="assessment?.warnings?.length">
-            <div class="warning-item" *ngFor="let warning of assessment.warnings">
+            <div class="warning-item" *ngFor="let warning of assessment?.warnings ?? []">
               <mat-icon class="warn-icon">warning</mat-icon>
               <span>{{ warning }}</span>
             </div>
@@ -179,7 +179,7 @@
           <div class="recommended-plugins" *ngIf="assessment?.recommendedPlugins?.length">
             <span class="rec-label">推荐安装：</span>
             <span class="rec-plugins">
-              <span class="rec-plugin" *ngFor="let plugin of assessment.recommendedPlugins">
+              <span class="rec-plugin" *ngFor="let plugin of assessment?.recommendedPlugins ?? []">
                 {{ plugin }}
               </span>
             </span>

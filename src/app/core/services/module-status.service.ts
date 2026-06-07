@@ -12,6 +12,9 @@ import { catchError, filter, map, switchMap, take, takeUntil, timeout } from 'rx
 
 import { environment } from '../../../environments/environment';
 
+/** HTTP 请求超时时间（毫秒），防止单次 health-detail 卡住整个状态栏 */
+const HTTP_TIMEOUT_MS = 5_000;
+
 /** 模块摘要统计 */
 export interface ModuleSummary {
   total: number;
@@ -133,6 +136,7 @@ export class ModuleStatusService implements OnDestroy {
 
   private fetchHealthInternal(): Observable<HealthDetailResponse | null> {
     return this.http.get<HealthDetailResponse>(`${this.baseUrl}/health-detail`).pipe(
+      timeout(HTTP_TIMEOUT_MS),
       catchError(() => {
         this.healthy$.next(false);
         this.summary$.next(null);

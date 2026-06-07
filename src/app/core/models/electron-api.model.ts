@@ -282,6 +282,32 @@ export interface PluginAPI {
   getInstalledPlugins(): Promise<unknown>;
   togglePlugin(pluginId: string, enabled: boolean): Promise<unknown>;
 
+  // 插件下载/更新
+  downloadPlugin(pluginId: string, version?: string, url?: string): Promise<unknown>;
+  cancelDownload(pluginId: string, version?: string): Promise<unknown>;
+  pauseDownload(pluginId: string, version?: string): Promise<unknown>;
+  resumeDownload(pluginId: string, version?: string): Promise<unknown>;
+  checkForUpdates(plugins: unknown): Promise<unknown>;
+  getPluginUsageStats(pluginId: string): Promise<unknown>;
+
+  // 通知/更新列表
+  getPendingNotifications(): Promise<unknown>;
+  markNotificationInstalled(id: string): Promise<unknown>;
+  dismissNotification(id: string): Promise<unknown>;
+
+  // 首次运行向导
+  getFirstRunGuide(): Promise<unknown>;
+  getRecommendedModules(deviceClass?: string): Promise<unknown>;
+  getRecommendations(options?: unknown): Promise<unknown>;
+  addInstalledModule(moduleId: string): Promise<unknown>;
+  markFirstRunCompleted(): Promise<unknown>;
+
+  // 插件评价
+  getPluginReviews(pluginId: string, options?: unknown): Promise<unknown>;
+  getPluginAverageRating(pluginId: string): Promise<unknown>;
+  addPluginReview(payload: unknown): Promise<unknown>;
+  markReviewHelpful(reviewId: string, pluginId: string): Promise<unknown>;
+
   // 事件监听
   onInstallProgress(callback: (data: { pluginId: string; phase: string; progress: number; message: string }) => void): void;
   onPluginStatusChange(callback: (data: { type: string; pluginId?: string; profile?: DeviceProfile }) => void): void;

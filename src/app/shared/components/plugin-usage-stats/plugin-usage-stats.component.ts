@@ -59,7 +59,7 @@ export class PluginUsageStatsComponent implements OnInit {
         throw new Error('Plugin API 不可用');
       }
       
-      const result = await window.pluginAPI.getPluginUsageStats(this.pluginId);
+      const result = (await window.pluginAPI.getPluginUsageStats(this.pluginId)) as { success: boolean; data: any };
       if (result.success && result.data) {
         this.stats = result.data;
       }

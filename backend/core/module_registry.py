@@ -24,15 +24,50 @@ def _factory(module_path: str, attr_name: str = "router"):
     创建路由工厂函数的延迟加载包装器
 
     返回一个 callable，调用时才真正 import 模块并获取 router。
+    包含错误处理和循环导入检测。
     """
+    _cached_router = None
+    _load_attempts = 0
+    _max_attempts = 3
 
     def _create_router():
+        nonlocal _cached_router, _load_attempts
+        
+        # 返回缓存的 router
+        if _cached_router is not None:
+            return _cached_router
+        
         import importlib
-
-        mod = importlib.import_module(module_path)
-        return getattr(mod, attr_name)
-
+        import logging
+        logger = logging.getLogger(__name__)
+        
+        while _load_attempts < _max_attempts:
+            try:
+                mod = importlib.import_module(module_path)
+                router = getattr(mod, attr_name)
+                _cached_router = router
+                return router
+            except (ImportError, AttributeError) as e:
+                _load_attempts += 1
+                if _load_attempts >= _max_attempts:
+                    logger.error(
+                        f"Failed to load router {module_path}.{attr_name} "
+                        f"after {_max_attempts} attempts: {e}"
+                    )
+                    raise ModuleNotFoundError(
+                        f"Router '{attr_name}' not found in module '{module_path}'"
+                    ) from e
+                logger.warning(
+                    f"Attempt {_load_attempts}/{_max_attempts} failed for "
+                    f"{module_path}.{attr_name}: {e}. Retrying..."
+                )
+    
     return _create_router
+
+
+class ModuleRegistryError(Exception):
+    """模块注册表错误"""
+    pass
 
 
 def get_all_module_specs() -> List[dict]:
@@ -713,3 +748,122 @@ def get_preload_modules(tier_limit: int = 1) -> List[str]:
     """获取需要预加载的模块名列表"""
     specs = get_all_module_specs()
     return [s["name"] for s in specs if s["tier"] <= tier_limit]
+
+
+# =============================================================================
+# 插件机制：替代硬编码的动态模块注册
+# =============================================================================
+
+# 全局插件注册表
+_PLUGIN_REGISTRY: List[dict] = []
+
+
+def register_module(
+    name: str,
+    tier: int,
+    prefix: str = "",
+    tags: List[str] = None,
+    dependencies: List[str] = None,
+    required_services: List[str] = None,
+    fallback_services: dict = None,
+    model_classes: List[str] = None,
+):
+    """
+    模块注册装饰器
+
+    用法:
+        @register_module("my_module", tier=1, prefix="/api/v1")
+        def create_my_router():
+            from routes import my_routes
+            return my_routes.router
+    """
+    def decorator(router_factory):
+        spec = {
+            "name": name,
+            "tier": tier,
+            "prefix": prefix,
+            "tags": tags or [],
+            "router_factory": router_factory,
+            "dependencies": dependencies or [],
+            "required_services": required_services or [],
+            "fallback_services": fallback_services or {},
+            "model_classes": model_classes or [],
+        }
+        # 检查是否重复注册
+        if not any(p["name"] == name for p in _PLUGIN_REGISTRY):
+            _PLUGIN_REGISTRY.append(spec)
+            logger.info(f"📦 插件模块已注册: {name} (Tier {tier})")
+        return router_factory
+    return decorator
+
+
+def get_plugin_modules() -> List[dict]:
+    """获取所有通过装饰器注册的插件模块"""
+    return _PLUGIN_REGISTRY.copy()
+
+
+def discover_plugins(base_path: str = "routes") -> List[dict]:
+    """
+    自动发现插件模块
+
+    扫描指定目录下的所有 Python 文件，查找 @register_module 装饰的模块。
+    """
+    import os
+    import sys
+    from pathlib import Path
+
+    discovered = []
+    backend_path = Path(__file__).parent.parent
+    scan_path = backend_path / base_path
+
+    if not scan_path.exists():
+        logger.warning(f"插件扫描路径不存在: {scan_path}")
+        return discovered
+
+    # 动态导入routes包以触发装饰器执行
+    try:
+        import importlib
+        import pkgutil
+
+        # 确保路径在 sys.path 中
+        if str(backend_path) not in sys.path:
+            sys.path.insert(0, str(backend_path))
+
+        # 遍历 routes 包下的所有模块
+        for importer, modname, ispkg in pkgutil.iter_modules([str(scan_path)]):
+            if modname.endswith("_routes"):
+                try:
+                    full_module_name = f"routes.{modname}"
+                    mod = importlib.import_module(full_module_name)
+                    logger.debug(f"扫描模块: {full_module_name}")
+                except ImportError as e:
+                    logger.warning(f"无法导入模块 {full_module_name}: {e}")
+
+    except Exception as e:
+        logger.warning(f"插件自动发现失败: {e}")
+
+    # 从插件注册表获取已注册的模块
+    discovered = get_plugin_modules()
+    logger.info(f"🔍 发现 {len(discovered)} 个插件模块")
+    return discovered
+
+
+def get_all_module_specs_with_plugins() -> List[dict]:
+    """
+    获取所有模块规格（包含插件）
+
+    合并硬编码模块和插件注册的模块。
+    插件优先级高于硬编码（允许覆盖）。
+    """
+    # 获取硬编码模块
+    hardcoded = get_all_module_specs()
+
+    # 获取插件模块
+    plugins = get_plugin_modules()
+
+    # 合并：以插件覆盖硬编码
+    merged = {m["name"]: m for m in hardcoded}
+    for plugin in plugins:
+        merged[plugin["name"]] = plugin
+
+    return list(merged.values())

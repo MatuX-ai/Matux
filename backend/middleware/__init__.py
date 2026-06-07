@@ -13,8 +13,10 @@ except ImportError:
     logger.warning("prometheus_client not available, using fallback circuit breaker")
 
     class CircuitBreakerConfig:
-        def __init__(self, failure_threshold=5, timeout=60, half_open_attempts=3, half_open_max_calls=None):
+        def __init__(self, failure_threshold=5, success_threshold=2, timeout=60, 
+                     half_open_attempts=3, half_open_max_calls=None, **kwargs):
             self.failure_threshold = failure_threshold
+            self.success_threshold = success_threshold
             self.timeout = timeout
             self.half_open_attempts = half_open_attempts
             self.half_open_max_calls = half_open_max_calls or half_open_attempts

@@ -133,35 +133,60 @@
 
 // OAuth 按钮
 .oauth-buttons {
-  display: grid;
-  grid-template-columns: repeat(2, 1fr);
+  display: flex;
+  justify-content: space-around;
+  align-items: center;
   gap: 12px;
   margin-bottom: 8px;
 }
 
-.oauth-btn {
-  height: 44px;
-  border-color: var(--matux-color-divider, #e2e8f0);
-  border-radius: 9999px;
-  color: var(--matux-color-text-secondary, #475569);
-  transition: all 0.2s;
+.oauth-icon-btn {
+  flex: 0 0 auto;
+  width: 48px;
+  height: 48px;
+  padding: 0;
+  background: transparent;
+  border: none;
+  border-radius: 50%;
+  transition: transform 0.15s, opacity 0.2s;
+  opacity: 0.85;
 
   &:hover {
-    border-color: var(--matux-color-primary, #3b82f6);
-    background: var(--matux-color-primary-bg, #eff6ff);
-    color: var(--matux-color-primary, #3b82f6);
+    transform: translateY(-2px);
+    opacity: 1;
   }
 
-  mat-icon,
-  .oauth-icon {
-    width: 20px;
-    height: 20px;
-    margin-right: 8px;
-    font-size: 20px;
+  mat-icon {
+    width: 32px;
+    height: 32px;
+    font-size: 32px;
   }
 }
 
+// QQ 蓝
+.oauth-qq {
+  color: #12b7f5;
+}
+
+// 微信绿
+.oauth-wechat {
+  color: #07c160;
+}
+
+// Google 多色
+.oauth-google {
+  .google-g { fill: #4285f4; }
+  .google-y { fill: #fbbc05; }
+  .google-r { fill: #ea4335; }
+  .google-e { fill: #34a853; }
+}
+
+// GitHub 黑
+.oauth-github {
+  color: #181717;
+}
+
 .oauth-icon {
-  width: 20px;
-  height: 20px;
+  width: 32px;
+  height: 32px;
 }

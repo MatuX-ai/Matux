@@ -19,7 +19,7 @@
           <div class="bar-container">
             <div class="bar-fill" [style.width.%]="getRatingPercentage(star)"></div>
           </div>
-          <span class="bar-count">{{ ratingStats?.distribution[star] || 0 }}</span>
+          <span class="bar-count">{{ (ratingStats?.distribution ?? {})[star] || 0 }}</span>
         </div>
       </div>
     </div>

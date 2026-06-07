@@ -209,6 +209,12 @@ class ServiceDependencyManager:
     3. 降级状态查询
     """
 
+    # 有效的服务名白名单（防止拼写错误被静默忽略）
+    VALID_SERVICES = frozenset({
+        "redis", "neo4j", "openai", "rabbitmq", "smtp",
+        "hardware_auth", "docker", "vircadia", "openhydra", "hyperledger"
+    })
+
     def __init__(self):
         self._services: Dict[str, ServiceStatus] = {}
         self._check_cache: Dict[str, bool] = {}
@@ -266,8 +272,12 @@ class ServiceDependencyManager:
         return None
 
     def register_many(self, services: Dict[str, str]) -> None:
-        """批量注册服务"""
+        """批量注册服务（带白名单验证）"""
         for name, fallback in services.items():
+            if name not in self.VALID_SERVICES:
+                raise ValueError(
+                    f"Unknown service '{name}'. Valid services: {sorted(self.VALID_SERVICES)}"
+                )
             self.register_service(name, fallback)
 
     async def check_service(self, service_name: str) -> bool:

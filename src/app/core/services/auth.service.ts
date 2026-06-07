@@ -1,7 +1,7 @@
 import { HttpClient, HttpHeaders } from '@angular/common/http';
 import { Injectable } from '@angular/core';
 import { Router } from '@angular/router';
-import { BehaviorSubject, Observable, of, throwError } from 'rxjs';
+import { BehaviorSubject, Observable, of, throwError, firstValueFrom } from 'rxjs';
 import { catchError, map, tap } from 'rxjs/operators';
 
 import { environment } from '../../../environments/environment';
@@ -32,9 +32,10 @@ import { ElectronService } from './electron.service';
   providedIn: 'root',
 })
 export class AuthService {
-  private readonly API_BASE_URL = '/api/auth';
-  private readonly UNIFIED_AUTH_URL = '/api/v1/unified-auth';
-  private readonly OAUTH_API_URL = '/api/v1/oauth';
+  // Electron 桌面端使用完整 URL，避免相对路径在 file:// 协议下无法正确解析
+  private readonly API_BASE_URL = 'http://localhost:8000/api/auth';
+  private readonly UNIFIED_AUTH_URL = 'http://localhost:8000/api/v1/unified-auth';
+  private readonly OAUTH_API_URL = 'http://localhost:8000/api/v1/oauth';
   private readonly TOKEN_KEY = 'access_token';
   private readonly REFRESH_TOKEN_KEY = 'refresh_token';
   private readonly USER_KEY = 'user_data';
@@ -107,6 +108,35 @@ export class AuthService {
    */
   private hasToken(): boolean {
     return !!(localStorage.getItem(this.TOKEN_KEY) ?? sessionStorage.getItem(this.TOKEN_KEY));
+  }
+
+  /**
+   * 测试/调试用：手动写入 access_token 并触发 isAuthenticated$ = true
+   * 正常登录流程应使用 signIn()，本方法仅用于绕过前端 signIn 直接用后端 token 的场景
+   */
+  public setAccessTokenForTesting(token: string): void {
+    localStorage.setItem(this.TOKEN_KEY, token);
+    this.isAuthenticatedSubject.next(true);
+  }
+
+  /**
+   * 获取当前用户信息（用于 Electron 桌面端一键登录后）
+   */
+  public async fetchCurrentUser(): Promise<User | null> {
+    try {
+      const headers = this.getAuthHeaders();
+      const response = await firstValueFrom(
+        this.http.get<User>('http://localhost:8000/api/v1/users/me', { headers })
+      );
+      if (response) {
+        this.currentUserSubject.next(response);
+        localStorage.setItem(this.USER_KEY, JSON.stringify(response));
+      }
+      return response;
+    } catch (error) {
+      console.error('获取用户信息失败:', error);
+      return null;
+    }
   }
 
   /**

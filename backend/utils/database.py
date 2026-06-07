@@ -59,6 +59,11 @@ SyncSessionLocal = sessionmaker(
 Base = declarative_base()
 
 
+async def get_engine() -> AsyncEngine:
+    """获取异步数据库引擎"""
+    return engine
+
+
 async def get_db() -> AsyncGenerator[AsyncSession, None]:
     """
     数据库会话依赖项（异步）

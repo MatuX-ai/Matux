@@ -52,7 +52,7 @@ export class DeviceProfileComponent implements OnInit, OnDestroy {
   @Input() compact = false;
 
   private destroy$ = new Subject<void>();
-  private pluginAPI: PluginAPI | undefined;
+  protected pluginAPI: PluginAPI | undefined;
 
   profile: DeviceProfile | null = null;
   loading = true;

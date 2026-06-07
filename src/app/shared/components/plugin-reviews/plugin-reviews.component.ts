@@ -65,6 +65,9 @@ interface RatingStats {
 })
 export class PluginReviewsComponent implements OnInit, OnDestroy {
   @Input() pluginId = '';
+
+  // 暴露 Math 给模板用（strictTemplates 下模板不能直接引用全局）
+  protected readonly Math = Math;
   
   // 数据
   reviews: Review[] = [];
@@ -116,12 +119,12 @@ export class PluginReviewsComponent implements OnInit, OnDestroy {
         throw new Error('Plugin API 不可用');
       }
       
-      const result = await window.pluginAPI.getPluginReviews(this.pluginId, {
+      const result = (await window.pluginAPI.getPluginReviews(this.pluginId, {
         sortBy: this.sortBy,
         sortOrder: this.sortOrder,
         limit: this.pageSize,
         offset: this.currentPage * this.pageSize,
-      });
+      })) as { success: boolean; data: any[] };
       
       if (result.success && result.data) {
         this.reviews = result.data;
@@ -143,7 +146,7 @@ export class PluginReviewsComponent implements OnInit, OnDestroy {
         throw new Error('Plugin API 不可用');
       }
       
-      const result = await window.pluginAPI.getPluginAverageRating(this.pluginId);
+      const result = (await window.pluginAPI.getPluginAverageRating(this.pluginId)) as { success: boolean; data: any };
       if (result.success && result.data) {
         this.ratingStats = result.data;
       }
@@ -166,7 +169,7 @@ export class PluginReviewsComponent implements OnInit, OnDestroy {
         return;
       }
       
-      const result = await window.pluginAPI.addPluginReview({
+      const result = (await window.pluginAPI.addPluginReview({
         pluginId: this.pluginId,
         userId: 'current_user', // 从认证服务获取
         userName: '当前用户',
@@ -175,7 +178,7 @@ export class PluginReviewsComponent implements OnInit, OnDestroy {
         content: this.newContent,
         pros: this.newPros,
         cons: this.newCons,
-      });
+      })) as { success: boolean };
       
       if (result.success) {
         this.snackBar.open('评论已提交', '关闭', { duration: 2000 });
@@ -199,7 +202,7 @@ export class PluginReviewsComponent implements OnInit, OnDestroy {
         throw new Error('Plugin API 不可用');
       }
       
-      const result = await window.pluginAPI.markReviewHelpful(reviewId, this.pluginId);
+      const result = (await window.pluginAPI.markReviewHelpful(reviewId, this.pluginId)) as { success: boolean };
       if (result.success) {
         // 更新本地数据
         const review = this.reviews.find(r => r.id === reviewId);

@@ -16,6 +16,7 @@ export class MinimalDashboardComponent {
   constructor(private router: Router) {}
 
   startLearning(): void {
-    void this.router.navigate(['/user/dashboard']);
+    // 跳转到登录页面，用户可以点击"测试账号一键登录"
+    void this.router.navigate(['/auth/login']);
   }
 }

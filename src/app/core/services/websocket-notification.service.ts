@@ -162,6 +162,18 @@ export class WebSocketNotificationService implements OnDestroy {
     try {
       this.ws = new WebSocket(this.WS_URL);
 
+      // 连接超时保护：2 秒连不上就放弃（后端通常没 WS endpoint）
+      const connectTimer = setTimeout(() => {
+        if (this.ws && this.ws.readyState !== WebSocket.OPEN) {
+          console.warn('[WS] 连接超时，主动关闭');
+          this.ws.close();
+          this.statusSubject.next(ConnectionStatus.DISCONNECTED);
+        }
+      }, 2000);
+      this.ws.addEventListener('open', () => clearTimeout(connectTimer), { once: true });
+      this.ws.addEventListener('close', () => clearTimeout(connectTimer), { once: true });
+      this.ws.addEventListener('error', () => clearTimeout(connectTimer), { once: true });
+
       this.ws.onopen = () => {
         this.statusSubject.next(ConnectionStatus.CONNECTED);
         this.reconnectAttempts = 0;

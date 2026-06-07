@@ -111,7 +111,7 @@ export class FirstRunGuideComponent implements OnInit, OnDestroy {
         throw new Error('Plugin API 不可用');
       }
       
-      const result = await window.pluginAPI.getFirstRunGuide();
+      const result = (await window.pluginAPI.getFirstRunGuide()) as { success: boolean; data: { steps: GuideStep[] } };
       if (result.success && result.data) {
         this.steps = result.data.steps.sort((a: GuideStep, b: GuideStep) => a.order - b.order);
       }
@@ -147,7 +147,7 @@ export class FirstRunGuideComponent implements OnInit, OnDestroy {
         throw new Error('Plugin API 不可用');
       }
       
-      const result = await window.pluginAPI.reassessDevice();
+      const result = (await window.pluginAPI.reassessDevice()) as { success: boolean; data: any };
       if (result.success && result.data) {
         this.deviceClass = result.data.assessment?.deviceClass || 'basic';
         this.deviceScore = result.data.assessment?.score || 0;
@@ -176,7 +176,7 @@ export class FirstRunGuideComponent implements OnInit, OnDestroy {
         throw new Error('Plugin API 不可用');
       }
       
-      const result = await window.pluginAPI.getRecommendedModules(this.deviceClass);
+      const result = (await window.pluginAPI.getRecommendedModules(this.deviceClass)) as { success: boolean; data: any[] };
       if (result.success && result.data) {
         this.availableModules = result.data;
         // 默认选中所有推荐模块
@@ -247,10 +247,10 @@ export class FirstRunGuideComponent implements OnInit, OnDestroy {
         throw new Error('Plugin API 不可用');
       }
       
-      const result = await window.pluginAPI.getRecommendations({
+      const result = (await window.pluginAPI.getRecommendations({
         maxRecommendations: 0,
         includeBundles: true,
-      });
+      })) as { success: boolean; data: { bundles: any[] } };
       
       if (result.success && result.data) {
         this.bundles = result.data.bundles || [];
