@@ -1,0 +1,191 @@
+<!-- OpenSciEDU 课程目录组件 -->
+
+<div class="opensciedu-catalog">
+  <!-- 工具栏 -->
+  <div class="catalog-toolbar">
+    <!-- 分类筛选 -->
+    <div class="filter-group">
+      <mat-form-field appearance="outline" class="category-select">
+        <mat-label>课程分类</mat-label>
+        <mat-select
+          [value]="selectedCategory"
+          (selectionChange)="onCategoryChange($event.value)"
+        >
+          <mat-option [value]="null">全部分类</mat-option>
+          <mat-option
+            *ngFor="let category of categories"
+            [value]="category.id"
+          >
+            {{ category.name }}
+          </mat-option>
+        </mat-select>
+      </mat-form-field>
+
+      <mat-form-field appearance="outline" class="difficulty-select">
+        <mat-label>难度</mat-label>
+        <mat-select
+          [value]="selectedDifficulty"
+          (selectionChange)="onDifficultyChange($event.value)"
+        >
+          <mat-option
+            *ngFor="let diff of difficulties"
+            [value]="diff.value"
+          >
+            {{ diff.label }}
+          </mat-option>
+        </mat-select>
+      </mat-form-field>
+
+      <mat-form-field appearance="outline" class="sort-select">
+        <mat-label>排序</mat-label>
+        <mat-select
+          [value]="selectedSort"
+          (selectionChange)="onSortChange($event.value)"
+        >
+          <mat-option
+            *ngFor="let sort of sortOptions"
+            [value]="sort.value"
+          >
+            {{ sort.label }}
+          </mat-option>
+        </mat-select>
+      </mat-form-field>
+    </div>
+
+    <!-- 搜索框 -->
+    <div class="search-box">
+      <mat-form-field appearance="outline" class="search-input">
+        <mat-label>搜索课程</mat-label>
+        <input
+          matInput
+          [(ngModel)]="searchKeyword"
+          (keyup.enter)="onSearch(searchKeyword)"
+          placeholder="输入关键词搜索..."
+        />
+        <mat-icon matSuffix>search</mat-icon>
+      </mat-form-field>
+    </div>
+  </div>
+
+  <!-- 课程统计 -->
+  <div class="catalog-stats">
+    <span class="stats-text">共找到 {{ totalCourses }} 门课程</span>
+  </div>
+
+  <!-- 加载状态 -->
+  <div *ngIf="isLoading" class="loading-state">
+    <mat-spinner diameter="48"></mat-spinner>
+    <p>加载中...</p>
+  </div>
+
+  <!-- 错误状态 -->
+  <div *ngIf="error && !isLoading" class="error-state">
+    <mat-icon>error_outline</mat-icon>
+    <p>{{ error }}</p>
+    <button mat-stroked-button (click)="loadCourses()">重试</button>
+  </div>
+
+  <!-- 课程列表 -->
+  <div
+    *ngIf="!isLoading && !error && courses.length > 0"
+    class="course-grid"
+  >
+    <mat-card
+      *ngFor="let course of courses"
+      class="course-card"
+      (click)="selectCourse(course)"
+    >
+      <!-- 课程封面 -->
+      <div class="course-cover">
+        <img
+          *ngIf="course.coverImage"
+          [src]="course.coverImage"
+          [alt]="course.title"
+        />
+        <div *ngIf="!course.coverImage" class="course-cover-placeholder">
+          <mat-icon>school</mat-icon>
+        </div>
+        <span
+          class="difficulty-badge"
+          [style.backgroundColor]="getDifficultyColor(course.difficulty)"
+        >
+          {{ getDifficultyLabel(course.difficulty) }}
+        </span>
+        <span *ngIf="course.isFree" class="free-badge">免费</span>
+      </div>
+
+      <!-- 课程信息 -->
+      <mat-card-content class="course-info">
+        <h3 class="course-title">{{ course.title }}</h3>
+        <p class="course-description">{{ course.description }}</p>
+
+        <!-- 讲师 -->
+        <div class="course-instructor">
+          <img
+            *ngIf="course.instructor.avatar"
+            [src]="course.instructor.avatar"
+            class="instructor-avatar"
+          />
+          <div *ngIf="!course.instructor.avatar" class="instructor-avatar-placeholder">
+            <mat-icon>person</mat-icon>
+          </div>
+          <span class="instructor-name">{{ course.instructor.name }}</span>
+        </div>
+
+        <!-- 课程统计 -->
+        <div class="course-stats">
+          <span class="stat-item" matTooltip="学习人数">
+            <mat-icon>people</mat-icon>
+            {{ formatStudentCount(course.studentCount) }}
+          </span>
+          <span class="stat-item" matTooltip="课程时长">
+            <mat-icon>schedule</mat-icon>
+            {{ formatDuration(course.durationMinutes) }}
+          </span>
+          <span class="stat-item" matTooltip="课程评分">
+            <mat-icon>star</mat-icon>
+            {{ course.rating.toFixed(1) }}
+          </span>
+        </div>
+
+        <!-- 标签 -->
+        <div class="course-tags">
+          <mat-chip-listbox>
+            <mat-chip
+              *ngFor="let tag of course.tags.slice(0, 3)"
+              class="tag-chip"
+            >
+              {{ tag }}
+            </mat-chip>
+          </mat-chip-listbox>
+        </div>
+      </mat-card-content>
+    </mat-card>
+  </div>
+
+  <!-- 空状态 -->
+  <div
+    *ngIf="!isLoading && !error && courses.length === 0"
+    class="empty-state"
+  >
+    <mat-icon>search_off</mat-icon>
+    <p>未找到相关课程</p>
+    <button mat-stroked-button (click)="loadCourses()">
+      查看全部课程
+    </button>
+  </div>
+
+  <!-- 加载更多 -->
+  <div
+    *ngIf="!isLoading && !error && hasNextPage && courses.length > 0"
+    class="load-more"
+  >
+    <button
+      mat-stroked-button
+      color="primary"
+      (click)="loadMoreCourses()"
+    >
+      加载更多
+    </button>
+  </div>
+</div>

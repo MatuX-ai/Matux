@@ -144,40 +144,125 @@ export class OfflineCodeExecutionService {
     }
   }
 
-  /** 浏览器端 JavaScript 执行（降级方案） */
+  /**
+   * 浏览器端 JavaScript 执行（降级方案）
+   * 使用 Sandboxed iframe 隔离执行，确保代码无法访问父窗口
+   * 
+   * @deprecated 降级方案，后端执行是首选方案。此方法仅在无法连接后端时使用。
+   *             浏览器端 JavaScript 执行存在安全风险，仅支持基础功能。
+   */
   private executeJavaScriptInBrowser(code: string): CodeExecutionResult {
     const startTime = Date.now();
-    let output = '';
-    let error: string | null = null;
-    let success = false;
-
-    // 劫持 console.log 收集输出
-    const originalLog = console.log;
     const logs: string[] = [];
-    console.log = (...args: unknown[]) => {
-      logs.push(args.map((a) => String(a)).join(' '));
-    };
+    const errors: string[] = [];
 
-    try {
-      // 使用 Function 构造器安全执行
-      const fn = new Function(code);
-      fn();
-      success = true;
-      output = logs.join('\n');
-    } catch (e) {
-      error = e instanceof Error ? e.message : String(e);
-    } finally {
-      console.log = originalLog;
+    // 安全限制：禁止执行的模式
+    const forbiddenPatterns = [
+      /localStorage/s,
+      /sessionStorage/s,
+      /document\./s,
+      /window\./s,
+      /fetch\(/s,
+      /XMLHttpRequest/s,
+      /eval\(/s,
+      /Function\(/s,
+      /import\s*\(/s,
+      /import\s+from/s,
+      /require\(/s,
+    ];
+
+    for (const pattern of forbiddenPatterns) {
+      if (pattern.test(code)) {
+        return {
+          success: false,
+          output: '',
+          error: '安全限制：代码中禁止使用 localStorage、document、window、fetch、eval 等 API',
+          executionTimeMs: Date.now() - startTime,
+          exitCode: 1,
+          cached: false,
+        };
+      }
     }
 
-    return {
-      success,
-      output,
-      error,
-      executionTimeMs: Date.now() - startTime,
-      exitCode: error ? 1 : 0,
-      cached: false,
-    };
+    try {
+      // 创建 Sandboxed iframe
+      const iframe = document.createElement('iframe');
+      iframe.setAttribute('sandbox', 'allow-scripts'); // 仅允许脚本，禁止访问父窗口
+      iframe.style.display = 'none';
+      document.body.appendChild(iframe);
+
+      const iframeWindow = iframe.contentWindow as (Window & typeof globalThis) | null;
+      if (!iframeWindow) {
+        throw new Error('无法创建沙箱环境');
+      }
+
+      // 注入代码执行器
+      const wrappedCode = `
+        (function() {
+          var __logs = [];
+          var __errors = [];
+          
+          // 安全的 console
+          var console = {
+            log: function() {
+              var args = Array.prototype.slice.call(arguments);
+              __logs.push(args.map(function(a) { return String(a); }).join(' '));
+            },
+            warn: function() { __logs.push('[WARN] ' + Array.prototype.slice.call(arguments).join(' ')); },
+            error: function() { __logs.push('[ERROR] ' + Array.prototype.slice.call(arguments).join(' ')); },
+            info: function() { __logs.push('[INFO] ' + Array.prototype.slice.call(arguments).join(' ')); }
+          };
+          
+          try {
+            ${code}
+            return { success: true, logs: __logs, error: null };
+          } catch (e) {
+            return { success: false, logs: __logs, error: e.message || String(e) };
+          }
+        })();
+      `;
+
+      // 执行代码
+      const result = (iframeWindow as { eval: (code: string) => { success: boolean; logs: string[]; error: string | null } }).eval(wrappedCode);
+
+      // 清理 iframe
+      document.body.removeChild(iframe);
+
+      if (result.success) {
+        return {
+          success: true,
+          output: result.logs.join('\n'),
+          error: null,
+          executionTimeMs: Date.now() - startTime,
+          exitCode: 0,
+          cached: false,
+        };
+      } else {
+        return {
+          success: false,
+          output: result.logs.join('\n'),
+          error: result.error,
+          executionTimeMs: Date.now() - startTime,
+          exitCode: 1,
+          cached: false,
+        };
+      }
+    } catch (e) {
+      // 清理 iframe（如果存在）
+      const existingIframe = document.querySelector('iframe:last-child');
+      if (existingIframe) {
+        existingIframe.remove();
+      }
+
+      return {
+        success: false,
+        output: logs.join('\n'),
+        error: e instanceof Error ? e.message : '执行失败',
+        executionTimeMs: Date.now() - startTime,
+        exitCode: 1,
+        cached: false,
+      };
+    }
   }
 
   // ==================== 执行历史 ====================

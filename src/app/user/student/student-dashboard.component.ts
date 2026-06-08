@@ -25,8 +25,9 @@ import { MatTabsModule } from '@angular/material/tabs';
 import { MatTooltipModule } from '@angular/material/tooltip';
 import { Router } from '@angular/router';
 import { forkJoin, Observable, of, Subject } from 'rxjs';
-import { catchError, map, switchMap, takeUntil } from 'rxjs/operators';
+import { catchError, map, switchMap, takeUntil, tap } from 'rxjs/operators';
 
+import { environment } from '../../../environments/environment';
 import type { User } from '../../core/models/auth.models';
 import {
   AiEduWebSocketService,
@@ -45,18 +46,42 @@ import type {
 import { LearningSourceTypeLabels } from '../../models/multi-source-learning.models';
 import type { CourseEnrollment, UnifiedCourse } from '../../models/unified-course.models';
 import { DashboardLayoutDialogComponent } from '../../shared/components/dashboard-layout-dialog/dashboard-layout-dialog.component';
+
+import { ROUTES } from '../../routes.const';
+
+// Mock 数据（从独立模块导入）
 import {
-  type CalendarHeatmapConfig,
-  type DailyLearningRecord,
-  LearningCalendarHeatmapComponent,
-} from '../../shared/components/learning-calendar-heatmap/learning-calendar-heatmap.component';
-import { LearningSourceProgressComponent } from '../../shared/components/learning-source-progress/learning-source-progress.component';
-import {
-  StatsCardComponent,
-  type StatsCardConfig,
-} from '../../shared/components/stats-card/stats-card.component';
-import { StudentMaterialDashboardComponent } from '../../shared/components/student-material-dashboard/student-material-dashboard.component';
-import { UnifiedCourseCardComponent } from '../../shared/components/unified-course-card/unified-course-card.component';
+  getMockProgressStats,
+  getMockLearningSources,
+  getMockAchievementBadges,
+  type MockAchievementBadge,
+} from './student-dashboard.mock';
+
+/**
+ * 用户扩展属性接口（后端可能返回的非标准字段）
+ */
+interface UserExtendedFields {
+  org_id?: number;
+  grade?: string;
+  [key: string]: unknown;
+}
+
+/**
+ * 统一获取用户的 org_id，确保类型安全
+ */
+function getUserOrgId(user: User | null): number {
+  if (!user) return 1; // 默认值
+
+  // 尝试从扩展字段获取 org_id
+  const extended = user as unknown as UserExtendedFields;
+  if (typeof extended.org_id === 'number' && extended.org_id > 0) {
+    return extended.org_id;
+  }
+
+  // 尝试从 id 推导（如果有的话）
+  return 1; // 默认值
+}
+
 interface QuickTool {
   icon: string;
   label: string;
@@ -82,14 +107,7 @@ interface RecommendedCourse {
   level: string;
 }
 
-interface AchievementBadge {
-  id: string;
-  name: string;
-  icon: string;
-  description: string;
-  unlocked: boolean;
-  unlockedDate?: string;
-}
+// 【注意】AchievementBadge 接口已迁移到 student-dashboard.mock.ts，使用 MockAchievementBadge
 
 @Component({
   selector: 'app-student-dashboard',
@@ -112,17 +130,16 @@ interface AchievementBadge {
     MatProgressSpinnerModule,
     MatTooltipModule,
     MatDialogModule,
-    LearningSourceProgressComponent,
-    LearningCalendarHeatmapComponent,
-    StatsCardComponent,
-    StudentMaterialDashboardComponent,
-    UnifiedCourseCardComponent,
   ],
   templateUrl: './student-dashboard.component.html',
   styleUrls: ['./student-dashboard.component.scss'],
 })
 export class StudentDashboardComponent implements OnInit, OnDestroy {
   private destroy$ = new Subject<void>();
+  private wsConnected = false;  // 【修复】防止重复连接
+
+  // 路由常量，供模板使用
+  readonly ROUTES = ROUTES;
 
   currentUser: User | null = null;
   currentDate: string = '';
@@ -130,43 +147,6 @@ export class StudentDashboardComponent implements OnInit, OnDestroy {
   learningSources: LearningSource[] = [];
   loadingProgress = false;
   loadingSources = false;
-
-  // 统计卡片配置
-  statsConfig: {
-    inProgressCourses: StatsCardConfig;
-    achievements: StatsCardConfig;
-    learningPoints: StatsCardConfig;
-    tokenBalance: StatsCardConfig;
-  } = {
-    inProgressCourses: {
-      value: 0,
-      label: '正在学习',
-      icon: 'menu_book',
-      color: 'primary',
-      clickable: true,
-    },
-    achievements: {
-      value: 8,
-      label: '获得成就',
-      icon: 'emoji_events',
-      color: 'accent',
-      clickable: true,
-    },
-    learningPoints: {
-      value: 2450,
-      label: '学习积分',
-      icon: 'stars',
-      color: 'warn',
-      clickable: true,
-    },
-    tokenBalance: {
-      value: 500,
-      label: 'Token 余额',
-      icon: 'token',
-      color: 'success',
-      clickable: true,
-    },
-  };
 
   recentCourses: RecentCourse[] = [
     {
@@ -251,115 +231,15 @@ export class StudentDashboardComponent implements OnInit, OnDestroy {
   ];
 
   // 添加缺失的属性
-  enrolledCourses$!: Observable<
+  enrolledCourses$: Observable<
     Array<{ course: UnifiedCourse; progress: number; enrollment: CourseEnrollment }>
-  >;
+  > = of([]);  // 【修复】初始化为空数组，避免undefined
   recommendedCourses$!: Observable<UnifiedCourse[]>;
   orgNameMap: Map<number, string> = new Map();
   loadingEnrolledCourses = false;
 
-  /** 学习日历热力图配置 */
-  heatmapConfig: CalendarHeatmapConfig = {
-    year: new Date().getFullYear(),
-    data: [],
-    loading: true,
-  };
-
   /** 成就徽章列表 */
-  achievementBadges: AchievementBadge[] = [
-    {
-      id: 'first-lesson',
-      name: '初入编程',
-      icon: '🎓',
-      description: '完成第一个课程',
-      unlocked: true,
-      unlockedDate: '2026-01-15',
-    },
-    {
-      id: 'first-code',
-      name: '代码新手',
-      icon: '💻',
-      description: '编写第一行代码',
-      unlocked: true,
-      unlockedDate: '2026-01-20',
-    },
-    {
-      id: 'python-start',
-      name: 'Python入门',
-      icon: '🐍',
-      description: '完成 Python 基础课程',
-      unlocked: true,
-      unlockedDate: '2026-02-20',
-    },
-    {
-      id: 'streak-7',
-      name: '坚持7天',
-      icon: '🔥',
-      description: '连续学习7天',
-      unlocked: true,
-      unlockedDate: '2026-03-01',
-    },
-    {
-      id: 'quiz-master',
-      name: '测验达人',
-      icon: '📝',
-      description: '5次测验获得满分',
-      unlocked: true,
-      unlockedDate: '2026-03-15',
-    },
-    {
-      id: 'blockly-pro',
-      name: '积木高手',
-      icon: '🧩',
-      description: '完成10个Blockly关卡',
-      unlocked: true,
-      unlockedDate: '2026-04-01',
-    },
-    {
-      id: 'first-debug',
-      name: 'Bug猎手',
-      icon: '🔧',
-      description: '独立修复3个错误',
-      unlocked: true,
-      unlockedDate: '2026-04-05',
-    },
-    {
-      id: 'streak-30',
-      name: '30天坚持',
-      icon: '🏆',
-      description: '连续学习30天',
-      unlocked: true,
-      unlockedDate: '2026-04-28',
-    },
-    {
-      id: 'circuit-master',
-      name: '电路大师',
-      icon: '⚡',
-      description: '完成所有电路实验',
-      unlocked: false,
-    },
-    {
-      id: 'ai-pioneer',
-      name: 'AI先锋',
-      icon: '🤖',
-      description: '完成AI编程课程',
-      unlocked: false,
-    },
-    {
-      id: 'project-10',
-      name: '项目达人',
-      icon: '🚀',
-      description: '完成10个项目',
-      unlocked: false,
-    },
-    {
-      id: 'streak-100',
-      name: '百日传说',
-      icon: '💎',
-      description: '连续学习100天',
-      unlocked: false,
-    },
-  ];
+  achievementBadges: MockAchievementBadge[] = getMockAchievementBadges();
 
   get unlockedAchievementsCount(): number {
     return this.achievementBadges.filter((b) => b.unlocked).length;
@@ -412,20 +292,156 @@ export class StudentDashboardComponent implements OnInit, OnDestroy {
     void this.router.navigate([path]);
   }
 
+  /**
+   * 安全获取用户ID（处理大数字精度问题）
+   * @returns 用户ID或null
+   */
+  private getUserId(): string | null {
+    if (!this.currentUser?.id) {
+      console.warn('[Dashboard] 无效的用户ID: 未定义');
+      return null;
+    }
+
+    // 保持原始字符串格式，避免数字精度丢失
+    const userId = String(this.currentUser.id);
+
+    // 验证是否为有效的非空字符串
+    if (!userId || userId.trim() === '') {
+      console.warn('[Dashboard] 无效的用户ID: 空字符串');
+      return null;
+    }
+
+    // 验证是否为数字格式
+    if (!/^\d+$/.test(userId)) {
+      console.warn('[Dashboard] 无效的用户ID: 非数字格式', userId);
+      return null;
+    }
+
+    return userId;
+  }
+
+  /**
+   * 获取用户ID的数字形式（仅在需要计算时使用）
+   * 注意：可能损失精度，仅用于非关键计算
+   */
+  private getUserIdAsNumber(): number | null {
+    const userIdStr = this.getUserId();
+    if (!userIdStr) return null;
+
+    const userIdNum = Number(userIdStr);
+    if (isNaN(userIdNum) || userIdNum <= 0) {
+      return null;
+    }
+    return userIdNum;
+  }
+
   private loadCurrentUser(): void {
-    this.authService.currentUser$.pipe(takeUntil(this.destroy$)).subscribe((user) => {
-      this.currentUser = user;
-      if (user?.id) {
-        const userId = Number(user.id);
-        if (!isNaN(userId) && userId > 0) {
-          this.loadProgressStats(userId);
-          this.loadLearningSources(userId);
-          this.loadUnifiedCourses(userId);
-          this.connectWebSocket(userId);
-        } else {
-          this.loadMockData();
-        }
+    // 【优化】检查是否已有用户数据，避免重复请求
+    const cachedUser = this.authService.getCurrentUser();
+    const userIdStr = this.getUserId();
+
+    if (cachedUser?.id && userIdStr !== null) {
+      console.log('📦 使用缓存的用户数据:', cachedUser.username);
+      this.currentUser = cachedUser;
+      // 使用数字形式进行API调用（可能损失精度但不关键）
+      const userIdNum = this.getUserIdAsNumber();
+      if (userIdNum !== null) {
+        this.triggerDataLoad(userIdNum);
+      } else {
+        console.warn('[Dashboard] 无法获取有效用户ID');
+        this.loadMockData();
       }
+      return;
+    }
+
+    // 没有缓存，订阅用户数据流
+    this.authService.currentUser$.pipe(
+      takeUntil(this.destroy$),
+      catchError((error) => {
+        console.error('[Dashboard] 获取用户信息失败:', error);
+        this.handleLoadError('用户信息加载失败');
+        return of(null);
+      })
+    ).subscribe((user) => {
+      if (!user) {
+        console.warn('[Dashboard] 用户数据为空');
+        this.loadMockData();
+        return;
+      }
+
+      this.currentUser = user;
+      const uidStr = this.getUserId();
+      const uidNum = this.getUserIdAsNumber();
+      if (user?.id && uidStr !== null && uidNum !== null) {
+        console.log('📥 获取到用户数据:', user.username, 'ID:', uidStr);
+        this.triggerDataLoad(uidNum);
+      } else {
+        console.warn('[Dashboard] 无效用户数据，加载Mock数据');
+        this.loadMockData();
+      }
+    });
+  }
+
+  /**
+   * 处理数据加载失败
+   * @param message 错误消息
+   */
+  private handleLoadError(message: string): void {
+    this.loadingProgress = false;
+    this.loadingSources = false;
+    // 可选：显示全局错误通知
+    console.error('[Dashboard]', message);
+  }
+
+  /** 触发数据加载（统一入口） */
+  private triggerDataLoad(userId: number): void {
+    // 标记所有加载状态
+    this.loadingProgress = true;
+    this.loadingSources = true;
+    this.loadingEnrolledCourses = true;
+
+    // 并行加载数据，每个方法独立处理错误
+    forkJoin({
+      progress: this.loadProgressStats(userId).pipe(catchError(err => {
+        console.error('[Dashboard] 学习进度加载失败:', err);
+        return of(getMockProgressStats());
+      })),
+      sources: this.loadLearningSources(userId).pipe(catchError(err => {
+        console.error('[Dashboard] 学习来源加载失败:', err);
+        return of({ total: 0, items: [] });
+      })),
+      courses: this.loadUnifiedCourses(userId).pipe(catchError(err => {
+        console.error('[Dashboard] 统一课程加载失败:', err);
+        return of([]);
+      }))
+    }).pipe(
+      takeUntil(this.destroy$),
+      catchError((err) => {
+        console.error('[Dashboard] 并行加载失败:', err);
+        this.handleLoadError('部分数据加载失败，请刷新重试');
+        return of(null);
+      })
+    ).subscribe((result) => {
+      if (!result) {
+        // 加载失败，显示错误状态
+        return;
+      }
+
+      // 更新进度统计
+      if (result.progress) {
+        this.progressStats = result.progress;
+      }
+      this.loadingProgress = false;
+
+      // 更新学习来源
+      if (result.sources?.items) {
+        this.learningSources = result.sources.items;
+      }
+      this.loadingSources = false;
+
+      console.log('✅ Dashboard 数据加载完成');
+      // WebSocket 连接单独处理
+      this.connectWebSocket(userId);
     });
   }
 
@@ -433,39 +449,76 @@ export class StudentDashboardComponent implements OnInit, OnDestroy {
    * 建立 WebSocket 连接，实现数据自动刷新
    */
   private connectWebSocket(userId: number): void {
-    const baseUrl = window.location.origin.includes('localhost')
-      ? 'http://localhost:8000'
-      : window.location.origin;
-    const orgId = (this.currentUser as unknown as { org_id?: number })?.org_id ?? 1;
+    // 【修复】防止重复连接
+    if (this.wsConnected) {
+      console.warn('[Dashboard] WebSocket 已连接，跳过重复连接');
+      return;
+    }
+    this.wsConnected = true;
+    
+    // 使用 environment 配置 WebSocket URL
+    const baseUrl = (environment as { wsUrl?: string }).wsUrl || window.location.origin;
+
+    // 使用类型安全的 org_id 获取函数
+    const orgId = getUserOrgId(this.currentUser);
 
     this.wsService.connect(userId, orgId, baseUrl);
 
     // 监听进度更新，自动刷新仪表板数据
     this.wsService
       .onProgressUpdate()
-      .pipe(takeUntil(this.destroy$))
-      .subscribe((update: ProgressUpdateData) => {
+      .pipe(
+        takeUntil(this.destroy$),
+        catchError((error) => {
+          console.error('[Dashboard] WebSocket 进度更新错误:', error);
+          return of(null);
+        })
+      )
+      .subscribe((update: ProgressUpdateData | null) => {
+        if (!update) return;
         console.warn('[Dashboard] 收到进度更新:', update);
-        // 刷新学习进度统计
-        this.loadProgressStats(userId);
-        this.cdr.markForCheck();
+        // 【修复】订阅Observable以确保请求发出，添加takeUntil防止内存泄漏
+        this.loadProgressStats(userId).pipe(
+          takeUntil(this.destroy$)
+        ).subscribe({
+          next: (stats) => {
+            this.progressStats = stats;
+            this.cdr.markForCheck();
+          },
+          error: (err) => console.error('[Dashboard] 刷新进度失败:', err)
+        });
       });
 
     // 监听连接状态
-    this.wsService.connectionStatus$.pipe(takeUntil(this.destroy$)).subscribe((status) => {
+    this.wsService.connectionStatus$.pipe(
+      takeUntil(this.destroy$),
+      catchError((error) => {
+        console.error('[Dashboard] WebSocket 连接状态错误:', error);
+        return of('error');
+      })
+    ).subscribe((status) => {
       if (status === 'connected') {
         console.warn('[Dashboard] WebSocket 已连接，实时数据已启用');
+      } else if (status === 'error' || status === 'disconnected') {
+        console.warn('[Dashboard] WebSocket 连接异常，状态:', status);
       }
     });
   }
 
   /**
    * 加载统一课程数据
+   * @param userId 用户ID（接受字符串保持精度，API需要时转换为number）
+   * @returns Observable<Array<{ course: UnifiedCourse; progress: number; enrollment: CourseEnrollment }>>
    */
-  private loadUnifiedCourses(userId: number): void {
+  private loadUnifiedCourses(
+    userId: string | number
+  ): Observable<Array<{ course: UnifiedCourse; progress: number; enrollment: CourseEnrollment }>> {
+    // 转换为数字用于API调用（可能损失精度但不关键）
+    const userIdNum = typeof userId === 'string' ? Number(userId) : userId;
+    
     // 加载已报名课程
-    this.enrolledCourses$ = this.courseEnrollmentService
-      .getUserEnrollments(userId, {
+    const enrolled$ = this.courseEnrollmentService
+      .getUserEnrollments(userIdNum, {
         page: 1,
         page_size: 10,
       })
@@ -479,34 +532,47 @@ export class StudentDashboardComponent implements OnInit, OnDestroy {
 
           // 获取课程详情
           return forkJoin(
-            courseIds.map((courseId) => this.unifiedCourseService.getCourse(courseId))
+            courseIds.map((courseId) =>
+              this.unifiedCourseService.getCourse(courseId).pipe(
+                catchError((err) => {
+                  console.warn('[Dashboard] 获取课程详情失败:', courseId, err);
+                  return of(null);  // 返回null表示获取失败
+                })
+              )
+            )
           ).pipe(
             map((courses) =>
               enrollments.items.map((enrollment, index) => ({
                 course: courses[index],
                 progress: enrollment.progress_percentage || 0,
                 enrollment,
-              }))
+              })).filter(item => item.course !== null) as Array<{ course: UnifiedCourse; progress: number; enrollment: CourseEnrollment }>
             )
           );
         }),
         catchError((error) => {
-          console.error('获取已报名课程失败:', error);
+          console.error('[Dashboard] 获取已报名课程失败:', error);
           return of([]);
+        }),
+        tap((items: Array<{ course: UnifiedCourse; progress: number; enrollment: CourseEnrollment }>) => {
+          this.enrolledCourses$ = of(items);
+          this.loadingEnrolledCourses = false;
         })
       );
 
     // 加载推荐课程
-    this.recommendedCourses$ = this.unifiedCourseService.getRecommendedCourses(userId, 8).pipe(
+    this.recommendedCourses$ = this.unifiedCourseService.getRecommendedCourses(userIdNum, 8).pipe(
       takeUntil(this.destroy$),
       catchError((error) => {
-        console.error('获取推荐课程失败:', error);
+        console.error('[Dashboard] 获取推荐课程失败:', error);
         return this.unifiedCourseService.getNewestCourses(8);
       })
     );
 
     // 加载组织名称映射
     this.loadOrgNames();
+
+    return enrolled$;
   }
 
   /**
@@ -537,24 +603,42 @@ export class StudentDashboardComponent implements OnInit, OnDestroy {
    * 报名课程
    */
   onEnrollCourse(courseId: number): void {
-    if (!this.currentUser?.id) return;
+    if (!this.currentUser?.id) {
+      console.warn('[Dashboard] 报名失败：用户未登录');
+      return;
+    }
 
-    const userId = Number(this.currentUser.id);
-    // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment, @typescript-eslint/no-unsafe-member-access
-    const userOrgId = (this.currentUser as unknown as { org_id: number })?.org_id;
-    const orgId = userOrgId && userOrgId !== null ? Number(userOrgId) : 1;
+    // 使用字符串形式保持精度，仅在API需要时转换为number
+    const userIdStr = String(this.currentUser.id);
+    const userIdNum = Number(userIdStr);
+    if (isNaN(userIdNum) || userIdNum <= 0) {
+      console.warn('[Dashboard] 报名失败：无效的用户ID');
+      return;
+    }
+
+    // 使用类型安全的 org_id 获取函数
+    const orgId = getUserOrgId(this.currentUser);
 
     this.courseEnrollmentService
-      .enrollInCourse(courseId, userId, orgId)
-      .pipe(takeUntil(this.destroy$))
-      .subscribe({
-        next: () => {
-          // 刷新已报名课程列表
-          this.loadUnifiedCourses(userId);
-        },
-        error: (error) => {
-          console.error('报名失败:', error);
-        },
+      .enrollInCourse(courseId, userIdNum, orgId)
+      .pipe(
+        takeUntil(this.destroy$),
+        catchError((error) => {
+          console.error('[Dashboard] 报名失败:', error);
+          // 返回 null 以便订阅者处理
+          return of(null);
+        })
+      )
+      .subscribe((result) => {
+        if (!result) {
+          // 报名失败
+          console.warn('[Dashboard] 报名服务返回失败');
+          return;
+        }
+        // 报名成功，刷新已报名课程列表
+        console.log('[Dashboard] 报名成功:', result);
+        // 使用字符串形式的userId
+        this.loadUnifiedCourses(userIdStr);
       });
   }
 
@@ -573,251 +657,62 @@ export class StudentDashboardComponent implements OnInit, OnDestroy {
   }
 
   ngOnDestroy(): void {
+    // 1. 先停止接受新的数据
     this.destroy$.next();
     this.destroy$.complete();
-    this.wsService.disconnect();
+
+    // 2. 等待所有异步操作完成后再断开 WebSocket
+    // 使用 setTimeout 确保所有订阅都有机会处理最后的取消信号
+    // 【修复】增加延迟时间到500ms，确保网络请求有足够时间完成
+    setTimeout(() => {
+      try {
+        this.wsService.disconnect();
+      } catch (error) {
+        console.warn('[Dashboard] WebSocket 断开连接时出错:', error);
+      }
+    }, 500);
   }
 
-  private loadProgressStats(userId: number): void {
-    this.loadingProgress = true;
-    this.multiSourceService
+  /**
+   * 加载学习进度统计
+   * @returns Observable<UnifiedProgressStats>
+   */
+  private loadProgressStats(userId: number): Observable<UnifiedProgressStats> {
+    return this.multiSourceService
       .getUserUnifiedProgress(userId)
       .pipe(
         takeUntil(this.destroy$),
         catchError((err) => {
-          console.error('加载学习进度失败:', err);
+          console.error('[Dashboard] 加载学习进度失败:', err);
           // API失败时使用mock数据
-          return of(this.getMockProgressStats());
+          return of(getMockProgressStats());
         })
-      )
-      .subscribe((stats) => {
-        this.progressStats = stats;
-        this.loadingProgress = false;
-        // 更新统计卡片数据
-        this.updateStatsConfig(stats);
-      });
-
-    // 加载学习日历数据
-    this.loadCalendarHeatmap(userId);
+      );
   }
 
   /**
-   * 加载学习日历热力图数据
+   * 加载学习来源
+   * @returns Observable<{ total: number; items: LearningSource[] }>
    */
-  private loadCalendarHeatmap(userId: number): void {
-    // 尝试从 API 获取真实学习记录，失败时使用 mock 数据
-    this.multiSourceService
-      .getUserUnifiedLearningRecords(userId, {
-        learningSourceId: undefined,
-      })
-      .pipe(
-        takeUntil(this.destroy$),
-        catchError(() => {
-          return of({ total: 0, page: 1, page_size: 0, items: [] });
-        })
-      )
-      .subscribe((response) => {
-        if (response.items.length > 0) {
-          // 在 API 返回数据时，按日期聚合学习时长
-          const dateMap = new Map<string, number>();
-          response.items.forEach((record) => {
-            const date = record.last_access_time?.split('T')[0] || record.created_at?.split('T')[0];
-            if (date) {
-              dateMap.set(date, (dateMap.get(date) ?? 0) + (record.time_spent_minutes || 0));
-            }
-          });
-
-          this.heatmapConfig = {
-            year: new Date().getFullYear(),
-            data: Array.from(dateMap.entries()).map(([date, minutes]) => ({
-              date,
-              minutes,
-              courses: 1,
-              quizzes: 0,
-            })),
-            loading: false,
-          };
-        } else {
-          this.heatmapConfig = {
-            year: new Date().getFullYear(),
-            data: this.getMockCalendarData(),
-            loading: false,
-          };
-        }
-        this.cdr.markForCheck();
-      });
-  }
-
-  /**
-   * 生成 Mock 日历数据
-   */
-  private getMockCalendarData(): DailyLearningRecord[] {
-    const records: DailyLearningRecord[] = [];
-    const year = new Date().getFullYear();
-    const today = new Date();
-
-    for (let d = new Date(year, 0, 1); d <= today; d.setDate(d.getDate() + 1)) {
-      const dayOfWeek = d.getDay();
-      // 周末学习概率低，工作日概率高
-      const shouldStudy =
-        dayOfWeek === 0 || dayOfWeek === 6 ? Math.random() > 0.6 : Math.random() > 0.2;
-
-      if (shouldStudy) {
-        records.push({
-          date: `${year}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`,
-          minutes: Math.floor(Math.random() * 180) + 15,
-          courses: Math.floor(Math.random() * 3) + 1,
-          quizzes: Math.random() > 0.8 ? 1 : 0,
-          score: Math.random() > 0.5 ? Math.floor(Math.random() * 30) + 70 : undefined,
-        });
-      }
-    }
-
-    return records;
-  }
-
-  /**
-   * 更新统计卡片配置
-   */
-  private updateStatsConfig(stats: UnifiedProgressStats): void {
-    if (stats) {
-      this.statsConfig.inProgressCourses = {
-        ...this.statsConfig.inProgressCourses,
-        value: stats.in_progress_courses || 0,
-      };
-    }
-  }
-
-  private loadLearningSources(userId: number): void {
-    this.loadingSources = true;
-    this.multiSourceService
+  private loadLearningSources(userId: number): Observable<{ total: number; items: LearningSource[] }> {
+    return this.multiSourceService
       .getUserLearningSources(userId, { includeInactive: true })
       .pipe(
         takeUntil(this.destroy$),
         catchError((err) => {
-          console.error('加载学习来源失败:', err);
+          console.error('[Dashboard] 加载学习来源失败:', err);
           // API失败时使用mock数据
-          return of({ total: 3, items: this.getMockLearningSources() });
+          return of({ total: 0, items: getMockLearningSources() });
         })
-      )
-      .subscribe((response) => {
-        this.learningSources = response.items || [];
-        this.loadingSources = false;
-      });
-  }
-
-  /**
-   * 获取Mock学习进度数据
-   */
-  private getMockProgressStats(): UnifiedProgressStats {
-    return {
-      total_courses: 5,
-      completed_courses: 2,
-      in_progress_courses: 3,
-      total_time_minutes: 1250,
-      average_score: 85.5,
-      source_breakdown: [
-        {
-          source_type: 'school_curriculum' as LearningSourceType,
-          source_name: '校本部',
-          courses: 2,
-          completed: 1,
-          avg_score: 88,
-          total_time: 600,
-        },
-        {
-          source_type: 'school_interest' as LearningSourceType,
-          source_name: '校内兴趣班',
-          courses: 1,
-          completed: 0,
-          avg_score: null,
-          total_time: 150,
-        },
-        {
-          source_type: 'institution' as LearningSourceType,
-          source_name: '创新机器人培训中心',
-          courses: 2,
-          completed: 1,
-          avg_score: 83,
-          total_time: 500,
-        },
-      ],
-    };
-  }
-
-  /**
-   * 获取 Mock 学习来源数据
-   */
-  private getMockLearningSources(): LearningSource[] {
-    return [
-      this.createMockLearningSource(
-        1,
-        1,
-        '校本部',
-        'school_curriculum',
-        true,
-        '2025-09-01',
-        '2026-07-31'
-      ),
-      this.createMockLearningSource(
-        2,
-        2,
-        '创新机器人培训中心',
-        'institution',
-        false,
-        '2025-10-15',
-        '2026-06-30'
-      ),
-      this.createMockLearningSource(
-        3,
-        1,
-        '校内兴趣班',
-        'school_interest',
-        false,
-        '2025-11-01',
-        '2026-05-31'
-      ),
-    ];
-  }
-
-  /**
-   * 创建单个 Mock 学习来源
-   */
-  private createMockLearningSource(
-    id: number,
-    userId: number,
-    name: string,
-    sourceType: LearningSourceType,
-    isPrimary: boolean,
-    startDate: string,
-    endDate: string
-  ): LearningSource {
-    const now = new Date().toISOString();
-    return {
-      id,
-      user_id: userId,
-      org_id: id === 2 ? 2 : 1,
-      name,
-      source_type: sourceType,
-      status: 'active',
-      is_primary: isPrimary,
-      is_active: true,
-      role: 'student',
-      source_detail: {},
-      start_date: startDate,
-      end_date: endDate,
-      notes: null,
-      created_at: now,
-      updated_at: now,
-    };
+      );
   }
 
   /**
    * 加载Mock数据（用于模拟账号）
    */
   private loadMockData(): void {
-    this.progressStats = this.getMockProgressStats();
-    this.learningSources = this.getMockLearningSources();
+    this.progressStats = getMockProgressStats();
+    this.learningSources = getMockLearningSources();
     this.loadingProgress = false;
     this.loadingSources = false;
   }

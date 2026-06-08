@@ -6,7 +6,7 @@
 const http = require('http');
 
 // 【P3-4修复】统一魔法数字为具名常量
-const HTTP_REQUEST_TIMEOUT = 5000;
+const HTTP_REQUEST_TIMEOUT = 5000;  // 健康检查超时 5 秒
 
 /**
  * 使用 Node.js http 模块进行 HTTP 请求
@@ -83,37 +83,41 @@ async function healthCheck(backendHost = 'localhost', backendPort = 8000, checkP
 
   for (const path of paths) {
     const url = `http://${backendHost}:${backendPort}${path}`;
-    const result = await httpGet(url, 5000);
+    const result = await httpGet(url, HTTP_REQUEST_TIMEOUT);
 
     if (result.success) {
-      // 检查响应状态码
-      if (result.statusCode && (result.statusCode === 200 || result.statusCode === 404)) {
-        // 尝试解析响应体
-        try {
-          if (result.body) {
-            try {
-              const body = JSON.parse(result.body);
-              if (body && (body.status === 'ok' || body.status === 'healthy' || body.status === 'running')) {
-                return {
-                  success: true,
-                  status: 'ok',
-                  version: body.python_version || body.version || '3.11',
-                  uptime: body.uptime,
-                };
+      // 检查响应状态码（包括重定向）
+      if (result.statusCode) {
+        // 2xx 成功 或 3xx 重定向（后端可能返回重定向到健康端点）
+        const isSuccessStatus = (result.statusCode >= 200 && result.statusCode < 400);
+        if (isSuccessStatus) {
+          // 尝试解析响应体
+          try {
+            if (result.body) {
+              try {
+                const body = JSON.parse(result.body);
+                if (body && (body.status === 'ok' || body.status === 'healthy' || body.status === 'running')) {
+                  return {
+                    success: true,
+                    status: 'ok',
+                    version: body.python_version || body.version || '3.11',
+                    uptime: body.uptime,
+                  };
+                }
+                // 即使没有标准status字段，只要能连接就认为成功
+                return { success: true, status: 'ok' };
+              } catch {
+                // 不是JSON响应，但能连接上就是成功
+                return { success: true, status: 'ok' };
               }
-              // 即使没有标准status字段，只要能连接就认为成功
-              return { success: true, status: 'ok' };
-            } catch {
-              // 不是JSON响应，但能连接上就是成功
+            } else {
+              // 没有响应体，但能连接上就是成功
               return { success: true, status: 'ok' };
             }
-          } else {
-            // 没有响应体，但能连接上就是成功
+          } catch (err) {
+            // 解析错误，但能连接上就是成功
             return { success: true, status: 'ok' };
           }
-        } catch (err) {
-          // 解析错误，但能连接上就是成功
-          return { success: true, status: 'ok' };
         }
       }
     }

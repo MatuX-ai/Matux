@@ -1,7 +1,7 @@
-import { Injectable } from '@angular/core';
+import { Injectable, OnDestroy } from '@angular/core';
 import { MatSnackBar } from '@angular/material/snack-bar';
 import { SwUpdate, VersionReadyEvent } from '@angular/service-worker';
-import { filter, fromEvent, interval, map, Observable, startWith, switchMap } from 'rxjs';
+import { filter, fromEvent, interval, map, Observable, startWith, Subject, switchMap, takeUntil } from 'rxjs';
 
 import { AppStateService } from './app-state.service';
 
@@ -34,9 +34,12 @@ interface NetworkConnection {
 @Injectable({
   providedIn: 'root',
 })
-export class PwaService {
+export class PwaService implements OnDestroy {
   /** 是否在 Electron 环境中运行（Electron 下应禁用 PWA Service Worker） */
   private readonly isElectron: boolean;
+
+  /** 订阅清理 */
+  private destroy$ = new Subject<void>();
 
   constructor(
     private swUpdate: SwUpdate,
@@ -50,6 +53,11 @@ export class PwaService {
     if (!this.isElectron) {
       this.initPwa();
     }
+  }
+
+  ngOnDestroy(): void {
+    this.destroy$.next();
+    this.destroy$.complete();
   }
 
   /**
@@ -77,21 +85,17 @@ export class PwaService {
       return;
     }
 
-    // 监听更新可用事件
+    // 监听更新可用事件（合并两个重复订阅）
     this.swUpdate.versionUpdates
-      .pipe(filter((evt): evt is VersionReadyEvent => evt.type === 'VERSION_READY'))
+      .pipe(
+        filter((evt): evt is VersionReadyEvent => evt.type === 'VERSION_READY'),
+        takeUntil(this.destroy$)
+      )
       .subscribe((evt) => {
         const currentVersion = evt.currentVersion.hash.substring(0, 7);
         const newVersion = evt.latestVersion.hash.substring(0, 7);
         this.showUpdateNotification(currentVersion, newVersion);
-      });
-
-    // 监听更新事件
-    this.swUpdate.versionUpdates
-      .pipe(filter((event) => event.type === 'VERSION_READY'))
-      .subscribe((event) => {
-        console.warn('新版本已准备就绪:', event);
-        this.showUpdateSuccess();
+        console.warn('新版本已准备就绪:', evt);
       });
   }
 
@@ -289,7 +293,7 @@ export class PwaService {
         // 发送消息给Service Worker预缓存资源
         registration.active.postMessage({
           type: 'PRECACHE',
-          resources: ['/', '/dashboard'],
+          resources: ['/user/dashboard'],
         });
       }
     } catch (error) {

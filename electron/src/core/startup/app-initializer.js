@@ -37,6 +37,21 @@ const {
 /**
  * 应用启动器类
  */
+/**
+ * 安全加载可选模块（统一错误处理）
+ * @param {string} modulePath - 模块路径
+ * @param {string} moduleName - 模块名称（用于日志）
+ * @returns {object|null} - 加载成功返回模块，失败返回 null
+ */
+function safeRequire(modulePath, moduleName) {
+  try {
+    return require(modulePath);
+  } catch (err) {
+    console.warn(`[WARN] ${moduleName} 模块加载失败:`, err.message);
+    return null;
+  }
+}
+
 class AppInitializer {
   constructor(options) {
     this.sendSplashStatus = options.sendSplashStatus;
@@ -50,15 +65,21 @@ class AppInitializer {
     this.moduleStatusTimer = null;
     this.backendOverallStatus = 'unknown';
     this.moduleStatusCache = null;
+    this.moduleStatusHistory = [];  // 历史记录，用于监控
+    this._maxHistorySize = 10;  // 最多保留10条历史
     this.isQuitting = false;
+    this._isRestarting = false;  // 防止重复重启
     this.tray = null;
     this.pluginInstaller = null;
     this.pluginDownloader = null;
     this.pluginRegistry = null;
     this.phase5Initialized = false;
     this.updatesCheckScheduled = false;
+    // 轮询错误日志节流
+    this._modulePollErrorLogged = false;
+    this._modulePollErrorCount = 0;
 
-    // 健康检查函数
+    // 健康检查函数（已在模块级别创建）
     this._healthCheck = this._createHealthCheck();
 
     // 延迟加载的模块
@@ -75,60 +96,54 @@ class AppInitializer {
   }
 
   /**
-   * 加载可选模块
+   * 加载可选模块（使用 safeRequire 统一错误处理）
    */
   _loadOptionalModules() {
     // 设备评估
-    try {
-      const dp = require('../../../device-profiler');
+    const dp = safeRequire('../../../device-profiler', 'device-profiler');
+    if (dp) {
       this.assessDevice = dp.assessDevice;
       this.loadDeviceProfile = dp.loadDeviceProfile;
       this.saveDeviceProfile = dp.saveDeviceProfile;
       this.shouldReassess = dp.shouldReassess;
-    } catch (err) {
-      console.warn('[WARN] device-profiler 模块加载失败:', err.message);
     }
 
     // Phase 5 模块
-    try {
-      this.PluginRecommendationEngine = require('../../../plugin-recommender').PluginRecommendationEngine;
-    } catch (err) {
-      console.warn('[WARN] plugin-recommender 模块加载失败:', err.message);
+    const pluginRecommender = safeRequire('../../../plugin-recommender', 'plugin-recommender');
+    if (pluginRecommender) {
+      this.PluginRecommendationEngine = pluginRecommender.PluginRecommendationEngine;
     }
-    try {
-      this.InstallConfigManager = require('../../../install-config').InstallConfigManager;
-    } catch (err) {
-      console.warn('[WARN] install-config 模块加载失败:', err.message);
+
+    const installConfig = safeRequire('../../../install-config', 'install-config');
+    if (installConfig) {
+      this.InstallConfigManager = installConfig.InstallConfigManager;
     }
-    try {
-      this.PluginStoreEnhancer = require('../../../plugin-store-enhancer').PluginStoreEnhancer;
-    } catch (err) {
-      console.warn('[WARN] plugin-store-enhancer 模块加载失败:', err.message);
+
+    const pluginStoreEnhancer = safeRequire('../../../plugin-store-enhancer', 'plugin-store-enhancer');
+    if (pluginStoreEnhancer) {
+      this.PluginStoreEnhancer = pluginStoreEnhancer.PluginStoreEnhancer;
     }
 
     // 分阶段启动
-    try {
-      const phasedStartup = require('../../../phased-startup');
+    const phasedStartup = safeRequire('../../../phased-startup', 'phased-startup');
+    if (phasedStartup) {
       this.registerModuleIpcHandlers = phasedStartup.registerModuleIpcHandlers;
-    } catch (err) {
-      console.warn('[WARN] phased-startup 模块加载失败:', err.message);
     }
 
     // 插件管理器
-    try {
-      this.PluginInstaller = require('../../../plugin-installer').PluginInstaller;
-    } catch (err) {
-      console.warn('[WARN] plugin-installer 模块加载失败:', err.message);
+    const pluginInstaller = safeRequire('../../../plugin-installer', 'plugin-installer');
+    if (pluginInstaller) {
+      this.PluginInstaller = pluginInstaller.PluginInstaller;
     }
-    try {
-      this.PluginDownloader = require('../../../plugin-downloader').PluginDownloader;
-    } catch (err) {
-      console.warn('[WARN] plugin-downloader 模块加载失败:', err.message);
+
+    const pluginDownloader = safeRequire('../../../plugin-downloader', 'plugin-downloader');
+    if (pluginDownloader) {
+      this.PluginDownloader = pluginDownloader.PluginDownloader;
     }
-    try {
-      this.PluginRegistry = require('../../../plugin-registry').PluginRegistry;
-    } catch (err) {
-      console.warn('[WARN] plugin-registry 模块加载失败:', err.message);
+
+    const pluginRegistry = safeRequire('../../../plugin-registry', 'plugin-registry');
+    if (pluginRegistry) {
+      this.PluginRegistry = pluginRegistry.PluginRegistry;
     }
   }
 
@@ -136,10 +151,11 @@ class AppInitializer {
    * 创建健康检查函数
    */
   _createHealthCheck() {
+    // 直接使用模块级别导入的常量，避免内部 require
     const { HEALTH_URL, HTTP_REQUEST_TIMEOUT } = require('../../../config/constants');
+    const http = require('http');
     return async () => {
       try {
-        const http = require('http');
         return await new Promise((resolve) => {
           const req = http.get(HEALTH_URL, { timeout: HTTP_REQUEST_TIMEOUT }, (res) => {
             let data = '';
@@ -264,8 +280,29 @@ class AppInitializer {
         if (mainWindow && !mainWindow.isDestroyed()) {
           mainWindow.webContents.send('app-event', { type: 'backend-disconnected' });
         }
+        // 自动尝试重启后端
+        this._attemptBackendRestart();
       }
     }, HEALTH_CHECK_INTERVAL);
+  }
+
+  /**
+   * 尝试重启后端
+   */
+  async _attemptBackendRestart() {
+    if (this._isRestarting) return;
+    this._isRestarting = true;
+    
+    try {
+      console.log('[INFO] 尝试自动重启后端...');
+      if (this.backendManager) {
+        await this.backendManager.restart();
+      }
+    } catch (err) {
+      console.error('[ERROR] 自动重启后端失败:', err.message);
+    } finally {
+      this._isRestarting = false;
+    }
   }
 
   /**
@@ -286,7 +323,23 @@ class AppInitializer {
         const data = await response.json();
         const previousStatus = this.backendOverallStatus;
         this.backendOverallStatus = data.status || 'unknown';
-        this.moduleStatusCache = data.modules || null;
+        
+        // 保存到历史记录
+        this.moduleStatusHistory.push({
+          timestamp: Date.now(),
+          status: this.backendOverallStatus,
+        });
+        
+        // 限制历史记录大小
+        if (this.moduleStatusHistory.length > this._maxHistorySize) {
+          this.moduleStatusHistory.shift();
+        }
+        
+        // 只保留必要的缓存信息，避免内存泄漏
+        this.moduleStatusCache = data.modules ? {
+          summary: data.modules.summary,
+          timestamp: Date.now(),
+        } : null;
 
         const mainWindow = this.windowManager?.getMainWindow();
         if (mainWindow && !mainWindow.isDestroyed()) {
@@ -303,7 +356,17 @@ class AppInitializer {
           });
         }
       } catch (err) {
-        // 忽略轮询错误
+        // 轮询错误不应静默吞掉，但避免频繁打印
+        if (!this._modulePollErrorLogged) {
+          console.warn('[WARN] 模块状态轮询失败:', err.message);
+          this._modulePollErrorLogged = true;
+          // 3次错误后重置标记
+          this._modulePollErrorCount = (this._modulePollErrorCount || 0) + 1;
+          if (this._modulePollErrorCount >= 3) {
+            this._modulePollErrorLogged = false;
+            this._modulePollErrorCount = 0;
+          }
+        }
       }
     };
 
@@ -388,23 +451,31 @@ class AppInitializer {
    */
   createTray() {
     const iconPath = APP_PATHS.icon;
+    // 验证 icon 存在，避免 new Tray() 抛出异常
+    if (!iconPath || typeof iconPath !== 'string') {
+      console.warn('[WARN] 托盘图标路径无效，跳过创建系统托盘');
+      return;
+    }
     if (!fs.existsSync(iconPath)) {
-      console.warn('[WARN] 托盘图标不存在，跳过创建系统托盘');
+      console.warn('[WARN] 托盘图标不存在，跳过创建系统托盘:', iconPath);
       return;
     }
 
-    this.tray = new Tray(iconPath);
-    this.tray.setToolTip('MatuX - AI 编程学习平台');
+    try {
+      this.tray = new Tray(iconPath);
+      this.tray.setToolTip('MatuX - AI 编程学习平台');
+      this._updateTrayStatus();
 
-    this._updateTrayStatus();
-
-    this.tray.on('double-click', () => {
-      const mainWindow = this.windowManager?.getMainWindow();
-      if (mainWindow && !mainWindow.isDestroyed()) {
-        mainWindow.show();
-        mainWindow.focus();
-      }
-    });
+      this.tray.on('double-click', () => {
+        const mainWindow = this.windowManager?.getMainWindow();
+        if (mainWindow && !mainWindow.isDestroyed()) {
+          mainWindow.show();
+          mainWindow.focus();
+        }
+      });
+    } catch (err) {
+      console.error('[ERROR] 创建系统托盘失败:', err.message);
+    }
   }
 
   /**
@@ -430,15 +501,23 @@ class AppInitializer {
    */
   async _initDeviceProfiler() {
     try {
-      if (!this.assessDevice || !this.loadDeviceProfile || !this.saveDeviceProfile || !this.shouldReassess) return;
+      // 验证所有必需方法存在
+      const requiredMethods = ['assessDevice', 'loadDeviceProfile', 'saveDeviceProfile', 'shouldReassess'];
+      const missingMethods = requiredMethods.filter((m) => !this[m]);
+      if (missingMethods.length > 0) {
+        console.warn('[WARN] 设备评估模块方法缺失:', missingMethods.join(', '));
+        return;
+      }
       
       const existingProfile = this.loadDeviceProfile();
       if (!existingProfile || this.shouldReassess(existingProfile)) {
         const dp = await this.assessDevice();
-        this.saveDeviceProfile(dp);
-        console.log(`[INFO] 设备评级: ${dp.assessment.deviceClass} (${dp.assessment.score}分)`);
+        if (dp) {
+          this.saveDeviceProfile(dp);
+          console.log(`[INFO] 设备评级: ${dp.assessment?.deviceClass || 'unknown'} (${dp.assessment?.score || 0}分)`);
+        }
       } else {
-        console.log(`[INFO] 使用缓存设备评级: ${existingProfile.assessment.deviceClass}`);
+        console.log(`[INFO] 使用缓存设备评级: ${existingProfile.assessment?.deviceClass || 'unknown'}`);
       }
     } catch (err) {
       console.warn('[WARN] 设备评估失败（不阻塞启动）:', err.message);

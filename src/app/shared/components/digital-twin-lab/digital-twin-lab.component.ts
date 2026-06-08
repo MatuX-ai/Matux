@@ -14,6 +14,7 @@ import { Subject } from 'rxjs';
 
 import { CircuitShortcutRegistrar } from '../../../core/services/circuit-shortcut-registrar.service';
 import { ElectronService } from '../../../core/services/electron.service';
+import { ROUTES } from '../../../routes.const';
 
 import { CircuitShortcutHelpDialogComponent } from './circuit-shortcut-help-dialog.component';
 
@@ -501,7 +502,7 @@ export class DigitalTwinLabComponent implements OnInit, OnDestroy {
 
   // 返回主页
   goBack(): void {
-    void this.router.navigate(['/dashboard']);
+    void this.router.navigate([ROUTES.USER.DASHBOARD]);
   }
 
   // 全屏切换

@@ -10,6 +10,7 @@ import { Observable } from 'rxjs';
 import { map, take } from 'rxjs/operators';
 
 import { AuthService } from '../../core/services/auth.service';
+import { ROUTES } from '../../routes.const';
 
 @Injectable({
   providedIn: 'root',
@@ -29,7 +30,7 @@ export class UserCenterGuard implements CanActivate {
       map((isAuthenticated) => {
         if (!isAuthenticated) {
           // 未登录，跳转到登录页
-          void this.router.navigate(['/auth/login'], {
+          void this.router.navigate([ROUTES.AUTH.LOGIN], {
             queryParams: { returnUrl: state.url },
           });
           return false;

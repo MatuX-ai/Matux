@@ -1,87 +1,117 @@
 /**
- * 用户中心主组件
+ * 用户中心主组件（桌面端）
  *
- * 统一用户中心入口，根据用户类型动态渲染不同内容
+ * 按照 PRD 第 6.5 节布局规范重构：
+ * - 顶部导航栏
+ * - 主内容区（单列布局，无侧边栏）
+ * - 浮动 AI 助手按钮
+ * - 底部状态栏
  */
 
 import { CommonModule } from '@angular/common';
 import { Component, OnDestroy, OnInit } from '@angular/core';
+import { FormsModule } from '@angular/forms';
 import { MatButtonModule } from '@angular/material/button';
 import { MatIconModule } from '@angular/material/icon';
-import { MatListModule } from '@angular/material/list';
 import { MatMenuModule } from '@angular/material/menu';
-import { MatSidenavModule } from '@angular/material/sidenav';
-import { MatToolbarModule } from '@angular/material/toolbar';
+import { MatTooltipModule } from '@angular/material/tooltip';
 import { Router, RouterModule } from '@angular/router';
 import { Subject } from 'rxjs';
 import { takeUntil } from 'rxjs/operators';
 
 import { User } from '../core/models/auth.models';
 import { AuthService } from '../core/services/auth.service';
+import { ROUTES } from '../routes.const';
 
 import { UserFooterComponent } from './components/user-footer/user-footer.component';
 import { UserNavbarComponent } from './components/user-navbar/user-navbar.component';
-import { UserSidebarComponent } from './components/user-sidebar/user-sidebar.component';
-import { UserSubNavComponent } from './components/user-sub-nav/user-sub-nav.component';
-// 家长仪表板已解耦至 OpenMTEduInst 项目
-import { SidebarService } from './services/sidebar.service';
 import { UserCenterService } from './services/user-center.service';
-import { StudentDashboardComponent } from './student/student-dashboard.component';
 
 @Component({
   selector: 'app-user-center',
   standalone: true,
   imports: [
     CommonModule,
+    FormsModule,
     RouterModule,
-    MatSidenavModule,
-    MatToolbarModule,
     MatIconModule,
     MatButtonModule,
-    MatListModule,
     MatMenuModule,
-    UserSidebarComponent,
-    UserFooterComponent,
+    MatTooltipModule,
     UserNavbarComponent,
-    UserSubNavComponent,
-    StudentDashboardComponent,
-    // ParentDashboardComponent 已移除
+    UserFooterComponent,
   ],
   template: `
-    <div class="user-center-container" [class.desktop-layout]="!isMobile">
-      <!-- 全局导航栏 -->
+    <div class="user-center-container">
+      <!-- 顶部导航栏 -->
       <app-user-navbar></app-user-navbar>
 
-      <!-- 桌面端侧边栏（持久可见） -->
-      <app-user-sidebar
-        *ngIf="!isMobile"
-        [opened]="true"
-        [isMobile]="false"
-        class="desktop-sidebar"
-      ></app-user-sidebar>
-
-      <!-- 水平子导航 -->
-      <app-user-sub-nav></app-user-sub-nav>
-
-      <!-- 移动端遮罩 -->
-      <div class="overlay" [class.show]="isMobile && sidebarOpen" (click)="closeSidebar()"></div>
-
-      <!-- 移动端侧边栏 -->
-      <app-user-sidebar
-        *ngIf="isMobile"
-        [opened]="sidebarOpen"
-        [isMobile]="true"
-        (menuClick)="handleMenuClick()"
-        class="mobile-sidebar"
-      ></app-user-sidebar>
-
       <!-- 主内容区 -->
-      <div class="main-content" [class.with-sidebar]="!isMobile">
-        <main class="content-area">
-          <app-student-dashboard></app-student-dashboard>
-          <app-user-footer></app-user-footer>
-        </main>
+      <main class="main-content">
+        <div class="content-wrapper">
+          <router-outlet></router-outlet>
+        </div>
+        <app-user-footer></app-user-footer>
+      </main>
+
+      <!-- 浮动 AI 助手按钮 -->
+      <button
+        class="ai-assistant-fab"
+        (click)="toggleAIAssistant()"
+        matTooltip="AI 老师"
+        [class.expanded]="showAIAssistant"
+      >
+        <mat-icon>{{ showAIAssistant ? 'close' : 'smart_toy' }}</mat-icon>
+      </button>
+
+      <!-- AI 对话面板 -->
+      <div class="ai-panel" [class.show]="showAIAssistant">
+        <div class="ai-panel-header">
+          <div class="ai-panel-title">
+            <mat-icon>smart_toy</mat-icon>
+            <span>AI 老师</span>
+          </div>
+          <button mat-icon-button (click)="toggleAIAssistant()">
+            <mat-icon>close</mat-icon>
+          </button>
+        </div>
+        <div class="ai-panel-content">
+          <div class="ai-message ai-message-welcome">
+            <div class="ai-avatar">🤖</div>
+            <div class="ai-bubble">
+              你好！我是你的 AI 老师 👋<br><br>
+              有什么我可以帮助你的吗？
+            </div>
+          </div>
+        </div>
+        <div class="ai-panel-input">
+          <input
+            type="text"
+            placeholder="输入你的问题..."
+            class="ai-input"
+            [(ngModel)]="aiMessage"
+            (keyup.enter)="sendAIMessage()"
+          />
+          <button mat-icon-button color="primary" (click)="sendAIMessage()">
+            <mat-icon>send</mat-icon>
+          </button>
+        </div>
       </div>
+
+      <!-- 底部状态栏 -->
+      <footer class="status-bar">
+        <div class="status-item">
+          <span class="status-dot" [class.online]="deviceStatus === 'online'" [class.offline]="deviceStatus !== 'online'"></span>
+          <span>{{ deviceStatus === 'online' ? '设备已连接' : '设备未连接' }}</span>
+        </div>
+        <div class="status-item" *ngIf="hardwareInfo">
+          <mat-icon>memory</mat-icon>
+          <span>{{ hardwareInfo }}</span>
+        </div>
+        <div class="status-item version">
+          <span>v1.0.0</span>
+        </div>
+      </footer>
     </div>
   `,
   styles: [
@@ -90,134 +120,269 @@ import { StudentDashboardComponent } from './student/student-dashboard.component
         min-height: 100vh;
         display: flex;
         flex-direction: column;
-        position: relative;
+        background-color: var(--color-background, #f8fafc);
       }
 
-      /* 桌面端 Grid 布局：侧边栏 + 内容区 */
-      .user-center-container.desktop-layout {
-        display: grid;
-        grid-template-columns: 260px 1fr;
-        grid-template-rows: 64px auto 1fr;
-        min-height: 100vh;
-      }
-
-      .user-center-container.desktop-layout app-user-navbar {
-        grid-column: 1 / -1;
-        grid-row: 1;
-      }
-
-      .user-center-container.desktop-layout .desktop-sidebar {
-        grid-column: 1;
-        grid-row: 2 / -1;
-        z-index: 100;
-      }
-
-      .user-center-container.desktop-layout app-user-sub-nav {
-        grid-column: 2;
-        grid-row: 2;
-      }
-
-      .user-center-container.desktop-layout .main-content {
-        grid-column: 2;
-        grid-row: 3;
-      }
-
-      app-user-navbar {
-        flex-shrink: 0;
-      }
-
+      /* 主内容区 */
       .main-content {
         flex: 1;
         display: flex;
         flex-direction: column;
+        padding-bottom: 28px; /* 为状态栏留空间 */
       }
 
-      .content-area {
+      .content-wrapper {
         flex: 1;
+        max-width: 1400px;
+        width: 100%;
+        margin: 0 auto;
         padding: 24px;
-        overflow-y: auto;
-        background-color: var(--color-background);
-        min-height: 0;
-        display: flex;
-        flex-direction: column;
       }
 
-      .content-area app-user-footer {
-        flex-shrink: 0;
-        margin-top: auto;
-      }
-
-      .overlay {
+      /* 浮动 AI 助手按钮 */
+      .ai-assistant-fab {
         position: fixed;
-        top: 0;
-        left: 0;
-        right: 0;
-        bottom: 0;
-        background: rgba(0, 0, 0, 0.5);
-        z-index: 998;
-        opacity: 0;
-        visibility: hidden;
+        bottom: 48px; /* 在状态栏上方 */
+        right: 24px;
+        width: 56px;
+        height: 56px;
+        border-radius: 50%;
+        border: none;
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        color: white;
+        font-size: 24px;
+        cursor: pointer;
+        box-shadow: 0 8px 32px rgba(102, 126, 234, 0.4);
         transition: all 0.3s ease;
-      }
-
-      .overlay.show {
-        opacity: 1;
-        visibility: visible;
-      }
-
-      /* 移动端侧边栏 */
-      .mobile-sidebar {
-        position: fixed;
-        top: 0;
-        left: 0;
-        z-index: 999;
-      }
-
-      .redirect-notice {
+        z-index: 1000;
         display: flex;
-        flex-direction: column;
         align-items: center;
         justify-content: center;
-        height: 400px;
-        color: var(--color-text-secondary);
       }
 
-      .redirect-notice mat-icon {
-        font-size: 48px;
-        width: 48px;
-        height: 48px;
-        margin-bottom: 16px;
+      .ai-assistant-fab:hover {
+        transform: scale(1.1);
+        box-shadow: 0 12px 40px rgba(102, 126, 234, 0.5);
       }
 
-      .redirect-notice p {
+      .ai-assistant-fab.expanded {
+        background: linear-gradient(135deg, #ef4444 0%, #dc2626 100%);
+      }
+
+      .ai-assistant-fab mat-icon {
+        font-size: 24px;
+        width: 24px;
+        height: 24px;
+      }
+
+      /* AI 对话面板 */
+      .ai-panel {
+        position: fixed;
+        bottom: 120px;
+        right: 24px;
+        width: 380px;
+        max-height: 500px;
+        background: white;
+        border-radius: 16px;
+        box-shadow: 0 8px 40px rgba(0, 0, 0, 0.15);
+        display: flex;
+        flex-direction: column;
+        opacity: 0;
+        visibility: hidden;
+        transform: translateY(20px);
+        transition: all 0.3s ease;
+        z-index: 999;
+        overflow: hidden;
+      }
+
+      .ai-panel.show {
+        opacity: 1;
+        visibility: visible;
+        transform: translateY(0);
+      }
+
+      .ai-panel-header {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        padding: 16px;
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        color: white;
+      }
+
+      .ai-panel-title {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        font-weight: 600;
+      }
+
+      .ai-panel-content {
+        flex: 1;
+        padding: 16px;
+        overflow-y: auto;
+        max-height: 300px;
+      }
+
+      .ai-message {
+        display: flex;
+        gap: 8px;
+        margin-bottom: 12px;
+      }
+
+      .ai-message.user {
+        flex-direction: row-reverse;
+      }
+
+      .ai-avatar {
+        width: 32px;
+        height: 32px;
+        border-radius: 50%;
+        background: #f1f5f9;
+        display: flex;
+        align-items: center;
+        justify-content: center;
         font-size: 16px;
+        flex-shrink: 0;
       }
 
-      @media (max-width: 767px) {
-        .user-center-container.desktop-layout {
-          display: flex;
-          flex-direction: column;
+      .ai-bubble {
+        background: #f1f5f9;
+        padding: 12px 16px;
+        border-radius: 12px;
+        font-size: 14px;
+        line-height: 1.5;
+        max-width: 80%;
+      }
+
+      .ai-message.user .ai-bubble {
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        color: white;
+      }
+
+      .ai-panel-input {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        padding: 12px 16px;
+        border-top: 1px solid #e2e8f0;
+      }
+
+      .ai-input {
+        flex: 1;
+        padding: 10px 16px;
+        border: 1px solid #e2e8f0;
+        border-radius: 24px;
+        font-size: 14px;
+        outline: none;
+        transition: border-color 0.2s;
+      }
+
+      .ai-input:focus {
+        border-color: #667eea;
+      }
+
+      /* 底部状态栏 */
+      .status-bar {
+        position: fixed;
+        bottom: 0;
+        left: 0;
+        right: 0;
+        height: 28px;
+        background: #0f172a;
+        color: #94a3b8;
+        display: flex;
+        align-items: center;
+        padding: 0 16px;
+        font-size: 12px;
+        z-index: 998;
+      }
+
+      .status-item {
+        display: flex;
+        align-items: center;
+        gap: 6px;
+        padding: 0 12px;
+        border-right: 1px solid #334155;
+      }
+
+      .status-item:first-child {
+        padding-left: 0;
+      }
+
+      .status-item.version {
+        margin-left: auto;
+        border-right: none;
+        border-left: 1px solid #334155;
+      }
+
+      .status-item mat-icon {
+        font-size: 14px;
+        width: 14px;
+        height: 14px;
+      }
+
+      .status-dot {
+        width: 8px;
+        height: 8px;
+        border-radius: 50%;
+        background: #ef4444;
+      }
+
+      .status-dot.online {
+        background: #22c55e;
+      }
+
+      /* 响应式 */
+      @media (max-width: 1024px) {
+        .content-wrapper {
+          padding: 16px;
         }
 
-        .content-area {
-          padding: 16px;
+        .ai-panel {
+          width: calc(100vw - 48px);
+          right: 24px;
+          left: 24px;
+        }
+      }
+
+      @media (max-width: 768px) {
+        .ai-panel {
+          width: calc(100vw - 32px);
+          right: 16px;
+          left: 16px;
+          bottom: 100px;
+        }
+
+        .ai-assistant-fab {
+          bottom: 36px;
+          right: 16px;
         }
       }
     `,
   ],
 })
 export class UserCenterComponent implements OnInit, OnDestroy {
-  sidebarOpen = true;
+  readonly ROUTES = ROUTES;
+
   isMobile = false;
   currentUser: User | null = null;
   userType: string | undefined;
+
+  // AI 助手状态
+  showAIAssistant = false;
+  aiMessage = '';
+  aiMessages: Array<{ role: 'user' | 'ai'; content: string }> = [];
+
+  // 设备状态
+  deviceStatus: 'online' | 'offline' = 'online';
+  hardwareInfo = 'ESP32 已连接';
 
   private destroy$ = new Subject<void>();
 
   constructor(
     private authService: AuthService,
     private userCenterService: UserCenterService,
-    private sidebarService: SidebarService,
     private router: Router
   ) {}
 
@@ -226,30 +391,18 @@ export class UserCenterComponent implements OnInit, OnDestroy {
     this.checkScreenWidth();
     window.addEventListener('resize', () => this.checkScreenWidth());
 
-    // 订阅侧边栏状态
-    this.sidebarService.sidebarOpen$.pipe(takeUntil(this.destroy$)).subscribe((isOpen) => {
-      this.sidebarOpen = isOpen;
-    });
-
-    // 订阅当前用户信息（只在这里处理跳转，避免重复）
+    // 订阅当前用户信息
     this.userCenterService.currentUser$.pipe(takeUntil(this.destroy$)).subscribe((user) => {
       this.currentUser = user;
       this.userType = user?.userType;
     });
 
-    // 如果没有用户信息，尝试获取（但不处理跳转，等待订阅触发）
+    // 如果没有用户信息，尝试获取
     if (!this.currentUser) {
       this.currentUser = this.userCenterService.getCurrentUser();
       this.userType = this.currentUser?.userType;
     }
   }
-
-  /**
-   * 根据用户类型处理重定向（已解耦至 OpenMTEduInst 项目，功能已移除）
-   */
-  // private handleUserTypeRedirect(userType?: string): void {
-  //   // 已解耦至 OpenMTEduInst 项目
-  // }
 
   ngOnDestroy(): void {
     this.destroy$.next();
@@ -262,32 +415,37 @@ export class UserCenterComponent implements OnInit, OnDestroy {
    */
   checkScreenWidth(): void {
     this.isMobile = window.innerWidth <= 768;
-    if (this.isMobile) {
-      this.sidebarOpen = false; // 移动端默认关闭侧边栏
-    }
   }
 
   /**
-   * 切换侧边栏状态
+   * 切换 AI 助手面板
    */
-  toggleSidebar(): void {
-    this.sidebarService.toggleSidebar();
+  toggleAIAssistant(): void {
+    this.showAIAssistant = !this.showAIAssistant;
   }
 
   /**
-   * 关闭侧边栏（移动端点击菜单后）
+   * 发送 AI 消息
    */
-  closeSidebar(): void {
-    if (this.isMobile) {
-      this.sidebarService.closeSidebar();
-    }
-  }
+  sendAIMessage(): void {
+    if (!this.aiMessage.trim()) return;
 
-  /**
-   * 处理菜单点击事件
-   */
-  handleMenuClick(): void {
-    this.closeSidebar();
+    // 添加用户消息
+    this.aiMessages.push({
+      role: 'user',
+      content: this.aiMessage,
+    });
+
+    const userMessage = this.aiMessage;
+    this.aiMessage = '';
+
+    // 模拟 AI 响应
+    setTimeout(() => {
+      this.aiMessages.push({
+        role: 'ai',
+        content: `好的，你说的是："${userMessage}"\n\n让我帮你解答...`,
+      });
+    }, 1000);
   }
 
   /**

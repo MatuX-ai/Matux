@@ -17,6 +17,18 @@ const routes: Routes = [
     path: 'dashboard',
     component: UserCenterComponent,
     canActivate: [UserCenterGuard],
+    children: [
+      {
+        path: '',
+        redirectTo: 'student',
+        pathMatch: 'full',
+      },
+      {
+        path: 'student',
+        loadComponent: () =>
+          import('./student/student-dashboard.component').then((m) => m.StudentDashboardComponent),
+      },
+    ],
   },
   // 其他页面使用共享布局
   {

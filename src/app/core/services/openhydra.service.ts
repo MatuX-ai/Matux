@@ -66,10 +66,43 @@ export interface HealthCheckResponse {
 export class OpenHydraService {
   private readonly apiUrl = `${environment.apiUrl}/api/v1`;
 
+  /**
+   * Jupyter 访问令牌（内存存储，更安全）
+   * 注意：页面刷新后会丢失，需要重新进入实验室
+   */
+  private jupyterAccessToken: string | null = null;
+
+  /**
+   * 容器 ID（内存存储）
+   */
+  private containerId: string | null = null;
+
   constructor(
     private http: HttpClient,
     private authService: AuthService
   ) {}
+
+  /**
+   * 获取 Jupyter 访问令牌
+   * @returns 令牌或 null（如果未进入实验室或会话已过期）
+   */
+  getJupyterAccessToken(): string | null {
+    return this.jupyterAccessToken;
+  }
+
+  /**
+   * 获取容器 ID
+   */
+  getContainerId(): string | null {
+    return this.containerId;
+  }
+
+  /**
+   * 检查是否已登录 Jupyter 环境
+   */
+  isLoggedIn(): boolean {
+    return this.jupyterAccessToken !== null;
+  }
 
   /**
    * 获取当前用户所属组织ID
@@ -89,10 +122,10 @@ export class OpenHydraService {
 
     return this.http.post<EnterLabResponse>(url, config ?? {}).pipe(
       tap((response) => {
-        // 保存访问令牌到本地存储
+        // 保存到内存存储（更安全，页面刷新后需重新登录）
         if (response.access_token) {
-          localStorage.setItem('jupyter_access_token', response.access_token);
-          localStorage.setItem('jupyter_container_id', response.container_id);
+          this.jupyterAccessToken = response.access_token;
+          this.containerId = response.container_id;
         }
       }),
       catchError((error) => {
@@ -152,15 +185,7 @@ export class OpenHydraService {
         message: string;
         new_expiry: string;
         container_id: string;
-      }>(url, {})
-      .pipe(
-        tap(() => {
-          /* 预留给扩展容器后的清理逻辑 */
-        }),
-        catchError((error) => {
-          throw error;
-        })
-      );
+      }>(url, { hours });
   }
 
   /**

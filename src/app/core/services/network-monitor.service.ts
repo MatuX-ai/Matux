@@ -1,6 +1,6 @@
-import { Injectable } from '@angular/core';
-import { BehaviorSubject, fromEvent, interval } from 'rxjs';
-import { distinctUntilChanged, map } from 'rxjs/operators';
+import { Injectable, OnDestroy } from '@angular/core';
+import { BehaviorSubject, fromEvent, interval, Subject } from 'rxjs';
+import { distinctUntilChanged, map, takeUntil } from 'rxjs/operators';
 
 /**
  * Network Connection API 类型
@@ -65,7 +65,7 @@ export interface NetworkStatus {
 @Injectable({
   providedIn: 'root',
 })
-export class NetworkMonitorService {
+export class NetworkMonitorService implements OnDestroy {
   /** 网络状态变化的BehaviorSubject */
   private networkStatusSubject = new BehaviorSubject<NetworkStatus>(this.getCurrentNetworkStatus());
 
@@ -84,8 +84,16 @@ export class NetworkMonitorService {
     distinctUntilChanged()
   );
 
+  /** 订阅清理 */
+  private destroy$ = new Subject<void>();
+
   constructor() {
     this.initializeNetworkMonitoring();
+  }
+
+  ngOnDestroy(): void {
+    this.destroy$.next();
+    this.destroy$.complete();
   }
 
   /**
@@ -94,11 +102,11 @@ export class NetworkMonitorService {
    */
   private initializeNetworkMonitoring(): void {
     // 监听基础在线/离线事件
-    fromEvent(window, 'online').subscribe(() => {
+    fromEvent(window, 'online').pipe(takeUntil(this.destroy$)).subscribe(() => {
       this.updateNetworkStatus();
     });
 
-    fromEvent(window, 'offline').subscribe(() => {
+    fromEvent(window, 'offline').pipe(takeUntil(this.destroy$)).subscribe(() => {
       this.updateNetworkStatus();
     });
 
@@ -116,7 +124,7 @@ export class NetworkMonitorService {
     }
 
     // 定期检查网络状态（每30秒）
-    interval(30000).subscribe(() => {
+    interval(30000).pipe(takeUntil(this.destroy$)).subscribe(() => {
       this.updateNetworkStatus();
     });
   }

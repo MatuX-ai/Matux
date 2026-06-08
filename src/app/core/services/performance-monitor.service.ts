@@ -4,8 +4,10 @@
  * @description 监控 Core Web Vitals 和应用性能指标
  */
 
-import { Injectable } from '@angular/core';
+import { Injectable, OnDestroy } from '@angular/core';
 import { Router } from '@angular/router';
+import { filter, Subject, takeUntil } from 'rxjs';
+import { NavigationEnd, NavigationStart } from '@angular/router';
 
 // Core Web Vitals 指标
 /**
@@ -92,7 +94,7 @@ export interface PerformanceScore {
 @Injectable({
   providedIn: 'root',
 })
-export class PerformanceMonitorService {
+export class PerformanceMonitorService implements OnDestroy {
   private metrics: PerformanceMetrics[] = [];
   private webVitals: CoreWebVitals = {};
   private routeStartTime: number = 0;
@@ -105,24 +107,41 @@ export class PerformanceMonitorService {
     cls: { good: 0.1, needsImprovement: 0.25 },
   };
 
+  /** 订阅清理 */
+  private destroy$ = new Subject<void>();
+
   constructor(private router: Router) {
     this.init();
+  }
+
+  ngOnDestroy(): void {
+    this.destroy$.next();
+    this.destroy$.complete();
   }
 
   /**
    * 初始化性能监控
    */
   private init(): void {
-    // 监听路由变化
-    this.router.events.subscribe((event) => {
-      if (event && event.constructor.name === 'NavigationStart') {
+    // 监听 NavigationStart
+    this.router.events
+      .pipe(
+        filter((event): event is NavigationStart => event instanceof NavigationEnd === false && event.constructor.name === 'NavigationStart'),
+        takeUntil(this.destroy$)
+      )
+      .subscribe((event) => {
         this.routeStartTime = performance.now();
-      }
+      });
 
-      if (event && event.constructor.name === 'NavigationEnd') {
+    // 监听 NavigationEnd
+    this.router.events
+      .pipe(
+        filter((event): event is NavigationEnd => event instanceof NavigationEnd),
+        takeUntil(this.destroy$)
+      )
+      .subscribe(() => {
         this.recordRouteChangeTime();
-      }
-    });
+      });
 
     // 监听页面加载
     if ('PerformanceObserver' in window) {

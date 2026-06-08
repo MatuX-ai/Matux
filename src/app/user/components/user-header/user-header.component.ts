@@ -15,6 +15,7 @@ import { RouterModule } from '@angular/router';
 
 import { User } from '../../../core/models/auth.models';
 import { AuthService } from '../../../core/services/auth.service';
+import { ROUTES } from '../../../routes.const';
 import { UserCenterService } from '../../services/user-center.service';
 
 @Component({
@@ -64,12 +65,12 @@ import { UserCenterService } from '../../services/user-center.service';
 
         <mat-divider></mat-divider>
 
-        <button mat-menu-item routerLink="/user/profile">
+        <button mat-menu-item [routerLink]="ROUTES.USER.PROFILE">
           <mat-icon>person</mat-icon>
           <span>个人资料</span>
         </button>
 
-        <button mat-menu-item routerLink="/user/token">
+        <button mat-menu-item [routerLink]="ROUTES.USER.TOKEN">
           <mat-icon>token</mat-icon>
           <span>Token管理</span>
         </button>
@@ -162,6 +163,9 @@ export class UserHeaderComponent {
   @Output() toggleSidebar = new EventEmitter<void>();
 
   currentUser: User | null = null;
+
+  // 路由常量供模板使用
+  readonly ROUTES = ROUTES;
 
   constructor(
     private userCenterService: UserCenterService,

@@ -4,6 +4,7 @@ import { ActivatedRoute, Router, RouterModule } from '@angular/router';
 import { catchError, finalize, of, switchMap } from 'rxjs';
 
 import { AuthService } from '../../core/services/auth.service';
+import { ROUTES } from '../../routes.const';
 
 /** OAuth 状态信息 */
 interface OAuthState {
@@ -44,7 +45,7 @@ interface OAuthState {
           <h2>登录失败</h2>
           <p class="error-message">{{ errorMessage }}</p>
           <button class="retry-button" (click)="retry()">重新尝试</button>
-          <a class="back-link" routerLink="/auth/login">返回登录页</a>
+          <a class="back-link" [routerLink]="ROUTES.AUTH.LOGIN">返回登录页</a>
         </div>
       </div>
     </div>
@@ -167,6 +168,9 @@ export class OAuthCallbackComponent implements OnInit {
   error = false;
   errorMessage = '';
 
+  // 路由常量供模板使用
+  readonly ROUTES = ROUTES;
+
   constructor(
     private route: ActivatedRoute,
     private router: Router,
@@ -245,6 +249,6 @@ export class OAuthCallbackComponent implements OnInit {
   }
 
   retry(): void {
-    window.location.href = '/auth/login';
+    window.location.href = ROUTES.AUTH.LOGIN;
   }
 }

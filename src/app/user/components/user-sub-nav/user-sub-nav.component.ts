@@ -1,6 +1,10 @@
 /**
  * 用户中心子导航组件（水平导航条）
  *
+ * @deprecated 桌面端已废弃此组件
+ * 根据 PRD 第 6.5 节规范，所有导航已整合到顶部导航栏
+ * 请使用 UserNavbarComponent 替代
+ *
  * 位于头部导航条下方，提供用户中心的主要导航功能
  */
 
@@ -13,6 +17,7 @@ import { RouterModule } from '@angular/router';
 
 import { User } from '../../../core/models/auth.models';
 import { AuthService } from '../../../core/services/auth.service';
+import { ROUTES } from '../../../routes.const';
 import { UserCenterMenuItem, UserCenterService } from '../../services/user-center.service';
 
 @Component({
@@ -24,7 +29,7 @@ import { UserCenterMenuItem, UserCenterService } from '../../services/user-cente
       <nav class="sub-nav">
         <!-- 面包屑导航 -->
         <div class="breadcrumb">
-          <a routerLink="/user/dashboard" class="breadcrumb-link">
+          <a [routerLink]="ROUTES.USER.DASHBOARD" class="breadcrumb-link">
             <mat-icon class="breadcrumb-icon">home</mat-icon>
             <span>首页</span>
           </a>
@@ -62,7 +67,7 @@ import { UserCenterMenuItem, UserCenterService } from '../../services/user-cente
           <button mat-icon-button [matTooltip]="'刷新'" (click)="refreshPage()">
             <mat-icon>refresh</mat-icon>
           </button>
-          <button mat-icon-button [matTooltip]="'设置'" routerLink="/user/profile">
+          <button mat-icon-button [matTooltip]="'设置'" [routerLink]="ROUTES.USER.PROFILE">
             <mat-icon>settings</mat-icon>
           </button>
         </div>
@@ -168,6 +173,9 @@ export class UserSubNavComponent {
   currentUser: User | null = null;
   menuItems: UserCenterMenuItem[] = [];
   currentPageTitle = '仪表板';
+
+  // 路由常量供模板使用
+  readonly ROUTES = ROUTES;
 
   constructor(
     private userCenterService: UserCenterService,

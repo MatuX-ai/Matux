@@ -21,6 +21,7 @@ import { RouterModule } from '@angular/router';
 import { TokenPurchaseComponent } from '../../components/token-purchase/token-purchase.component';
 import { TokenService } from '../../core/services/token.service';
 import { UserTokenBalance } from '../../models/token.models';
+import { ROUTES } from '../../routes.const';
 
 interface TokenPackage {
   id: string;
@@ -49,6 +50,9 @@ export class UserTokenDashboardComponent implements OnInit {
   userBalance: UserTokenBalance | null = null;
   loading = false;
   error: string | null = null;
+
+  // 路由常量供模板使用
+  readonly ROUTES = ROUTES;
 
   packages: TokenPackage[] = [
     { id: '1', name: '基础套餐', price: 9.9, tokens: 100 },

@@ -10,9 +10,13 @@ const { app } = require('electron');
 
 // ==================== 后端服务配置 ====================
 
-const BACKEND_PORT = 8000;
-const BACKEND_HOST = 'localhost';
+// 从环境变量读取，默认为 8000
+const BACKEND_PORT = parseInt(process.env.BACKEND_PORT, 10) || 8000;
+const BACKEND_HOST = process.env.BACKEND_HOST || 'localhost';
 const BACKEND_URL = `http://${BACKEND_HOST}:${BACKEND_PORT}`;
+
+// 备用端口列表（当默认端口被占用时尝试）
+const BACKUP_PORTS = [8001, 8002, 8003, 8080, 3001];
 
 // ==================== 超时配置（毫秒）====================
 
@@ -72,7 +76,11 @@ const MODULES_URL = `${BACKEND_URL}/api/v1/system/modules`;
 
 // ==================== 环境检测 ====================
 
-const isDev = (process.env.NODE_ENV || '').trim() === 'development';
+const isDev = process.env.NODE_ENV === 'development';
+const isProduction = process.env.NODE_ENV === 'production';
+
+// 是否为生产或类生产环境（非 development 即可认为是生产级）
+const isProductionLike = !isDev;
 
 // ==================== 窗口配置 ====================
 
@@ -153,8 +161,10 @@ const CRITICAL_PYTHON_PACKAGES = [
 
 // ==================== 安全配置 ====================
 
-// 允许的 URL 协议白名单
-const ALLOWED_URL_PROTOCOLS = ['https:', 'http:'];
+// 允许的 URL 协议白名单（生产环境仅允许 https）
+const ALLOWED_URL_PROTOCOLS = isProductionLike
+  ? ['https:']
+  : ['https:', 'http:'];
 
 // ==================== 导出 ====================
 
@@ -191,6 +201,8 @@ module.exports = {
 
   // 环境
   isDev,
+  isProduction,
+  isProductionLike,
 
   // 窗口
   WINDOW_STATE_FILE,

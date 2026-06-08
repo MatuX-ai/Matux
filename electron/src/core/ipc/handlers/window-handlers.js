@@ -6,6 +6,34 @@
 const { ipcMain } = require('electron');
 
 /**
+ * 验证坐标值是否有效
+ * @param {any} value 要验证的值
+ * @returns {number|null} 有效则返回数字，否则返回 null
+ */
+function validateCoordinate(value) {
+  const num = Number(value);
+  if (!Number.isFinite(num) || num < 0 || num > 99999) {
+    return null;
+  }
+  return Math.round(num);
+}
+
+/**
+ * 验证尺寸值是否有效
+ * @param {any} value 要验证的值
+ * @param {number} min 最小值
+ * @param {number} max 最大值
+ * @returns {number|null} 有效则返回数字，否则返回 null
+ */
+function validateDimension(value, min = 100, max = 9999) {
+  const num = Number(value);
+  if (!Number.isFinite(num) || num < min || num > max) {
+    return null;
+  }
+  return Math.round(num);
+}
+
+/**
  * 创建窗口 IPC Handlers
  * @param {object} options 配置选项
  * @param {object} options.appState AppState 实例
@@ -85,20 +113,34 @@ function createWindowHandlers(options = {}) {
       return { x, y };
     });
 
-    // 设置窗口位置
+    // 设置窗口位置（带参数验证）
     ipcMain.handle('set-window-position', (_event, x, y) => {
+      const validX = validateCoordinate(x);
+      const validY = validateCoordinate(y);
+      
+      if (validX === null || validY === null) {
+        return { success: false, error: '坐标值无效，必须是非负整数' };
+      }
+      
       const win = getMainWindow();
       if (win) {
-        win.setPosition(x, y);
+        win.setPosition(validX, validY);
       }
       return { success: true };
     });
 
-    // 设置窗口尺寸
+    // 设置窗口尺寸（带参数验证）
     ipcMain.handle('set-window-size', (_event, width, height) => {
+      const validWidth = validateDimension(width, 100, 9999);
+      const validHeight = validateDimension(height, 100, 9999);
+      
+      if (validWidth === null || validHeight === null) {
+        return { success: false, error: '尺寸值无效，必须在 100-9999 之间' };
+      }
+      
       const win = getMainWindow();
       if (win) {
-        win.setSize(width, height);
+        win.setSize(validWidth, validHeight);
       }
       return { success: true };
     });
@@ -109,4 +151,4 @@ function createWindowHandlers(options = {}) {
   };
 }
 
-module.exports = { createWindowHandlers };
+module.exports = { createWindowHandlers, validateCoordinate, validateDimension };

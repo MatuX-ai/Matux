@@ -19,6 +19,13 @@ const routes: Routes = [
         (m) => m.AIEduDashboardComponent
       ),
   },
+  {
+    path: 'coding',
+    loadComponent: () =>
+      import('./ai-edu-dashboard/ai-coding-course.component').then(
+        (m) => m.AICodingCourseComponent
+      ),
+  },
 ];
 
 @NgModule({

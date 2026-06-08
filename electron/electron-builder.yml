@@ -115,6 +115,16 @@ fileAssociations:
     description: iMato 课程包
     role: Viewer
     mimeType: application/x-imato
+  - ext: imblockly
+    name: iMato Blockly Project
+    description: iMato Blockly 可视化编程项目
+    role: Viewer
+    mimeType: application/x-imblockly
+  - ext: imcircuit
+    name: iMato Circuit Project
+    description: iMato 电路仿真项目
+    role: Viewer
+    mimeType: application/x-imcircuit
 
 # 图标配置
 icon: build/icon.ico

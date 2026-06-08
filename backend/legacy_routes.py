@@ -19,7 +19,7 @@ def register_all_routes(app):
     仅在 ENABLE_LAZY_LOADING=False 时调用。
     当懒加载启用时，路由由 core.lazy_loader 自动管理。
     """
-    from routes import (  # noqa: E501
+    from routes import (
         ai_recommend_routes,
         ai_routes,
         ar_lab_routes,
@@ -43,6 +43,7 @@ def register_all_routes(app):
         model_benchmark_routes,
         model_update_routes,
         multimedia_routes,
+        opensciedu_routes,  # OpenSciEDU 公共课程
         payment_routes,
         permission_routes,
         sponsorship_routes,
@@ -61,6 +62,7 @@ def register_all_routes(app):
     from routes import sensor_data_routes
     from routes import oauth_routes
     from routes import exam_routes
+    from routes import system_status_routes  # 系统状态路由
     from ai_service.model_routes import router as model_router
     from modules.auth.auth_routes import router as unified_auth_router
     from modules.learning.aggregation_routes import router as aggregation_router
@@ -119,6 +121,11 @@ def register_all_routes(app):
     app.include_router(ai_teacher_routes.router, tags=["AI 个性化教师"])
     app.include_router(vector_knowledge_routes.router, tags=["向量知识库"])
     app.include_router(local_knowledge_graph_routes.router, tags=["本地知识图谱"])
+    app.include_router(opensciedu_routes.router, tags=["OpenSciEDU 公共课程"])
+    # === 系统管理路由 ===
+    # 注意：system_status_routes 中的路由已包含完整路径（如 /api/v1/system/health-detail）
+    # 因此不需要添加额外前缀
+    app.include_router(system_status_routes.router, tags=["系统管理"])
 
     # === 可选路由 ===
     if settings.ENABLE_AR_VR_ROUTES:

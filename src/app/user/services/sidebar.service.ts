@@ -1,6 +1,9 @@
 /**
  * 侧边栏服务
  * 用于管理侧边栏的打开/关闭状态
+ *
+ * @deprecated 桌面端已废弃此服务
+ * 根据 PRD 第 6.5 节规范，桌面端不再使用左侧边栏
  */
 
 import { Injectable } from '@angular/core';

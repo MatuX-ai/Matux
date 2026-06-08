@@ -1,0 +1,103 @@
+<!-- OpenSciEDU 知识图谱组件 -->
+
+<div class="opensciedu-graph">
+  <!-- 控制栏 -->
+  <div *ngIf="showControls" class="graph-controls">
+    <div class="filter-group">
+      <mat-form-field appearance="outline" class="category-filter">
+        <mat-label>知识分类</mat-label>
+        <mat-select
+          [value]="selectedCategory"
+          (selectionChange)="onCategoryChange($event.value)"
+        >
+          <mat-option [value]="null">全部分类</mat-option>
+          <mat-option *ngFor="let cat of categories" [value]="cat">
+            {{ cat }}
+          </mat-option>
+        </mat-select>
+      </mat-form-field>
+
+      <mat-form-field appearance="outline" class="level-filter">
+        <mat-label>知识层级</mat-label>
+        <mat-select
+          [value]="selectedLevel"
+          (selectionChange)="onLevelChange($event.value)"
+        >
+          <mat-option *ngFor="let level of levelOptions" [value]="level.value">
+            {{ level.label }}
+          </mat-option>
+        </mat-select>
+      </mat-form-field>
+    </div>
+
+    <div class="action-group">
+      <button
+        mat-icon-button
+        matTooltip="放大"
+        (click)="onZoomIn()"
+      >
+        <mat-icon>zoom_in</mat-icon>
+      </button>
+      <button
+        mat-icon-button
+        matTooltip="缩小"
+        (click)="onZoomOut()"
+      >
+        <mat-icon>zoom_out</mat-icon>
+      </button>
+      <button
+        mat-icon-button
+        matTooltip="重置视图"
+        (click)="onResetView()"
+      >
+        <mat-icon>center_focus_strong</mat-icon>
+      </button>
+      <button
+        mat-icon-button
+        matTooltip="刷新"
+        (click)="onRefresh()"
+      >
+        <mat-icon>refresh</mat-icon>
+      </button>
+    </div>
+  </div>
+
+  <!-- 图表容器 -->
+  <div class="chart-wrapper" [style.height]="height">
+    <!-- 加载状态 -->
+    <div *ngIf="isLoading" class="loading-overlay">
+      <mat-spinner diameter="48"></mat-spinner>
+      <p>加载知识图谱...</p>
+    </div>
+
+    <!-- 错误状态 -->
+    <div *ngIf="error && !isLoading" class="error-overlay">
+      <mat-icon>error_outline</mat-icon>
+      <p>{{ error }}</p>
+      <button mat-stroked-button (click)="onRefresh()">重试</button>
+    </div>
+
+    <!-- 图表 -->
+    <div
+      #chartContainer
+      class="chart-container"
+      [class.hidden]="isLoading || error"
+    ></div>
+  </div>
+
+  <!-- 图例说明 -->
+  <div class="graph-legend">
+    <div class="legend-item">
+      <span class="legend-line solid"></span>
+      <span>前置知识</span>
+    </div>
+    <div class="legend-item">
+      <span class="legend-line dashed"></span>
+      <span>相关知识</span>
+    </div>
+    <div class="legend-hint">
+      <mat-icon>info</mat-icon>
+      <span>点击节点查看详情，拖拽平移，滚轮缩放</span>
+    </div>
+  </div>
+</div>

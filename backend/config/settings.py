@@ -3,17 +3,35 @@
 使用Pydantic BaseSettings管理环境变量
 """
 
+import os
+import secrets
+import sys
 from typing import Optional
 
-from pydantic import validator
-from pydantic_settings import BaseSettings
+from pydantic import field_validator, Field
+from pydantic_settings import BaseSettings, SettingsConfigDict
 
 
 class Settings(BaseSettings):
+    # ========================================================================
+    # 安全配置（生产环境必须设置）
+    # ========================================================================
+
+    # JWT 密钥 - 生产环境必须设置，否则自动生成（仅用于开发）
+    SECRET_KEY: str = Field(
+        default="",
+        description="JWT签名密钥，生产环境必须设置"
+    )
+
+    # DEBUG 模式 - 生产环境必须设为 False
+    DEBUG: bool = Field(
+        default=False,
+        description="调试模式，生产环境必须关闭"
+    )
+
     # 应用基本信息
     APP_NAME: str = "iMato AI Service"
     APP_VERSION: str = "1.0.0"
-    DEBUG: bool = True  # 开发环境启用测试数据
     HOST: str = "0.0.0.0"
     PORT: int = 8000
 
@@ -26,7 +44,6 @@ class Settings(BaseSettings):
     SUPABASE_SERVICE_ROLE_KEY: Optional[str] = None
 
     # JWT配置
-    SECRET_KEY: str = "your-secret-key-change-this-in-production"
     ALGORITHM: str = "HS256"
     ACCESS_TOKEN_EXPIRE_MINUTES: int = 30
 
@@ -139,7 +156,10 @@ class Settings(BaseSettings):
     # Neo4j 图数据库配置
     NEO4J_URI: str = "bolt://localhost:7687"
     NEO4J_USERNAME: str = "neo4j"
-    NEO4J_PASSWORD: str = "password"
+    NEO4J_PASSWORD: str = Field(
+        default="",
+        description="Neo4j密码，生产环境必须设置"
+    )
     NEO4J_DATABASE: str = "neo4j"  # Neo4j Desktop 实例名称 (如 iMato-DB)
     NEO4J_ENABLED: bool = False  # 设置为 True 可启用 Neo4j
 
@@ -164,52 +184,166 @@ class Settings(BaseSettings):
 
     # OpenHydra 集成配置
     OPENHYDRA_API_URL: str = "http://localhost:8080"  # OpenHydra API 地址
-    OPENHYDRA_API_KEY: str = "openhydra-test-key"  # OpenHydra API 密钥
+    OPENHYDRA_API_KEY: str = Field(
+        default="",
+        description="OpenHydra API密钥，生产环境必须设置"
+    )
     OPENHYDRA_ENABLED: bool = True  # 是否启用 OpenHydra 集成
     JUPYTERHUB_URL: str = "http://localhost:8000"  # JupyterHub 基础 URL
 
     # === 模块懒加载架构配置 ===
     # 是否启用懒加载架构（True=新模式，False=旧模式全量加载）
-    ENABLE_LAZY_LOADING: bool = True
+    # ⚠️ 生产环境建议设为 False，确保所有路由正常注册
+    ENABLE_LAZY_LOADING: bool = False
     # 启动时自动预加载的 Tier 层级（0=Tier0, 1=Tier0+Tier1）
     AUTO_PRELOAD_TIER: int = 1
     # 后台预加载延迟（秒），避免与启动竞争资源
     PRELOAD_DELAY_SECONDS: float = 2.0
 
-    class Config:
-        env_file = ".env"
-        env_file_encoding = "utf-8"
-        case_sensitive = False
+    # === 服务器配置 ===
+    # 最大 worker 进程数（生产环境），避免高配机器上资源耗尽
+    MAX_WORKERS: int = Field(default=8, ge=1, le=32)
+    # 强制单进程模式（调试用）
+    FORCE_SINGLE_WORKER: bool = False
 
-    @validator("LOG_LEVEL")
-    def validate_log_level(cls, v):
+    # ========================================================================
+    # Pydantic v2 配置
+    # ========================================================================
+    model_config = SettingsConfigDict(
+        env_file=".env",
+        env_file_encoding="utf-8",
+        case_sensitive=True,
+        extra="ignore",  # 忽略额外的环境变量
+    )
+
+    # ========================================================================
+    # 字段验证器（使用 Pydantic v2 语法）
+    # ========================================================================
+
+    @field_validator("LOG_LEVEL")
+    @classmethod
+    def validate_log_level(cls, v: str) -> str:
         valid_levels = ["DEBUG", "INFO", "WARNING", "ERROR", "CRITICAL"]
-        if v.upper() not in valid_levels:
+        v_upper = v.upper()
+        if v_upper not in valid_levels:
             raise ValueError(f"LOG_LEVEL must be one of {valid_levels}")
-        return v.upper()
+        return v_upper
 
-    @validator("ALLOWED_ORIGINS")
+    @field_validator("SECRET_KEY")
+    @classmethod
+    def validate_secret_key(cls, v: str) -> str:
+        if not v:
+            # 生成一个警告但不阻止启动（向后兼容）
+            import warnings
+            warnings.warn(
+                "SECRET_KEY not set! Using auto-generated key. "
+                "This is NOT safe for production. Set SECRET_KEY in .env",
+                RuntimeWarning,
+                stacklevel=2
+            )
+            return secrets.token_urlsafe(32)
+        if len(v) < 32:
+            import warnings
+            warnings.warn(
+                "SECRET_KEY is too short. Use at least 32 characters.",
+                RuntimeWarning,
+                stacklevel=2
+            )
+        return v
+
+    @field_validator("ALLOWED_ORIGINS", mode="after")
+    @classmethod
     def validate_origins(cls, v):
+        """
+        验证 ALLOWED_ORIGINS（支持字符串或列表）
+        - 字符串：逗号分隔的 origins
+        - 列表：直接使用
+        """
         if isinstance(v, str):
-            origins = [origin.strip() for origin in v.split(",")]
+            origins = [origin.strip()
+                       for origin in v.split(",") if origin.strip()]
             if "*" in origins:
                 raise ValueError("Wildcard '*' not allowed in ALLOWED_ORIGINS")
             return origins
-        return v
+        elif isinstance(v, list):
+            if "*" in v:
+                raise ValueError("Wildcard '*' not allowed in ALLOWED_ORIGINS")
+            return v
+        return v if v else []
 
-    @validator("PRELOAD_DELAY_SECONDS")
-    def validate_preload_delay(cls, v):
+    @field_validator("PRELOAD_DELAY_SECONDS")
+    @classmethod
+    def validate_preload_delay(cls, v: float) -> float:
         if v < 0 or v > 60:
             raise ValueError("PRELOAD_DELAY_SECONDS must be between 0 and 60")
         return v
 
-    @validator("OPENHYDRA_API_KEY")
-    def validate_openhydra_key(cls, v):
+    @field_validator("OPENHYDRA_API_KEY")
+    @classmethod
+    def validate_openhydra_key(cls, v: str) -> str:
         if v and "test" in v.lower():
             import warnings
-            warnings.warn("OPENHYDRA_API_KEY contains 'test', please set production key")
+            warnings.warn(
+                "OPENHYDRA_API_KEY contains 'test', please set production key",
+                UserWarning,
+                stacklevel=2
+            )
+        return v
+
+    @field_validator("NEO4J_PASSWORD")
+    @classmethod
+    def validate_neo4j_password(cls, v: str) -> str:
+        if not v:
+            import warnings
+            warnings.warn(
+                "NEO4J_PASSWORD not set! Neo4j connection will fail. "
+                "Set NEO4J_PASSWORD in .env for production.",
+                RuntimeWarning,
+                stacklevel=2
+            )
+        return v
+
+    @field_validator("DEBUG")
+    @classmethod
+    def validate_debug(cls, v: bool) -> bool:
+        if v:
+            import warnings
+            warnings.warn(
+                "DEBUG mode is ON! This is insecure for production. "
+                "Set DEBUG=false in production environment.",
+                RuntimeWarning,
+                stacklevel=2
+            )
         return v
 
 
-# 创建全局设置实例
-settings = Settings()
+def _generate_secret_key() -> str:
+    """生成安全的随机密钥（仅用于开发）"""
+    return secrets.token_urlsafe(32)
+
+
+# ========================================================================
+# 创建全局设置实例（延迟初始化，避免循环导入）
+# ========================================================================
+settings: Optional[Settings] = None
+
+
+def get_settings() -> Settings:
+    """获取设置实例（延迟初始化）"""
+    global settings
+    if settings is None:
+        settings = Settings()
+    return settings
+
+
+# 为向后兼容，提供全局 settings 实例
+# 注意：在模块首次导入时会触发 Settings() 实例化
+# 如果需要延迟初始化，使用 get_settings() 函数
+try:
+    # 仅在非测试环境中立即初始化
+    if "pytest" not in sys.modules and "test" not in os.getenv("", ""):
+        settings = Settings()
+    else:
+        settings = None
+except Exception:
+    settings = None

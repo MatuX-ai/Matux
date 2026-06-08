@@ -1,0 +1,134 @@
+<!-- Blockly 工作区组件 -->
+
+<div class="blockly-workspace">
+  <!-- 工具栏 -->
+  <div class="workspace-toolbar">
+    <div class="toolbar-left">
+      <button
+        mat-icon-button
+        matTooltip="撤销"
+        [disabled]="readOnly"
+        (click)="undo()"
+      >
+        <mat-icon>undo</mat-icon>
+      </button>
+      <button
+        mat-icon-button
+        matTooltip="重做"
+        [disabled]="readOnly"
+        (click)="redo()"
+      >
+        <mat-icon>redo</mat-icon>
+      </button>
+      <div class="toolbar-divider"></div>
+      <button
+        mat-icon-button
+        matTooltip="清空工作区"
+        [disabled]="readOnly || isEmpty"
+        (click)="clearWorkspace()"
+      >
+        <mat-icon>delete_sweep</mat-icon>
+      </button>
+    </div>
+
+    <div class="toolbar-center">
+      <span class="block-count" matTooltip="当前块数量">
+        <mat-icon>widgets</mat-icon>
+        {{ blockCount }}
+      </span>
+    </div>
+
+    <div class="toolbar-right">
+      <mat-form-field appearance="outline" class="theme-select">
+        <mat-label>主题</mat-label>
+        <mat-select
+          [value]="theme"
+          (selectionChange)="onThemeChange($event.value)"
+        >
+          <mat-option
+            *ngFor="let t of themes"
+            [value]="t.value"
+          >
+            {{ t.label }}
+          </mat-option>
+        </mat-select>
+      </mat-form-field>
+    </div>
+  </div>
+
+  <!-- 工作区主体 -->
+  <div class="workspace-body">
+    <!-- Blockly 工作区 -->
+    <div class="blockly-area">
+      <!-- 加载状态 -->
+      <div *ngIf="isLoading" class="loading-overlay">
+        <mat-spinner diameter="48"></mat-spinner>
+        <p>加载 Blockly 工作区...</p>
+      </div>
+
+      <!-- 错误状态 -->
+      <div *ngIf="error" class="error-overlay">
+        <mat-icon>error_outline</mat-icon>
+        <p>{{ error }}</p>
+        <button mat-stroked-button (click)="initBlockly()">重试</button>
+      </div>
+
+      <!-- Blockly 容器 -->
+      <div
+        #blocklyContainer
+        class="blockly-container"
+        [class.hidden]="isLoading || error"
+      ></div>
+    </div>
+
+    <!-- 代码预览面板 -->
+    <div *ngIf="showCodePreview" class="code-preview">
+      <div class="code-header">
+        <h4>代码预览</h4>
+        <div class="code-actions">
+          <mat-form-field appearance="outline" class="language-select">
+            <mat-select
+              [value]="selectedLanguage"
+              (selectionChange)="onLanguageChange($event.value)"
+            >
+              <mat-option
+                *ngFor="let lang of languages"
+                [value]="lang.value"
+              >
+                {{ lang.label }}
+              </mat-option>
+            </mat-select>
+          </mat-form-field>
+          <button
+            mat-icon-button
+            matTooltip="复制代码"
+            (click)="copyCode()"
+          >
+            <mat-icon>content_copy</mat-icon>
+          </button>
+        </div>
+      </div>
+      <div class="code-content">
+        <pre><code>{{ currentCode }}</code></pre>
+      </div>
+      <div class="code-footer">
+        <span class="line-count">
+          {{ currentCode.split('\n').length }} 行
+        </span>
+        <span class="language-label">
+          {{ languages | languageLabel: selectedLanguage }}
+        </span>
+      </div>
+    </div>
+  </div>
+
+  <!-- 块类型指示器 -->
+  <div class="block-types-indicator" *ngIf="blockTypes.length > 0">
+    <span class="indicator-label">使用的块:</span>
+    <div class="block-tags">
+      <span *ngFor="let type of blockTypes" class="block-tag">
+        {{ type }}
+      </span>
+    </div>
+  </div>
+</div>

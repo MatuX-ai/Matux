@@ -1,6 +1,12 @@
 /**
  * 端口占用管理模块
  * @module backend/port-manager
+ * 
+ * 支持功能：
+ * - 端口占用检测与进程识别
+ * - 自动终止MatuX相关进程（Python/Electron/Node）
+ * - 备用端口查找
+ * - 交互式确认清理
  */
 
 const { execSync } = require('child_process');
@@ -10,14 +16,37 @@ const EXEC_SYNC_TIMEOUT = 5000;
 const EXEC_SYNC_SHORT_TIMEOUT = 3000;
 
 /**
+ * 查找可用的备用端口
+ * @param {number} preferredPort 首选端口
+ * @param {number[]} backupPorts 备用端口列表
+ * @returns {number|null} 可用端口或null
+ */
+function findAvailablePort(preferredPort, backupPorts) {
+  // 先检查首选端口
+  if (!checkPortOccupation(preferredPort).occupied) {
+    return preferredPort;
+  }
+  
+  // 尝试备用端口
+  for (const port of backupPorts) {
+    if (!checkPortOccupation(port).occupied) {
+      console.log(`[INFO] 首选端口 ${preferredPort} 被占用，切换到备用端口 ${port}`);
+      return port;
+    }
+  }
+  
+  return null;
+}
+
+/**
  * 检查端口是否被占用，并识别占用进程
  * @param {number} port 端口号
- * @returns {{ occupied: boolean, pid: number | null, processName: string }}
+ * @returns {{ occupied: boolean, pid: number | null, processName: string, canAutoKill: boolean }}
  */
 function checkPortOccupation(port) {
   if (process.platform !== 'win32') {
     // 非 Windows 系统使用 lsof（简化实现）
-    return { occupied: false, pid: null, processName: '' };
+    return { occupied: false, pid: null, processName: '', canAutoKill: false };
   }
 
   // 【P3-8修复】添加 netstat fallback 方案，避免精简 Windows 系统没有 netstat
@@ -70,7 +99,7 @@ function checkPortOccupation(port) {
   }
 
   if (pid === null) {
-    return { occupied: false, pid: null, processName: '' };
+    return { occupied: false, pid: null, processName: '', canAutoKill: false };
   }
 
   // 获取进程名称
@@ -88,15 +117,29 @@ function checkPortOccupation(port) {
     processName = 'Unknown';
   }
 
-  return { occupied: true, pid, processName };
+  // 判断是否可以自动终止（MatuX相关进程：Python/Electron/Node）
+  const processNameLower = processName.toLowerCase();
+  const canAutoKill = processNameLower.includes('python') || 
+                      processNameLower.includes('electron') ||
+                      processNameLower.includes('node');
+
+  return { occupied: true, pid, processName, canAutoKill };
 }
 
 /**
  * 强制终止占用指定端口的进程
  * @param {number} port 端口号
- * @returns {{ success: boolean, killedPid: number | null, message: string }}
+ * @param {object} options 选项
+ * @param {boolean} options.autoKillMatuX 自动终止MatuX相关进程（Python/Electron/Node）
+ * @param {function} options.onConfirmKill 询问用户是否终止的回调
+ * @returns {{ success: boolean, killedPid: number | null, message: string, requiresUserConfirmation?: boolean, occupiedBy?: object }}
  */
-function forceKillPortProcess(port) {
+function forceKillPortProcess(port, options = {}) {
+  const {
+    autoKillMatuX = true,
+    onConfirmKill = null,
+  } = options;
+
   if (process.platform !== 'win32') {
     return { success: false, killedPid: null, message: '仅支持 Windows 系统' };
   }
@@ -109,20 +152,29 @@ function forceKillPortProcess(port) {
 
   console.log(`[INFO] 发现端口 ${port} 被进程占用: PID ${portStatus.pid} (${portStatus.processName})`);
 
-  // 检查是否是 MatuX 自身的 Python 进程
-  if (portStatus.processName.toLowerCase().includes('python')) {
+  // 如果可以自动终止（MatuX相关进程）
+  if (portStatus.canAutoKill && autoKillMatuX) {
     try {
-      // 温和终止 Python 进程
       execSync(`taskkill /pid ${portStatus.pid} /f`, {
         stdio: 'ignore',
         timeout: EXEC_SYNC_TIMEOUT,
       });
-      console.log(`[INFO] 已终止占用端口 ${port} 的 Python 进程 (PID: ${portStatus.pid})`);
-      return { success: true, killedPid: portStatus.pid, message: `已终止 Python 进程 (PID: ${portStatus.pid})` };
+      console.log(`[INFO] 已自动终止占用端口 ${port} 的进程 (PID: ${portStatus.pid})`);
+      return { success: true, killedPid: portStatus.pid, message: `已终止 ${portStatus.processName} 进程 (PID: ${portStatus.pid})` };
     } catch (err) {
       console.error(`[ERROR] 无法终止进程 ${portStatus.pid}:`, err.message);
-      return { success: false, killedPid: portStatus.pid, message: `终止进程失败: ${err.message}` };
     }
+  }
+
+  // 如果提供了确认回调，尝试询问用户
+  if (onConfirmKill) {
+    return {
+      success: false,
+      killedPid: null,
+      message: `端口被 ${portStatus.processName} (PID: ${portStatus.pid}) 占用`,
+      requiresUserConfirmation: true,
+      occupiedBy: portStatus,
+    };
   }
 
   // 其他进程，提供选项让用户决定
@@ -130,6 +182,8 @@ function forceKillPortProcess(port) {
     success: false,
     killedPid: null,
     message: `端口被 ${portStatus.processName} (PID: ${portStatus.pid}) 占用，需要手动关闭`,
+    requiresUserConfirmation: true,
+    occupiedBy: portStatus,
   };
 }
 
@@ -190,4 +244,5 @@ module.exports = {
   checkPortOccupation,
   forceKillPortProcess,
   cleanupMatuXProcesses,
+  findAvailablePort,
 };

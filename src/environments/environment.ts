@@ -1,7 +1,7 @@
 export const environment = {
   production: false,
-  apiUrl: 'http://localhost:8000',
-  wsUrl: 'ws://localhost:8000',
+  apiUrl: 'http://localhost:8001',
+  wsUrl: 'ws://localhost:8001',
   openMtSciEdApiUrl: 'http://localhost:3000/api/v1', // OpenMTSciEd API
 
   /** HTTP 请求超时时间（毫秒）- 开发环境下较短，便于 Mock 降级快速生效 */

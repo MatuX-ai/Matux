@@ -17,10 +17,20 @@ function loadWindowState() {
   try {
     if (fs.existsSync(WINDOW_STATE_FILE)) {
       const data = fs.readFileSync(WINDOW_STATE_FILE, 'utf-8');
-      const state = JSON.parse(data);
-      // 验证状态数据有效性
-      if (state && typeof state.width === 'number' && typeof state.height === 'number') {
-        return state;
+      try {
+        const state = JSON.parse(data);
+        // 验证状态数据有效性
+        if (state && typeof state.width === 'number' && typeof state.height === 'number') {
+          return state;
+        }
+      } catch (parseErr) {
+        console.warn('[WARN] 窗口状态文件格式错误:', parseErr.message);
+        // 删除损坏的文件
+        try {
+          fs.unlinkSync(WINDOW_STATE_FILE);
+        } catch {
+          // 忽略删除错误
+        }
       }
     }
   } catch (err) {

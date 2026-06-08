@@ -1,4 +1,15 @@
 // ===== 学生仪表板样式 — 基于 MatuX 设计系统 =====
+// 重构版本：解决功能重叠和控件布局问题
+
+// =============================================
+// 统一布局变量（Task 2.1）
+// =============================================
+:root {
+  --section-gap: 32px;        // 区块间距（统一增大）
+  --card-gap: 16px;           // 卡片间距
+  --card-padding: 24px;       // 卡片内边距
+  --card-radius: 16px;        // 圆角
+}
 
 :host {
   --dash-max-width: 1440px;
@@ -9,7 +20,9 @@
   --stats-card-min: 260px;
   --course-card-min: 300px;
   --source-card-min: 280px;
-  --section-gap: var(--matux-spacing-xl, 24px);
+  // 使用统一布局变量
+  --section-gap: 32px;
+  --card-gap: 16px;
   --card-padding: 20px;
 
   // 渐变色变量（基于 MatuX 色板）
@@ -47,7 +60,31 @@
   );
 }
 
-// ===== 布局容器 =====
+// =============================================
+// 视觉层次样式（Task 2.7）
+// =============================================
+
+// 一级内容：大标题、大间距、突出显示
+.section-primary {
+  margin-bottom: var(--section-gap);
+  padding: var(--card-padding);
+  border-radius: var(--card-radius);
+  background: var(--matux-color-surface);
+  box-shadow: var(--card-shadow);
+}
+
+// 二级内容：中等间距、标准样式
+.section-secondary {
+  margin-bottom: var(--section-gap);
+  padding: var(--card-padding);
+  border-radius: var(--card-radius);
+  background: var(--matux-color-surface);
+  border: 1px solid var(--matux-color-divider);
+}
+
+// =============================================
+// 布局容器
+// =============================================
 .student-dashboard {
   max-width: var(--dash-max-width);
   margin: 0 auto;
@@ -58,7 +95,7 @@
   display: flex;
   justify-content: space-between;
   align-items: center;
-  margin-bottom: var(--matux-spacing-lg, 24px);
+  margin-bottom: var(--section-gap);
 }
 
 .page-title {
@@ -68,13 +105,12 @@
   font-weight: 700;
 }
 
-// ===== 欢迎区域 =====
+// =============================================
+// 欢迎区域
+// =============================================
 .welcome-section {
-  margin-bottom: var(--section-gap);
-  padding: 24px;
-  border-radius: var(--card-radius);
-  background: var(--matux-color-surface);
-  box-shadow: var(--card-shadow);
+  // 使用 .section-primary 样式
+  padding: var(--card-padding);
 }
 
 .welcome-header {
@@ -94,11 +130,14 @@
   font-size: var(--matux-font-size-body, 16px);
 }
 
-// ===== 快捷入口 =====
+// =============================================
+// 快捷入口（Task 2.3: 精简为2个）
+// =============================================
 .quick-entry-grid {
   display: grid;
-  grid-template-columns: repeat(4, 1fr);
-  gap: 12px;
+  // 默认2列（精简后）
+  grid-template-columns: repeat(2, 1fr);
+  gap: var(--card-gap);
 }
 
 .quick-entry-card {
@@ -199,7 +238,23 @@
   margin-bottom: 0;
 }
 
-// ===== 课程网格 =====
+// =============================================
+// 双栏布局（Task 2.2: 统一为2:1比例）
+// =============================================
+
+// AI 推荐 + 快捷工具 / 成就与动态
+// 统一使用 2fr 1fr 比例
+.dual-section,
+.dual-column-section {
+  display: grid;
+  grid-template-columns: 2fr 1fr;  // 统一2:1比例
+  gap: var(--section-gap);
+  margin-bottom: var(--section-gap);
+}
+
+// =============================================
+// 课程网格（保留供其他页面使用）
+// =============================================
 .course-grid {
   display: grid;
   grid-template-columns: repeat(auto-fill, minmax(var(--course-card-min), 1fr));
@@ -427,14 +482,7 @@
   font-size: 11px;
 }
 
-// ===== AI 推荐 + 常用工具 双栏 =====
-.dual-section {
-  display: grid;
-  grid-template-columns: 1.5fr 1fr;
-  gap: 16px;
-  margin-bottom: var(--section-gap);
-}
-
+// ===== AI 推荐 + 快捷工具 =====
 .ai-recommend-section,
 .quick-tools-section {
   .section-title {
@@ -507,41 +555,41 @@
   }
 }
 
-// ===== 常用工具 =====
-.quick-tools-grid {
-  display: grid;
-  grid-template-columns: repeat(2, 1fr);
+// =============================================
+// 快捷工具（Task 2.4: 紧凑横排布局）
+// =============================================
+.quick-tools-compact {
+  display: flex;
   gap: 12px;
+  margin-bottom: 20px;
+  padding: 16px;
+  border-radius: 12px;
+  background: var(--matux-color-background);
 }
 
-.quick-tool-item {
+.quick-tool-chip {
   display: flex;
-  flex-direction: column;
   align-items: center;
-  gap: 8px;
-  padding: 16px 8px;
-  border: 1px solid var(--matux-color-divider);
-  border-radius: 14px;
-  background: var(--matux-color-surface);
-  box-shadow: 0 2px 6px rgb(0 0 0 / 4%);
+  justify-content: center;
+  width: 48px;
+  height: 48px;
+  border-radius: 12px;
   cursor: pointer;
-  transition:
-    transform 0.2s,
-    box-shadow 0.2s;
+  transition: transform 0.2s, box-shadow 0.2s;
 
   &:hover {
-    box-shadow: 0 8px 16px rgb(0 0 0 / 8%);
-    transform: translateY(-3px);
+    transform: scale(1.1);
+    box-shadow: 0 4px 12px rgb(0 0 0 / 15%);
   }
 }
 
 .quick-tool-icon-wrapper {
   display: flex;
-  justify-content: center;
   align-items: center;
+  justify-content: center;
   width: 40px;
   height: 40px;
-  border-radius: var(--matux-radius-sm, 10px);
+  border-radius: 10px;
 
   mat-icon {
     width: 24px;
@@ -550,48 +598,74 @@
   }
 }
 
-.quick-tool-label {
-  color: var(--matux-color-text-primary);
-  font-size: var(--matux-font-size-xs, 12px);
-  font-weight: 600;
+// 快捷操作按钮列表
+.quick-actions-list {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
 }
 
-// ===== 成就墙 =====
-.section-heatmap,
-.section-achievements {
-  margin-bottom: 0;
-}
+.quick-action-btn {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  justify-content: flex-start;
+  width: 100%;
+  padding: 10px 14px !important;
+  border-radius: 10px !important;
+  font-size: 13px;
 
-.achievements-card {
-  padding: var(--card-padding);
-  border: 1px solid var(--matux-color-divider);
-  border-radius: var(--card-radius);
-  background: var(--matux-color-surface);
-  box-shadow: var(--card-shadow);
-  transition:
-    box-shadow 0.2s,
-    transform 0.2s;
+  mat-icon {
+    width: 18px;
+    height: 18px;
+    font-size: 18px;
+  }
 
   &:hover {
-    box-shadow: var(--card-hover-shadow);
+    background: var(--matux-color-primary-50);
+    color: var(--matux-color-primary);
   }
 }
 
-.achievements-grid {
-  display: grid;
-  grid-template-columns: repeat(3, 1fr);
-  gap: 10px;
+// =============================================
+// 成就墙（Task 2.5: 横排滚动布局）
+// =============================================
+.achievements-scroll {
+  display: flex;
+  gap: 12px;
   margin-bottom: 16px;
+  overflow-x: auto;
+  padding: 4px 0;
+
+  // 滚动条样式
+  &::-webkit-scrollbar {
+    height: 6px;
+  }
+
+  &::-webkit-scrollbar-track {
+    background: var(--matux-color-background);
+    border-radius: 3px;
+  }
+
+  &::-webkit-scrollbar-thumb {
+    background: var(--matux-color-divider);
+    border-radius: 3px;
+
+    &:hover {
+      background: var(--matux-color-text-disabled);
+    }
+  }
 }
 
 .achievement-badge {
+  flex-shrink: 0;
   display: flex;
   flex-direction: column;
   align-items: center;
   gap: 4px;
-  padding: 12px 8px;
+  padding: 12px 16px;
   border: 1px solid var(--matux-color-secondary-200, #bfdbfe);
-  border-radius: var(--matux-radius-sm, 10px);
+  border-radius: 12px;
   background: linear-gradient(
     135deg,
     var(--matux-color-secondary-50, #eff6ff) 0%,
@@ -622,7 +696,7 @@
 
 .badge-name {
   overflow: hidden;
-  max-width: 100%;
+  max-width: 80px;
   color: var(--matux-color-text-primary);
   font-size: 11px;
   font-weight: 600;
@@ -637,6 +711,29 @@
   gap: 6px;
   color: var(--matux-color-text-secondary);
   font-size: 13px;
+}
+
+// =============================================
+// 成就卡片（成就与动态区块）
+// =============================================
+.section-heatmap,
+.section-achievements {
+  margin-bottom: 0;
+}
+
+.achievements-card {
+  padding: var(--card-padding);
+  border: 1px solid var(--matux-color-divider);
+  border-radius: var(--card-radius);
+  background: var(--matux-color-surface);
+  height: 100%;
+  transition:
+    box-shadow 0.2s,
+    transform 0.2s;
+
+  &:hover {
+    box-shadow: var(--card-hover-shadow);
+  }
 }
 
 // ===== 来源卡片 =====
@@ -753,7 +850,32 @@
   }
 }
 
-// ===== 响应式：移动端 ≤768px =====
+// =============================================
+// 响应式：超小屏 < 480px（Task 2.6 新增）
+// =============================================
+@media (width < 480px) {
+  :host {
+    --dash-padding: 12px;
+    --section-gap: 16px;
+  }
+
+  .quick-entry-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .stats-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .dual-section,
+  .dual-column-section {
+    grid-template-columns: 1fr;
+  }
+}
+
+// =============================================
+// 响应式：小屏 ≤768px
+// =============================================
 @media (width <= 768px) {
   :host {
     --dash-padding: 16px;
@@ -772,7 +894,7 @@
   }
 
   .stats-grid {
-    grid-template-columns: 1fr;
+    grid-template-columns: repeat(2, 1fr);
   }
 
   .dual-column-section {
@@ -783,12 +905,9 @@
     grid-template-columns: 1fr;
   }
 
-  .achievements-grid {
-    grid-template-columns: repeat(4, 1fr);
-  }
-
-  .quick-tools-grid {
-    grid-template-columns: repeat(4, 1fr);
+  // 成就墙横排滚动保持横向滚动
+  .achievements-scroll {
+    // 保持滚动
   }
 
   .welcome-section {
@@ -829,14 +948,16 @@
   }
 }
 
-// ===== 响应式：平板 769-1024px =====
+// =============================================
+// 响应式：平板 769-1024px
+// =============================================
 @media (width >= 769px) and (width <= 1024px) {
   :host {
     --dash-padding: 20px;
     --stats-card-min: 220px;
     --course-card-min: 260px;
     --source-card-min: 240px;
-    --section-gap: 20px;
+    --section-gap: 24px;
   }
 
   .stats-grid {
@@ -863,6 +984,7 @@
     font-size: 26px;
   }
 
+  // 快捷入口3列
   .quick-entry-grid {
     grid-template-columns: repeat(2, 1fr);
     gap: 12px;

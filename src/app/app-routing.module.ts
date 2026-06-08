@@ -3,29 +3,14 @@ import { RouterModule, Routes } from '@angular/router';
 
 import { CustomPreloadingStrategy } from './core/services/custom-preloading.strategy';
 import { ModuleActiveGuard } from './core/guards/module-active.guard';
+import { ROUTES } from './routes.const';
 
 const routes: Routes = [
+  // 首页重定向到用户仪表板
   {
     path: '',
-    redirectTo: '/dashboard',
+    redirectTo: ROUTES.USER.DASHBOARD,
     pathMatch: 'full',
-  },
-  // 开发调试用最小化仪表板
-  {
-    path: 'dashboard',
-    loadComponent: () =>
-      import('./minimal-dashboard.component').then((m) => m.MinimalDashboardComponent),
-  },
-  // 学习路径地图
-  {
-    path: 'learning-path',
-    loadComponent: () =>
-      import('./components/path-map/path-map.component').then((m) => m.PathMapComponent),
-  },
-  {
-    path: 'openmt-demo',
-    loadComponent: () =>
-      import('./components/openmt-demo/openmt-demo.component').then((m) => m.OpenMtDemoComponent),
   },
   {
     path: 'ar-lab',
@@ -104,18 +89,12 @@ const routes: Routes = [
     canActivate: [ModuleActiveGuard],
     data: { requiredModule: 'ar_vr' },
   },
-  // Icon Debug Page
+  // OpenSciEDU Module - 公共课程（懒加载）
   {
-    path: 'icon-debug',
+    path: 'opensciedu',
     loadComponent: () =>
-      import('./components/icon-debug/icon-debug.component').then((m) => m.IconDebugComponent),
-  },
-  // Simple Icon Test
-  {
-    path: 'icon-test',
-    loadComponent: () =>
-      import('./components/icon-simple-test/icon-simple-test.component').then(
-        (m) => m.IconSimpleTestComponent
+      import('./opensciedu/opensciedu-page.component').then(
+        (m) => m.OpenscieduPageComponent
       ),
   },
 ];

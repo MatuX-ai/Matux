@@ -5,6 +5,7 @@ import { Router } from '@angular/router';
 import { BehaviorSubject } from 'rxjs';
 
 import { AuthService } from '../auth.service';
+import { ROUTES } from '../../../routes.const';
 
 /**
  * 错误类型枚举
@@ -345,17 +346,38 @@ export class AIEduErrorHandlerService implements ErrorHandler {
     const message = typeof error === 'string' ? error : error.message;
     const type = typeof error === 'string' ? ErrorType.UNKNOWN : error.type;
 
-    // 创建 Toast 元素
+    // 创建 Toast 元素（使用安全的 DOM 操作，防止 XSS）
     const toast = document.createElement('div');
     toast.className = `ai-edu-toast ai-edu-toast-${type}`;
-    toast.innerHTML = `
-      <div class="toast-content">
-        <span class="toast-icon">${this.getErrorIcon(type)}</span>
-        <span class="toast-message">${message}</span>
-        ${finalConfig.dismissible ? '<button class="toast-close">×</button>' : ''}
-      </div>
-      <div class="toast-progress"></div>
-    `;
+    
+    // 使用安全的 DOM 结构
+    const contentDiv = document.createElement('div');
+    contentDiv.className = 'toast-content';
+    
+    const iconSpan = document.createElement('span');
+    iconSpan.className = 'toast-icon';
+    iconSpan.textContent = this.getErrorIcon(type);  // textContent 自动转义
+    
+    const messageSpan = document.createElement('span');
+    messageSpan.className = 'toast-message';
+    messageSpan.textContent = message;  // textContent 自动转义，防止 XSS
+    
+    contentDiv.appendChild(iconSpan);
+    contentDiv.appendChild(messageSpan);
+    
+    if (finalConfig.dismissible) {
+      const closeBtn = document.createElement('button');
+      closeBtn.className = 'toast-close';
+      closeBtn.textContent = '×';
+      closeBtn.addEventListener('click', () => this.removeToast(toast));
+      contentDiv.appendChild(closeBtn);
+    }
+    
+    const progressDiv = document.createElement('div');
+    progressDiv.className = 'toast-progress';
+    
+    toast.appendChild(contentDiv);
+    toast.appendChild(progressDiv);
 
     // 添加样式
     this.injectStyles();
@@ -371,12 +393,6 @@ export class AIEduErrorHandlerService implements ErrorHandler {
       max-width: 600px;
       animation: slideIn 0.3s ease-out;
     `;
-
-    // 关闭按钮事件
-    const closeBtn = toast.querySelector('.toast-close');
-    if (closeBtn) {
-      closeBtn.addEventListener('click', () => this.removeToast(toast));
-    }
 
     // 添加到页面
     document.body.appendChild(toast);
@@ -546,7 +562,7 @@ export class AIEduErrorHandlerService implements ErrorHandler {
     // 401 跳转到登录页
     if (error.type === ErrorType.AUTH && this.router) {
       setTimeout(() => {
-        void this.router?.navigate(['/login']);
+        void this.router?.navigate([ROUTES.AUTH.LOGIN]);
       }, 2000);
     }
 

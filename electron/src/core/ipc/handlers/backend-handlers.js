@@ -29,16 +29,21 @@ function createBackendHandlers(options = {}) {
 
     // 健康检查
     ipcMain.handle('health-check', async () => {
-      if (backendManager && backendManager.healthChecker) {
-        return await backendManager.healthChecker.check();
+      try {
+        if (backendManager && backendManager.healthChecker) {
+          return await backendManager.healthChecker.check();
+        }
+        // fallback: 使用 backendCore 中的健康检查
+        const { healthCheck } = backendCore;
+        if (healthCheck) {
+          const result = await healthCheck('localhost', 8000);
+          return { success: result.success, status: result.status };
+        }
+        return { success: false, error: '健康检查器未初始化' };
+      } catch (err) {
+        console.error('[ERROR] 健康检查 IPC 处理失败:', err.message);
+        return { success: false, error: err.message };
       }
-      // fallback: 使用 backendCore 中的健康检查
-      const { healthCheck } = backendCore;
-      if (healthCheck) {
-        const result = await healthCheck('localhost', 8000);
-        return { success: result.success, status: result.status };
-      }
-      return { success: false, error: '健康检查器未初始化' };
     });
 
     // 获取模块状态
@@ -59,11 +64,16 @@ function createBackendHandlers(options = {}) {
 
     // 重启后端
     ipcMain.handle('backend:restart', async () => {
-      if (backendManager) {
-        await backendManager.restart();
-        return { success: true, message: '后端重启中' };
+      try {
+        if (backendManager) {
+          await backendManager.restart();
+          return { success: true, message: '后端重启中' };
+        }
+        return { success: false, error: '后端管理器未初始化' };
+      } catch (err) {
+        console.error('[ERROR] 后端重启 IPC 处理失败:', err.message);
+        return { success: false, error: err.message };
       }
-      return { success: false, error: '后端管理器未初始化' };
     });
   }
 

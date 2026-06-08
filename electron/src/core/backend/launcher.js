@@ -162,11 +162,25 @@ async function waitForBackend(options = {}) {
 // ==================== 核心函数 ====================
 
 /**
+ * 安全验证 Python 路径（防止命令注入）
+ * @param {string} pythonPath - Python 可执行文件路径
+ * @returns {boolean} 是否安全
+ */
+function isSafePythonPath(pythonPath) {
+  if (!pythonPath || typeof pythonPath !== 'string') return false;
+  // 只允许字母数字、下划线、连字符、点、斜杠、反斜杠、冒号、空格
+  const safePattern = /^[a-zA-Z0-9_\-.\\/:\s]+$/;
+  // 禁止危险字符
+  const dangerousChars = [';', '&', '|', '>', '<', '`', '$', '(', ')', '{', '}', '[', ']', '!', '?', '*', '~'];
+  return safePattern.test(pythonPath) && !dangerousChars.some((c) => pythonPath.includes(c));
+}
+
+/**
  * 启动 Python 后端服务
  * @param {object} options 配置选项
  * @returns {boolean} 是否成功启动
  */
-function startBackend(options = {}) {
+async function startBackend(options = {}) {
   const {
     pythonInfo,
     backendDir,
@@ -174,6 +188,13 @@ function startBackend(options = {}) {
     backendPort = DEFAULT_BACKEND_PORT,
     onStatus = null,
   } = options;
+
+  // 端口参数校验
+  const port = parseInt(backendPort, 10);
+  if (isNaN(port) || port < 1 || port > 65535) {
+    if (onStatus) onStatus('invalid-port', `无效的端口号: ${backendPort}`, 0);
+    return false;
+  }
 
   if (backendProcess) {
     console.log('[INFO] 后端已在运行中');
@@ -186,31 +207,47 @@ function startBackend(options = {}) {
   isStarting = true;
 
   // 检查并清理占用端口的进程
-  const portStatus = checkPortOccupation(backendPort);
+  const portStatus = checkPortOccupation(port);
   if (portStatus.occupied) {
-    console.log(`[WARN] 端口 ${backendPort} 已被占用: ${portStatus.processName} (PID: ${portStatus.pid})`);
+    console.log(`[WARN] 端口 ${port} 已被占用: ${portStatus.processName} (PID: ${portStatus.pid})`);
     if (onStatus) onStatus('clearing-port', '正在清理占用端口的进程...', 15);
 
-    const killResult = forceKillPortProcess(backendPort);
+    const killResult = forceKillPortProcess(port);
     if (!killResult.success) {
       // 如果无法自动清理，返回错误
-      if (onStatus) onStatus('port-conflict', `端口 ${backendPort} 被 ${portStatus.processName} 占用`, 0);
+      if (onStatus) onStatus('port-conflict', `端口 ${port} 被 ${portStatus.processName} 占用`, 0);
       isStarting = false;
       return false;
     }
 
-    // 等待端口释放
+    // 等待端口释放（使用异步等待，不阻塞事件循环）
     console.log('[INFO] 等待端口释放...');
     if (onStatus) onStatus('waiting-port', '等待端口释放...', 18);
-    let waitCount = 0;
-    while (checkPortOccupation(backendPort).occupied && waitCount < 10) {
-      require('timers').setTimeout(() => { }, 500);
-      waitCount++;
-    }
+    
+    // 使用异步等待而非 busy-wait 阻塞
+    await new Promise((resolve) => {
+      let waitCount = 0;
+      const maxWait = 10;
+      const interval = setInterval(() => {
+        if (!checkPortOccupation(port).occupied || waitCount >= maxWait) {
+          clearInterval(interval);
+          resolve();
+        }
+        waitCount++;
+      }, 500);
+    });
   }
 
   if (!pythonInfo || !pythonInfo.available) {
     if (onStatus) onStatus('python-missing', '未检测到 Python 3.9+ 环境', 0);
+    isStarting = false;
+    return false;
+  }
+
+  // 安全验证 Python 路径
+  if (!isSafePythonPath(pythonInfo.path)) {
+    console.error('[ERROR] Python 路径包含不安全字符');
+    if (onStatus) onStatus('unsafe-python-path', 'Python 路径不安全', 0);
     isStarting = false;
     return false;
   }
@@ -225,17 +262,25 @@ function startBackend(options = {}) {
     // 生产环境：直接运行 PyInstaller 打包的 exe
     backendProcess = spawn(backendInfo.path, [], {
       cwd: backendDir,
-      env: { ...process.env, PORT: backendPort.toString() },
+      env: { ...process.env, PORT: port.toString() },
       windowsHide: true,
     });
   } else {
     // 开发环境：运行 Python 脚本
-    backendProcess = spawn(pythonInfo.path, [backendInfo.path], {
+    // Windows 上 spawn 需要 shell: true 来识别 python 命令
+    // 但已验证 pythonInfo.path 安全性（无命令注入风险）
+    const spawnOptions = {
       cwd: backendDir,
-      env: { ...process.env, PORT: backendPort.toString() },
+      env: { ...process.env, PORT: port.toString() },
       windowsHide: !isDev,
-      shell: true,  // Windows 上需要 shell 才能识别 python 命令
-    });
+    };
+    
+    // 仅在 Windows 开发模式下启用 shell（生产模式直接用 exe，不需要）
+    if (process.platform === 'win32' && isDev) {
+      spawnOptions.shell = true;
+    }
+    
+    backendProcess = spawn(pythonInfo.path, [backendInfo.path], spawnOptions);
   }
 
   backendProcess.stdout.on('data', (data) => {

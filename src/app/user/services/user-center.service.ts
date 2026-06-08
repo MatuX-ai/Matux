@@ -7,6 +7,7 @@
 import { Injectable } from '@angular/core';
 import { BehaviorSubject } from 'rxjs';
 
+import { ROUTES } from '../../routes.const';
 import { User } from '../../core/models/auth.models';
 import { AuthService } from '../../core/services/auth.service';
 
@@ -69,57 +70,57 @@ export class UserCenterService {
       {
         icon: 'dashboard',
         label: '学习仪表板',
-        route: '/user/dashboard',
+        route: ROUTES.USER.DASHBOARD,
       },
       {
         icon: 'menu_book',
         label: '我的课程',
-        route: '/user/courses',
+        route: ROUTES.USER.COURSES,
       },
       {
         icon: 'psychology',
         label: '学习画像',
-        route: '/user/learning-profile',
+        route: ROUTES.USER.LEARNING_PROFILE,
       },
       {
         icon: 'trending_up',
         label: '我的成长',
-        route: '/user/growth-trajectory',
+        route: ROUTES.USER.GROWTH_TRAJECTORY,
       },
       {
         icon: 'assessment',
         label: '学习报告',
-        route: '/user/reports',
+        route: ROUTES.USER.REPORTS,
       },
       {
         icon: 'tips_and_updates',
         label: '教学建议',
-        route: '/user/teaching-suggestions',
+        route: ROUTES.USER.TEACHING_SUGGESTIONS,
       },
       {
         icon: 'emoji_events',
         label: '成就系统',
-        route: '/user/achievements',
+        route: ROUTES.USER.ACHIEVEMENTS,
       },
       {
         icon: 'token',
         label: 'Token管理',
-        route: '/user/token',
+        route: ROUTES.USER.TOKEN,
       },
       {
         icon: 'person',
         label: '个人资料',
-        route: '/user/profile',
+        route: ROUTES.USER.PROFILE,
       },
       {
         icon: 'smart_toy',
         label: 'AI教师设置',
-        route: '/user/ai-teacher-settings',
+        route: ROUTES.USER.AI_TEACHER_SETTINGS,
       },
       {
         icon: 'favorite',
         label: '情感陪伴',
-        route: '/user/emotional-companion',
+        route: ROUTES.USER.EMOTIONAL_COMPANION,
       },
     ];
   }

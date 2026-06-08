@@ -74,6 +74,35 @@ export { UnifiedHttpClient } from './unified-http-client';
 // ==================== OpenHydra服务 ====================
 export { OpenHydraService } from './openhydra.service';
 
+// ==================== OpenSciEDU 公共课程服务 ====================
+export { OpenSciEDUService } from './opensciedu.service';
+export { OpenSciEDUMockService } from './opensciedu-mock.service';
+export type {
+  CourseCategory,
+  CourseInstructor,
+  CourseChapter,
+  CourseLesson,
+  PublicCourse,
+  CourseListResponse,
+  CourseDetail,
+  KnowledgeNode,
+  KnowledgeEdge,
+  KnowledgeGraphData,
+  SearchResult,
+} from './opensciedu.service';
+
+// ==================== Blockly 可视化编程服务 ====================
+export { BlocklyService } from './blockly.service';
+export type {
+  BlockType,
+  BlocklyTheme,
+  TargetLanguage,
+  ToolboxConfig,
+  WorkspaceState,
+  BlocklyProject,
+  BlocklyOptions,
+} from '../models/blockly.models';
+
 // ==================== Electron 桌面服务 ====================
 export { ElectronService } from './electron.service';
 

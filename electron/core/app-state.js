@@ -6,9 +6,14 @@
 
 const EventEmitter = require('events');
 
+// EventEmitter 默认 maxListeners 为 10，增加到 20 防止警告
+const DEFAULT_MAX_LISTENERS = 20;
+
 class AppState extends EventEmitter {
   constructor() {
     super();
+    // 设置最大监听器数量，防止内存泄漏警告
+    this.setMaxListeners(DEFAULT_MAX_LISTENERS);
     
     // Python 环境信息
     this.pythonInfo = null;
@@ -228,11 +233,26 @@ class AppState extends EventEmitter {
   }
 
   /**
-   * 批量设置状态
+   * 批量设置状态（带白名单保护）
    */
   setState(partial) {
-    Object.assign(this, partial);
-    this.emit('state:change', partial);
+    // 白名单：只允许设置的属性
+    const allowedKeys = [
+      'pythonInfo',
+      'backendOverallStatus',
+      'moduleStatusCache',
+      '_isQuitting',
+      '_isStarting',
+      '_restartAttempts',
+    ];
+    const sanitized = {};
+    for (const key of allowedKeys) {
+      if (key in partial) {
+        sanitized[key] = partial[key];
+      }
+    }
+    Object.assign(this, sanitized);
+    this.emit('state:change', sanitized);
   }
 }
 

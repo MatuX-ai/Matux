@@ -46,11 +46,53 @@ export class ElectronService {
   private appEventSubject = new BehaviorSubject<AppEvent | null>(null);
   readonly appEvent$ = this.appEventSubject.asObservable();
 
+  /**
+   * 允许打开的 URL 白名单
+   * 包含：OAuth 提供商、文档链接、API 文档等
+   */
+  private readonly ALLOWED_EXTERNAL_URLS = [
+    // OAuth 提供商
+    'https://github.com/login',
+    'https://accounts.google.com',
+    'https://open.weixin.qq.com',
+    'https://graph.qq.com',
+    // GitHub 相关
+    'https://github.com',
+    'https://docs.github.com',
+    // 文档链接
+    'https://matux.ai',
+    'https://docs.matux.ai',
+    // 第三方服务
+    'https://dicebear.com',
+  ];
+
   constructor(private ngZone: NgZone) {
     this.isElectron = !!(typeof window !== 'undefined' && window.electronAPI);
 
     if (this.isElectron) {
       this.initializeElectron();
+    }
+  }
+
+  /**
+   * 验证 URL 是否在白名单中
+   */
+  private isUrlAllowed(url: string): boolean {
+    try {
+      const parsedUrl = new URL(url);
+      const origin = parsedUrl.origin;
+      
+      // 允许 javascript: 协议（书签式跳转，在页面内处理）
+      if (url.toLowerCase().startsWith('javascript:')) {
+        return true;
+      }
+      
+      // 检查是否匹配白名单
+      return this.ALLOWED_EXTERNAL_URLS.some(
+        (allowed) => origin === allowed || url.startsWith(allowed)
+      );
+    } catch {
+      return false;
     }
   }
 
@@ -202,9 +244,18 @@ export class ElectronService {
   }
 
   /**
-   * 打开外部链接
+   * 打开外部链接（带 URL 白名单验证）
+   * 
+   * @param url 要打开的 URL
+   * @returns 打开是否成功
    */
   openExternal(url: string): Observable<boolean> {
+    // URL 白名单验证
+    if (!this.isUrlAllowed(url)) {
+      console.warn(`[Electron] URL 未在白名单中，已拒绝打开: ${url}`);
+      return of(false);
+    }
+
     if (!this.isElectron) {
       window.open(url, '_blank');
       return of(true);

@@ -1,6 +1,23 @@
 /**
  * 通用认证状态管理器
  * 可以在任何前端框架中使用
+ *
+ * @deprecated 此模块已被 auth.service.ts 替代。
+ *             请使用 AuthService（基于 Angular 响应式模式）替代此模块。
+ *             主要差异：
+ *             1. AuthService 使用 RxJS Observable 而非回调模式
+ *             2. AuthService 支持 sessionStorage/localStorage 双存储
+ *             3. AuthService 提供更好的 TypeScript 类型安全
+ *
+ * @example
+ * // 旧代码 (废弃)
+ * import { AuthStateManager } from './auth-state-manager';
+ * const auth = AuthStateManager.getInstance();
+ *
+ * // 新代码
+ * import { AuthService } from './auth.service';
+ * constructor(private authService: AuthService) {}
+ * this.authService.isAuthenticated$.subscribe(...);
  */
 
 /* eslint-disable @typescript-eslint/no-unsafe-member-access, @typescript-eslint/no-unsafe-return */

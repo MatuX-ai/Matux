@@ -22,6 +22,7 @@ const health = require('../src/core/backend/health');
 const {
   checkPortOccupation,
   forceKillPortProcess,
+  findAvailablePort,
 } = portManager;
 
 const {
@@ -42,6 +43,7 @@ const {
   EXEC_SYNC_TIMEOUT,
   EXEC_SYNC_SHORT_TIMEOUT,
   isDev,
+  BACKUP_PORTS,
 } = require('../config/constants');
 
 // 配置常量别名（与 src/core/backend/index.js 保持一致）
@@ -74,6 +76,7 @@ class BackendManager {
    * @param {function} options.onDisconnected 后端断开回调
    * @param {function} options.onReconnected 后端重连回调
    * @param {function} options.onStatusChange 状态变化回调
+   * @param {function} options.onPortConflict 端口冲突回调，需要返回用户确认Promise<boolean>
    */
   constructor(options = {}) {
     this.process = null;
@@ -86,9 +89,11 @@ class BackendManager {
     this.onDisconnected = options.onDisconnected || (() => {});
     this.onReconnected = options.onReconnected || (() => {});
     this.onStatusChange = options.onStatusChange || (() => {});
+    this.onPortConflict = options.onPortConflict || null; // 端口冲突交互回调
     
     // 状态
     this.overallStatus = 'unknown';
+    this.currentPort = DEFAULT_BACKEND_PORT; // 当前使用的端口
   }
 
   /**
@@ -140,22 +145,74 @@ class BackendManager {
 
   /**
    * 确保端口可用
+   * 策略：
+   * 1. 首先尝试自动终止MatuX相关进程（Python/Electron/Node）
+   * 2. 如果失败，尝试使用备用端口
+   * 3. 如果都无法处理，弹窗询问用户
    */
   async ensurePortAvailable(splashReporter) {
-    const status = checkPortOccupation(DEFAULT_BACKEND_PORT);
+    const status = checkPortOccupation(this.currentPort);
     
-    if (!status.occupied) return;
-
-    splashReporter?.('clearing-port', '正在清理占用端口的进程...', 15);
-    const result = forceKillPortProcess(DEFAULT_BACKEND_PORT);
-    
-    if (!result.success) {
-      splashReporter?.('port-conflict', `端口 ${DEFAULT_BACKEND_PORT} 被 ${status.processName} 占用`, 0);
-      throw new Error(`端口 ${DEFAULT_BACKEND_PORT} 被占用: ${result.message}`);
+    if (!status.occupied) {
+      console.log(`[INFO] 端口 ${this.currentPort} 可用`);
+      return true;
     }
-    
-    // 等待端口释放
-    await this.waitForPortRelease(DEFAULT_BACKEND_PORT);
+
+    console.log(`[INFO] 端口 ${this.currentPort} 被 ${status.processName} (PID: ${status.pid}) 占用`);
+
+    // 策略1: 尝试自动终止MatuX相关进程
+    if (status.canAutoKill) {
+      splashReporter?.('clearing-port', `正在清理占用端口的 ${status.processName} 进程...`, 15);
+      const result = forceKillPortProcess(this.currentPort);
+      
+      if (result.success) {
+        // 等待端口释放
+        await this.waitForPortRelease(this.currentPort);
+        console.log(`[INFO] 已自动清理端口 ${this.currentPort} 的占用进程`);
+        return true;
+      }
+    }
+
+    // 策略2: 尝试使用备用端口
+    const availablePort = findAvailablePort(this.currentPort, BACKUP_PORTS);
+    if (availablePort !== null && availablePort !== this.currentPort) {
+      splashReporter?.('switching-port', `正在切换到备用端口 ${availablePort}...`, 15);
+      this.currentPort = availablePort;
+      console.log(`[INFO] 已切换到备用端口 ${this.currentPort}`);
+      return true;
+    }
+
+    // 策略3: 弹窗询问用户
+    if (this.onPortConflict && status.occupiedBy) {
+      splashReporter?.('port-conflict', `端口 ${this.currentPort} 被 ${status.processName} 占用`, 0);
+      
+      const userConfirmed = await this.onPortConflict({
+        port: this.currentPort,
+        pid: status.pid,
+        processName: status.processName,
+        canAutoKill: status.canAutoKill,
+      });
+      
+      if (userConfirmed) {
+        // 用户确认后再次尝试终止
+        const result = forceKillPortProcess(this.currentPort);
+        if (result.success) {
+          await this.waitForPortRelease(this.currentPort);
+          return true;
+        }
+      }
+    }
+
+    // 如果是默认端口，尝试最后一个策略：使用备用端口启动
+    if (this.currentPort === DEFAULT_BACKEND_PORT) {
+      const lastResortPort = BACKUP_PORTS[BACKUP_PORTS.length - 1];
+      console.log(`[WARN] 端口冲突无法解决，强制使用端口 ${lastResortPort}`);
+      splashReporter?.('forcing-port', `端口冲突，强制使用端口 ${lastResortPort}`, 15);
+      this.currentPort = lastResortPort;
+      return true;
+    }
+
+    throw new Error(`端口 ${this.currentPort} 被 ${status.processName} (PID: ${status.pid}) 占用，无法启动后端`);
   }
 
   /**
@@ -174,18 +231,21 @@ class BackendManager {
   spawnBackend(pythonInfo) {
     const backendInfo = getBackendScriptPath();
     console.log(`[INFO] 后端入口: ${backendInfo.path} (${backendInfo.type})`);
+    
+    // 使用当前端口（可能是备用端口）
+    const port = this.currentPort || DEFAULT_BACKEND_PORT;
 
     if (backendInfo.type === 'exe') {
       return spawn(backendInfo.path, [], {
         cwd: backendInfo.cwd,
-        env: { ...process.env, PORT: DEFAULT_BACKEND_PORT.toString() },
+        env: { ...process.env, PORT: port.toString() },
         windowsHide: true,
       });
     }
 
     return spawn(pythonInfo.path, [backendInfo.path], {
       cwd: backendInfo.cwd,
-      env: { ...process.env, PORT: DEFAULT_BACKEND_PORT.toString() },
+      env: { ...process.env, PORT: port.toString() },
       windowsHide: !isDev,
       shell: true,  // Windows 上需要 shell 才能识别 python 命令
     });
@@ -248,26 +308,46 @@ class BackendManager {
 
   /**
    * 等待后端就绪
+   * @param {number|object} timeoutOrOptions 超时时间（毫秒）或选项对象
+   * @param {number} timeoutOrOptions.timeout 超时时间
+   * @param {string} timeoutOrOptions.backendHost 后端主机
+   * @param {number} timeoutOrOptions.backendPort 后端端口
+   * @param {function} timeoutOrOptions.onProgress 进度回调
    */
-  async waitForReady(timeout = BACKEND_START_TIMEOUT) {
-    console.log(`[INFO] 等待后端服务启动 (${BACKEND_URL})...`);
-    
-    const healthChecker = new HealthChecker(DEFAULT_BACKEND_HOST, DEFAULT_BACKEND_PORT);
-    
+  async waitForReady(timeoutOrOptions = BACKEND_START_TIMEOUT) {
+    // 支持对象参数和数字参数
+    let timeout = BACKEND_START_TIMEOUT;
+    let backendHost = DEFAULT_BACKEND_HOST;
+    let backendPort = DEFAULT_BACKEND_PORT;
+    let onProgress = null;
+
+    if (typeof timeoutOrOptions === 'object' && timeoutOrOptions !== null) {
+      timeout = timeoutOrOptions.timeout || BACKEND_START_TIMEOUT;
+      backendHost = timeoutOrOptions.backendHost || DEFAULT_BACKEND_HOST;
+      backendPort = timeoutOrOptions.backendPort || DEFAULT_BACKEND_PORT;
+      onProgress = timeoutOrOptions.onProgress || null;
+    } else if (typeof timeoutOrOptions === 'number') {
+      timeout = timeoutOrOptions;
+    }
+
+    console.log(`[INFO] 等待后端服务启动 (http://${backendHost}:${backendPort})...`);
+
+    const healthChecker = new HealthChecker(backendHost, backendPort);
+
     try {
       // 等待端口开放
       await waitPort({
-        host: DEFAULT_BACKEND_HOST,
-        port: DEFAULT_BACKEND_PORT,
+        host: backendHost,
+        port: backendPort,
         timeout,
         output: 'silent',
       });
-      
+
       console.log('[INFO] 后端端口已开放，进行健康检查...');
-      
+
       // 等待健康检查通过
       const ready = await healthChecker.waitForHealthy(timeout * 0.8);
-      
+
       if (ready) {
         console.log('[INFO] 后端健康检查通过！');
         this.restartAttempts = 0;
@@ -275,7 +355,7 @@ class BackendManager {
         this.onReady();
         return true;
       }
-      
+
       return false;
     } catch (error) {
       console.error('[ERROR] 后端服务启动超时:', error.message);
@@ -316,22 +396,20 @@ class BackendManager {
       // 进程可能已退出
     }
     
-    // 等待 3 秒让进程优雅退出
-    const waitStart = Date.now();
-    while (this.process && Date.now() - waitStart < 3000) {
-      require('timers').setTimeout(() => {}, 100);
-    }
-    
-    if (this.process) {
-      try {
-        const pid = parseInt(this.process?.pid, 10);
-        if (!isNaN(pid) && pid > 0) {
-          execSync(`taskkill /pid ${pid} /f /t`, { stdio: 'ignore' });
+    // 异步等待进程退出，不阻塞事件循环
+    setTimeout(async () => {
+      // 3 秒后检查进程是否仍在运行
+      if (this.process) {
+        try {
+          const pid = parseInt(this.process?.pid, 10);
+          if (!isNaN(pid) && pid > 0) {
+            execSync(`taskkill /pid ${pid} /f /t`, { stdio: 'ignore' });
+          }
+        } catch {
+          // 进程可能已经退出
         }
-      } catch {
-        // 进程可能已经退出
       }
-    }
+    }, 3000);
   }
 
   /**
@@ -392,7 +470,8 @@ class HealthChecker {
 
     for (const url of urls) {
       const result = await this.httpGet(url, timeout);
-      if (result.success && result.statusCode && (result.statusCode === 200 || result.statusCode === 404)) {
+      // 支持 2xx/3xx 状态码
+      if (result.success && result.statusCode && result.statusCode >= 200 && result.statusCode < 400) {
         return { success: true, status: 'ok' };
       }
     }

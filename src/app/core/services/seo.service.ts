@@ -10,9 +10,11 @@
  * ```
  */
 
-import { Injectable } from '@angular/core';
+import { Injectable, OnDestroy } from '@angular/core';
 import { Meta, Title } from '@angular/platform-browser';
 import { Router } from '@angular/router';
+import { filter, Subject, takeUntil } from 'rxjs';
+import { NavigationEnd } from '@angular/router';
 
 interface SEOConfig {
   title: string;
@@ -24,7 +26,7 @@ interface SEOConfig {
 @Injectable({
   providedIn: 'root',
 })
-export class SEOService {
+export class SEOService implements OnDestroy {
   // 默认SEO配置
   private readonly defaultConfig: SEOConfig = {
     title: 'MatuX - 用AI重新定义机器人教育',
@@ -33,6 +35,9 @@ export class SEOService {
     keywords: '机器人教育,AI编程,少儿编程,智能教育,编程学习,机器人培训,在线编程,AI私教',
     ogImage: '/assets/branding/og-image.png',
   };
+
+  /** 订阅清理 */
+  private destroy$ = new Subject<void>();
 
   // 页面SEO配置映射
   private readonly pageConfigs: Record<string, SEOConfig> = {
@@ -77,6 +82,11 @@ export class SEOService {
     private title: Title,
     private router: Router
   ) {}
+
+  ngOnDestroy(): void {
+    this.destroy$.next();
+    this.destroy$.complete();
+  }
 
   /**
    * 设置营销页面SEO
@@ -178,8 +188,12 @@ export class SEOService {
    * 监听路由变化自动更新SEO
    */
   initAutoSEO(): void {
-    this.router.events.subscribe((event) => {
-      if (event && event.constructor.name === 'NavigationEnd') {
+    this.router.events
+      .pipe(
+        filter((event): event is NavigationEnd => event instanceof NavigationEnd),
+        takeUntil(this.destroy$)
+      )
+      .subscribe((event) => {
         const url = this.router.url;
         const pageKey = url.split('?')[0]; // 移除查询参数
 
@@ -192,7 +206,6 @@ export class SEOService {
 
         // 设置Canonical URL
         this.setCanonicalURL();
-      }
-    });
+      });
   }
 }

@@ -7,8 +7,8 @@
     </button>
   </div>
 
-  <!-- 欢迎区域 -->
-  <div class="welcome-section fade-in" @fadeInUp *ngIf="layout.isVisible('welcome')">
+  <!-- 【一级】欢迎区域 -->
+  <div class="welcome-section section-primary fade-in" @fadeInUp *ngIf="layout.isVisible('welcome')">
     <div class="welcome-header">
       <div class="welcome-greeting">
         <h1 class="welcome-title">你好，{{ currentUser?.username || '同学' }} 👋</h1>
@@ -16,86 +16,26 @@
       </div>
     </div>
 
+    <!-- 精简快捷入口（仅保留2个核心入口，与菜单不重复）-->
     <div class="quick-entry-grid">
-      <mat-card class="quick-entry-card" (click)="navigateTo('/student/courses')">
+      <mat-card class="quick-entry-card" (click)="navigateTo(ROUTES.USER.COURSES)">
         <div class="quick-entry-icon" style="background: var(--gradient-blue)">
-          <mat-icon>auto_stories</mat-icon>
+          <mat-icon>auto_awesome</mat-icon>
         </div>
-        <span class="quick-entry-label">我的课程</span>
+        <span class="quick-entry-label">继续学习</span>
       </mat-card>
 
-      <mat-card class="quick-entry-card" (click)="navigateTo('/ar-lab')">
-        <div class="quick-entry-icon" style="background: var(--gradient-blue-alt)">
-          <mat-icon>view_in_ar</mat-icon>
-        </div>
-        <span class="quick-entry-label">AR 实验室</span>
-      </mat-card>
-
-      <mat-card class="quick-entry-card" (click)="navigateTo('/projects')">
+      <mat-card class="quick-entry-card" (click)="navigateTo('/ai-edu')">
         <div class="quick-entry-icon" style="background: var(--gradient-green)">
-          <mat-icon>rocket_launch</mat-icon>
+          <mat-icon>smart_toy</mat-icon>
         </div>
-        <span class="quick-entry-label">实战项目</span>
-      </mat-card>
-
-      <mat-card class="quick-entry-card" (click)="navigateTo('/achievements')">
-        <div class="quick-entry-icon" style="background: var(--gradient-orange)">
-          <mat-icon>emoji_events</mat-icon>
-        </div>
-        <span class="quick-entry-label">学习成就</span>
+        <span class="quick-entry-label">AI 编程</span>
       </mat-card>
     </div>
   </div>
 
-  <!-- 统计卡片 -->
-  <div class="stats-grid" *ngIf="layout.isVisible('stats')">
-    <app-stats-card [config]="statsConfig.inProgressCourses"></app-stats-card>
-    <app-stats-card [config]="statsConfig.achievements"></app-stats-card>
-    <app-stats-card [config]="statsConfig.learningPoints"></app-stats-card>
-    <app-stats-card [config]="statsConfig.tokenBalance"></app-stats-card>
-  </div>
-
-  <!-- 硬件状态卡片 -->
-  <div class="hardware-section fade-in" *ngIf="layout.isVisible('hardware')">
-    <mat-card class="hardware-card">
-      <mat-card-content>
-        <div class="hardware-header">
-          <div class="hardware-device-info">
-            <mat-icon class="hardware-icon">memory</mat-icon>
-            <span class="hardware-name">{{ hardwareInfo.name }}</span>
-            <span class="hardware-status-badge">
-              <span class="status-dot"></span>
-              {{ hardwareInfo.status }}
-            </span>
-          </div>
-          <div class="hardware-controls">
-            <button mat-icon-button matTooltip="设备详情" class="hardware-action-btn">
-              <mat-icon>settings</mat-icon>
-            </button>
-          </div>
-        </div>
-        <div class="hardware-stats">
-          <div class="hardware-stat-item">
-            <mat-icon class="stat-icon battery-icon">battery_std</mat-icon>
-            <div class="stat-info">
-              <span class="stat-value">{{ hardwareInfo.battery }}%</span>
-              <span class="stat-label">电量</span>
-            </div>
-          </div>
-          <div class="hardware-stat-item">
-            <mat-icon class="stat-icon wifi-icon">wifi</mat-icon>
-            <div class="stat-info">
-              <span class="stat-value">{{ hardwareInfo.wifi }}</span>
-              <span class="stat-label">信号</span>
-            </div>
-          </div>
-        </div>
-      </mat-card-content>
-    </mat-card>
-  </div>
-
-  <!-- AI 推荐项目 + 常用工具 双栏 -->
-  <div class="dual-section fade-in" *ngIf="layout.isVisible('recommend')">
+  <!-- 【二级】智能推荐区 -->
+  <div class="dual-section fade-in section-secondary" *ngIf="layout.isVisible('recommend')">
     <div class="ai-recommend-section">
       <h2 class="section-title">
         <mat-icon>auto_awesome</mat-icon>
@@ -122,173 +62,31 @@
     <div class="quick-tools-section">
       <h2 class="section-title">
         <mat-icon>apps</mat-icon>
-        常用工具
+        快捷工具
       </h2>
-      <div class="quick-tools-grid">
-        <div *ngFor="let tool of quickTools" class="quick-tool-item">
-          <div
-            class="quick-tool-icon-wrapper"
-            [style.background]="tool.color + '20'"
-            [style.color]="tool.color"
-          >
+      <!-- 常用工具改为紧凑的横排布局 -->
+      <div class="quick-tools-compact">
+        <div *ngFor="let tool of quickTools" class="quick-tool-chip" [matTooltip]="tool.label">
+          <div class="quick-tool-icon-wrapper" [style.background]="tool.color + '20'" [style.color]="tool.color">
             <mat-icon>{{ tool.icon }}</mat-icon>
           </div>
-          <span class="quick-tool-label">{{ tool.label }}</span>
         </div>
       </div>
-    </div>
-  </div>
-
-  <!-- 我的学习来源 -->
-  <div class="section" *ngIf="layout.isVisible('learning_sources')">
-    <h2 class="section-title">
-      <mat-icon>hub</mat-icon>
-      我的学习来源
-    </h2>
-    <app-learning-source-progress
-      [stats]="progressStats"
-      [loading]="loadingProgress"
-      [showOverallStats]="true"
-      [showTabs]="true"
-      [showSectionTitle]="false"
-      userType="student"
-    >
-    </app-learning-source-progress>
-  </div>
-
-  <!-- 学习来源概览 -->
-  <div class="section" *ngIf="layout.isVisible('source_details') && learningSources.length > 0">
-    <h2 class="section-title">
-      <mat-icon>account_balance</mat-icon>
-      学习来源详情
-    </h2>
-    <div class="sources-grid">
-      <mat-card *ngFor="let source of learningSources" [class.primary-source]="source.is_primary">
-        <mat-card-content>
-          <div class="source-header">
-            <mat-icon [matTooltip]="getSourceTypeLabel(source.source_type)">
-              {{ getSourceIcon(source.source_type) }}
-            </mat-icon>
-            <span class="source-name">{{ source.name }}</span>
-            <mat-chip *ngIf="source.is_primary" color="primary" selected>主来源</mat-chip>
-          </div>
-          <div class="source-meta">
-            <span class="source-type">{{ getSourceTypeLabel(source.source_type) }}</span>
-            <span class="source-status" [class]="'status-' + source.status">
-              {{ getStatusLabel(source.status) }}
-            </span>
-          </div>
-          <div class="source-dates" *ngIf="source.start_date || source.end_date">
-            <mat-icon>date_range</mat-icon>
-            <span>{{ source.start_date || '待开始' }} ~ {{ source.end_date || '长期' }}</span>
-          </div>
-        </mat-card-content>
-      </mat-card>
-    </div>
-  </div>
-
-  <!-- 学习日历热力图 + 成就墙 双栏 -->
-  <div
-    class="dual-column-section"
-    *ngIf="layout.isVisible('heatmap') || layout.isVisible('achievements')"
-  >
-    <div class="section section-heatmap" *ngIf="layout.isVisible('heatmap')">
-      <app-learning-calendar-heatmap [config]="heatmapConfig"></app-learning-calendar-heatmap>
-    </div>
-
-    <div class="section section-achievements" *ngIf="layout.isVisible('achievements')">
-      <div class="achievements-card">
-        <h2 class="section-title">
+      <!-- 快捷操作入口 -->
+      <div class="quick-actions-list">
+        <button mat-stroked-button class="quick-action-btn" (click)="navigateTo(ROUTES.USER.ACHIEVEMENTS)">
           <mat-icon>emoji_events</mat-icon>
-          成就墙
-        </h2>
-        <div class="achievements-grid">
-          <div
-            *ngFor="let badge of achievementBadges"
-            class="achievement-badge"
-            [class.locked]="!badge.unlocked"
-            [matTooltip]="badge.name + (badge.unlocked ? ' - ' + badge.description : ' - 未解锁')"
-          >
-            <span class="badge-icon">{{ badge.icon }}</span>
-            <span class="badge-name">{{ badge.name }}</span>
-          </div>
-        </div>
-        <div class="achievements-summary">
-          <span>已解锁 {{ unlockedAchievementsCount }}/{{ achievementBadges.length }}</span>
-          <mat-progress-bar mode="determinate" [value]="achievementProgress"></mat-progress-bar>
-        </div>
+          成就系统
+        </button>
+        <button mat-stroked-button class="quick-action-btn" (click)="navigateTo(ROUTES.USER.GROWTH_TRAJECTORY)">
+          <mat-icon>trending_up</mat-icon>
+          成长轨迹
+        </button>
+        <button mat-stroked-button class="quick-action-btn" (click)="navigateTo(ROUTES.USER.REPORTS)">
+          <mat-icon>assessment</mat-icon>
+          学习报告
+        </button>
       </div>
     </div>
-  </div>
-
-  <!-- 正在学习的课程 -->
-  <div class="section" *ngIf="layout.isVisible('enrolled_courses')">
-    <h2 class="section-title">正在学习</h2>
-    <div class="course-grid" *ngIf="enrolledCourses$ | async as enrolledCourses">
-      <ng-container *ngIf="enrolledCourses.length > 0; else noEnrolledCourses">
-        <app-unified-course-card
-          *ngFor="let item of enrolledCourses"
-          [config]="{
-            course: item.course,
-            showEnrollButton: false,
-            showProgress: true,
-            enrollmentStatus: 'enrolled',
-            enrollmentProgress: item.progress || 0,
-            orgName: getOrgName(item.course.org_id),
-          }"
-          (detail)="onContinueLearning(item.course.id)"
-        >
-        </app-unified-course-card>
-      </ng-container>
-      <ng-template #noEnrolledCourses>
-        <div class="empty-state">
-          <mat-icon>menu_book</mat-icon>
-          <p>暂无正在学习的课程</p>
-          <button mat-raised-button color="primary" (click)="navigateToCourseLibrary()">
-            浏览课程库
-          </button>
-        </div>
-      </ng-template>
-    </div>
-  </div>
-
-  <!-- 推荐课程 -->
-  <div class="section" *ngIf="layout.isVisible('recommended_courses')">
-    <div class="section-header">
-      <h2 class="section-title">推荐课程</h2>
-      <button mat-button color="primary" (click)="navigateToCourseLibrary()">
-        查看更多
-        <mat-icon>arrow_forward</mat-icon>
-      </button>
-    </div>
-    <div class="course-grid" *ngIf="recommendedCourses$ | async as recommendedCourses">
-      <ng-container *ngIf="recommendedCourses.length > 0; else noRecommendedCourses">
-        <app-unified-course-card
-          *ngFor="let course of recommendedCourses"
-          [config]="{
-            course: course,
-            showEnrollButton: true,
-            showProgress: false,
-            enrollmentStatus: 'not_enrolled',
-            orgName: getOrgName(course.org_id),
-            compact: false,
-          }"
-          (enroll)="onEnrollCourse(course.id)"
-          (detail)="onViewCourseDetail(course.id)"
-        >
-        </app-unified-course-card>
-      </ng-container>
-      <ng-template #noRecommendedCourses>
-        <div class="empty-state">
-          <mat-icon>explore</mat-icon>
-          <p>暂无推荐课程</p>
-        </div>
-      </ng-template>
-    </div>
-  </div>
-
-  <!-- 课件库模块 -->
-  <div class="section" *ngIf="layout.isVisible('materials')">
-    <app-student-material-dashboard></app-student-material-dashboard>
   </div>
 </div>

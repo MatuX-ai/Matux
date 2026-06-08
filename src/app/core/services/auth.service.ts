@@ -3,8 +3,8 @@ import { Injectable } from '@angular/core';
 import { Router } from '@angular/router';
 import { BehaviorSubject, Observable, of, throwError, firstValueFrom } from 'rxjs';
 import { catchError, map, tap } from 'rxjs/operators';
-
 import { environment } from '../../../environments/environment';
+import { ROUTES } from '../../routes.const';
 import {
   AuthResponse,
   BindChildRequest,
@@ -28,14 +28,83 @@ import { ElectronService } from './electron.service';
  * - 支持「记住我」持久化登录态
  * - 离线登录：LocalStorage 缓存 Token
  */
+
+/**
+ * 环境配置扩展接口（定义 OAuth 配置结构）
+ */
+interface EnvironmentWithOAuth {
+  oauth?: {
+    github?: { clientId?: string };
+    google?: { clientId?: string };
+    wechat?: { appId?: string };
+    qq?: { clientId?: string };
+  };
+  wsUrl?: string;
+  production?: boolean;
+  apiUrl?: string;
+}
+
+/**
+ * 获取安全的环境配置
+ */
+function getSafeEnvironment(): EnvironmentWithOAuth {
+  return environment as EnvironmentWithOAuth;
+}
+
+/**
+ * 生成密码学安全的随机字符串
+ * 使用 Web Crypto API 生成符合 RFC 4122 的 UUID v4
+ */
+function generateSecureState(): string {
+  // 使用 crypto.getRandomValues 生成密码学安全的随机数
+  const array = new Uint8Array(16);
+  crypto.getRandomValues(array);
+  // RFC 4122 UUID v4 格式
+  array[6] = (array[6] & 0x0f) | 0x40;
+  array[8] = (array[8] & 0x3f) | 0x80;
+  const hex = Array.from(array, (b) => b.toString(16).padStart(2, '0')).join('');
+  return `${hex.slice(0, 8)}-${hex.slice(8, 12)}-4${hex.slice(13, 16)}-a${hex.slice(17, 20)}-${hex.slice(20, 32)}`;
+}
+
+/**
+ * 验证 state 参数是否为有效的 UUID v4 格式
+ */
+function isValidStateFormat(state: string): boolean {
+  const uuidV4Pattern = /^[0-9a-f]{8}-[0-9a-f]{4}-4[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
+  return uuidV4Pattern.test(state);
+}
 @Injectable({
   providedIn: 'root',
 })
 export class AuthService {
-  // Electron 桌面端使用完整 URL，避免相对路径在 file:// 协议下无法正确解析
-  private readonly API_BASE_URL = 'http://localhost:8000/api/auth';
-  private readonly UNIFIED_AUTH_URL = 'http://localhost:8000/api/v1/unified-auth';
-  private readonly OAUTH_API_URL = 'http://localhost:8000/api/v1/oauth';
+  // 获取 API Base URL（支持环境变量覆盖）
+  private getApiBaseUrl(): string {
+    // 使用安全的环境配置访问
+    const env = getSafeEnvironment();
+
+    // 优先使用 environment.apiUrl（已配置）
+    const baseUrl = env.apiUrl;
+    if (!baseUrl) {
+      if (env.production) {
+        console.error('[Auth] 生产环境未配置 apiUrl，请检查 environment.ts');
+      }
+      // 开发环境默认使用 localhost:8000
+      return 'http://localhost:8000';
+    }
+    // 移除末尾斜杠，统一处理
+    return baseUrl.replace(/\/$/, '');
+  }
+
+  // API 端点（动态获取 Base URL）
+  private get API_BASE_URL(): string {
+    return `${this.getApiBaseUrl()}/api/v1/auth`;
+  }
+  private get UNIFIED_AUTH_URL(): string {
+    return `${this.getApiBaseUrl()}/api/v1/unified-auth`;
+  }
+  private get OAUTH_API_URL(): string {
+    return `${this.getApiBaseUrl()}/api/v1/oauth`;
+  }
   private readonly TOKEN_KEY = 'access_token';
   private readonly REFRESH_TOKEN_KEY = 'refresh_token';
   private readonly USER_KEY = 'user_data';
@@ -113,10 +182,93 @@ export class AuthService {
   /**
    * 测试/调试用：手动写入 access_token 并触发 isAuthenticated$ = true
    * 正常登录流程应使用 signIn()，本方法仅用于绕过前端 signIn 直接用后端 token 的场景
+   * @deprecated 仅供开发环境使用，已添加生产环境防护
+   * @internal 开发/演示时使用，生产环境调用会被静默忽略
+   * @param token 要设置的访问令牌
+   * @param user 可选的预置用户信息，不提供则通过 /me 端点获取
    */
-  public setAccessTokenForTesting(token: string): void {
-    localStorage.setItem(this.TOKEN_KEY, token);
+  setAccessTokenForTesting(token: string, user?: Partial<User>): void {
+    // 双重防护：检查编译时常量 + 运行时标志
+    if (!this.isDevelopmentEnvironment()) {
+      // 生产环境静默失败，不输出日志避免信息泄露
+      console.debug('[Auth] 拒绝在非开发环境设置测试Token');
+      return;
+    }
+
+    // JWT Token 格式校验：header.payload.signature
+    // signature部分可能使用标准Base64（包含+/）或Base64URL（不含+/但含_-）
+    if (!token || !/^[A-Za-z0-9_+/=-]+\.[A-Za-z0-9_+/=-]+\.[A-Za-z0-9_+/=-]+$/.test(token)) {
+      console.warn('[Auth] 无效的Token格式');
+      return;
+    }
+
+    sessionStorage.setItem(this.TOKEN_KEY, token);
+
+    // 如果提供了用户信息，直接使用；否则尝试获取
+    if (user) {
+      const fullUser: User = {
+        id: user.id ?? 'test-user',
+        username: user.username ?? '测试用户',
+        email: user.email ?? '',
+        userType: user.userType ?? 'student',
+        createdAt: new Date(),
+        updatedAt: new Date(),
+      };
+      this.currentUserSubject.next(fullUser);
+      sessionStorage.setItem(this.USER_KEY, JSON.stringify(fullUser));
+    }
+
     this.isAuthenticatedSubject.next(true);
+  }
+
+  /**
+   * 检查当前是否为开发环境
+   * 同时检查 Angular environment 配置
+   */
+  private isDevelopmentEnvironment(): boolean {
+    // 检查 environment 中的生产标志
+    const isProd = (environment as { production?: boolean }).production;
+    if (isProd) return false;
+
+    // 检查环境变量
+    const env = (window as unknown as { __env__?: { envName?: string } }).__env__;
+    if (env?.envName === 'production') return false;
+
+    // 检查 localhost
+    return window.location.hostname === 'localhost' ||
+           window.location.hostname === '127.0.0.1';
+  }
+
+  // Token 存储策略说明：
+  // 短期：Token 存 sessionStorage（页面关闭即清除），降低 XSS 攻击面
+  // 长期：后端需支持 httpOnly Cookie，参考 OWASP 存储指南
+  // 注意："记住我"存 localStorage 是为了跨会话恢复，但 Token 有效期应限制（如 7 天）
+  private readonly TOKEN_EXPIRY_KEY = 'token_expiry';
+  private readonly DEFAULT_TOKEN_TTL_MS = 7 * 24 * 60 * 60 * 1000; // 7 天
+
+  /**
+   * 检查 Token 是否过期
+   */
+  private isTokenExpired(): boolean {
+    const expiry = localStorage.getItem(this.TOKEN_EXPIRY_KEY) ?? sessionStorage.getItem(this.TOKEN_EXPIRY_KEY);
+    if (!expiry) return false; // 无过期时间，信任 Token
+    
+    // 【安全】parseInt返回NaN时视为过期
+    const expiryTime = parseInt(expiry, 10);
+    if (isNaN(expiryTime)) {
+      console.warn('[Auth] Token过期时间格式无效，清除认证数据');
+      this.clearAuthData();
+      return true;
+    }
+    return Date.now() > expiryTime;
+  }
+
+  /**
+   * 存储 Token 到期时间
+   */
+  private setTokenExpiry(store: Storage): void {
+    const expiry = Date.now() + this.DEFAULT_TOKEN_TTL_MS;
+    store.setItem(this.TOKEN_EXPIRY_KEY, expiry.toString());
   }
 
   /**
@@ -124,17 +276,31 @@ export class AuthService {
    */
   public async fetchCurrentUser(): Promise<User | null> {
     try {
+      // Token 过期检查
+      if (this.isTokenExpired()) {
+        console.warn('[Auth] Token 已过期，需要重新登录');
+        this.clearAuthData();
+        return null;
+      }
+
       const headers = this.getAuthHeaders();
       const response = await firstValueFrom(
-        this.http.get<User>('http://localhost:8000/api/v1/users/me', { headers })
+        this.http.get<User>(`${this.API_BASE_URL}/me`, { headers })
       );
       if (response) {
         this.currentUserSubject.next(response);
-        localStorage.setItem(this.USER_KEY, JSON.stringify(response));
+        this.getStore().setItem(this.USER_KEY, JSON.stringify(response));
       }
       return response;
     } catch (error) {
-      console.error('获取用户信息失败:', error);
+      console.error('[Auth] 获取用户信息失败:', error);
+      // 区分不同错误类型
+      const errorObj = error as { status?: number };
+      if (errorObj.status === 401) {
+        // Token 无效或过期，清理认证数据
+        console.warn('[Auth] 认证过期，清理本地数据');
+        this.clearAuthData();
+      }
       return null;
     }
   }
@@ -148,13 +314,17 @@ export class AuthService {
 
   /**
    * 获取HTTP头部认证信息
+   * 【安全】token为null时不设置Authorization头
    */
   private getAuthHeaders(): HttpHeaders {
     const token = this.getAccessToken();
-    return new HttpHeaders({
+    const headers: Record<string, string> = {
       'Content-Type': 'application/json',
-      Authorization: `Bearer ${token}`,
-    });
+    };
+    if (token) {
+      headers['Authorization'] = `Bearer ${token}`;
+    }
+    return new HttpHeaders(headers);
   }
 
   /**
@@ -166,18 +336,29 @@ export class AuthService {
 
   /**
    * 存储认证数据
+   * @note Token 存储使用双重策略：
+   * 1. 主 Token 存 sessionStorage（安全，会话结束即清除）
+   * 2. "记住我"模式下 Token 同步到 localStorage + 设置过期时间
    */
   private storeAuthData(response: AuthResponse): void {
-    const store = this.getStore();
-    store.setItem(this.TOKEN_KEY, response.accessToken);
-    store.setItem(this.REFRESH_TOKEN_KEY, response.refreshToken);
-    store.setItem(this.USER_KEY, JSON.stringify(response.user));
+    const isRememberMe = this.rememberMeSubject.value;
+    
+    // 主存储：sessionStorage（安全优先）
+    sessionStorage.setItem(this.TOKEN_KEY, response.accessToken);
+    sessionStorage.setItem(this.REFRESH_TOKEN_KEY, response.refreshToken);
+    sessionStorage.setItem(this.USER_KEY, JSON.stringify(response.user));
 
-    // 如果记住我，同步到 localStorage
-    if (this.rememberMeSubject.value && store === sessionStorage) {
+    // "记住我"模式：同步到 localStorage + 设置过期时间
+    if (isRememberMe) {
       localStorage.setItem(this.TOKEN_KEY, response.accessToken);
       localStorage.setItem(this.REFRESH_TOKEN_KEY, response.refreshToken);
       localStorage.setItem(this.USER_KEY, JSON.stringify(response.user));
+      this.setTokenExpiry(localStorage);
+    } else {
+      // 非记住我模式，清除 localStorage 中的旧 Token
+      localStorage.removeItem(this.TOKEN_KEY);
+      localStorage.removeItem(this.REFRESH_TOKEN_KEY);
+      localStorage.removeItem(this.TOKEN_EXPIRY_KEY);
     }
 
     this.currentUserSubject.next(response.user);
@@ -244,8 +425,10 @@ export class AuthService {
     return this.http.post<AuthResponse>(`${this.API_BASE_URL}/signin`, credentials).pipe(
       tap((response) => {
         this.storeAuthData(response);
-        // 缓存离线凭据
-        this.cacheOfflineCredentials(credentials.email, response.accessToken);
+        // 【安全】验证email存在后再缓存离线凭据
+        if (credentials.email) {
+          this.cacheOfflineCredentials(credentials.email, response.accessToken);
+        }
       }),
       catchError((error) => this.handleError(error))
     );
@@ -300,6 +483,12 @@ export class AuthService {
    * 存储统一认证数据（映射后端 snake_case 到前端 camelCase）
    */
   private storeUnifiedAuthData(response: UnifiedTokenResponse): void {
+    // 【安全】验证用户ID存在且有效
+    if (response.user.id === null || response.user.id === undefined) {
+      console.error('[Auth] 统一认证响应缺少用户ID');
+      throw new Error('Invalid user data: missing user ID');
+    }
+    
     const user: User = {
       id: String(response.user.id),
       email: response.user.email ?? '',
@@ -342,7 +531,9 @@ export class AuthService {
 
           if (this.isElectron && this.electronService) {
             // 桌面端：使用系统默认浏览器完成授权
-            this.electronService.openExternal(response.authorize_url).subscribe();
+            this.electronService.openExternal(response.authorize_url).subscribe({
+              error: (err) => console.error('[Auth] 打开浏览器失败:', err)
+            });
             console.warn('[Auth] 已打开系统浏览器进行 OAuth 授权');
           } else {
             // Web 端：页面跳转
@@ -351,12 +542,25 @@ export class AuthService {
         },
         error: (err) => {
           console.error('[Auth] 获取 OAuth 授权 URL 失败:', err);
-          // 降级：使用本地构建的 URL
+
+          // 检查 Client ID 是否配置
+          const clientId = this.getOAuthClientId(provider);
+          if (!clientId) {
+            console.error(`[Auth] ${provider} OAuth Client ID 未配置，无法进行授权`);
+            // 可以触发 UI 提示用户配置
+            return;
+          }
+
+          // 降级：使用本地构建的 URL（仅在配置存在时）
           const state = this.generateState();
-          const authUrl = this.buildOAuthUrl(provider, decodeURIComponent(redirectUri), state);
+          const authUrl = this.buildOAuthUrl(provider, redirectUri, state);
           this.storeOAuthState({ provider, state, redirectUrl: this.router.url });
+
+          console.warn(`[Auth] 降级到本地 OAuth URL: ${provider}`);
           if (this.isElectron && this.electronService) {
-            this.electronService.openExternal(authUrl).subscribe();
+            this.electronService.openExternal(authUrl).subscribe({
+              error: (openErr) => console.error('[Auth] 打开浏览器失败:', openErr)
+            });
           } else {
             window.location.href = authUrl;
           }
@@ -368,11 +572,13 @@ export class AuthService {
    * 构建 OAuth 授权 URL
    */
   private buildOAuthUrl(provider: string, redirectUri: string, state: string): string {
+    const clientId = this.getOAuthClientId(provider);
+    
     switch (provider) {
       case 'github':
         return (
           `https://github.com/login/oauth/authorize?` +
-          `client_id=${this.getGithubClientId()}&` +
+          `client_id=${clientId}&` +
           `redirect_uri=${redirectUri}&` +
           `state=${state}&` +
           `scope=user:email`
@@ -380,7 +586,7 @@ export class AuthService {
       case 'google':
         return (
           `https://accounts.google.com/o/oauth2/v2/auth?` +
-          `client_id=${this.getGoogleClientId()}&` +
+          `client_id=${clientId}&` +
           `redirect_uri=${redirectUri}&` +
           `response_type=code&` +
           `state=${state}&` +
@@ -389,7 +595,7 @@ export class AuthService {
       case 'wechat':
         return (
           `https://open.weixin.qq.com/connect/qrconnect?` +
-          `appid=${this.getWechatAppId()}&` +
+          `appid=${clientId}&` +
           `redirect_uri=${redirectUri}&` +
           `response_type=code&` +
           `state=${state}&` +
@@ -398,7 +604,7 @@ export class AuthService {
       case 'qq':
         return (
           `https://graph.qq.com/oauth2.0/authorize?` +
-          `client_id=${this.getQQAppId()}&` +
+          `client_id=${clientId}&` +
           `redirect_uri=${redirectUri}&` +
           `response_type=code&` +
           `state=${state}&` +
@@ -407,6 +613,44 @@ export class AuthService {
       default:
         return `#`;
     }
+  }
+
+  /**
+   * 获取 OAuth Client ID
+   * 配置来源：environment.ts 中的 oauth 配置
+   */
+  private getOAuthClientId(provider: string): string {
+    // 【安全】验证provider不是危险属性名，防止原型链污染
+    const dangerousProps = ['__proto__', 'constructor', 'prototype', 'hasOwnProperty', 'isPrototypeOf'];
+    if (dangerousProps.includes(provider)) {
+      console.error('[Auth] 无效的 OAuth provider:', provider);
+      return '';
+    }
+    
+    // 使用安全的环境配置访问
+    const env = getSafeEnvironment();
+    const oauthConfig = env.oauth;
+    if (!oauthConfig) {
+      if (!env.production) {
+        console.warn(`[Auth] OAuth 配置缺失，请在 environment.ts 中设置 oauth`);
+      }
+      return '';
+    }
+
+    // 【安全】使用类型断言安全访问 provider 配置
+    const config = (oauthConfig as Record<string, { clientId?: string; appId?: string } | undefined>)?.[provider];
+    if (config?.clientId) {
+      return config.clientId;
+    }
+    // 微信使用 appId
+    if (config?.appId) {
+      return config.appId;
+    }
+    // 兜底：开发环境警告，生产环境返回空字符串
+    if (!env.production) {
+      console.warn(`[Auth] ${provider} OAuth Client ID 未配置，请在 environment.ts 中设置`);
+    }
+    return '';
   }
 
   /**
@@ -447,9 +691,23 @@ export class AuthService {
     state: string,
     redirectUri: string
   ): Observable<AuthResponse> {
-    // 验证state参数
+    // 【安全】验证provider是有效值
+    const validProviders = ['github', 'google', 'wechat', 'qq'];
+    if (!validProviders.includes(provider)) {
+      console.error('[Auth] OAuth provider 无效:', provider);
+      return throwError(() => new Error('Invalid OAuth provider'));
+    }
+    
+    // 验证state参数格式（防止注入攻击）
+    if (!this.validateStateFormat(state)) {
+      console.error('[Auth] OAuth state 格式无效，可能存在安全风险');
+      return throwError(() => new Error('Invalid OAuth state format'));
+    }
+
+    // 验证state值
     const storedState = this.getStoredOAuthState();
     if (!storedState || storedState.state !== state) {
+      console.error('[Auth] OAuth state 不匹配，可能存在CSRF攻击');
       return throwError(() => new Error('Invalid OAuth state'));
     }
 
@@ -546,7 +804,8 @@ export class AuthService {
    * 刷新访问令牌
    */
   refreshToken(): Observable<AuthResponse> {
-    const refreshToken = localStorage.getItem(this.REFRESH_TOKEN_KEY);
+    // 使用 getStore() 获取正确的存储后端（支持"记住我"模式）
+    const refreshToken = this.getStore().getItem(this.REFRESH_TOKEN_KEY);
     if (!refreshToken) {
       return throwError(() => new Error('No refresh token available'));
     }
@@ -570,10 +829,20 @@ export class AuthService {
   /**
    * 模拟登录 - 用于演示和测试
    * 无需真实后端，直接设置本地认证状态
+   * 
+   * @deprecated 仅供开发/演示环境使用，生产环境调用会返回错误
+   * @param userType 用户类型
+   * @returns Mock 认证响应
    */
   mockLogin(
     userType: 'student' | 'teacher' | 'parent' | 'admin' = 'student'
   ): Observable<AuthResponse> {
+    // 生产环境禁用
+    if (environment.production) {
+      console.error('[Auth] mockLogin 在生产环境不可用');
+      return throwError(() => new Error('Mock 登录在生产环境不可用'));
+    }
+    
     const mockUser = this.createMockUser(userType);
     const mockResponse = this.createMockResponse(mockUser, 'mock');
 
@@ -634,6 +903,7 @@ export class AuthService {
       },
     };
 
+    // mockUsers 的 createdAt/updatedAt 是 string，User 接口是 Date，需要双重断言
     return mockUsers[userType] as unknown as User;
   }
 
@@ -662,21 +932,32 @@ export class AuthService {
 
   /**
    * 用户登出
+   * @note 服务器撤销令牌请求失败不影响本地登出流程
    */
   logout(): void {
     const refreshToken =
       localStorage.getItem(this.REFRESH_TOKEN_KEY) ??
       sessionStorage.getItem(this.REFRESH_TOKEN_KEY);
 
-    // 可选：通知服务器撤销令牌
+    // 可选：通知服务器撤销令牌（不阻塞本地登出）
     if (refreshToken) {
-      this.http.post(`${this.API_BASE_URL}/logout`, { refreshToken }).subscribe();
+      this.http.post(`${this.API_BASE_URL}/logout`, { refreshToken })
+        .pipe(
+          catchError((err) => {
+            // 服务器撤销失败不影响本地登出，仅记录日志
+            const errorMsg = err?.error?.message ?? err?.message ?? String(err);
+            console.warn('[Auth] Token 撤销请求失败:', errorMsg);
+            return of(null);
+          })
+        )
+        .subscribe();
     }
 
+    // 本地清理不受服务器请求影响
     this.clearAuthData();
     this.clearOfflineCredentials();
     this.setRememberMe(false);
-    void this.router.navigate(['/auth/login']);
+    void this.router.navigate([ROUTES.AUTH.LOGIN]);
   }
 
   /**
@@ -688,7 +969,7 @@ export class AuthService {
 
     // 学生端直接跳转到学习仪表板
     if (userType === 'student') {
-      return '/user/dashboard';
+      return ROUTES.USER.DASHBOARD;
     }
 
     // 其他角色已解耦，统一跳转到欢迎页
@@ -731,42 +1012,17 @@ export class AuthService {
   // 私有辅助方法
 
   /**
-   * 生成随机state参数
+   * 生成随机state参数（密码学安全版本）
    */
   private generateState(): string {
-    return (
-      Math.random().toString(36).substring(2, 15) + Math.random().toString(36).substring(2, 15)
-    );
+    return generateSecureState();
   }
 
   /**
-   * 获取GitHub客户端ID
+   * 验证 state 参数格式（防止注入攻击）
    */
-  private getGithubClientId(): string {
-    return environment.oauth.github.clientId;
-  }
-
-  /**
-   * 获取Google客户端ID
-   */
-  private getGoogleClientId(): string {
-    return environment.oauth.google.clientId;
-  }
-
-  /**
-   * 获取微信开放平台 AppID
-   * 需要在微信开放平台 (open.weixin.qq.com) 注册应用获取
-   */
-  private getWechatAppId(): string {
-    return environment.oauth.wechat.appId;
-  }
-
-  /**
-   * 获取QQ互联 AppID
-   * 需要在QQ互联 (connect.qq.com) 注册应用获取
-   */
-  private getQQAppId(): string {
-    return environment.oauth.qq.appId;
+  private validateStateFormat(state: string): boolean {
+    return isValidStateFormat(state);
   }
 
   // ==================== 离线登录 ====================
@@ -863,10 +1119,18 @@ export class AuthService {
 
   /**
    * 获取存储的OAuth状态
+   * 【安全】JSON.parse可能抛异常，需要捕获
    */
   private getStoredOAuthState(): OAuthState | null {
     const state = sessionStorage.getItem('oauth_state');
-    return state ? (JSON.parse(state) as OAuthState) : null;
+    if (!state) return null;
+    try {
+      return JSON.parse(state) as OAuthState;
+    } catch (error) {
+      console.warn('[Auth] OAuth状态解析失败:', error);
+      this.clearOAuthState();
+      return null;
+    }
   }
 
   /**
@@ -878,21 +1142,57 @@ export class AuthService {
 
   /**
    * 统一错误处理
+   * 优先级：后端消息 > HTTP状态码消息 > 默认消息
    */
   private handleError(error: unknown): Observable<never> {
     let errorMessage = '认证失败';
+    let httpStatus: number | null = null;
+
+    // 提取HTTP状态码
+    if (typeof error === 'object' && error !== null && 'status' in error) {
+      const errorObj = error as { status?: number };
+      httpStatus = errorObj.status ?? null;
+    }
+
+    // 网络错误（status === 0 或 -1）
+    if (httpStatus === 0 || httpStatus === -1) {
+      errorMessage = '网络连接失败，请检查网络设置';
+      return throwError(() => new Error(errorMessage));
+    }
+
+    // 优先使用后端返回的错误消息
     if (typeof error === 'object' && error !== null && 'error' in error) {
       const errorObj = error as { error?: { message?: string } };
       if (errorObj.error?.message) {
         errorMessage = errorObj.error.message;
+        return throwError(() => new Error(errorMessage));
       }
     }
-    if (typeof error === 'object' && error !== null && 'status' in error) {
-      const errorObj = error as { status?: number };
-      if (errorObj.status === 401) {
+
+    // 使用 HTTP 状态码对应的消息
+    if (httpStatus !== null) {
+      if (httpStatus === 401) {
         errorMessage = '用户名或密码错误';
-      } else if (errorObj.status === 409) {
+      } else if (httpStatus === 409) {
         errorMessage = '用户已存在';
+      } else if (httpStatus === 403) {
+        errorMessage = '权限不足';
+      } else if (httpStatus === 404) {
+        errorMessage = '请求的资源不存在';
+      } else if (httpStatus === 429) {
+        errorMessage = '请求过于频繁，请稍后再试';
+      } else if (httpStatus === 500) {
+        errorMessage = '服务器内部错误，请稍后重试';
+      } else if (httpStatus === 503) {
+        errorMessage = '服务暂不可用，请稍后再试';
+      }
+    }
+
+    // 捕获非 HTTP 错误的通用错误
+    if (typeof error === 'object' && error !== null && 'message' in error) {
+      const errorObj = error as { message?: string };
+      if (errorObj.message) {
+        errorMessage = errorObj.message;
       }
     }
 

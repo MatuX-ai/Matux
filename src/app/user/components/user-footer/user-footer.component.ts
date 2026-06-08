@@ -11,6 +11,8 @@ import { MatIconModule } from '@angular/material/icon';
 import { MatToolbarModule } from '@angular/material/toolbar';
 import { RouterModule } from '@angular/router';
 
+import { ROUTES } from '../../../routes.const';
+
 @Component({
   selector: 'app-user-footer',
   standalone: true,
@@ -19,11 +21,11 @@ import { RouterModule } from '@angular/router';
     <footer class="user-footer">
       <div class="footer-content">
         <div class="footer-links">
-          <a mat-button routerLink="/user/profile">
+          <a mat-button [routerLink]="ROUTES.USER.PROFILE">
             <mat-icon>person</mat-icon>
             个人资料
           </a>
-          <a mat-button routerLink="/user/token">
+          <a mat-button [routerLink]="ROUTES.USER.TOKEN">
             <mat-icon>token</mat-icon>
             Token管理
           </a>
@@ -104,6 +106,9 @@ import { RouterModule } from '@angular/router';
 })
 export class UserFooterComponent {
   currentYear = new Date().getFullYear();
+
+  // 路由常量供模板使用
+  readonly ROUTES = ROUTES;
 
   openHelp(): void {
     console.warn('打开帮助中心');

@@ -47,7 +47,12 @@ function createFsHandlers(options = {}) {
 
     // 读取文件
     ipcMain.handle('fs-read-file', async (_event, filePath) => {
-      const validation = deps.validateFilePath?.(filePath);
+      let validation;
+      try {
+        validation = deps.validateFilePath?.(filePath);
+      } catch (err) {
+        return { success: false, error: `路径验证失败: ${err.message}` };
+      }
       if (!validation?.valid) {
         return { success: false, error: validation?.error || '路径验证失败' };
       }
@@ -61,7 +66,12 @@ function createFsHandlers(options = {}) {
 
     // 写入文件
     ipcMain.handle('fs-write-file', async (_event, filePath, content) => {
-      const validation = deps.validateFilePath?.(filePath);
+      let validation;
+      try {
+        validation = deps.validateFilePath?.(filePath);
+      } catch (err) {
+        return { success: false, error: `路径验证失败: ${err.message}` };
+      }
       if (!validation?.valid) {
         return { success: false, error: validation?.error || '路径验证失败' };
       }
@@ -120,10 +130,26 @@ function createFsHandlers(options = {}) {
 
     // 列出目录
     ipcMain.handle('fs-list-dir', async (_event, dirPath) => {
+      // 参数验证
+      if (!dirPath || typeof dirPath !== 'string') {
+        return { success: false, error: '目录路径不能为空' };
+      }
+      
+      // 路径验证
+      const validation = deps.validateFilePath?.(dirPath);
+      if (!validation?.valid) {
+        return { success: false, error: validation?.error || '路径验证失败' };
+      }
+      
       try {
         if (!fs.existsSync(dirPath)) {
           return { success: false, error: '目录不存在' };
         }
+        const stat = fs.statSync(dirPath);
+        if (!stat.isDirectory()) {
+          return { success: false, error: '路径不是目录' };
+        }
+        
         const entries = fs.readdirSync(dirPath, { withFileTypes: true });
         const files = entries.map((entry) => {
           const fullPath = path.join(dirPath, entry.name);
@@ -154,7 +180,12 @@ function createFsHandlers(options = {}) {
 
     // 创建目录
     ipcMain.handle('fs-make-dir', async (_event, dirPath) => {
-      const validation = deps.validateFilePath?.(dirPath);
+      let validation;
+      try {
+        validation = deps.validateFilePath?.(dirPath);
+      } catch (err) {
+        return { success: false, error: `路径验证失败: ${err.message}` };
+      }
       if (!validation?.valid) {
         return { success: false, error: validation?.error || '路径验证失败' };
       }
@@ -168,7 +199,12 @@ function createFsHandlers(options = {}) {
 
     // 删除文件或目录
     ipcMain.handle('fs-delete-file', async (_event, targetPath) => {
-      const validation = deps.validateFilePath?.(targetPath);
+      let validation;
+      try {
+        validation = deps.validateFilePath?.(targetPath);
+      } catch (err) {
+        return { success: false, error: `路径验证失败: ${err.message}` };
+      }
       if (!validation?.valid) {
         return { success: false, error: validation?.error || '路径验证失败' };
       }
@@ -190,7 +226,12 @@ function createFsHandlers(options = {}) {
 
     // 检查文件存在
     ipcMain.handle('fs-file-exists', async (_event, targetPath) => {
-      const validation = deps.validateFilePath?.(targetPath);
+      let validation;
+      try {
+        validation = deps.validateFilePath?.(targetPath);
+      } catch (err) {
+        return { success: false, error: `路径验证失败: ${err.message}` };
+      }
       if (!validation?.valid) {
         return { success: false, error: validation?.error || '路径验证失败' };
       }
@@ -203,7 +244,12 @@ function createFsHandlers(options = {}) {
 
     // 获取文件信息
     ipcMain.handle('fs-get-file-info', async (_event, filePath) => {
-      const validation = deps.validateFilePath?.(filePath);
+      let validation;
+      try {
+        validation = deps.validateFilePath?.(filePath);
+      } catch (err) {
+        return { success: false, error: `路径验证失败: ${err.message}` };
+      }
       if (!validation?.valid) {
         return { success: false, error: validation?.error || '路径验证失败' };
       }

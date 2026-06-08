@@ -1,0 +1,285 @@
+/* OpenSciEDU 课程目录组件样式 */
+
+.opensciedu-catalog {
+  padding: 24px;
+  max-width: 1400px;
+  margin: 0 auto;
+}
+
+// ==================== 工具栏 ====================
+
+.catalog-toolbar {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 16px;
+  margin-bottom: 24px;
+  flex-wrap: wrap;
+
+  .filter-group {
+    display: flex;
+    gap: 12px;
+    flex-wrap: wrap;
+
+    .category-select,
+    .difficulty-select,
+    .sort-select {
+      min-width: 140px;
+    }
+  }
+
+  .search-box {
+    .search-input {
+      min-width: 280px;
+    }
+  }
+}
+
+// ==================== 统计信息 ====================
+
+.catalog-stats {
+  margin-bottom: 16px;
+
+  .stats-text {
+    color: var(--text-secondary);
+    font-size: 14px;
+  }
+}
+
+// ==================== 课程网格 ====================
+
+.course-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+  gap: 24px;
+}
+
+// ==================== 课程卡片 ====================
+
+.course-card {
+  cursor: pointer;
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+  border-radius: 16px;
+  overflow: hidden;
+
+  &:hover {
+    transform: translateY(-4px);
+    box-shadow: 0 12px 24px rgba(0, 0, 0, 0.15);
+  }
+
+  // 课程封面
+  .course-cover {
+    position: relative;
+    width: 100%;
+    height: 180px;
+    overflow: hidden;
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+
+    img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+    }
+
+    .course-cover-placeholder {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      width: 100%;
+      height: 100%;
+      color: white;
+      opacity: 0.6;
+
+      mat-icon {
+        font-size: 64px;
+        width: 64px;
+        height: 64px;
+      }
+    }
+
+    .difficulty-badge {
+      position: absolute;
+      top: 12px;
+      left: 12px;
+      padding: 4px 12px;
+      border-radius: 20px;
+      color: white;
+      font-size: 12px;
+      font-weight: 600;
+    }
+
+    .free-badge {
+      position: absolute;
+      top: 12px;
+      right: 12px;
+      padding: 4px 12px;
+      border-radius: 20px;
+      background: var(--color-success, #22c55e);
+      color: white;
+      font-size: 12px;
+      font-weight: 600;
+    }
+  }
+
+  // 课程信息
+  .course-info {
+    padding: 16px;
+
+    .course-title {
+      font-size: 18px;
+      font-weight: 600;
+      margin: 0 0 8px;
+      color: var(--text-primary);
+      display: -webkit-box;
+      -webkit-line-clamp: 2;
+      -webkit-box-orient: vertical;
+      overflow: hidden;
+    }
+
+    .course-description {
+      font-size: 14px;
+      color: var(--text-secondary);
+      margin: 0 0 12px;
+      display: -webkit-box;
+      -webkit-line-clamp: 2;
+      -webkit-box-orient: vertical;
+      overflow: hidden;
+    }
+  }
+
+  // 讲师信息
+  .course-instructor {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    margin-bottom: 12px;
+
+    .instructor-avatar {
+      width: 32px;
+      height: 32px;
+      border-radius: 50%;
+      object-fit: cover;
+    }
+
+    .instructor-avatar-placeholder {
+      width: 32px;
+      height: 32px;
+      border-radius: 50%;
+      background: var(--bg-secondary);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+
+      mat-icon {
+        font-size: 18px;
+        width: 18px;
+        height: 18px;
+        color: var(--text-secondary);
+      }
+    }
+
+    .instructor-name {
+      font-size: 14px;
+      color: var(--text-secondary);
+    }
+  }
+
+  // 课程统计
+  .course-stats {
+    display: flex;
+    gap: 16px;
+    margin-bottom: 12px;
+
+    .stat-item {
+      display: flex;
+      align-items: center;
+      gap: 4px;
+      font-size: 13px;
+      color: var(--text-secondary);
+
+      mat-icon {
+        font-size: 16px;
+        width: 16px;
+        height: 16px;
+      }
+    }
+  }
+
+  // 标签
+  .course-tags {
+    .tag-chip {
+      font-size: 12px;
+      height: 24px;
+    }
+  }
+}
+
+// ==================== 状态页面 ====================
+
+.loading-state,
+.error-state,
+.empty-state {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 64px 24px;
+  text-align: center;
+
+  mat-icon {
+    font-size: 64px;
+    width: 64px;
+    height: 64px;
+    color: var(--text-secondary);
+    margin-bottom: 16px;
+  }
+
+  p {
+    font-size: 16px;
+    color: var(--text-secondary);
+    margin-bottom: 16px;
+  }
+}
+
+.error-state {
+  mat-icon {
+    color: var(--color-error, #ef4444);
+  }
+}
+
+// ==================== 加载更多 ====================
+
+.load-more {
+  display: flex;
+  justify-content: center;
+  padding: 24px;
+}
+
+// ==================== 响应式 ====================
+
+@media (max-width: 768px) {
+  .catalog-toolbar {
+    flex-direction: column;
+    align-items: stretch;
+
+    .filter-group {
+      flex-direction: column;
+
+      .category-select,
+      .difficulty-select,
+      .sort-select {
+        width: 100%;
+      }
+    }
+
+    .search-box {
+      .search-input {
+        width: 100%;
+      }
+    }
+  }
+
+  .course-grid {
+    grid-template-columns: 1fr;
+  }
+}

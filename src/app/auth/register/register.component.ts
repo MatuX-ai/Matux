@@ -5,6 +5,7 @@ import { MatIconModule } from '@angular/material/icon';
 import { Router, RouterModule } from '@angular/router';
 
 import { AuthService } from '../../core/services/auth.service';
+import { ROUTES } from '../../routes.const';
 
 @Component({
   selector: 'app-register',
@@ -22,6 +23,9 @@ export class RegisterComponent {
   loading = false;
   errorMessage = '';
   successMessage = '';
+
+  // 路由常量供模板使用
+  readonly ROUTES = ROUTES;
 
   userData = {
     username: '',
@@ -66,7 +70,7 @@ export class RegisterComponent {
         this.loading = false;
         this.successMessage = '注册成功！正在跳转...';
         setTimeout(() => {
-          void this.router.navigate(['/user/dashboard']);
+          void this.router.navigate([ROUTES.USER.DASHBOARD]);
         }, 1500);
       },
       error: (error) => {
