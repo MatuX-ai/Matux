@@ -11,7 +11,7 @@ const backendCore = require('../src/core/backend');
 const validExports = ['BackendManager', 'HealthChecker', 'HealthCheckService', 'preloadTier1Modules'];
 
 // 统一导出所有功能
-const exports = {
+const serviceExports = {
   // 后端管理（从 src/core/backend 统一导出）
   BackendManager: backendCore.BackendManager,
   HealthChecker: backendCore.HealthChecker,
@@ -24,19 +24,19 @@ const exports = {
 // 健康检查服务
 const healthCheckModule = require('./health-checker');
 if (healthCheckModule.HealthCheckService) {
-  exports.HealthCheckService = healthCheckModule.HealthCheckService;
+  serviceExports.HealthCheckService = healthCheckModule.HealthCheckService;
 }
 if (healthCheckModule.preloadTier1Modules) {
-  exports.preloadTier1Modules = healthCheckModule.preloadTier1Modules;
+  serviceExports.preloadTier1Modules = healthCheckModule.preloadTier1Modules;
 }
 
 // 文件解析服务
 const fileParserModule = require('./file-parser');
-exports.fileParser = fileParserModule;
+serviceExports.fileParser = fileParserModule;
 
 // 验证必要的导出存在
-if (!exports.BackendManager) {
+if (!serviceExports.BackendManager) {
   console.warn('[WARN] BackendManager 导出缺失，请检查 backend-manager.js');
 }
 
-module.exports = exports;
+module.exports = serviceExports;
