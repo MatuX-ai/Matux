@@ -102,3 +102,6 @@ edu-proto/
 data/ghost/content/themes/*
 !data/ghost/content/themes/.gitkeep
 data/ghost/mysql/
+
+# Qoder IDE
+.qoder/
