@@ -1,0 +1,319 @@
+// STEM K12 设计系统 - 使用共享主题
+@use 'src/styles/shared/stem-theme' as stem;
+
+.companion-container {
+  max-width: 800px;
+  margin: 0 auto;
+  padding: 24px;
+}
+
+.page-header {
+  margin-bottom: 24px;
+}
+
+.page-title {
+  margin: 0;
+
+  // 【对比度修复 #1】原 stem.$stem-primary on #fff 3.77:1 → stem.$stem-primary-dark 5.48:1 AA
+  color: stem.$stem-primary-dark;
+  font-size: 24px;
+  font-weight: 600;
+}
+
+/* 陪伴模式开关 */
+.companion-mode-card {
+  margin-bottom: 16px;
+  border-radius: stem.$stem-radius-md;
+  background: linear-gradient(135deg, rgba(stem.$stem-primary, 0.1), rgba(stem.$stem-secondary, 0.1));
+}
+
+.companion-mode-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 8px;
+}
+
+.companion-mode-title {
+  margin: 0;
+
+  // 【对比度修复 #2】原 stem.$stem-primary 在渐变背景上 3.33-3.41:1（退化）
+  // 改用 stem.$stem-primary-dark = 5.16:1 AA
+  color: stem.$stem-primary-dark;
+  font-size: 16px;
+  font-weight: 600;
+}
+
+.companion-mode-desc {
+  margin: 0;
+
+  // 【对比度修复 #3】原 var(--color-text-secondary) (#57534e) 渐变中点 4.24:1 边缘
+  // 改用 var(--color-text-primary, #1c1917) = 17.5:1 AAA
+  color: var(--color-text-primary, #1c1917);
+  font-size: 13px;
+  line-height: 1.5;
+}
+
+/* 心情选择 */
+.mood-card {
+  margin-bottom: 16px;
+  border-radius: stem.$stem-radius-md;
+  background: linear-gradient(135deg, rgba(stem.$stem-accent, 0.1), rgba(stem.$stem-secondary, 0.1));
+}
+
+.mood-title {
+  margin: 0 0 16px;
+  color: stem.$stem-primary-dark;
+  font-size: 18px;
+}
+
+.mood-picker {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 8px;
+}
+
+.mood-btn {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
+  min-width: 64px;
+  padding: 12px 16px;
+  border: 2px solid transparent;
+  border-radius: stem.$stem-radius-md;
+  background: rgb(255 255 255 / 70%);
+  cursor: pointer;
+  transition: all stem.$stem-transition;
+}
+
+.mood-btn:hover {
+  border-color: var(--mood-color, stem.$stem-primary);
+  background: white;
+  transform: translateY(-2px);
+}
+
+.mood-btn.selected {
+  border-color: var(--mood-color, stem.$stem-primary);
+  background: white;
+  box-shadow: stem.$stem-shadow;
+}
+
+.mood-emoji {
+  font-size: 28px;
+}
+
+.mood-label {
+  color: var(--color-text-secondary);
+  font-size: 11px;
+}
+
+.mood-reply {
+  display: flex;
+  align-items: flex-start;
+  gap: 8px;
+  margin-top: 16px;
+  padding: 12px 16px;
+  border-radius: stem.$stem-radius-sm;
+  background: rgb(255 255 255 / 80%);
+  color: var(--color-text-secondary);
+  font-size: 14px;
+  line-height: 1.5;
+}
+
+.mood-reply mat-icon {
+  margin-top: 2px;
+  // 【对比度修复】icon on light background: $stem-primary (#059669) 3.77:1 → $stem-primary-dark (#047857) 5.18:1
+  color: stem.$stem-primary-dark;
+}
+
+.mood-reply p {
+  margin: 0;
+}
+
+/* 摘要 */
+.summary-card {
+  margin-bottom: 16px;
+  border-radius: stem.$stem-radius-md;
+}
+
+.summary-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 16px;
+  margin-bottom: 16px;
+}
+
+.summary-item {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
+  padding: 16px;
+  border-radius: stem.$stem-radius-sm;
+  background: var(--color-background);
+}
+
+.summary-value {
+  // 【对比度修复 #4】原 stem.$stem-primary on #fff 3.77:1 → stem.$stem-primary-dark 5.48:1 AA
+  color: stem.$stem-primary-dark;
+  font-size: 24px;
+  font-weight: 700;
+}
+
+.summary-dominant {
+  font-size: 20px;
+}
+
+.summary-label {
+  color: var(--color-text-secondary);
+  font-size: 12px;
+}
+
+.encouragement-text {
+  margin: 0;
+  padding: 12px;
+  border-radius: stem.$stem-radius-sm;
+  background: rgba(stem.$stem-primary-dark, 0.1);
+
+  // 【对比度修复 #5】原 stem.$stem-primary on rgba(stem-primary, 0.1) 3.33:1
+  // 改用 stem.$stem-primary-dark = 5.16:1 AA
+  color: stem.$stem-primary-dark;
+  font-size: 15px;
+  font-weight: 500;
+  text-align: center;
+}
+
+/* 分布 */
+.distribution-card {
+  margin-bottom: 16px;
+  border-radius: stem.$stem-radius-md;
+}
+
+.dist-item {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 0;
+}
+
+.dist-emoji {
+  min-width: 24px;
+  font-size: 18px;
+}
+
+.dist-label {
+  min-width: 48px;
+  color: var(--color-text-secondary);
+  font-size: 13px;
+}
+
+.dist-bar {
+  flex: 1;
+}
+
+.dist-count {
+  min-width: 32px;
+
+  // 【对比度修复 #6】原 var(--color-text-disabled) (#a8a29e) 2.52:1
+  // 改用 var(--color-gray-500, #64748b) = 4.92:1 AA
+  color: var(--color-gray-500, #64748b);
+  font-size: 12px;
+  text-align: right;
+}
+
+/* 历史 */
+.history-card {
+  margin-bottom: 16px;
+  border-radius: stem.$stem-radius-md;
+}
+
+.history-entry {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 10px 0;
+  border-bottom: 1px solid var(--color-divider);
+}
+
+.history-entry:last-child {
+  border-bottom: none;
+}
+
+.history-emoji {
+  font-size: 20px;
+}
+
+.history-info {
+  display: flex;
+  flex: 1;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px;
+}
+
+.history-emotion {
+  // 【对比度修复 #7】原 stem.$stem-primary on #fff 3.77:1 → stem.$stem-primary-dark 5.48:1 AA
+  color: stem.$stem-primary-dark;
+  font-size: 14px;
+  font-weight: 500;
+}
+
+.history-time {
+  // 【对比度修复 #8】原 var(--color-text-disabled) 2.52:1 → var(--color-gray-500) 4.92:1 AA
+  color: var(--color-gray-500, #64748b);
+  font-size: 12px;
+}
+
+.history-trigger {
+  // 【对比度修复 #9】同 history-time
+  color: var(--color-gray-500, #64748b);
+  font-size: 12px;
+}
+
+.history-intensity {
+  display: flex;
+  gap: 2px;
+}
+
+.intensity-star {
+  font-size: 10px;
+}
+
+.no-history {
+  padding: 24px;
+
+  // 【对比度修复 #10】原 var(--color-text-disabled) 2.52:1 → var(--color-gray-500) 4.92:1 AA
+  color: var(--color-gray-500, #64748b);
+  text-align: center;
+}
+
+/* 空状态 */
+.empty-section {
+  padding: 64px 16px;
+  text-align: center;
+}
+
+.empty-icon {
+  width: 64px;
+  height: 64px;
+  margin-bottom: 16px;
+
+  // 【对比度修复 #11】原 stem.$stem-primary on #fff 3.77:1 → stem.$stem-primary-dark 5.48:1 AA
+  color: stem.$stem-primary-dark;
+  font-size: 64px;
+}
+
+.empty-section h3 {
+  margin: 0 0 8px;
+
+  // 【对比度修复 #12】同 empty-icon
+  color: stem.$stem-primary-dark;
+}
+
+.empty-section p {
+  margin: 0;
+  color: var(--color-text-secondary);
+  line-height: 1.8;
+}

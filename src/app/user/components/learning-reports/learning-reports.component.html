@@ -1,0 +1,195 @@
+<div class="reports-container">
+  <div class="page-header">
+    <h1 class="page-title">学习报告</h1>
+    <div class="header-actions">
+      <span class="report-period" *ngIf="selectedReport">
+        {{ selectedReport.period }}
+      </span>
+      <button
+        mat-raised-button
+        color="primary"
+        class="export-btn"
+        (click)="exportAsPdf()"
+        [disabled]="exporting"
+      >
+        <mat-icon>picture_as_pdf</mat-icon>
+        {{ exporting ? '导出中...' : '导出PDF' }}
+      </button>
+      <button mat-stroked-button (click)="printReport()" matTooltip="打印当前报告">
+        <mat-icon>print</mat-icon>
+      </button>
+    </div>
+  </div>
+
+  <!-- 报告切换 Tabs -->
+  <mat-tab-group
+    [(selectedIndex)]="activeTab"
+    (selectedIndexChange)="onTabChange($event)"
+    class="report-tabs"
+  >
+    <mat-tab
+      *ngFor="let report of reports"
+      [label]="report.reportType === 'monthly' ? '月度报告' : '周报'"
+    >
+    </mat-tab>
+  </mat-tab-group>
+
+  <ng-container *ngIf="selectedReport">
+    <!-- 学习总览 -->
+    <div class="overview-grid">
+      <mat-card class="overview-card">
+        <mat-icon class="overview-icon clock-icon">access_time</mat-icon>
+        <div class="overview-content">
+          <span class="overview-value">{{ selectedReport.totalStudyTime }}</span>
+          <span class="overview-label">总学习时长</span>
+        </div>
+      </mat-card>
+      <mat-card class="overview-card">
+        <mat-icon class="overview-icon book-icon">menu_book</mat-icon>
+        <div class="overview-content">
+          <span class="overview-value">{{ selectedReport.completedCourses }}</span>
+          <span class="overview-label">完成课程</span>
+        </div>
+      </mat-card>
+      <mat-card class="overview-card">
+        <mat-icon class="overview-icon score-icon">emoji_events</mat-icon>
+        <div class="overview-content">
+          <span class="overview-value">{{ selectedReport.averageScore }}</span>
+          <span class="overview-label">平均分</span>
+        </div>
+      </mat-card>
+      <mat-card class="overview-card">
+        <mat-icon class="overview-icon streak-icon">local_fire_department</mat-icon>
+        <div class="overview-content">
+          <span class="overview-value">{{ selectedReport.learningStreak }}</span>
+          <span class="overview-label">连续学习天数</span>
+        </div>
+      </mat-card>
+    </div>
+
+    <!-- 课程成绩 -->
+    <mat-card class="section-card">
+      <mat-card-header>
+        <mat-icon mat-card-avatar>school</mat-icon>
+        <mat-card-title>课程成绩</mat-card-title>
+      </mat-card-header>
+      <mat-card-content>
+        <div *ngFor="let grade of selectedReport.courseGrades" class="grade-row">
+          <div class="grade-info">
+            <span class="grade-name">{{ grade.courseName }}</span>
+            <span class="grade-status" [class.completed]="grade.completionStatus === 'completed'">
+              {{ grade.completionStatus === 'completed' ? '✅ 已完成' : '📖 学习中' }}
+            </span>
+          </div>
+          <div class="grade-score-row">
+            <mat-progress-bar
+              mode="determinate"
+              [value]="grade.score"
+              [color]="getScoreColor(grade.score)"
+            ></mat-progress-bar>
+            <span
+              class="grade-score"
+              [class.high]="grade.score >= 90"
+              [class.medium]="grade.score >= 75 && grade.score < 90"
+            >
+              {{ grade.score }}分
+            </span>
+          </div>
+          <p class="grade-comment" *ngIf="grade.teacherComment">💬 {{ grade.teacherComment }}</p>
+        </div>
+      </mat-card-content>
+    </mat-card>
+
+    <!-- 学习行为统计 -->
+    <mat-card class="section-card" *ngIf="selectedReport.behaviorStats">
+      <mat-card-header>
+        <mat-icon mat-card-avatar>insights</mat-icon>
+        <mat-card-title>学习行为</mat-card-title>
+      </mat-card-header>
+      <mat-card-content>
+        <div class="stats-grid">
+          <div class="stat-item">
+            <span class="stat-value">{{
+              formatHours(selectedReport.behaviorStats!.totalLearningMinutes)
+            }}</span>
+            <span class="stat-label">总学习时间</span>
+          </div>
+          <div class="stat-item">
+            <span class="stat-value"
+              >{{ selectedReport.behaviorStats!.avgDailyLearningMinutes }}分钟</span
+            >
+            <span class="stat-label">日均学习</span>
+          </div>
+          <div class="stat-item">
+            <span class="stat-value">{{ selectedReport.behaviorStats!.learningDays }}天</span>
+            <span class="stat-label">学习天数</span>
+          </div>
+          <div class="stat-item">
+            <span class="stat-value">{{ selectedReport.behaviorStats!.homeworkSubmitted }}</span>
+            <span class="stat-label">提交作业</span>
+          </div>
+          <div class="stat-item">
+            <span class="stat-value">{{ selectedReport.behaviorStats!.questionsAsked }}</span>
+            <span class="stat-label">提问次数</span>
+          </div>
+          <div class="stat-item">
+            <span class="stat-value">{{
+              selectedReport.behaviorStats!.discussionsParticipated
+            }}</span>
+            <span class="stat-label">参与讨论</span>
+          </div>
+        </div>
+      </mat-card-content>
+    </mat-card>
+
+    <!-- 能力评估 -->
+    <mat-card class="section-card" *ngIf="selectedReport.competencyAssessments?.length">
+      <mat-card-header>
+        <mat-icon mat-card-avatar>psychology</mat-icon>
+        <mat-card-title>能力评估</mat-card-title>
+      </mat-card-header>
+      <mat-card-content>
+        <div *ngFor="let comp of selectedReport.competencyAssessments!" class="competency-row">
+          <div class="competency-header">
+            <span class="competency-name">{{ comp.dimension }}</span>
+            <span class="competency-level" [class]="'level-' + comp.score">
+              {{ comp.level }}（{{ comp.score }}分）
+            </span>
+          </div>
+          <mat-progress-bar
+            mode="determinate"
+            [value]="comp.score"
+            color="primary"
+          ></mat-progress-bar>
+          <p class="competency-desc" *ngIf="comp.description">{{ comp.description }}</p>
+        </div>
+      </mat-card-content>
+    </mat-card>
+
+    <!-- AI 推荐 -->
+    <mat-card class="section-card ai-section" *ngIf="selectedReport.aiRecommendations?.length">
+      <mat-card-header>
+        <mat-icon mat-card-avatar class="ai-avatar">auto_awesome</mat-icon>
+        <mat-card-title>🤖 AI 教师建议</mat-card-title>
+      </mat-card-header>
+      <mat-card-content>
+        <ul class="recommendation-list">
+          <li *ngFor="let rec of selectedReport.aiRecommendations">{{ rec }}</li>
+        </ul>
+      </mat-card-content>
+    </mat-card>
+  </ng-container>
+
+  <!-- 加载中 -->
+  <div class="loading-state" *ngIf="!reports.length && !error">
+    <mat-icon>hourglass_empty</mat-icon>
+    <p>正在加载学习报告...</p>
+  </div>
+
+  <!-- 空状态 -->
+  <div class="empty-state" *ngIf="!reports.length && error">
+    <mat-icon>description</mat-icon>
+    <h3>暂无学习报告</h3>
+    <p>继续学习，系统将在每月初自动生成你的学习报告</p>
+  </div>
+</div>

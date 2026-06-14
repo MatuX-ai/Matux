@@ -1,0 +1,214 @@
+<div class="courses-container">
+  <div class="page-header">
+    <h1 class="page-title">我的课程</h1>
+    <span class="course-count" *ngIf="enrolledCourses.length">
+      共 {{ enrolledCourses.length }} 门课程
+    </span>
+  </div>
+
+  <!-- 状态筛选 Tab -->
+  <mat-tab-group
+    [(selectedIndex)]="activeTab"
+    (selectedIndexChange)="onTabChange($event)"
+    class="filter-tabs"
+  >
+    <mat-tab label="我的课程 ({{ enrolledCourses.length }})"></mat-tab>
+    <mat-tab label="学习来源"></mat-tab>
+    <mat-tab label="推荐课程"></mat-tab>
+  </mat-tab-group>
+
+  <!-- Tab 1: 我的课程列表 -->
+  <ng-container *ngIf="activeTab === 0">
+    <div class="course-grid">
+      <div *ngFor="let item of filteredCourses" class="course-card-wrapper">
+        <mat-card class="course-card" [class.completed]="item.enrollment.status === 'completed'">
+          <mat-card-content>
+            <div class="course-header">
+              <div class="course-icon" [class]="'icon-' + item.course.category">
+                {{ getCategoryIcon(item.course.category) }}
+              </div>
+              <div class="course-info">
+                <h3 class="course-title">{{ item.course.title }}</h3>
+                <div class="course-meta">
+                  <span class="meta-item">
+                    <mat-icon>school</mat-icon>
+                    {{ difficultyLabel(item.course.difficulty) }}
+                  </span>
+                  <span class="meta-item">
+                    <mat-icon>access_time</mat-icon>
+                    {{ item.course.duration_minutes }}分钟
+                  </span>
+                </div>
+              </div>
+            </div>
+
+            <!-- 进度条 -->
+            <div class="progress-section">
+              <div class="progress-header">
+                <span class="progress-label">学习进度</span>
+                <span
+                  class="progress-value"
+                  [class.complete]="item.enrollment.status === 'completed'"
+                >
+                  {{
+                    item.enrollment.status === 'completed'
+                      ? '已完成'
+                      : Math.round(item.enrollment.progress_percentage) + '%'
+                  }}
+                </span>
+              </div>
+              <mat-progress-bar
+                mode="determinate"
+                [value]="item.enrollment.progress_percentage"
+                [color]="item.enrollment.status === 'completed' ? 'primary' : 'accent'"
+              ></mat-progress-bar>
+            </div>
+
+            <!-- 标签和操作 -->
+            <div class="course-footer">
+              <div class="course-tags">
+                <span class="tag source-tag">{{ sourceTypeLabel(item.course.source_type) }}</span>
+                <span
+                  *ngIf="item.enrollment.score != null"
+                  class="tag score-tag"
+                  [class.high-score]="isHighScore(item.enrollment.score)"
+                >
+                  得分: {{ item.enrollment.score }}
+                </span>
+              </div>
+              <button
+                mat-stroked-button
+                color="primary"
+                class="continue-btn"
+                [disabled]="item.enrollment.status === 'completed'"
+              >
+                {{ item.enrollment.status === 'completed' ? '复习' : '继续学习' }}
+              </button>
+            </div>
+          </mat-card-content>
+        </mat-card>
+      </div>
+    </div>
+
+    <!-- 空状态 -->
+    <div class="empty-state" *ngIf="filteredCourses.length === 0 && !loading">
+      <mat-icon>menu_book</mat-icon>
+      <h3>还没有课程</h3>
+      <p>你目前还没有{{ activeTab === 0 ? '选课' : activeTab === 1 ? '在学' : '已完成' }}的课程</p>
+      <button mat-raised-button color="primary" routerLink="/content-store">去选课</button>
+    </div>
+  </ng-container>
+
+  <!-- Tab 2: 学习来源 -->
+  <ng-container *ngIf="activeTab === 1">
+    <div class="sources-section">
+      <div class="sources-intro">
+        <mat-icon>hub</mat-icon>
+        <p>整合来自学校、培训机构、在线平台等多个学习来源的数据，统一管理您的学习进度。</p>
+      </div>
+      <div class="sources-grid">
+        <mat-card
+          *ngFor="let source of learningSources"
+          class="source-card"
+          [class.primary]="source.is_primary"
+        >
+          <mat-card-content>
+            <div class="source-header">
+              <mat-icon class="source-icon">{{ getSourceIcon(source.source_type) }}</mat-icon>
+              <div class="source-info">
+                <h4 class="source-name">{{ source.name }}</h4>
+                <span class="source-type">{{ getSourceTypeLabel(source.source_type) }}</span>
+              </div>
+              <span *ngIf="source.is_primary" class="primary-badge">主来源</span>
+            </div>
+            <div class="source-stats">
+              <div class="stat-item">
+                <span class="stat-value">{{ source.courses || 0 }}</span>
+                <span class="stat-label">课程</span>
+              </div>
+              <div class="stat-item">
+                <span class="stat-value">{{ source.completed || 0 }}</span>
+                <span class="stat-label">已完成</span>
+              </div>
+              <div class="stat-item">
+                <span class="stat-value">{{ source.avg_score || '-' }}</span>
+                <span class="stat-label">平均分</span>
+              </div>
+            </div>
+            <div class="source-dates" *ngIf="source.start_date">
+              <mat-icon>date_range</mat-icon>
+              <span>{{ source.start_date }} ~ {{ source.end_date || '长期' }}</span>
+            </div>
+          </mat-card-content>
+        </mat-card>
+      </div>
+      <div class="empty-state" *ngIf="learningSources.length === 0 && !loadingSources">
+        <mat-icon>source</mat-icon>
+        <h3>暂无学习来源</h3>
+        <p>绑定学校或培训机构账号后，可以统一管理多来源的学习进度。</p>
+      </div>
+    </div>
+  </ng-container>
+
+  <!-- Tab 3: 推荐课程 -->
+  <ng-container *ngIf="activeTab === 2">
+    <div class="recommendations-section">
+      <div class="recommendations-intro">
+        <mat-icon>auto_awesome</mat-icon>
+        <p>根据您的学习历史和兴趣，为您推荐精选课程。</p>
+      </div>
+      <div class="course-grid">
+        <mat-card *ngFor="let course of recommendedCourses" class="course-card recommendation-card">
+          <mat-card-content>
+            <div class="course-header">
+              <div class="course-icon" [class]="'icon-' + course.category">
+                {{ getCategoryIcon(course.category) }}
+              </div>
+              <div class="course-info">
+                <h3 class="course-title">{{ course.title }}</h3>
+                <div class="course-meta">
+                  <span class="meta-item">
+                    <mat-icon>school</mat-icon>
+                    {{ difficultyLabel(course.difficulty) }}
+                  </span>
+                  <span class="meta-item">
+                    <mat-icon>access_time</mat-icon>
+                    {{ course.duration_minutes }}分钟
+                  </span>
+                </div>
+              </div>
+            </div>
+            <p class="course-description">{{ course.description }}</p>
+            <div class="course-footer">
+              <div class="course-tags">
+                <span class="tag tag-recommend">
+                  <mat-icon>thumb_up</mat-icon>
+                  为您推荐
+                </span>
+              </div>
+              <button
+                mat-raised-button
+                color="primary"
+                class="enroll-btn"
+                (click)="enrollCourse(course)"
+              >
+                立即报名
+              </button>
+            </div>
+          </mat-card-content>
+        </mat-card>
+      </div>
+      <div class="empty-state" *ngIf="recommendedCourses.length === 0 && !loadingRecommendations">
+        <mat-icon>explore</mat-icon>
+        <h3>暂无推荐课程</h3>
+        <p>完成更多课程后，我们会根据您的兴趣推荐更多内容。</p>
+      </div>
+    </div>
+  </ng-container>
+
+  <!-- 加载中 -->
+  <div class="loading-state" *ngIf="loading">
+    <mat-icon>hourglass_empty</mat-icon>
+    <p>正在加载你的课程...</p>
+  </div>
+</div>

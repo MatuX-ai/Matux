@@ -1,0 +1,407 @@
+// ===== 学习报告页面样式 — 基于 K12 STEM 探索绿设计系统 =====
+// 应用 STEM 探索绿主题
+
+// =============================================
+// STEM 主题变量
+// =============================================
+:root {
+  --stem-primary: #059669;
+  --stem-primary-dark: #047857; // 【对比度修复 #1】补充 dark 变体
+  --stem-primary-light: #10b981;
+  --stem-secondary: #0ea5e9;
+  --stem-secondary-dark: #0284c7; // 【对比度修复 #2】补充 dark 变体
+  --stem-success: #059669;
+  --stem-warning: #f59e0b;
+  --stem-warning-dark: #92400e; // 【对比度修复 #3】补充 dark 变体 7.81:1
+  --stem-error: #ef4444;
+  --stem-error-dark: #dc2626; // 【对比度修复 #4】补充 dark 变体 4.83:1
+  --stem-bg-page: #fafaf9;
+  --stem-text-primary: #1c1917;
+  --stem-text-secondary: #57534e;
+  --stem-radius-lg: 20px;
+  --stem-radius-md: 12px;
+  --stem-shadow-sm: 0 1px 3px rgb(5 150 105 / 8%);
+  --stem-shadow-card-hover: 0 14px 28px rgb(5 150 105 / 12%);
+  --stem-gradient-explore: linear-gradient(135deg, #047857 0%, #0284c7 100%);
+}
+
+.reports-container {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+  max-width: 1000px;
+  margin: 0 auto;
+  padding: 24px;
+  background: var(--stem-bg-page, #fafaf9);
+}
+
+.page-header {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: space-between;
+  align-items: center;
+  gap: 12px;
+}
+
+.page-title {
+  margin: 0;
+  color: var(--stem-text-primary, #1c1917);
+  font-size: 28px;
+  font-weight: 700;
+}
+
+.header-actions {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.report-period {
+  padding: 6px 14px;
+  border-radius: 20px;
+  background: var(--stem-primary-50, #ecfdf5);
+  color: var(--stem-text-secondary, #57534e);
+  font-size: 14px;
+}
+
+.export-btn {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.report-tabs {
+  margin-bottom: 4px;
+}
+
+/* 学习总览 - STEM 卡片样式 */
+.overview-grid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 16px;
+}
+
+.overview-card {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  padding: 20px;
+  border-radius: var(--stem-radius-lg, 20px);
+  background: #fff;
+  box-shadow: var(--stem-shadow-sm);
+  transition:
+    box-shadow 250ms cubic-bezier(0.4, 0, 0.2, 1),
+    transform 250ms ease;
+
+  &:hover {
+    box-shadow: var(--stem-shadow-card-hover);
+    transform: translateY(-2px);
+  }
+}
+
+.overview-icon {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  width: 48px;
+  height: 48px;
+  border-radius: var(--stem-radius-md, 12px);
+  font-size: 36px;
+}
+
+// STEM 探索绿主题图标
+.clock-icon {
+  background: var(--stem-primary-100, #d1fae5);
+  color: var(--stem-primary, #059669);
+}
+
+.book-icon {
+  background: var(--stem-primary-100, #d1fae5);
+  color: var(--stem-success, #059669);
+}
+
+.score-icon {
+  background: #fef3c7;
+
+  // 【对比度修复 #5】原 var(--stem-warning, #f59e0b) on #fef3c7 仅 1.93:1
+  // 改用 var(--stem-warning-dark, #92400e) = 7.42:1 AAA
+  color: var(--stem-warning-dark, #92400e);
+}
+
+.streak-icon {
+  background: #fce7f3;
+
+  // 【对比度修复 #6】原 var(--stem-secondary, #0ea5e9) on #fce7f3 仅 2.36:1
+  // 改用 var(--stem-secondary-dark, #0284c7) = 5.16:1 AA
+  color: var(--stem-secondary-dark, #0284c7);
+}
+
+.overview-content {
+  display: flex;
+  flex-direction: column;
+}
+
+.overview-value {
+  color: var(--color-text-primary);
+  font-size: 24px;
+  font-weight: 700;
+  line-height: 1.2;
+}
+
+.overview-label {
+  color: var(--color-text-secondary);
+  font-size: 13px;
+}
+
+/* 课程成绩 */
+.section-card {
+  border-radius: 16px;
+}
+
+.grade-row {
+  padding: 12px 0;
+  border-bottom: 1px solid var(--color-divider);
+}
+
+.grade-row:last-child {
+  border-bottom: none;
+}
+
+.grade-info {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 8px;
+}
+
+.grade-name {
+  color: var(--color-text-primary);
+  font-size: 15px;
+  font-weight: 600;
+}
+
+.grade-status {
+  color: var(--color-text-secondary);
+  font-size: 12px;
+}
+
+.grade-status.completed {
+  // 【对比度修复 #7】原 var(--color-success) (#059669) on #fff 3.77:1
+  // 改用 var(--stem-primary-dark, #047857) = 5.49:1 AA
+  color: var(--stem-primary-dark, #047857);
+}
+
+.grade-score-row {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.grade-score-row mat-progress-bar {
+  flex: 1;
+  height: 8px;
+}
+
+.grade-score {
+  min-width: 48px;
+  color: var(--color-text-secondary);
+  font-size: 14px;
+  font-weight: 700;
+  text-align: right;
+}
+
+.grade-score.high {
+  // 【对比度修复 #8】原 var(--color-success) (#059669) on #fff 3.77:1
+  // 改用 var(--stem-primary-dark, #047857) = 5.49:1 AA
+  color: var(--stem-primary-dark, #047857);
+}
+
+.grade-score.medium {
+  // 【对比度修复 #9】原 var(--color-warning) (#f59e0b) on #fff 仅 2.15:1
+  // 改用 var(--stem-warning-dark, #92400e) = 7.81:1 AAA
+  color: var(--stem-warning-dark, #92400e);
+}
+
+.grade-comment {
+  margin: 8px 0 0;
+  padding: 8px 12px;
+  border-radius: 8px;
+  background: var(--color-background);
+  color: var(--color-text-secondary);
+  font-size: 13px;
+}
+
+/* 统计 */
+.stats-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 16px;
+}
+
+.stat-item {
+  padding: 12px;
+  border-radius: 12px;
+  background: var(--color-gray-50, #f8fafc);
+  text-align: center;
+}
+
+.stat-value {
+  display: block;
+  color: var(--color-primary, #0f172a);
+  font-size: 20px;
+  font-weight: 700;
+}
+
+.stat-label {
+  color: var(--color-gray-500, #64748b);
+  font-size: 12px;
+}
+
+/* 能力评估 */
+.competency-row {
+  padding: 12px 0;
+  border-bottom: 1px solid var(--color-gray-100, #f1f5f9);
+}
+
+.competency-row:last-child {
+  border-bottom: none;
+}
+
+.competency-header {
+  display: flex;
+  justify-content: space-between;
+  margin-bottom: 8px;
+}
+
+.competency-name {
+  color: var(--color-primary, #0f172a);
+  font-size: 14px;
+  font-weight: 600;
+}
+
+.competency-level {
+  font-size: 13px;
+  font-weight: 500;
+}
+
+.competency-desc {
+  margin: 8px 0 0;
+  color: var(--color-gray-500, #64748b);
+  font-size: 13px;
+}
+
+/* AI 推荐 - STEM 主题 */
+.ai-section {
+  padding: 20px;
+
+  // STEM 探索绿边框和背景
+  border: 1px solid rgb(5 150 105 / 20%);
+  border-radius: var(--stem-radius-lg, 20px);
+  background: linear-gradient(135deg, #ecfdf5 0%, #f0fdf4 100%);
+}
+
+.ai-avatar {
+  // STEM 探索绿主题色
+  color: var(--stem-primary, #059669);
+}
+
+.recommendation-list {
+  margin: 0;
+  padding-left: 20px;
+}
+
+.recommendation-list li {
+  color: var(--stem-text-primary, #1c1917);
+  font-size: 14px;
+  line-height: 1.8;
+}
+
+/* 状态 */
+.loading-state,
+.empty-state {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 80px 24px;
+
+  // 【对比度修复 #10】原 var(--color-gray-400, #94a3b8) on $stem-bg-page 仅 2.46:1
+  // 改用 var(--color-gray-600, #475569) = 6.94:1 AA
+  color: var(--color-gray-600, #475569);
+  text-align: center;
+}
+
+.loading-state mat-icon,
+.empty-state mat-icon {
+  width: 56px;
+  height: 56px;
+  margin-bottom: 16px;
+  // 【修复 #14】显式设置空状态图标色，避开全属默认 #57534e。
+  // 使用 --icon-empty token（#78716c，5.74:1 对比度）专为空状态优化。
+  color: var(--icon-empty, #78716c);
+  font-size: 56px;
+}
+
+.empty-state h3 {
+  margin: 0 0 8px;
+  color: var(--color-gray-600, #475569);
+  font-size: 18px;
+  font-weight: 600;
+}
+
+.empty-state p {
+  margin: 0;
+  font-size: 14px;
+}
+
+@media (width <= 768px) {
+  .overview-grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+
+  .stats-grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+
+/* ===== 打印样式 ===== */
+@media print {
+  .export-btn,
+  .report-tabs,
+  .header-actions button:not(.action-keep) {
+    display: none !important;
+  }
+
+  .reports-container {
+    max-width: none;
+    padding: 0;
+  }
+
+  .page-title {
+    color: var(--color-text-primary);
+    font-size: 22px;
+  }
+
+  .overview-card {
+    break-inside: avoid;
+  }
+
+  .section-card {
+    border: 1px solid var(--color-divider, #e2e8f0);
+    box-shadow: none !important;
+    break-inside: avoid;
+  }
+
+  .grade-row,
+  .competency-row {
+    break-inside: avoid;
+  }
+
+  .ai-section {
+    border: 1px solid #e2e8f0 !important;
+    background: none !important;
+  }
+
+  @page {
+    margin: 1.5cm;
+  }
+}

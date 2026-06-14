@@ -1,0 +1,242 @@
+// STEM K12 设计系统共享变量
+// 所有 STEM 主题组件应导入此文件，而非重复定义变量
+// 使用方式: @use 'src/styles/shared/stem-theme' as stem;
+
+// =============================================
+// STEM 主题颜色变量
+// =============================================
+
+// STEM 主色调 - 探索绿
+$stem-primary: #059669;       // Emerald-600
+$stem-primary-light: #10b981; // Emerald-500
+$stem-primary-dark: #047857;  // Emerald-700
+
+// STEM 辅助色 - 天空蓝
+$stem-secondary: #0ea5e9;       // Sky-500
+$stem-secondary-light: #38bdf8; // Sky-400
+$stem-secondary-dark: #0284c7;   // Sky-600
+
+// STEM 强调色 - 青色
+$stem-accent: #06b6d4; // Cyan-500
+$stem-accent-dark: #0e7490; // Cyan-700（vs #fff 5.51:1，AA）
+
+// 功能色
+$stem-success: #059669; // 成功绿
+$stem-warning: #f59e0b;  // 警告黄
+$stem-error: #ef4444;    // 错误红
+
+// 功能色深色变体（用于文字/图标，确保 WCAG AA 4.5:1 / 3:1）
+// 背景：原 $stem-success (#22c55e 实测 2.28:1)、$stem-warning (#f59e0b 2.15:1)
+//       $stem-error (#ef4444 3.77:1)、$stem-secondary (#0ea5e9 2.77:1) 在白底上
+//       均未达 4.5:1 正文要求。Dark 变体满足 AA 文本及图标标准。
+$stem-success-dark: #15803d;          // vs #fff 5.13:1，AA
+$stem-warning-dark: #b45309;          // vs #fff 4.62:1，AA（12-14px 文字适用）
+$stem-warning-dark-emphasis: #92400e; // vs #fff 7.81:1，AAA（大字/图标强调）
+$stem-error-dark: #dc2626;            // vs #fff 4.83:1，AA
+$stem-accent-blue-dark: #2563eb;       // MatuX 蓝 dark，vs #fff 5.16:1，AA
+
+// 简短别名
+$success: $stem-success;
+$warning: $stem-warning;
+$error: $stem-error;
+
+// 文本色 token
+// 注：文本色 - 依据 WCAG AA 4.5:1 标准选定
+$stem-text-primary: #1c1917;   // Stone-900 vs #fff 对比度 17.5:1（AAA）
+$stem-text-secondary: #57534e; // Stone-600 vs #fff 对比度 7.63:1（AAA）
+$stem-text-tertiary: #78716c;  // Stone-500 vs #fff 对比度 4.96:1（AA）
+
+// 背景色 token
+$stem-bg-page: #fafaf9;        // Stone-50 页面背景
+$stem-bg-surface: #ffffff;     // 卡片表面
+$stem-bg-muted: #f5f5f4;       // Stone-100 弱化背景
+
+// =============================================
+// STEM 圆角系统
+// =============================================
+
+$stem-radius-xs: 4px;
+$stem-radius-sm: 8px;
+$stem-radius-md: 12px;
+$stem-radius-lg: 16px;
+$stem-radius-xl: 20px;
+$stem-radius-2xl: 24px;
+$stem-radius-3xl: 32px;
+$stem-radius-full: 9999px;
+
+// =============================================
+// STEM 阴影系统
+// =============================================
+
+$stem-shadow-xs: 0 1px 2px 0 rgb(0 0 0 / 5%);
+$stem-shadow-sm: 0 1px 3px 0 rgb(0 0 0 / 10%), 0 1px 2px -1px rgb(0 0 0 / 10%);
+$stem-shadow-md: 0 4px 6px -1px rgb(0 0 0 / 10%), 0 2px 4px -2px rgb(0 0 0 / 10%);
+$stem-shadow-lg: 0 10px 15px -3px rgb(0 0 0 / 10%), 0 4px 6px -4px rgb(0 0 0 / 10%);
+$stem-shadow-xl: 0 20px 25px -5px rgb(0 0 0 / 10%), 0 8px 10px -6px rgb(0 0 0 / 10%);
+$stem-shadow-2xl: 0 25px 50px -12px rgb(0 0 0 / 25%);
+$stem-shadow-card: 0 4px 6px -1px rgb(0 0 0 / 8%), 0 2px 4px -2px rgb(0 0 0 / 8%);
+$stem-shadow-card-hover: 0 14px 28px rgb(5 150 105 / 12%), 0 10px 10px rgb(5 150 105 / 6%);
+
+// 简短别名（供旧组件兼容）
+$stem-shadow: $stem-shadow-sm;
+$stem-shadow-hover: $stem-shadow-card-hover;
+
+// =============================================
+// STEM 动画系统
+// =============================================
+
+
+$stem-transition-fast: 150ms ease;
+$stem-transition-normal: 300ms ease;
+$stem-transition-slow: 500ms ease;
+$stem-transition-bounce: 500ms cubic-bezier(0.68, -0.55, 0.265, 1.55);
+
+// 简短别名（供旧组件兼容）
+$stem-transition: $stem-transition-normal;
+
+// =============================================
+// STEM 渐变系统
+// =============================================
+
+$stem-gradient-explore: linear-gradient(135deg, #059669 0%, #0ea5e9 100%);
+$stem-gradient-nature: linear-gradient(135deg, #059669 0%, #10b981 100%);
+$stem-gradient-sky: linear-gradient(135deg, #0ea5e9 0%, #38bdf8 100%);
+$stem-gradient-sunset: linear-gradient(135deg, #f59e0b 0%, #ef4444 100%);
+$stem-gradient-cosmic: linear-gradient(135deg, #1e293b 0%, #0ea5e9 100%);
+$stem-gradient-hardware: linear-gradient(135deg, #065f46 0%, #047857 100%);
+
+// 安全渐变（深色方向）— WCAG 友好版
+// 说明：原 $stem-gradient-nature 使用 $stem-primary-light 终点（#10b981 L=0.364），
+//       白色文字在渐变底端对比度仅 2.54:1，违反 WCAG AA 4.5:1。
+//       改用 $stem-primary-dark (#047857 L=0.141) 作为渐变终点后：
+//       - 渐变顶端 (#059669) vs 白色：3.79:1（WCAG 1.4.11 非文本 3:1 ✅）
+//       - 渐变底端 (#047857) vs 白色：5.49:1（WCAG AA 4.5:1 ✅）
+//       - 渐变中点平均对比度：4.64:1 ✅
+//       新组件/新代码应优先使用 -safe 变体。
+$stem-gradient-primary-safe: linear-gradient(135deg, $stem-primary 0%, $stem-primary-dark 100%);
+$stem-gradient-nature-safe: linear-gradient(135deg, $stem-primary 0%, $stem-primary-dark 100%);
+
+// 状态文字色 token（用于带色背景上的文字）
+$stem-text-on-primary: #ffffff;        // 用于 $stem-primary 背景上的文字（对比度 3.79:1，仅适合大文本/图标）
+$stem-text-on-primary-safe: #ffffff;   // 用于 $stem-primary-dark 背景上的文字（对比度 5.49:1，正常文本可用）
+
+// =============================================
+// 功能色（用于UI状态指示）
+// =============================================
+
+// 成功状态 - 翡翠绿
+$stem-status-success-bg: rgba($stem-primary, 0.1);
+$stem-status-success-text: $stem-primary;
+$stem-status-success-border: rgba($stem-primary, 0.2);
+
+// 警告状态 - 琥珀黄
+$stem-status-warning-bg: rgba($stem-warning, 0.1);
+$stem-status-warning-text: $stem-warning;
+$stem-status-warning-border: rgba($stem-warning, 0.2);
+
+// 错误状态 - 珊瑚红
+$stem-status-error-bg: rgba($stem-error, 0.1);
+$stem-status-error-text: $stem-error;
+$stem-status-error-border: rgba($stem-error, 0.2);
+
+// 信息状态 - 天空蓝
+$stem-status-info-bg: rgba($stem-secondary, 0.1);
+$stem-status-info-text: $stem-secondary;
+$stem-status-info-border: rgba($stem-secondary, 0.2);
+
+// =============================================
+// 常用样式 mixins
+// =============================================
+
+// Flex居中
+@mixin flex-center {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+// Flex两端对齐
+@mixin flex-between {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+// STEM主题卡片
+@mixin stem-card {
+  border-radius: $stem-radius-xl;
+  background: white;
+  box-shadow: $stem-shadow-sm;
+  transition: box-shadow $stem-transition-normal, transform $stem-transition-normal;
+
+  &:hover {
+    box-shadow: $stem-shadow-card-hover;
+    transform: translateY(-2px);
+  }
+}
+
+// STEM主题按钮
+@mixin stem-button {
+  display: inline-flex;
+  justify-content: center;
+  align-items: center;
+  gap: 8px;
+  padding: 12px 24px;
+  border: none;
+  border-radius: $stem-radius-full;
+  background: linear-gradient(135deg, $stem-primary 0%, $stem-primary-dark 100%);
+  color: white;
+  font-size: 14px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all $stem-transition-normal;
+
+  &:hover {
+    box-shadow: $stem-shadow-lg;
+    transform: translateY(-2px);
+  }
+
+  &:disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
+  }
+}
+
+// STEM图标容器
+@mixin stem-icon-container($size: 48px) {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  width: $size;
+  height: $size;
+  border-radius: $stem-radius-md;
+  background: $stem-status-success-bg;
+  color: $stem-primary;
+}
+
+// STEM渐变背景文字
+@mixin stem-gradient-text {
+  background: linear-gradient(135deg, $stem-primary 0%, $stem-secondary 100%);
+  background-clip: text;
+  -webkit-text-fill-color: transparent;
+}
+
+// =============================================
+// 导出供组件使用
+// =============================================
+
+:export {
+  stemError: $stem-error;
+  stemPrimary: $stem-primary;
+  stemPrimaryDark: $stem-primary-dark;
+  stemPrimaryLight: $stem-primary-light;
+  stemRadiusFull: $stem-radius-full;
+  stemRadiusLg: $stem-radius-lg;
+  stemRadiusMd: $stem-radius-md;
+  stemSecondary: $stem-secondary;
+  stemShadow: $stem-shadow-sm;
+  stemShadowHover: $stem-shadow-card-hover;
+  stemSuccess: $stem-success;
+  stemTransition: $stem-transition-normal;
+  stemWarning: $stem-warning;
+}

@@ -1,0 +1,110 @@
+// STEM K12 设计系统变量
+$stem-primary: #059669;
+$stem-primary-light: #10b981;
+$stem-primary-dark: #047857;
+$stem-secondary: #0ea5e9;
+$stem-accent: #06b6d4;
+$stem-success: #22c55e;
+$stem-warning: #f59e0b;
+$stem-error: #ef4444;
+$stem-error-dark: #dc2626; // 【对比度修复 #1】4.83:1 AA
+$stem-radius-sm: 12px;
+$stem-radius-md: 20px;
+$stem-radius-lg: 9999px;
+$stem-shadow: 0 4px 20px rgb(5 150 105 / 15%);
+$stem-shadow-hover: 0 8px 30px rgb(5 150 105 / 20%);
+$stem-transition: 250ms cubic-bezier(0.4, 0, 0.2, 1);
+
+.settings-container {
+  max-width: 800px;
+  margin: 0 auto;
+  padding: 24px;
+}
+
+.page-header {
+  margin-bottom: 24px;
+}
+
+.page-title {
+  margin: 0;
+
+  // 【对比度修复 #2】原 $stem-primary on #fff 3.77:1 → $stem-primary-dark 5.48:1 AA
+  color: $stem-primary-dark;
+  font-size: 28px;
+  font-weight: 700;
+}
+
+.settings-section {
+  margin-bottom: 16px;
+}
+
+.settings-label {
+  margin: 0 0 16px;
+  padding-bottom: 12px;
+  border-bottom: 1px solid rgba($stem-primary, 0.1);
+
+  // 【对比度修复 #3】原 $stem-primary on #fff 3.77:1 → $stem-primary-dark 5.48:1 AA
+  color: $stem-primary-dark;
+  font-size: 16px;
+  font-weight: 600;
+}
+
+.radio-group {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.radio-group mat-radio-button {
+  padding: 8px 12px;
+  border-radius: $stem-radius-sm;
+  transition: background $stem-transition;
+}
+
+.radio-group mat-radio-button:hover {
+  background: rgba($stem-primary, 0.05);
+}
+
+.action-row {
+  display: flex;
+  justify-content: center;
+  margin: 24px 0;
+}
+
+.save-btn {
+  min-width: 160px;
+  padding: 8px 32px;
+  border-radius: $stem-radius-lg;
+  font-size: 15px;
+  transition: all $stem-transition;
+}
+
+.reset-section {
+  border: 1px solid rgba($stem-error, 0.3);
+  background: rgba($stem-error, 0.05);
+}
+
+.reset-content {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 24px;
+}
+
+.reset-text h3 {
+  margin: 0 0 4px;
+
+  // 【对比度修复 #4】原 $stem-error on #fff 3.77:1 → $stem-error-dark 4.83:1 AA
+  color: $stem-error-dark;
+  font-size: 16px;
+  font-weight: 600;
+}
+
+.reset-text p {
+  margin: 0;
+
+  // 【对比度修复 #5】原 var(--color-gray-500, #64748b) on rgba($stem-error, 0.05) 仅 4.47:1 (边缘)
+  // 改用 var(--color-gray-600, #475569) = 6.81:1 AA
+  color: var(--color-gray-600, #475569);
+  font-size: 14px;
+}

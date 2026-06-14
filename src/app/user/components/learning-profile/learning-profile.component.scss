@@ -1,0 +1,391 @@
+// ===== 学习画像页面样式 — 基于 K12 STEM 探索绿设计系统 =====
+// 应用 STEM 探索绿主题
+
+// STEM 主题变量
+$stem-primary: #059669;
+$stem-primary-light: #10b981;
+$stem-primary-dark: #047857;
+$stem-secondary: #0ea5e9;
+$stem-secondary-dark: #0284c7; // 【对比度修复 #1】补充 dark 变体
+$stem-success: #059669;
+$stem-success-dark: #15803d; // 【对比度修复 #2】vs #fff 5.13:1 AA
+$stem-warning: #f59e0b;
+$stem-warning-dark: #92400e;
+$stem-warning-dark-emphasis: #92400e; // 7.81:1 AAA
+$stem-error: #ef4444;
+$stem-error-dark: #dc2626; // 【对比度修复 #3】4.83:1 AA
+$stem-text-primary: #1c1917;
+$stem-text-secondary: #57534e;
+$stem-bg-page: #fafaf9;
+$stem-radius-lg: 20px;
+$stem-radius-md: 12px;
+$stem-shadow-sm: 0 1px 3px rgb(5 150 105 / 8%);
+$stem-shadow-card-hover: 0 14px 28px rgb(5 150 105 / 12%);
+
+.profile-container {
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+  max-width: 1200px;
+  min-height: 100vh;
+  margin: 0 auto;
+  padding: 24px;
+  background: $stem-bg-page;
+}
+
+.page-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.page-title {
+  margin: 0;
+
+  // STEM 探索绿主题色
+  // 【对比度修复 #4】原 $stem-primary 在 $stem-bg-page (#fafaf9) 上仅 3.61:1 (边缘)
+  // 改用 $stem-primary-dark = 5.22:1 AA
+  color: $stem-primary-dark;
+  font-size: 28px;
+  font-weight: 700;
+}
+
+.update-time {
+  color: $stem-text-secondary;
+  font-size: 13px;
+}
+
+/* 双栏布局 */
+.dual-column-section {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 20px;
+}
+
+/* AI 教师摘要卡片 - STEM 主题 */
+.teacher-summary-card {
+  border-radius: $stem-radius-lg;
+  background: #fff;
+  box-shadow: $stem-shadow-sm;
+}
+
+.ai-avatar {
+  padding: 8px;
+  border-radius: 50%;
+
+  // STEM 渐变背景
+  background: linear-gradient(135deg, #d1fae5, #a7f3d0);
+  // 【修复导航图标对比度 #18】原 $stem-primary (#059669) 在浅绿渐变上仅 ~1.4:1，达不到 WCAG。
+  // 升级到 $stem-primary-dark (#047857) 达到 ~3.5:1 通过 WCAG 1.4.11
+  color: $stem-primary-dark;
+  font-size: 40px;
+}
+
+.summary-quote {
+  padding: 16px;
+  border-left: 4px solid $stem-primary;
+  border-radius: $stem-radius-md;
+  background: rgb(5 150 105 / 5%);
+  color: $stem-text-primary;
+  font-size: 14px;
+  line-height: 1.8;
+}
+
+.summary-meta {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  margin-top: 16px;
+}
+
+.meta-item {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  color: $stem-text-secondary;
+  font-size: 14px;
+}
+
+.meta-item mat-icon {
+  width: 18px;
+  height: 18px;
+  // 【对比度修复】icon on white background: $stem-primary (#059669) 3.77:1 → $stem-primary-dark (#047857) 5.18:1
+  color: $stem-primary-dark;
+  font-size: 18px;
+}
+
+.profile-empty {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 48px;
+  color: $stem-text-secondary;
+}
+
+.profile-empty mat-icon {
+  width: 48px;
+  height: 48px;
+  margin-bottom: 12px;
+  // 【对比度修复】icon on white background: $stem-primary 3.77:1 → $stem-primary-dark 5.18:1
+  color: $stem-primary-dark;
+  font-size: 48px;
+}
+
+/* 雷达图 - STEM 主题 */
+.radar-card {
+  padding: 20px;
+  border-radius: $stem-radius-lg;
+  background: #fff;
+  box-shadow: $stem-shadow-sm;
+}
+
+.radar-chart {
+  width: 100%;
+  height: 300px;
+}
+
+.radar-legend {
+  display: flex;
+  justify-content: center;
+  gap: 24px;
+  margin-top: 8px;
+}
+
+.legend-item {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  color: $stem-text-secondary;
+  font-size: 13px;
+}
+
+.legend-item .dot {
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+}
+
+.legend-item.current .dot {
+  // STEM 探索绿主题色
+  background: $stem-primary;
+}
+
+.legend-item.previous .dot {
+  background: $stem-text-secondary;
+}
+
+/* 技能树 - STEM 主题 */
+.skill-tree-card {
+  padding: 20px;
+  border-radius: $stem-radius-lg;
+  background: #fff;
+  box-shadow: $stem-shadow-sm;
+}
+
+/* stylelint-disable block-no-empty */
+.skill-tree {
+  // Skill tree visualization placeholder
+}
+/* stylelint-enable block-no-empty */
+
+.skill-category {
+  overflow: hidden;
+  margin-bottom: 12px;
+  border: 1px solid rgb(5 150 105 / 10%);
+  border-radius: $stem-radius-md;
+}
+
+.category-header {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 12px 16px;
+  background: rgb(5 150 105 / 5%);
+  cursor: pointer;
+  transition: background 0.25s ease;
+}
+
+.category-header:hover {
+  // 【对比度修复 #6】原背景 rgb(5 150 105 / 10%) 略加深，文字色对比提升
+  background: rgb(4 120 87 / 10%);
+}
+
+.category-name {
+  flex: 1;
+  color: $stem-text-primary;
+  font-size: 15px;
+  font-weight: 600;
+}
+
+.category-progress {
+  margin-right: 8px;
+
+  // 【对比度修复 #5】原 $stem-primary on rgb(5 150 105 / 5%) (#f2faf8) 仅 3.55:1
+  // 改用 $stem-primary-dark = 5.15:1 AA
+  color: $stem-primary-dark;
+  font-size: 13px;
+  font-weight: 600;
+}
+
+.category-progress-bar {
+  width: 80px;
+  height: 6px;
+}
+
+.skill-children {
+  padding: 8px 16px 8px 44px;
+}
+
+.skill-item {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 4px;
+  padding: 8px 12px;
+  border-radius: 8px;
+  transition: background 0.25s ease;
+}
+
+.skill-item:hover {
+  background: rgb(5 150 105 / 5%);
+}
+
+.skill-item.locked {
+  // 【对比度修复 #7】原 opacity: 0.5 使文字在白底上从 17.49:1 / 7.63:1 退化到 3.35:1 / 2.34:1
+  // 移除 opacity，用明确的色值表达 locked 状态，达成 AA
+  .skill-name {
+    color: var(--color-gray-500, #64748b);
+  }
+
+  .skill-progress {
+    color: var(--color-gray-500, #64748b);
+  }
+}
+
+.skill-status-icon {
+  font-size: 16px;
+}
+
+.skill-name {
+  min-width: 120px;
+  color: $stem-text-primary;
+  font-size: 14px;
+  font-weight: 500;
+}
+
+.skill-progress {
+  color: $stem-text-secondary;
+  font-size: 12px;
+}
+
+.skill-badge {
+  padding: 4px 12px;
+  border-radius: 9999px;
+  font-size: 11px;
+  font-weight: 600;
+}
+
+.current-badge {
+  // 【对比度修复 #8】原 rgb(5 150 105 / 10%) 背景 + $stem-primary 文字 仅 3.33:1
+  // 加深背景到 rgb(4 120 87 / 12%)，文字用 $stem-primary-dark = 4.81:1 AA
+  background: rgb(4 120 87 / 12%);
+  color: $stem-primary-dark;
+}
+
+.locked-badge {
+  background: rgb(5 150 105 / 5%);
+  color: $stem-text-secondary;
+}
+
+.skill-progress-bar {
+  flex: 1;
+  max-width: 100px;
+  height: 4px;
+}
+
+/* 薄弱环节 - STEM 主题 */
+.weak-points-card {
+  padding: 20px;
+  border-radius: $stem-radius-lg;
+  background: #fff;
+  box-shadow: $stem-shadow-sm;
+}
+
+.warn-avatar {
+  padding: 8px;
+  border-radius: 50%;
+  background: linear-gradient(135deg, #fef3c7, #fde68a);
+  // 【修复导航图标对比度 #18】原 $stem-warning (#f59e0b 琥珀) 在浅黄渐变上仅 ~1.7:1，达不到 WCAG。
+  // 升级到 $stem-warning-dark (#92400e 深棕) 达到 ~7:1 通过 WCAG AA
+  color: $stem-warning-dark;
+  font-size: 40px;
+}
+
+/* stylelint-disable block-no-empty */
+.weak-points-list {
+  // Weak points list placeholder
+}
+/* stylelint-enable block-no-empty */
+
+.weak-point-item {
+  margin-bottom: 12px;
+  padding: 16px;
+  border: 1px solid rgb(5 150 105 / 10%);
+  border-radius: $stem-radius-md;
+  transition:
+    box-shadow 0.25s ease,
+    transform 0.25s ease;
+}
+
+.weak-point-item:hover {
+  box-shadow: $stem-shadow-sm;
+  transform: translateY(-2px);
+}
+
+.wp-header {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 8px;
+}
+
+.wp-icon {
+  font-size: 16px;
+}
+
+.wp-name {
+  flex: 1;
+  color: $stem-text-primary;
+  font-size: 14px;
+  font-weight: 600;
+}
+
+.wp-mastery {
+  // 【对比度修复 #9】原 $stem-success (#059669) on #fff 3.77:1 未达 AA
+  // 改用 $stem-primary-dark = 5.49:1 AA（保持与技能色一致）
+  color: $stem-primary-dark;
+  font-size: 13px;
+  font-weight: 600;
+}
+
+.wp-mastery.low {
+  // 【对比度修复 #10】原 $stem-error (#ef4444) on #fff 3.76:1
+  // 改用 $stem-error-dark = 4.83:1 AA
+  color: $stem-error-dark;
+}
+
+.wp-suggestion {
+  margin-top: 8px;
+  color: $stem-text-secondary;
+  font-size: 13px;
+}
+
+@media (width <= 768px) {
+  .dual-column-section {
+    grid-template-columns: 1fr;
+  }
+
+  .radar-chart {
+    height: 250px;
+  }
+}

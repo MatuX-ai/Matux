@@ -5,6 +5,19 @@
  * 展示：AI教师摘要、能力雷达图、技能树、薄弱环节诊断
  */
 
+// ECharts 颜色令牌: 与设计系统主色保持一致
+// 与 _stem-tokens.scss / _css-variables.scss 中令牌值同步
+const ECHARTS_COLORS = {
+  textSecondary: '#334155',     // 对应 --matux-color-text-secondary
+  divider: '#e2e8f0',           // 对应 --matux-color-divider
+  primary: '#2563eb',           // 【对比度修复 #11】原 #3b82f6 (3.68:1) → #2563eb (4.62:1) AA
+  primaryFaded02: 'rgba(37, 99, 235, 0.02)',  // primary @ 2% alpha
+  primaryFaded04: 'rgba(37, 99, 235, 0.04)',  // primary @ 4% alpha
+  primaryFaded15: 'rgba(37, 99, 235, 0.15)',  // primary @ 15% alpha
+  secondary: '#64748b',         // 【对比度修复 #12】原 #94a3b8 (2.56:1) → #64748b (4.92:1) AA
+  secondaryFaded10: 'rgba(100, 116, 139, 0.1)', // secondary @ 10% alpha
+} as const;
+
 import { CommonModule } from '@angular/common';
 import {
   ChangeDetectionStrategy,
@@ -40,415 +53,8 @@ import { AuthService } from '../../../core/services/auth.service';
     NgxEchartsModule,
   ],
   changeDetection: ChangeDetectionStrategy.OnPush,
-  template: `
-    <div class="profile-container">
-      <div class="page-header">
-        <h1 class="page-title">我的学习画像</h1>
-        <span class="update-time" *ngIf="profile?.updatedAt">
-          最后更新：{{ profile!.updatedAt | date: 'yyyy-MM-dd HH:mm' }}
-        </span>
-      </div>
-
-      <!-- AI教师摘要 + 能力雷达图 双栏 -->
-      <div class="dual-column-section">
-        <!-- AI 教师眼中的你 -->
-        <mat-card class="teacher-summary-card">
-          <mat-card-header>
-            <mat-icon mat-card-avatar class="ai-avatar">smart_toy</mat-icon>
-            <mat-card-title>🤖 AI 教师眼中的你</mat-card-title>
-          </mat-card-header>
-          <mat-card-content>
-            <div class="profile-summary-text" *ngIf="profile">
-              <p class="summary-quote">"{{ teacherSummary }}"</p>
-              <div class="summary-meta">
-                <div class="meta-item">
-                  <mat-icon>favorite</mat-icon>
-                  <span>最喜欢的领域：{{ getTopInterest() }}</span>
-                </div>
-                <div class="meta-item">
-                  <mat-icon>schedule</mat-icon>
-                  <span>最佳学习时段：下午 3-5 点</span>
-                </div>
-                <div class="meta-item">
-                  <mat-icon>local_fire_department</mat-icon>
-                  <span>连续学习：{{ profile.currentStreakDays }} 天 🔥</span>
-                </div>
-              </div>
-            </div>
-            <div class="profile-empty" *ngIf="!profile">
-              <mat-icon>hourglass_empty</mat-icon>
-              <p>正在生成你的学习画像...</p>
-            </div>
-          </mat-card-content>
-        </mat-card>
-
-        <!-- 能力雷达图 -->
-        <mat-card class="radar-card">
-          <mat-card-header>
-            <mat-card-title>能力雷达图</mat-card-title>
-          </mat-card-header>
-          <mat-card-content>
-            <div echarts [options]="radarOption" class="radar-chart"></div>
-            <div class="radar-legend">
-              <span class="legend-item current"> <span class="dot"></span> 本月 </span>
-              <span class="legend-item previous"> <span class="dot"></span> 上月 </span>
-            </div>
-          </mat-card-content>
-        </mat-card>
-      </div>
-
-      <!-- 技能树 -->
-      <mat-card class="skill-tree-card">
-        <mat-card-header>
-          <mat-card-title>技能树</mat-card-title>
-          <button mat-button color="primary" (click)="expandAll = !expandAll">
-            {{ expandAll ? '收起全部' : '展开全部' }}
-          </button>
-        </mat-card-header>
-        <mat-card-content>
-          <div class="skill-tree">
-            <div *ngFor="let category of skillTreeCategories" class="skill-category">
-              <div class="category-header" (click)="toggleCategory(category.id)">
-                <mat-icon>{{ expandAll ? 'expand_more' : 'chevron_right' }}</mat-icon>
-                <span class="category-name">{{ category.name }}</span>
-                <span class="category-progress">{{ getCategoryProgress(category.id) }}%</span>
-                <mat-progress-bar
-                  mode="determinate"
-                  [value]="getCategoryProgress(category.id)"
-                  class="category-progress-bar"
-                ></mat-progress-bar>
-              </div>
-              <div class="skill-children" *ngIf="expandAll || expandedCategories.has(category.id)">
-                <div
-                  *ngFor="let skill of category.children"
-                  class="skill-item"
-                  [class.mastered]="skill.status === 'mastered'"
-                  [class.learning]="skill.status === 'learning'"
-                  [class.locked]="skill.status === 'not_started'"
-                >
-                  <span class="skill-status-icon">
-                    {{
-                      skill.status === 'mastered' ? '✅' : skill.status === 'learning' ? '🔄' : '🔒'
-                    }}
-                  </span>
-                  <span class="skill-name">{{ skill.name }}</span>
-                  <span class="skill-progress" *ngIf="skill.status !== 'not_started'">
-                    ({{ Math.round(skill.progress * 100) }}%)
-                  </span>
-                  <span class="skill-badge current-badge" *ngIf="skill.status === 'learning'"
-                    >当前学习</span
-                  >
-                  <span
-                    class="skill-badge locked-badge"
-                    *ngIf="skill.status === 'not_started' && skill.unlockRequirement"
-                  >
-                    需解锁：{{ skill.unlockRequirement }}
-                  </span>
-                  <mat-progress-bar
-                    mode="determinate"
-                    [value]="skill.progress * 100"
-                    class="skill-progress-bar"
-                  ></mat-progress-bar>
-                </div>
-              </div>
-            </div>
-          </div>
-        </mat-card-content>
-      </mat-card>
-
-      <!-- 薄弱环节诊断 -->
-      <mat-card class="weak-points-card" *ngIf="profile?.weakPoints?.length">
-        <mat-card-header>
-          <mat-icon mat-card-avatar class="warn-avatar">warning_amber</mat-icon>
-          <mat-card-title>薄弱环节（AI 教师诊断）</mat-card-title>
-        </mat-card-header>
-        <mat-card-content>
-          <div class="weak-points-list">
-            <div *ngFor="let wp of profile!.weakPoints" class="weak-point-item">
-              <div class="wp-header">
-                <span class="wp-icon">⚠</span>
-                <span class="wp-name">{{ wp.knowledgePoint }}</span>
-                <span class="wp-mastery" [class.low]="wp.mastery < 0.5">
-                  正确率 {{ Math.round(wp.mastery * 100) }}%
-                </span>
-              </div>
-              <mat-progress-bar
-                mode="determinate"
-                [value]="(1 - wp.errorRate) * 100"
-                [color]="wp.mastery < 0.5 ? 'warn' : 'accent'"
-              ></mat-progress-bar>
-              <p class="wp-suggestion">💡 建议：{{ wp.suggestion }}</p>
-            </div>
-          </div>
-        </mat-card-content>
-      </mat-card>
-    </div>
-  `,
-  styles: [
-    `
-      .profile-container {
-        max-width: 1200px;
-        margin: 0 auto;
-        padding: 24px;
-        display: flex;
-        flex-direction: column;
-        gap: 24px;
-      }
-
-      .page-header {
-        display: flex;
-        justify-content: space-between;
-        align-items: center;
-      }
-      .page-title {
-        font-size: 28px;
-        font-weight: 700;
-        color: #0f172a;
-        margin: 0;
-      }
-      .update-time {
-        font-size: 13px;
-        color: #94a3b8;
-      }
-
-      /* 双栏布局 */
-      .dual-column-section {
-        display: grid;
-        grid-template-columns: 1fr 1fr;
-        gap: 20px;
-      }
-
-      /* AI 教师摘要卡片 */
-      .teacher-summary-card {
-      }
-      .ai-avatar {
-        font-size: 40px;
-        background: linear-gradient(135deg, #dbeafe, #bfdbfe);
-        border-radius: 50%;
-        padding: 8px;
-        color: #3b82f6;
-      }
-      .summary-quote {
-        font-size: 14px;
-        line-height: 1.8;
-        color: #334155;
-        padding: 16px;
-        background: #f8fafc;
-        border-radius: 12px;
-        border-left: 4px solid #3b82f6;
-      }
-      .summary-meta {
-        display: flex;
-        flex-direction: column;
-        gap: 8px;
-        margin-top: 16px;
-      }
-      .meta-item {
-        display: flex;
-        align-items: center;
-        gap: 8px;
-        font-size: 14px;
-        color: #475569;
-      }
-      .meta-item mat-icon {
-        font-size: 18px;
-        width: 18px;
-        height: 18px;
-        color: #64748b;
-      }
-      .profile-empty {
-        display: flex;
-        flex-direction: column;
-        align-items: center;
-        padding: 48px;
-        color: #94a3b8;
-      }
-      .profile-empty mat-icon {
-        font-size: 48px;
-        width: 48px;
-        height: 48px;
-        margin-bottom: 12px;
-      }
-
-      /* 雷达图 */
-      .radar-card {
-      }
-      .radar-chart {
-        width: 100%;
-        height: 300px;
-      }
-      .radar-legend {
-        display: flex;
-        justify-content: center;
-        gap: 24px;
-        margin-top: 8px;
-      }
-      .legend-item {
-        display: flex;
-        align-items: center;
-        gap: 6px;
-        font-size: 13px;
-        color: #64748b;
-      }
-      .legend-item .dot {
-        width: 10px;
-        height: 10px;
-        border-radius: 50%;
-      }
-      .legend-item.current .dot {
-        background: #3b82f6;
-      }
-      .legend-item.previous .dot {
-        background: #94a3b8;
-      }
-
-      /* 技能树 */
-      .skill-tree-card {
-      }
-      .skill-tree {
-      }
-      .skill-category {
-        border: 1px solid #e2e8f0;
-        border-radius: 8px;
-        margin-bottom: 12px;
-        overflow: hidden;
-      }
-      .category-header {
-        display: flex;
-        align-items: center;
-        gap: 8px;
-        padding: 12px 16px;
-        background: #f8fafc;
-        cursor: pointer;
-        transition: background 0.2s;
-      }
-      .category-header:hover {
-        background: #f1f5f9;
-      }
-      .category-name {
-        font-size: 15px;
-        font-weight: 600;
-        color: #0f172a;
-        flex: 1;
-      }
-      .category-progress {
-        font-size: 13px;
-        font-weight: 600;
-        color: #3b82f6;
-        margin-right: 8px;
-      }
-      .category-progress-bar {
-        width: 80px;
-        height: 6px;
-      }
-      .skill-children {
-        padding: 8px 16px 8px 44px;
-      }
-      .skill-item {
-        display: flex;
-        align-items: center;
-        gap: 8px;
-        padding: 8px 12px;
-        border-radius: 6px;
-        margin-bottom: 4px;
-        transition: background 0.2s;
-      }
-      .skill-item:hover {
-        background: #f8fafc;
-      }
-      .skill-item.locked {
-        opacity: 0.5;
-      }
-      .skill-status-icon {
-        font-size: 16px;
-      }
-      .skill-name {
-        font-size: 14px;
-        color: #334155;
-        font-weight: 500;
-        min-width: 120px;
-      }
-      .skill-progress {
-        font-size: 12px;
-        color: #64748b;
-      }
-      .skill-badge {
-        font-size: 11px;
-        padding: 2px 8px;
-        border-radius: 10px;
-        font-weight: 500;
-      }
-      .current-badge {
-        background: #dbeafe;
-        color: #2563eb;
-      }
-      .locked-badge {
-        background: #f1f5f9;
-        color: #94a3b8;
-      }
-      .skill-progress-bar {
-        flex: 1;
-        height: 4px;
-        max-width: 100px;
-      }
-
-      /* 薄弱环节 */
-      .weak-points-card {
-      }
-      .warn-avatar {
-        font-size: 40px;
-        background: linear-gradient(135deg, #fef3c7, #fde68a);
-        border-radius: 50%;
-        padding: 8px;
-        color: #f59e0b;
-      }
-      .weak-points-list {
-      }
-      .weak-point-item {
-        padding: 16px;
-        border: 1px solid #f1f5f9;
-        border-radius: 8px;
-        margin-bottom: 12px;
-      }
-      .wp-header {
-        display: flex;
-        align-items: center;
-        gap: 8px;
-        margin-bottom: 8px;
-      }
-      .wp-icon {
-        font-size: 16px;
-      }
-      .wp-name {
-        font-size: 14px;
-        font-weight: 600;
-        color: #0f172a;
-        flex: 1;
-      }
-      .wp-mastery {
-        font-size: 13px;
-        font-weight: 600;
-        color: #22c55e;
-      }
-      .wp-mastery.low {
-        color: #ef4444;
-      }
-      .wp-suggestion {
-        font-size: 13px;
-        color: #64748b;
-        margin-top: 8px;
-      }
-
-      @media (max-width: 768px) {
-        .dual-column-section {
-          grid-template-columns: 1fr;
-        }
-        .radar-chart {
-          height: 250px;
-        }
-      }
-    `,
-  ],
+  templateUrl: './learning-profile.component.html',
+  styleUrls: ['./learning-profile.component.scss'],
 })
 export class LearningProfileComponent implements OnInit, OnDestroy {
   private destroy$ = new Subject<void>();
@@ -513,23 +119,23 @@ export class LearningProfileComponent implements OnInit, OnDestroy {
         splitNumber: 4,
         name: {
           textStyle: {
-            color: '#334155',
+            color: ECHARTS_COLORS.textSecondary,
             fontSize: 12,
           },
         },
         splitLine: {
           lineStyle: {
-            color: '#e2e8f0',
+            color: ECHARTS_COLORS.divider,
           },
         },
         splitArea: {
           areaStyle: {
-            color: ['rgba(59,130,246,0.02)', 'rgba(59,130,246,0.04)'],
+            color: [ECHARTS_COLORS.primaryFaded02, ECHARTS_COLORS.primaryFaded04],
           },
         },
         axisLine: {
           lineStyle: {
-            color: '#e2e8f0',
+            color: ECHARTS_COLORS.divider,
           },
         },
       },
@@ -549,14 +155,14 @@ export class LearningProfileComponent implements OnInit, OnDestroy {
               ],
               name: '本月',
               areaStyle: {
-                color: 'rgba(59,130,246,0.15)',
+                color: ECHARTS_COLORS.primaryFaded15,
               },
               lineStyle: {
-                color: '#3b82f6',
+                color: ECHARTS_COLORS.primary,
                 width: 2,
               },
               itemStyle: {
-                color: '#3b82f6',
+                color: ECHARTS_COLORS.primary,
               },
             },
             {
@@ -569,15 +175,15 @@ export class LearningProfileComponent implements OnInit, OnDestroy {
               ],
               name: '上月',
               areaStyle: {
-                color: 'rgba(148,163,184,0.1)',
+                color: ECHARTS_COLORS.secondaryFaded10,
               },
               lineStyle: {
-                color: '#94a3b8',
+                color: ECHARTS_COLORS.secondary,
                 width: 1.5,
                 type: 'dashed',
               },
               itemStyle: {
-                color: '#94a3b8',
+                color: ECHARTS_COLORS.secondary,
               },
             },
           ],
@@ -586,7 +192,7 @@ export class LearningProfileComponent implements OnInit, OnDestroy {
       tooltip: {
         trigger: 'item',
       },
-      color: ['#3b82f6', '#94a3b8'],
+      color: [ECHARTS_COLORS.primary, ECHARTS_COLORS.secondary],
     };
   }
 

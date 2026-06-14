@@ -1,0 +1,135 @@
+<div class="companion-container">
+  <div class="page-header">
+    <h1 class="page-title">🤗 情感陪伴</h1>
+  </div>
+
+  <!-- 陪伴模式开关 -->
+  <mat-card class="companion-mode-card">
+    <mat-card-content>
+      <div class="companion-mode-header">
+        <h2 class="companion-mode-title">🤖 AI 陪伴模式</h2>
+        <mat-slide-toggle
+          [checked]="companionModeEnabled"
+          (change)="toggleCompanionMode()"
+          color="primary"
+        >
+          {{ companionModeEnabled ? '已开启' : '已关闭' }}
+        </mat-slide-toggle>
+      </div>
+      <p class="companion-mode-desc">开启后，AI 教师会在对话中自动感知你的情绪状态并调整回应方式</p>
+    </mat-card-content>
+  </mat-card>
+
+  <!-- 今日心情记录 -->
+  <mat-card class="mood-card">
+    <mat-card-content>
+      <h2 class="mood-title">今天的心情怎么样？</h2>
+      <div class="mood-picker">
+        <button
+          *ngFor="let m of moodOptions"
+          type="button"
+          class="mood-btn"
+          [class.selected]="selectedMood === m.emotion"
+          (click)="recordMood(m.emotion)"
+          [style.--mood-color]="m.color"
+        >
+          <span class="mood-emoji">{{ m.emoji }}</span>
+          <span class="mood-label">{{ m.label }}</span>
+        </button>
+      </div>
+      <div *ngIf="lastLog" class="mood-reply">
+        <mat-icon>reply</mat-icon>
+        <p>{{ lastLog.companionReply }}</p>
+      </div>
+    </mat-card-content>
+  </mat-card>
+
+  <!-- 情绪趋势摘要 -->
+  <mat-card class="summary-card" *ngIf="logCount > 0">
+    <mat-card-header>
+      <mat-card-title>📊 近期情绪趋势</mat-card-title>
+    </mat-card-header>
+    <mat-card-content>
+      <div class="summary-grid">
+        <div class="summary-item">
+          <span class="summary-value summary-dominant">{{ summaryEmoji }} {{ summaryLabel }}</span>
+          <span class="summary-label">主导情绪</span>
+        </div>
+        <div class="summary-item">
+          <span
+            class="summary-value"
+            [style.color]="(summary?.positivityRatio ?? 0) >= 0.6 ? '#22c55e' : '#f59e0b'"
+          >
+            {{ summary?.positivityRatio | percent: '1.0-0' }}
+          </span>
+          <span class="summary-label">积极比例</span>
+        </div>
+        <div class="summary-item">
+          <span
+            class="summary-value"
+            [style.color]="
+              (summary?.volatility ?? 0) < 0.3
+                ? '#22c55e'
+                : (summary?.volatility ?? 0) < 0.6
+                  ? '#f59e0b'
+                  : '#ef4444'
+            "
+          >
+            {{ summary?.volatility | percent: '1.0-0' }}
+          </span>
+          <span class="summary-label">情绪波动</span>
+        </div>
+      </div>
+      <p class="encouragement-text">{{ summary?.encouragement || '' }}</p>
+    </mat-card-content>
+  </mat-card>
+
+  <!-- 情绪分布 -->
+  <mat-card *ngIf="logCount > 0" class="distribution-card">
+    <mat-card-header>
+      <mat-card-title>📈 情绪分布</mat-card-title>
+    </mat-card-header>
+    <mat-card-content>
+      <div *ngFor="let item of distributionList" class="dist-item">
+        <span class="dist-emoji">{{ getMoodEmoji(item.emotion) }}</span>
+        <span class="dist-label">{{ getMoodLabel(item.emotion) }}</span>
+        <mat-progress-bar
+          mode="determinate"
+          [value]="item.percentage * 100"
+          class="dist-bar"
+        ></mat-progress-bar>
+        <span class="dist-count">{{ item.count }}次</span>
+      </div>
+    </mat-card-content>
+  </mat-card>
+
+  <!-- 历史记录 -->
+  <mat-card *ngIf="logCount > 0" class="history-card">
+    <mat-card-header>
+      <mat-card-title>📋 心情记录</mat-card-title>
+    </mat-card-header>
+    <mat-card-content>
+      <div *ngFor="let entry of recentLogs" class="history-entry">
+        <span class="history-emoji">{{ getMoodEmoji(entry.emotion) }}</span>
+        <div class="history-info">
+          <span class="history-emotion">{{ getMoodLabel(entry.emotion) }}</span>
+          <span class="history-time">{{ entry.timestamp | date: 'MM/dd HH:mm' }}</span>
+          <span *ngIf="entry.trigger" class="history-trigger">· {{ entry.trigger }}</span>
+        </div>
+        <div class="history-intensity">
+          <span *ngFor="let _ of intensityStars(entry.intensity)" class="intensity-star">⭐</span>
+        </div>
+      </div>
+      <div *ngIf="recentLogs.length === 0" class="no-history">
+        <p>还没有心情记录，点击上方表情开始记录吧！</p>
+      </div>
+    </mat-card-content>
+  </mat-card>
+
+  <!-- 空状态 -->
+  <div *ngIf="logCount === 0" class="empty-section">
+    <mat-icon class="empty-icon">favorite</mat-icon>
+    <h3>欢迎来到情感陪伴空间</h3>
+    <p>在这里可以记录你的学习心情<br />AI 会为你送上温暖的鼓励和陪伴 💗</p>
+  </div>
+</div>

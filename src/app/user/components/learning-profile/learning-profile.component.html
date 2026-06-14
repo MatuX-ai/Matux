@@ -1,0 +1,140 @@
+<div class="profile-container">
+  <div class="page-header">
+    <h1 class="page-title">我的学习画像</h1>
+    <span class="update-time" *ngIf="profile?.updatedAt">
+      最后更新：{{ profile!.updatedAt | date: 'yyyy-MM-dd HH:mm' }}
+    </span>
+  </div>
+
+  <!-- AI教师摘要 + 能力雷达图 双栏 -->
+  <div class="dual-column-section">
+    <!-- AI 教师眼中的你 -->
+    <mat-card class="teacher-summary-card">
+      <mat-card-header>
+        <mat-icon mat-card-avatar class="ai-avatar">smart_toy</mat-icon>
+        <mat-card-title>🤖 AI 教师眼中的你</mat-card-title>
+      </mat-card-header>
+      <mat-card-content>
+        <div class="profile-summary-text" *ngIf="profile">
+          <p class="summary-quote">"{{ teacherSummary }}"</p>
+          <div class="summary-meta">
+            <div class="meta-item">
+              <mat-icon>favorite</mat-icon>
+              <span>最喜欢的领域：{{ getTopInterest() }}</span>
+            </div>
+            <div class="meta-item">
+              <mat-icon>schedule</mat-icon>
+              <span>最佳学习时段：下午 3-5 点</span>
+            </div>
+            <div class="meta-item">
+              <mat-icon>local_fire_department</mat-icon>
+              <span>连续学习：{{ profile.currentStreakDays }} 天 🔥</span>
+            </div>
+          </div>
+        </div>
+        <div class="profile-empty" *ngIf="!profile">
+          <mat-icon>hourglass_empty</mat-icon>
+          <p>正在生成你的学习画像...</p>
+        </div>
+      </mat-card-content>
+    </mat-card>
+
+    <!-- 能力雷达图 -->
+    <mat-card class="radar-card">
+      <mat-card-header>
+        <mat-card-title>能力雷达图</mat-card-title>
+      </mat-card-header>
+      <mat-card-content>
+        <div echarts [options]="radarOption" class="radar-chart"></div>
+        <div class="radar-legend">
+          <span class="legend-item current"> <span class="dot"></span> 本月 </span>
+          <span class="legend-item previous"> <span class="dot"></span> 上月 </span>
+        </div>
+      </mat-card-content>
+    </mat-card>
+  </div>
+
+  <!-- 技能树 -->
+  <mat-card class="skill-tree-card">
+    <mat-card-header>
+      <mat-card-title>技能树</mat-card-title>
+      <button mat-button color="primary" (click)="expandAll = !expandAll">
+        {{ expandAll ? '收起全部' : '展开全部' }}
+      </button>
+    </mat-card-header>
+    <mat-card-content>
+      <div class="skill-tree">
+        <div *ngFor="let category of skillTreeCategories" class="skill-category">
+          <div class="category-header" (click)="toggleCategory(category.id)">
+            <mat-icon>{{ expandAll ? 'expand_more' : 'chevron_right' }}</mat-icon>
+            <span class="category-name">{{ category.name }}</span>
+            <span class="category-progress">{{ getCategoryProgress(category.id) }}%</span>
+            <mat-progress-bar
+              mode="determinate"
+              [value]="getCategoryProgress(category.id)"
+              class="category-progress-bar"
+            ></mat-progress-bar>
+          </div>
+          <div class="skill-children" *ngIf="expandAll || expandedCategories.has(category.id)">
+            <div
+              *ngFor="let skill of category.children"
+              class="skill-item"
+              [class.mastered]="skill.status === 'mastered'"
+              [class.learning]="skill.status === 'learning'"
+              [class.locked]="skill.status === 'not_started'"
+            >
+              <span class="skill-status-icon">
+                {{ skill.status === 'mastered' ? '✅' : skill.status === 'learning' ? '🔄' : '🔒' }}
+              </span>
+              <span class="skill-name">{{ skill.name }}</span>
+              <span class="skill-progress" *ngIf="skill.status !== 'not_started'">
+                ({{ Math.round(skill.progress * 100) }}%)
+              </span>
+              <span class="skill-badge current-badge" *ngIf="skill.status === 'learning'"
+                >当前学习</span
+              >
+              <span
+                class="skill-badge locked-badge"
+                *ngIf="skill.status === 'not_started' && skill.unlockRequirement"
+              >
+                需解锁：{{ skill.unlockRequirement }}
+              </span>
+              <mat-progress-bar
+                mode="determinate"
+                [value]="skill.progress * 100"
+                class="skill-progress-bar"
+              ></mat-progress-bar>
+            </div>
+          </div>
+        </div>
+      </div>
+    </mat-card-content>
+  </mat-card>
+
+  <!-- 薄弱环节诊断 -->
+  <mat-card class="weak-points-card" *ngIf="profile?.weakPoints?.length">
+    <mat-card-header>
+      <mat-icon mat-card-avatar class="warn-avatar">warning_amber</mat-icon>
+      <mat-card-title>薄弱环节（AI 教师诊断）</mat-card-title>
+    </mat-card-header>
+    <mat-card-content>
+      <div class="weak-points-list">
+        <div *ngFor="let wp of profile!.weakPoints" class="weak-point-item">
+          <div class="wp-header">
+            <span class="wp-icon">⚠</span>
+            <span class="wp-name">{{ wp.knowledgePoint }}</span>
+            <span class="wp-mastery" [class.low]="wp.mastery < 0.5">
+              正确率 {{ Math.round(wp.mastery * 100) }}%
+            </span>
+          </div>
+          <mat-progress-bar
+            mode="determinate"
+            [value]="(1 - wp.errorRate) * 100"
+            [color]="wp.mastery < 0.5 ? 'warn' : 'accent'"
+          ></mat-progress-bar>
+          <p class="wp-suggestion">💡 建议：{{ wp.suggestion }}</p>
+        </div>
+      </div>
+    </mat-card-content>
+  </mat-card>
+</div>
