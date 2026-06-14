@@ -82,6 +82,8 @@ export type AppEventType =
   | 'window-focus'
   | 'backend-disconnected'
   | 'backend-reconnected'
+  | 'backend-degraded'
+  | 'backend-ready'
   | 'minimize'
   | 'maximize'
   | 'close'
@@ -106,6 +108,12 @@ export interface ElectronAPI {
 
   /** 执行后端健康检查 */
   healthCheck(): Promise<boolean>;
+
+  /** 查询当前是否处于降级模式（无 Python 后端） */
+  isBackendDegraded(): Promise<{ degraded: boolean }>;
+
+  /** 重试后端设置（退出降级模式路径） */
+  retryBackendSetup(): Promise<{ success: boolean; message?: string; error?: string }>;
 
   /** 获取应用信息 */
   getAppInfo(): Promise<AppInfo>;
@@ -218,17 +226,40 @@ export interface HardwareProfile {
     supportsOpenCL: boolean;
   };
   storage: { totalGB: number; freeGB: number; type: 'hdd' | 'ssd' };
-  peripherals: { hasCamera: boolean; hasMicrophone: boolean; hasUSBDevices: boolean; hasGamepad: boolean };
+  peripherals: {
+    hasCamera: boolean;
+    hasMicrophone: boolean;
+    hasUSBDevices: boolean;
+    hasGamepad: boolean;
+  };
   network: { type: string; bandwidthMbps: number; isMetered: boolean };
-  display: { resolution: { width: number; height: number }; pixelRatio: number; refreshRateHz: number };
+  display: {
+    resolution: { width: number; height: number };
+    pixelRatio: number;
+    refreshRateHz: number;
+  };
 }
 
 export interface SoftwareProfile {
   os: { platform: string; version: string; arch: string };
   runtime: { pythonVersion: string; pythonPath: string; nodeVersion: string };
-  containers: { dockerInstalled: boolean; dockerRunning: boolean; dockerVersion: string; kubectlInstalled: boolean };
-  hardware_tools: { arduinoCliInstalled: boolean; platformioInstalled: boolean; edgeImpulseCli: boolean };
-  connectivity: { redisAvailable: boolean; neo4jAvailable: boolean; hyperledgerAvailable: boolean; vircadiaAvailable: boolean };
+  containers: {
+    dockerInstalled: boolean;
+    dockerRunning: boolean;
+    dockerVersion: string;
+    kubectlInstalled: boolean;
+  };
+  hardware_tools: {
+    arduinoCliInstalled: boolean;
+    platformioInstalled: boolean;
+    edgeImpulseCli: boolean;
+  };
+  connectivity: {
+    redisAvailable: boolean;
+    neo4jAvailable: boolean;
+    hyperledgerAvailable: boolean;
+    vircadiaAvailable: boolean;
+  };
 }
 
 export type DeviceClass = 'basic' | 'standard' | 'advanced' | 'professional';
@@ -309,7 +340,15 @@ export interface PluginAPI {
   markReviewHelpful(reviewId: string, pluginId: string): Promise<unknown>;
 
   // 事件监听
-  onInstallProgress(callback: (data: { pluginId: string; phase: string; progress: number; message: string }) => void): void;
-  onPluginStatusChange(callback: (data: { type: string; pluginId?: string; profile?: DeviceProfile }) => void): void;
-  onUpdatesAvailable(callback: (data: { updates: Array<{ pluginId: string; fromVersion: string; toVersion: string }> }) => void): void;
+  onInstallProgress(
+    callback: (data: { pluginId: string; phase: string; progress: number; message: string }) => void
+  ): void;
+  onPluginStatusChange(
+    callback: (data: { type: string; pluginId?: string; profile?: DeviceProfile }) => void
+  ): void;
+  onUpdatesAvailable(
+    callback: (data: {
+      updates: Array<{ pluginId: string; fromVersion: string; toVersion: string }>;
+    }) => void
+  ): void;
 }

@@ -4,10 +4,11 @@
  */
 
 const { AppInitializer } = require('./app-initializer');
-const { checkPythonEnvironment, verifyBackendHealth } = require('./python-checker');
+const { checkPythonEnvironment, verifyBackendHealth, isDegradedMode } = require('./python-checker');
 
 module.exports = {
   AppInitializer,
   checkPythonEnvironment,
   verifyBackendHealth,
+  isDegradedMode,
 };

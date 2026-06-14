@@ -119,6 +119,16 @@ contextBridge.exposeInMainWorld('electronAPI', {
    */
   restartBackend: () => ipcRenderer.invoke('backend:restart'),
 
+  /**
+   * 查询当前是否处于降级模式（无 Python 后端）
+   */
+  isBackendDegraded: () => ipcRenderer.invoke('backend:is-degraded'),
+
+  /**
+   * 重试后端设置（退出降级模式路径）
+   */
+  retryBackendSetup: () => ipcRenderer.invoke('backend:retry-setup'),
+
   // ==================== 窗口控制 ====================
 
   /**
@@ -151,8 +161,8 @@ contextBridge.exposeInMainWorld('electronAPI', {
   on: (channel, func) => {
     const validChannels = ['app-event', 'from-backend', 'window-blur', 'window-focus',
       'fullscreen-enter', 'fullscreen-leave', 'window-resize', 'open-file',
-      'update-available', 'backend-disconnected', 'backend-reconnected',
-      'backend:module-status', 'backend-status-change'];
+      'update-available', 'auto-updater-status', 'backend-disconnected', 'backend-reconnected',
+      'backend:module-status', 'backend-status-change', 'backend-degraded'];
     if (validChannels.includes(channel)) {
       ipcRenderer.on(channel, (_event, ...args) => func(...args));
     }
@@ -199,6 +209,20 @@ contextBridge.exposeInMainWorld('electronAPI', {
   onShortcut: (callback) => {
     ipcRenderer.on('shortcut', (_event, action) => callback(action));
   },
+
+  // ==================== 自动更新 ====================
+
+  /** 检查更新 */
+  checkForUpdate: () => ipcRenderer.invoke('updater:check'),
+
+  /** 下载更新 */
+  downloadUpdate: () => ipcRenderer.invoke('updater:download'),
+
+  /** 安装更新并重启 */
+  installUpdate: () => ipcRenderer.invoke('updater:install'),
+
+  /** 获取当前版本 */
+  getAppVersion: () => ipcRenderer.invoke('updater:get-version'),
 });
 
 // ==================== 插件管理 API（插件化架构 Phase 1） ====================

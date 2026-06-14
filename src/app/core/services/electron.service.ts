@@ -46,6 +46,10 @@ export class ElectronService {
   private appEventSubject = new BehaviorSubject<AppEvent | null>(null);
   readonly appEvent$ = this.appEventSubject.asObservable();
 
+  /** 降级模式 Subject（无 Python 后端时为 true） */
+  private degradedModeSubject = new BehaviorSubject<boolean>(false);
+  readonly isDegradedMode$ = this.degradedModeSubject.asObservable();
+
   /**
    * 允许打开的 URL 白名单
    * 包含：OAuth 提供商、文档链接、API 文档等
@@ -81,12 +85,12 @@ export class ElectronService {
     try {
       const parsedUrl = new URL(url);
       const origin = parsedUrl.origin;
-      
+
       // 允许 javascript: 协议（书签式跳转，在页面内处理）
       if (url.toLowerCase().startsWith('javascript:')) {
         return true;
       }
-      
+
       // 检查是否匹配白名单
       return this.ALLOWED_EXTERNAL_URLS.some(
         (allowed) => origin === allowed || url.startsWith(allowed)
@@ -120,6 +124,17 @@ export class ElectronService {
         if (event.type === 'backend-disconnected') {
           void api.showNotification('后端连接断开', '后端服务可能已崩溃，部分功能将不可用');
         }
+
+        // 后端降级模式通知
+        if (event.type === 'backend-degraded') {
+          this.degradedModeSubject.next(true);
+          void api.showNotification('降级模式', 'Python 后端不可用，部分功能受限（课程同步、AI 教师、进度保存等）');
+        }
+
+        // 后端就绪时清除降级状态
+        if (event.type === 'backend-ready') {
+          this.degradedModeSubject.next(false);
+        }
       });
     });
   }
@@ -149,6 +164,25 @@ export class ElectronService {
       return of(true); // 浏览器环境假设健康
     }
     return from(this.api.healthCheck()).pipe(catchError(() => of(false)));
+  }
+
+  /**
+   * 是否处于降级模式（无 Python 后端）
+   */
+  isDegradedMode(): boolean {
+    return this.degradedModeSubject.getValue();
+  }
+
+  /**
+   * 重试后端设置（退出降级模式）
+   */
+  retryBackend(): Observable<{ success: boolean; error?: string }> {
+    if (!this.isElectron) {
+      return of({ success: false, error: '非桌面环境' });
+    }
+    return from(this.api.retryBackendSetup()).pipe(
+      catchError((err) => of({ success: false, error: String(err) }))
+    );
   }
 
   // ==================== 文件系统操作 ====================
@@ -245,7 +279,7 @@ export class ElectronService {
 
   /**
    * 打开外部链接（带 URL 白名单验证）
-   * 
+   *
    * @param url 要打开的 URL
    * @returns 打开是否成功
    */

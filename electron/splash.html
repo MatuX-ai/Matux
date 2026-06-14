@@ -12,7 +12,8 @@
 
     body {
       font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
-      background: linear-gradient(135deg, #0f172a 0%, #1e293b 50%, #0f172a 100%);
+      background-color: #0a0e1a !important;
+      background: #0a0e1a !important;
       color: #e2e8f0;
       display: flex;
       justify-content: center;
@@ -23,9 +24,81 @@
       -webkit-app-region: drag;
     }
 
+    /* ====== 科技感背景 ====== */
+    .bg-grid {
+      position: fixed;
+      top: 0; left: 0;
+      width: 100%; height: 100%;
+      background-image:
+        linear-gradient(rgba(59, 130, 246, 0.03) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(59, 130, 246, 0.03) 1px, transparent 1px);
+      background-size: 40px 40px;
+      pointer-events: none;
+      z-index: 0;
+      transition: opacity 0.6s;
+    }
+
+    .bg-glow {
+      position: fixed;
+      top: 50%; left: 50%;
+      width: 600px; height: 600px;
+      transform: translate(-50%, -50%);
+      background: radial-gradient(circle, rgba(59, 130, 246, 0.08) 0%, transparent 70%);
+      pointer-events: none;
+      z-index: 0;
+      animation: glowPulse 4s ease-in-out infinite;
+      transition: opacity 0.6s;
+    }
+
+    /* ====== 数据流粒子背景（科技感升级） ====== */
+    .bg-particles {
+      position: fixed;
+      inset: 0;
+      z-index: 0;
+      pointer-events: none;
+      overflow: hidden;
+    }
+
+    .particle {
+      position: absolute;
+      width: 2px;
+      height: 2px;
+      background: #3b82f6;
+      border-radius: 50%;
+      box-shadow: 0 0 8px #3b82f6, 0 0 16px rgba(59, 130, 246, 0.4);
+      opacity: 0;
+      animation: particle-flow linear infinite;
+    }
+
+    @keyframes particle-flow {
+      0% {
+        opacity: 0;
+        transform: translateX(-50px) translateY(0);
+      }
+      8% {
+        opacity: 0.9;
+      }
+      92% {
+        opacity: 0.9;
+      }
+      100% {
+        opacity: 0;
+        transform: translateX(calc(100vw + 50px)) translateY(-30px);
+      }
+    }
+
+    @keyframes glowPulse {
+      0%, 100% { opacity: 0.6; transform: translate(-50%, -50%) scale(1); }
+      50%      { opacity: 1; transform: translate(-50%, -50%) scale(1.15); }
+    }
+
+    /* ====== 全屏 Splash 容器 ====== */
     .splash-container {
       text-align: center;
       animation: fadeIn 0.6s ease-out;
+      transition: all 0.8s cubic-bezier(0.4, 0, 0.2, 1);
+      position: relative;
+      z-index: 1;
     }
 
     @keyframes fadeIn {
@@ -33,10 +106,12 @@
       to   { opacity: 1; transform: translateY(0); }
     }
 
+    /* ====== Logo ====== */
     .logo-wrapper {
       position: relative;
       display: inline-block;
       margin-bottom: 24px;
+      transition: opacity 0.5s, transform 0.5s;
     }
 
     .logo-icon {
@@ -49,12 +124,52 @@
       justify-content: center;
       font-size: 42px;
       box-shadow: 0 8px 32px rgba(59, 130, 246, 0.35);
-      animation: pulse 2s ease-in-out infinite;
+      /* 像素拆解重组动画 + 持续脉冲 */
+      animation:
+        logo-assemble 1.0s cubic-bezier(0.34, 1.56, 0.64, 1) forwards,
+        logoPulse 2s ease-in-out infinite 1.0s;
+      position: relative;
     }
 
-    @keyframes pulse {
+    .logo-icon::after {
+      content: '';
+      position: absolute;
+      inset: -4px;
+      border-radius: 24px;
+      border: 1px solid rgba(59, 130, 246, 0.3);
+      animation: logoRing 3s ease-in-out infinite;
+    }
+
+    @keyframes logoPulse {
       0%, 100% { box-shadow: 0 8px 32px rgba(59, 130, 246, 0.35); }
       50%      { box-shadow: 0 12px 48px rgba(59, 130, 246, 0.55); transform: scale(1.05); }
+    }
+
+    @keyframes logoRing {
+      0%, 100% { transform: scale(1); opacity: 0.5; }
+      50%      { transform: scale(1.15); opacity: 0; }
+    }
+
+    /* Logo 像素拆解重组动画（从 4 块散开 → 聚拢成型） */
+    @keyframes logo-assemble {
+      0% {
+        opacity: 0;
+        transform: scale(0) rotate(-180deg);
+        filter: blur(20px);
+      }
+      40% {
+        opacity: 0.6;
+        transform: scale(1.3) rotate(20deg);
+        filter: blur(0);
+      }
+      70% {
+        transform: scale(0.95) rotate(-5deg);
+      }
+      100% {
+        opacity: 1;
+        transform: scale(1) rotate(0);
+        filter: blur(0);
+      }
     }
 
     .brand-name {
@@ -65,41 +180,439 @@
       -webkit-text-fill-color: transparent;
       background-clip: text;
       margin-bottom: 8px;
+      transition: opacity 0.5s;
     }
 
     .tagline {
       font-size: 14px;
-      color: #94a3b8;
+      color: #64748b;
       margin-bottom: 40px;
-      letter-spacing: 0.5px;
+      letter-spacing: 2px;
+      transition: opacity 0.5s;
     }
 
-    .status-section {
+    /* ====== 打字机终端区域 ====== */
+    .terminal-section {
+      background: rgba(15, 23, 42, 0.8);
+      border: 1px solid rgba(59, 130, 246, 0.15);
+      border-radius: 12px;
+      padding: 24px 28px;
+      width: 500px;
+      margin: 0 auto 20px;
+      text-align: left;
+      position: relative;
+      backdrop-filter: blur(10px);
+      transition: all 0.8s cubic-bezier(0.4, 0, 0.2, 1);
+    }
+
+    .terminal-header {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      margin-bottom: 12px;
+      padding-bottom: 10px;
+      border-bottom: 1px solid rgba(59, 130, 246, 0.1);
+      transition: opacity 0.4s, max-height 0.4s;
+      overflow: hidden;
+      max-height: 40px;
+    }
+
+    .terminal-dot {
+      width: 8px; height: 8px;
+      border-radius: 50%;
+    }
+    .terminal-dot.red { background: #ef4444; }
+    .terminal-dot.yellow { background: #f59e0b; }
+    .terminal-dot.green { background: #22c55e; }
+
+    .terminal-title {
+      font-size: 11px;
+      color: #475569;
+      margin-left: 8px;
+      font-family: 'Courier New', monospace;
+    }
+
+    .terminal-body {
+      font-family: 'Courier New', 'Consolas', monospace;
+      font-size: 12px;
+      line-height: 1.8;
+      max-height: 180px;
+      overflow-y: auto;
+      scrollbar-width: none;
+      transition: max-height 0.6s;
+    }
+
+    .terminal-body::-webkit-scrollbar { display: none; }
+
+    .log-line {
+      opacity: 0;
+      animation: typeLine 0.3s ease-out forwards;
+      white-space: nowrap;
+      overflow: hidden;
+      font-size: 15px;
+      line-height: 1.6;
+      transition: opacity 0.3s, max-height 0.3s;
+    }
+
+    @keyframes typeLine {
+      from { opacity: 0; transform: translateX(-8px); }
+      to   { opacity: 1; transform: translateX(0); }
+    }
+
+    .log-line .prefix {
+      color: #3b82f6;
+      margin-right: 8px;
+    }
+
+    .log-line .text { color: #94a3b8; }
+    .log-line .text.success { color: #22c55e; }
+    .log-line .text.warn { color: #f59e0b; }
+    .log-line .text.error { color: #ef4444; }
+
+    /* ====== 逐字打字光标 ====== */
+    .log-line.typing .text::after {
+      content: '';
+      display: inline-block;
+      width: 7px;
+      height: 12px;
+      margin-left: 1px;
+      vertical-align: text-bottom;
+      background: #3b82f6;
+      animation: blink 0.8s step-end infinite;
+    }
+
+    .log-line.error-typing .text::after {
+      background: #ef4444;
+      animation: blink 0.5s step-end infinite;
+    }
+
+    .log-line.complete .text::after { content: none; }
+
+    .cursor-blink {
+      display: inline-block;
+      width: 7px;
+      height: 14px;
+      background: #3b82f6;
+      animation: blink 1s step-end infinite;
+      vertical-align: middle;
+      margin-left: 2px;
+    }
+
+    @keyframes blink {
+      0%, 50% { opacity: 1; }
+      51%, 100% { opacity: 0; }
+    }
+
+    /* ====== XP 飞升 Toast（阶段奖励） ====== */
+    .xp-toast {
+      position: fixed;
+      pointer-events: none;
+      z-index: 50;
+      display: flex;
+      flex-direction: column;
+      gap: 2px;
+      align-items: center;
+      padding: 8px 18px;
+      border-radius: 14px;
+      background: linear-gradient(135deg, #f59e0b 0%, #fbbf24 100%);
+      box-shadow: 0 8px 24px rgba(245, 158, 11, 0.5);
+      color: white;
+      font-weight: 700;
+      animation: xp-fly 1.4s cubic-bezier(0.34, 1.56, 0.64, 1) forwards;
+    }
+
+    .xp-toast.rarity-common {
+      background: linear-gradient(135deg, #94a3b8 0%, #cbd5e1 100%);
+      box-shadow: 0 6px 18px rgba(148, 163, 184, 0.5);
+    }
+
+    .xp-toast.rarity-rare {
+      background: linear-gradient(135deg, #3b82f6 0%, #60a5fa 100%);
+      box-shadow: 0 6px 18px rgba(59, 130, 246, 0.5);
+    }
+
+    .xp-toast.rarity-epic {
+      background: linear-gradient(135deg, #a855f7 0%, #c084fc 100%);
+      box-shadow: 0 8px 24px rgba(168, 85, 247, 0.6);
+    }
+
+    .xp-toast.rarity-legendary {
+      background: linear-gradient(135deg, #f59e0b 0%, #fde047 100%);
+      box-shadow: 0 10px 32px rgba(245, 158, 11, 0.7), 0 0 24px rgba(253, 224, 71, 0.4);
+    }
+
+    .xp-toast .xp-amount {
+      font-size: 22px;
+      line-height: 1;
+    }
+
+    .xp-toast .xp-reason {
+      font-size: 10px;
+      font-weight: 500;
+      letter-spacing: 0.5px;
+      opacity: 0.9;
+    }
+
+    @keyframes xp-fly {
+      0% {
+        opacity: 0;
+        transform: translate(-50%, 0) scale(0.5);
+      }
+      15% {
+        opacity: 1;
+        transform: translate(-50%, -10px) scale(1.15);
+      }
+      70% {
+        opacity: 1;
+        transform: translate(-50%, -50px) scale(1);
+      }
+      100% {
+        opacity: 0;
+        transform: translate(-50%, -90px) scale(0.9);
+      }
+    }
+
+    /* ====== 里程碑金色脉冲 ====== */
+    .progress-bar-fill.milestone {
+      animation: milestone-glow 1.2s ease-out;
+    }
+
+    .progress-text.milestone {
+      animation: milestone-celebrate 1.2s cubic-bezier(0.34, 1.56, 0.64, 1);
+    }
+
+    @keyframes milestone-glow {
+      0%, 100% {
+        box-shadow: 0 0 12px rgba(59, 130, 246, 0.6);
+      }
+      50% {
+        box-shadow:
+          0 0 30px rgba(245, 158, 11, 0.9),
+          0 0 60px rgba(245, 158, 11, 0.4);
+      }
+    }
+
+    @keyframes milestone-celebrate {
+      0% { transform: scale(1); color: #475569; }
+      30% {
+        transform: scale(1.5);
+        color: #fbbf24;
+        text-shadow: 0 0 16px #f59e0b;
+      }
+      60% { transform: scale(0.92); color: #fbbf24; }
+      100% { transform: scale(1); color: #475569; }
+    }
+
+    /* ====== 启动连续天数徽章 ====== */
+    .streak-badge {
+      position: fixed;
+      top: 24px;
+      right: 24px;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      padding: 6px 12px;
+      border-radius: 999px;
+      background: rgba(15, 23, 42, 0.6);
+      border: 1px solid rgba(245, 158, 11, 0.3);
+      backdrop-filter: blur(8px);
+      font-size: 12px;
+      font-weight: 600;
+      color: #fbbf24;
+      opacity: 0;
+      animation: streak-in 0.6s ease-out 0.8s forwards;
+      z-index: 5;
+    }
+
+    @keyframes streak-in {
+      from { opacity: 0; transform: translateX(20px); }
+      to { opacity: 1; transform: translateX(0); }
+    }
+
+    /* ====== app-ready 全屏庆祝（闭环游戏化） ====== */
+    .ready-sweep {
+      position: fixed;
+      inset: 0;
+      background: linear-gradient(
+        100deg,
+        transparent 30%,
+        rgba(245, 158, 11, 0.35) 50%,
+        transparent 70%
+      );
+      animation: sweep-across 1.2s ease-out forwards;
+      z-index: 20;
+      pointer-events: none;
+    }
+
+    @keyframes sweep-across {
+      from { transform: translateX(-100%); }
+      to { transform: translateX(100%); }
+    }
+
+    .ready-badge {
+      position: fixed;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%) scale(0);
+      text-align: center;
+      z-index: 21;
+      animation: badge-pop 0.8s cubic-bezier(0.34, 1.56, 0.64, 1) forwards;
+      pointer-events: none;
+    }
+
+    .ready-badge-icon {
+      width: 96px;
+      height: 96px;
+      margin: 0 auto 16px;
+      background: linear-gradient(135deg, #f59e0b 0%, #fde047 100%);
+      border-radius: 24px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 48px;
+      box-shadow:
+        0 12px 48px rgba(245, 158, 11, 0.6),
+        0 0 24px rgba(253, 224, 71, 0.4);
+      animation: badge-rotate 1.2s ease-out;
+    }
+
+    .ready-badge-text {
+      font-size: 24px;
+      font-weight: 700;
+      background: linear-gradient(135deg, #fde047, #f59e0b);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+      margin-bottom: 6px;
+      animation: text-fade-in 0.5s ease-out 0.3s both;
+    }
+
+    .ready-badge-sub {
+      font-size: 13px;
+      color: #94a3b8;
+      font-weight: 500;
+      animation: text-fade-in 0.5s ease-out 0.5s both;
+    }
+
+    .ready-badge-streak {
+      margin-top: 12px;
+      display: inline-block;
+      padding: 6px 14px;
+      border-radius: 999px;
+      background: rgba(245, 158, 11, 0.15);
+      border: 1px solid rgba(245, 158, 11, 0.4);
+      color: #fbbf24;
+      font-size: 12px;
+      font-weight: 600;
+      animation: text-fade-in 0.5s ease-out 0.7s both;
+    }
+
+    @keyframes badge-pop {
+      0% { transform: translate(-50%, -50%) scale(0) rotate(-180deg); opacity: 0; }
+      60% { transform: translate(-50%, -50%) scale(1.15) rotate(10deg); opacity: 1; }
+      100% { transform: translate(-50%, -50%) scale(1) rotate(0); opacity: 1; }
+    }
+
+    @keyframes badge-rotate {
+      from { transform: rotate(-30deg) scale(0.7); }
+      to { transform: rotate(0) scale(1); }
+    }
+
+    @keyframes text-fade-in {
+      from { opacity: 0; transform: translateY(8px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+
+    /* ====== 礼花粒子（app-ready 时从中心位置散开） ====== */
+    .confetti {
+      position: fixed;
+      top: 50%;
+      left: 50%;
+      width: 8px;
+      height: 8px;
+      pointer-events: none;
+      z-index: 19;
+      animation: confetti-fly 1.5s cubic-bezier(0.25, 0.46, 0.45, 0.94) forwards;
+    }
+
+    @keyframes confetti-fly {
+      0% {
+        opacity: 1;
+        transform: translate(-50%, -50%) rotate(0);
+      }
+      100% {
+        opacity: 0;
+        transform: translate(calc(-50% + var(--dx)), calc(-50% + var(--dy))) rotate(var(--rot));
+      }
+    }
+
+    /* ====== 进度条 ====== */
+    .progress-section {
+      position: relative;
+      z-index: 1;
       display: flex;
       flex-direction: column;
       align-items: center;
-      gap: 12px;
+      gap: 8px;
+      transition: flex-direction 0s;
     }
 
     .progress-bar-container {
-      width: 240px;
-      height: 4px;
-      background: rgba(148, 163, 184, 0.2);
-      border-radius: 2px;
+      width: 460px;
+      height: 8px;
+      background: rgba(148, 163, 184, 0.08);
+      border-radius: 4px;
       overflow: hidden;
+      transition: width 0.8s cubic-bezier(0.4, 0, 0.2, 1);
+      box-shadow:
+        inset 0 1px 2px rgba(0, 0, 0, 0.4),
+        0 1px 1px rgba(59, 130, 246, 0.15);
+      position: relative;
     }
 
     .progress-bar-fill {
       height: 100%;
-      background: linear-gradient(90deg, #3b82f6, #60a5fa);
-      border-radius: 2px;
+      background: linear-gradient(
+        90deg,
+        #3b82f6 0%,
+        #60a5fa 50%,
+        #22d3ee 100%
+      );
+      background-size: 200% 100%;
+      border-radius: 3px;
       transition: width 0.4s ease-out;
       width: 0%;
+      animation: shimmer 2s ease-in-out infinite;
+      position: relative;
+      box-shadow:
+        0 0 12px rgba(59, 130, 246, 0.6),
+        inset 0 1px 0 rgba(255, 255, 255, 0.4);
+    }
+
+    /* 进度条头部流光点 */
+    .progress-bar-fill::after {
+      content: '';
+      position: absolute;
+      right: 0;
+      top: -2px;
+      width: 4px;
+      height: calc(100% + 4px);
+      background: white;
+      border-radius: 2px;
+      box-shadow:
+        0 0 12px white,
+        0 0 24px rgba(59, 130, 246, 0.6);
+      opacity: 0.9;
+    }
+
+    @keyframes shimmer {
+      0% { background-position: 200% 0; }
+      100% { background-position: -200% 0; }
     }
 
     .progress-bar-fill.indeterminate {
       width: 40%;
-      animation: indeterminate 1.5s ease-in-out infinite;
+      animation: indeterminate 1.5s ease-in-out infinite, shimmer 2s ease-in-out infinite;
     }
 
     @keyframes indeterminate {
@@ -107,90 +620,25 @@
       100% { transform: translateX(350%); }
     }
 
-    .status-text {
-      font-size: 13px;
+    .progress-text {
+      font-size: 14px;
       color: #94a3b8;
-      min-height: 20px;
-      transition: color 0.3s;
+      font-family: 'Courier New', monospace;
+      transition: font-size 0.4s;
     }
 
-    .status-text.error {
-      color: #ef4444;
-    }
-
-    .status-text.success {
-      color: #22c55e;
-    }
-
-    /* 模块加载进度区域 */
-    .module-progress {
-      display: none;
-      margin-top: 16px;
-      width: 280px;
-      text-align: left;
-    }
-
-    .module-progress.visible {
-      display: block;
-      animation: fadeIn 0.3s ease-out;
-    }
-
-    .module-item {
-      display: flex;
-      align-items: center;
-      gap: 8px;
-      padding: 3px 0;
-      font-size: 11px;
-      color: #64748b;
-      transition: color 0.3s;
-    }
-
-    .module-item.active {
-      color: #22c55e;
-    }
-
-    .module-item.loading {
-      color: #94a3b8;
-    }
-
-    .module-item.failed {
-      color: #f87171;
-    }
-
-    .module-item.degraded {
-      color: #fbbf24;
-    }
-
-    .module-dot {
-      width: 6px;
-      height: 6px;
-      border-radius: 50%;
-      background: #475569;
-      flex-shrink: 0;
-      transition: background 0.3s;
-    }
-
-    .module-item.active .module-dot { background: #22c55e; }
-    .module-item.loading .module-dot { background: #3b82f6; animation: pulse 1.5s ease-in-out infinite; }
-    .module-item.failed .module-dot { background: #f87171; }
-    .module-item.degraded .module-dot { background: #fbbf24; }
-
-    .module-label {
-      flex: 1;
-      overflow: hidden;
-      text-overflow: ellipsis;
-      white-space: nowrap;
-    }
-
+    /* ====== 错误区域 ====== */
     .error-section {
       display: none;
-      margin-top: 24px;
+      margin-top: 20px;
       padding: 16px 20px;
-      background: rgba(239, 68, 68, 0.1);
-      border: 1px solid rgba(239, 68, 68, 0.3);
+      background: rgba(239, 68, 68, 0.08);
+      border: 1px solid rgba(239, 68, 68, 0.2);
       border-radius: 12px;
       max-width: 400px;
       text-align: left;
+      z-index: 1;
+      position: relative;
     }
 
     .error-section.visible {
@@ -225,56 +673,724 @@
       transition: background 0.2s;
     }
 
-    .retry-button:hover {
-      background: #dc2626;
+    .retry-button:hover { background: #dc2626; }
+    .retry-button:active { background: #b91c1c; }
+
+    /* ====== 报警覆盖层（全屏独立弹窗）====== */
+    .alert-overlay {
+      position: fixed;
+      inset: 0;
+      background: radial-gradient(circle at center, rgba(239, 68, 68, 0.18) 0%, rgba(0, 0, 0, 0.85) 70%);
+      backdrop-filter: blur(8px);
+      -webkit-backdrop-filter: blur(8px);
+      z-index: 100;
+      display: none;
+      align-items: center;
+      justify-content: center;
+      animation: overlay-fade-in 0.25s ease-out;
+    }
+    .alert-overlay.visible { display: flex; }
+
+    @keyframes overlay-fade-in {
+      from { opacity: 0; }
+      to   { opacity: 1; }
     }
 
-    .retry-button:active {
-      background: #b91c1c;
+    .alert-modal {
+      width: 480px;
+      max-width: 90vw;
+      padding: 28px 32px;
+      background: linear-gradient(180deg, rgba(15, 23, 42, 0.98), rgba(7, 12, 24, 0.98));
+      border: 2px solid #ef4444;
+      border-radius: 16px;
+      box-shadow:
+        0 24px 80px rgba(239, 68, 68, 0.45),
+        0 0 0 1px rgba(239, 68, 68, 0.25),
+        inset 0 1px 0 rgba(255, 255, 255, 0.06);
+      text-align: left;
+      position: relative;
+      animation: alert-pop 0.32s cubic-bezier(0.34, 1.56, 0.64, 1);
     }
+
+    @keyframes alert-pop {
+      from { transform: scale(0.85); opacity: 0; }
+      to   { transform: scale(1); opacity: 1; }
+    }
+
+    .alert-icon {
+      width: 56px;
+      height: 56px;
+      margin-bottom: 16px;
+      border-radius: 50%;
+      background: rgba(239, 68, 68, 0.15);
+      border: 2px solid #ef4444;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 28px;
+      color: #ef4444;
+      animation: alert-icon-pulse 0.8s ease-in-out infinite;
+    }
+
+    @keyframes alert-icon-pulse {
+      0%, 100% { box-shadow: 0 0 0 0 rgba(239, 68, 68, 0.7); transform: scale(1); }
+      50%      { box-shadow: 0 0 0 16px rgba(239, 68, 68, 0); transform: scale(1.08); }
+    }
+
+    .alert-title {
+      font-size: 18px;
+      font-weight: 700;
+      color: #ef4444;
+      margin-bottom: 8px;
+      letter-spacing: 1px;
+    }
+
+    .alert-message {
+      font-size: 13px;
+      color: #fca5a5;
+      line-height: 1.6;
+      margin-bottom: 20px;
+      white-space: pre-wrap;
+      word-break: break-word;
+    }
+
+    .alert-actions {
+      display: flex;
+      gap: 12px;
+      justify-content: flex-end;
+    }
+
+    .alert-btn {
+      -webkit-app-region: no-drag;
+      padding: 8px 20px;
+      font-size: 13px;
+      font-weight: 600;
+      border: none;
+      border-radius: 8px;
+      cursor: pointer;
+      transition: all 0.15s ease;
+      font-family: inherit;
+    }
+    .alert-btn-primary {
+      background: #ef4444;
+      color: white;
+    }
+    .alert-btn-primary:hover { background: #dc2626; }
+    .alert-btn-secondary {
+      background: transparent;
+      color: #94a3b8;
+      border: 1px solid #334155;
+    }
+    .alert-btn-secondary:hover { background: rgba(148, 163, 184, 0.08); color: #e2e8f0; }
+
+    /* ====== 启动弹窗红警闪烁（科幻游戏风格）====== */
+    body.alarm-active .splash-container {
+      animation:
+        alarm-flash 0.5s ease-in-out infinite,
+        alarm-shake 0.18s ease-in-out infinite;
+    }
+
+    body.alarm-active::before {
+      content: '';
+      position: fixed;
+      inset: 0;
+      pointer-events: none;
+      background: radial-gradient(ellipse at center, transparent 30%, rgba(239, 68, 68, 0.35) 100%);
+      animation: alarm-vignette 1.2s ease-in-out infinite alternate;
+      z-index: 50;
+    }
+
+    body.alarm-active::after {
+      content: '';
+      position: fixed;
+      inset: 0;
+      pointer-events: none;
+      border: 3px solid #ef4444;
+      box-shadow: inset 0 0 80px rgba(239, 68, 68, 0.5);
+      animation: alarm-border 0.6s ease-in-out infinite alternate;
+      z-index: 51;
+    }
+
+    @keyframes alarm-flash {
+      0%, 100% { filter: none; }
+      50%      { filter: brightness(1.15) saturate(1.3) hue-rotate(-5deg); }
+    }
+
+    @keyframes alarm-shake {
+      0%, 100% { transform: translate(0, 0); }
+      25%      { transform: translate(-2px, 1px); }
+      50%      { transform: translate(2px, -1px); }
+      75%      { transform: translate(-1px, -2px); }
+    }
+
+    @keyframes alarm-vignette {
+      from { opacity: 0.4; }
+      to   { opacity: 1; }
+    }
+
+    @keyframes alarm-border {
+      from { opacity: 0.4; box-shadow: inset 0 0 40px rgba(239, 68, 68, 0.3); }
+      to   { opacity: 1;   box-shadow: inset 0 0 120px rgba(239, 68, 68, 0.7); }
+    }
+
+    /* 减少动画偏好降级（WCAG 2.3.3）*/
+    @media (prefers-reduced-motion: reduce) {
+      body.alarm-active .splash-container { animation: alarm-flash 1.5s ease-in-out infinite; }
+      body.alarm-active::before, body.alarm-active::after { animation: none; opacity: 0.6; }
+    }
+
+    /* 报警时禁用 ESC 跳过，避免用户错过关键错误 */
+    body.alarm-active .skip-hint { display: none; }
 
     .version-text {
+      position: relative;
+      display: block;
+      text-align: center;
+      font-size: 13px;
+      color: #94a3b8;
+      margin-top: 8px;
+      transition: opacity 0.5s;
+    }
+
+    /* ====== 游戏风格菜单 ====== */
+    .game-menu {
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      gap: 16px;
+      margin-top: 20px;
+      padding: 12px 24px;
+      background: rgba(15, 23, 42, 0.6);
+      border: 1px solid rgba(59, 130, 246, 0.2);
+      border-radius: 12px;
+      backdrop-filter: blur(10px);
+    }
+
+    .menu-btn {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      min-width: 80px;
+      height: 40px;
+      padding: 0 16px;
+      border: 1px solid transparent;
+      background: transparent;
+      cursor: pointer;
+      color: #22c55e;
+      font-family: 'Courier New', 'Consolas', monospace;
+      font-size: 15px;
+      font-weight: 700;
+      letter-spacing: 2px;
+      /* 保留 letter-spacing 增强游戏感，移除 uppercase 防止中文变形 */
+      transition: color 0.2s ease, text-shadow 0.2s ease, background 0.2s ease, transform 0.2s ease, border-color 0.2s ease;
+    }
+
+    /* 【菜单 hover 变白】提升选择器特异性 + !important，兑底 <button> user-agent 样式
+       同时增强背景 + 边框 + 更亮光晕，让变白效果非常明显 */
+    button.menu-btn:hover,
+    .menu-btn:hover {
+      color: #ffffff !important;
+      background: rgba(34, 197, 94, 0.18) !important;
+      border-color: rgba(34, 197, 94, 0.6) !important;
+      text-shadow:
+        0 0 12px rgba(255, 255, 255, 1),
+        0 0 4px rgba(255, 255, 255, 0.9) !important;
+      transform: translateY(-1px);
+    }
+
+    .menu-btn:active {
+      transform: translateY(1px);
+    }
+
+    body.mini-mode .game-menu {
+      display: none;
+    }
+
+    /* ====== ESC 跳过动画提示 + 设置按钮 ====== */
+    .skip-hint {
       position: fixed;
       bottom: 16px;
-      left: 50%;
-      transform: translateX(-50%);
+      right: 24px;
+      font-size: 13px;
+      color: #94a3b8;
+      z-index: 6;
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      animation: hint-fade-in 0.8s ease-out 1.5s both;
+    }
+
+    @keyframes hint-fade-in {
+      from { opacity: 0; }
+      to { opacity: 1; }
+    }
+
+    .skip-hint .key {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      width: 28px;
+      height: 28px;
+      border: 1px solid #475569;
+      border-radius: 6px;
+      font-size: 14px;
+      font-family: 'Courier New', monospace;
+      background: rgba(71, 85, 105, 0.1);
+    }
+
+    .skip-hint .settings-btn {
+      -webkit-app-region: no-drag;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      width: 28px;
+      height: 28px;
+      border-radius: 6px;
+      border: 1px solid #475569;
+      background: rgba(71, 85, 105, 0.1);
+      cursor: pointer;
+      font-size: 14px;
+      transition: background 0.2s;
+    }
+
+    .skip-hint .settings-btn:hover {
+      background: rgba(71, 85, 105, 0.3);
+    }
+
+    /* 设置面板 */
+    .settings-panel {
+      position: fixed;
+      bottom: 40px;
+      right: 24px;
+      z-index: 30;
+      background: rgba(15, 23, 42, 0.92);
+      border: 1px solid rgba(59, 130, 246, 0.2);
+      border-radius: 10px;
+      padding: 14px 16px;
+      backdrop-filter: blur(12px);
+      min-width: 180px;
+      display: none;
+      animation: panel-pop 0.25s cubic-bezier(0.34, 1.56, 0.64, 1);
+    }
+
+    .settings-panel.open {
+      display: block;
+    }
+
+    @keyframes panel-pop {
+      from { opacity: 0; transform: translateY(8px) scale(0.95); }
+      to { opacity: 1; transform: translateY(0) scale(1); }
+    }
+
+
+    .settings-panel .panel-title {
       font-size: 11px;
-      color: #475569;
+      font-weight: 600;
+      color: #94a3b8;
+      margin-bottom: 10px;
+      letter-spacing: 0.5px;
     }
 
-    /* 加载圆点动画 */
-    .dots::after {
+
+    .settings-panel .setting-row {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+      margin-bottom: 8px;
+    }
+
+    .settings-panel .setting-label {
+      font-size: 12px;
+      color: #e2e8f0;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+
+
+    /* 自定义 Toggle 开关（纯 CSS） */
+    .toggle-switch {
+      position: relative;
+      width: 32px;
+      height: 16px;
+      flex-shrink: 0;
+    }
+
+
+    .toggle-switch input {
+      opacity: 0;
+      width: 0;
+      height: 0;
+    }
+
+    .toggle-slider {
+      position: absolute;
+      inset: 0;
+      background: #334155;
+      border-radius: 999px;
+      cursor: pointer;
+      transition: background 0.2s;
+    }
+
+    .toggle-slider::before {
       content: '';
-      animation: dots 1.5s steps(4, end) infinite;
+      position: absolute;
+      left: 2px;
+      top: 2px;
+      width: 12px;
+      height: 12px;
+      background: white;
+      border-radius: 50%;
+      transition: transform 0.2s;
     }
 
-    @keyframes dots {
-      0%   { content: ''; }
-      25%  { content: '.'; }
-      50%  { content: '..'; }
-      75%  { content: '...'; }
-      100% { content: ''; }
+    .toggle-switch input:checked + .toggle-slider {
+      background: #3b82f6;
+    }
+
+    .toggle-switch input:checked + .toggle-slider::before {
+      transform: translateX(16px);
+    }
+
+    /* 终端展开箭头 */
+    .terminal-expand-hint {
+      display: none;
+      align-items: center;
+      justify-content: center;
+      padding: 4px;
+      cursor: pointer;
+      border-radius: 4px;
+      transition: background 0.2s;
+      margin-top: 4px;
+    }
+
+    .terminal-expand-hint:hover {
+      background: rgba(59, 130, 246, 0.1);
+    }
+
+    body.expanded .terminal-body {
+      max-height: 500px;
+      overflow-y: auto;
+      scrollbar-width: thin;
+      scrollbar-color: #3b82f6 transparent;
+    }
+
+    body.expanded .terminal-body::-webkit-scrollbar {
+      width: 4px;
+    }
+
+    body.expanded .terminal-body::-webkit-scrollbar-track {
+      background: transparent;
+    }
+
+    body.expanded .terminal-body::-webkit-scrollbar-thumb {
+      background: #3b82f6;
+      border-radius: 2px;
+    }
+
+    body.expanded .log-line {
+      animation: none;
+      opacity: 1;
+      white-space: pre-wrap;
+      word-break: break-all;
+    }
+
+    body.expanded .log-line.typing .text::after {
+      display: none;
+    }
+
+    /* ====== 迷你模式（Splash 变形为底部横条） ====== */
+    /* 【修复】迷你模式需要保持背景色，避免白屏 */
+    body.mini-mode {
+      background-color: #0a0e1a !important;
+      background: #0a0e1a !important;
+      align-items: flex-end;
+    }
+
+    body.mini-mode .bg-grid,
+    body.mini-mode .bg-glow,
+    body.mini-mode .bg-particles {
+      opacity: 0;
+      pointer-events: none;
+    }
+
+    body.mini-mode .splash-container {
+      position: fixed;
+      bottom: 0;
+      left: 0;
+      right: 0;
+    }
+
+    body.mini-mode .logo-wrapper,
+    body.mini-mode .brand-name,
+    body.mini-mode .tagline,
+    body.mini-mode .version-text {
+      opacity: 0;
+      pointer-events: none;
+      transform: translateY(-10px);
+    }
+
+    body.mini-mode .terminal-section {
+      width: 100%;
+      border-radius: 0;
+      padding: 6px 16px;
+      margin: 0;
+      background: rgba(10, 14, 26, 0.92);
+      border: none;
+      border-top: 1px solid rgba(59, 130, 246, 0.15);
+      backdrop-filter: blur(20px);
+      max-height: none;
+    }
+
+    body.mini-mode .terminal-header {
+      max-height: 0;
+      opacity: 0;
+      margin: 0;
+      padding: 0;
+      border: none;
+    }
+
+    body.mini-mode .terminal-body {
+      max-height: 28px;
+      overflow: hidden;
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      line-height: 1.4;
+    }
+
+    body.mini-mode .log-line {
+      display: none;
+      font-size: 14px;
+    }
+
+    body.mini-mode .log-line.mini-visible {
+      display: block;
+      flex: 1;
+      animation: none;
+      opacity: 1;
+      max-width: none;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+
+    body.mini-mode .log-line.mini-visible .prefix {
+      display: none;
+    }
+
+    body.mini-mode .cursor-blink {
+      width: 5px;
+      height: 10px;
+      flex-shrink: 0;
+    }
+
+    body.mini-mode .progress-section {
+      flex-direction: row;
+      gap: 10px;
+      align-items: center;
+    }
+
+    body.mini-mode .progress-bar-container {
+      flex: 1;
+      width: auto;
+      height: 4px;
+    }
+
+    body.mini-mode .progress-text {
+      font-size: 13px;
+      min-width: 40px;
+      text-align: right;
+      color: #94a3b8;
+    }
+
+    body.mini-mode .terminal-expand-hint {
+      display: flex;
+    }
+
+    body.mini-mode .skip-hint {
+      display: none;
+    }
+
+    body.mini-mode .error-section {
+      margin-top: 0;
+      border-radius: 0;
+      max-width: none;
+    }
+
+    /* ====== 完全隐藏 ====== */
+    body.fade-out {
+      opacity: 0;
+      transition: opacity 0.6s ease-out;
+      pointer-events: none;
+    }
+
+    /* ====== 无障碍降级（prefers-reduced-motion） ====== */
+    /* WCAG 2.3.3 友好：用户在系统设置启用减少动画时禁用非必要动效 */
+    @media (prefers-reduced-motion: reduce) {
+      *,
+      *::before,
+      *::after {
+        animation-duration: 0.01ms !important;
+        animation-iteration-count: 1 !important;
+        transition-duration: 0.01ms !important;
+      }
+
+      .xp-toast {
+        animation-duration: 0.3s !important;
+      }
+
+      .progress-bar-fill.milestone,
+      .progress-text.milestone {
+        animation: none !important;
+      }
+
+      .logo-icon,
+      .logo-icon::after,
+      .bg-glow,
+      .particle,
+      .ready-badge,
+      .ready-sweep,
+      .confetti {
+        animation: none !important;
+      }
+
+      .ready-badge {
+        /* reduced-motion 下仍保留居中显示 */
+        transform: translate(-50%, -50%) scale(1) !important;
+        opacity: 1 !important;
+      }
+
+      .log-line.typing .text::after,
+      .log-line.error-typing .text::after,
+      .cursor-blink {
+        animation: none !important;
+        opacity: 0 !important;
+      }
+
+      body {
+        transition: background 0.01ms !important;
+      }
+    }
+
+    /* JS 触发的 reduced-motion（用户手动关闭动画时生效） */
+    body.reduced-motion *,
+    body.reduced-motion *::before,
+    body.reduced-motion *::after {
+      animation-duration: 0.01ms !important;
+      animation-iteration-count: 1 !important;
+      transition-duration: 0.01ms !important;
+    }
+
+    body.reduced-motion .xp-toast {
+      animation-duration: 0.3s !important;
+    }
+
+    body.reduced-motion .ready-badge {
+      transform: translate(-50%, -50%) scale(1) !important;
+      opacity: 1 !important;
+    }
+
+    body.reduced-motion .particle,
+    body.reduced-motion .logo-icon,
+    body.reduced-motion .logo-icon::after,
+    body.reduced-motion .bg-glow,
+    body.reduced-motion .ready-sweep,
+    body.reduced-motion .confetti {
+      animation: none !important;
+    }
+
+    body.reduced-motion .log-line.typing .text::after,
+    body.reduced-motion .log-line.error-typing .text::after,
+    body.reduced-motion .cursor-blink {
+      animation: none !important;
+      opacity: 0 !important;
+    }
+
+    body.reduced-motion .progress-bar-fill.milestone,
+    body.reduced-motion .progress-text.milestone {
+      animation: none !important;
     }
   </style>
 </head>
 <body>
+  <div class="bg-grid"></div>
+  <div class="bg-glow"></div>
+  <div class="bg-particles" id="bgParticles"></div>
+
+  <!-- 启动连续天数徽章 -->
+  <div class="streak-badge" id="streakBadge" hidden>
+    <span>🔥</span>
+    <span id="streakText">连续启动 1 天</span>
+  </div>
+
+  <!-- 设置面板 -->
+  <div class="settings-panel" id="settingsPanel">
+    <div class="panel-title">启动设置</div>
+    <div class="setting-row">
+      <label class="setting-label" for="toggleAnimations">
+        动画效果
+      </label>
+      <label class="toggle-switch">
+        <input type="checkbox" id="toggleAnimations" checked
+          onchange="onAnimationToggle(this.checked)">
+        <span class="toggle-slider"></span>
+      </label>
+    </div>
+    <div class="setting-row">
+      <label class="setting-label" for="toggleSound">
+        启动音效
+      </label>
+      <label class="toggle-switch">
+        <input type="checkbox" id="toggleSound"
+          onchange="onSoundToggle(this.checked)">
+        <span class="toggle-slider"></span>
+      </label>
+    </div>
+  </div>
+
   <div class="splash-container">
     <div class="logo-wrapper">
       <div class="logo-icon">🧊</div>
+      <div class="version-text">v1.0.0</div>
     </div>
     <div class="brand-name">MatuX</div>
     <div class="tagline">AI 驱动的 STEM 教育新纪元</div>
 
-    <div class="status-section">
+    <!-- 打字机终端 -->
+    <div class="terminal-section">
+      <div class="terminal-header">
+        <span class="terminal-dot red"></span>
+        <span class="terminal-dot yellow"></span>
+        <span class="terminal-dot green"></span>
+        <span class="terminal-title">matux-init</span>
+      </div>
+      <div class="terminal-body" id="terminalBody">
+        <div class="log-line mini-visible" style="animation-delay:0.2s">
+          <span class="prefix">▸</span>
+          <span class="text">Initializing MatuX Engine...</span>
+        </div>
+      </div>
+      <!-- 终端可点击展开 -->
+      <div class="terminal-expand-hint" id="terminalExpandHint" onclick="toggleTerminalExpand()">
+        <span class="arrow">▲</span>
+      </div>
+    </div>
+
+    <!-- 进度条 -->
+    <div class="progress-section">
       <div class="progress-bar-container">
         <div class="progress-bar-fill indeterminate" id="progressBar"></div>
       </div>
-      <div class="status-text dots" id="statusText">正在启动后端服务</div>
+      <div class="progress-text" id="progressText">0%</div>
+    </div>
 
-      <!-- 模块加载进度 -->
-      <div class="module-progress" id="moduleProgress">
-        <div id="moduleList"></div>
-      </div>
+    <!-- 游戏风格菜单 -->
+    <div class="game-menu" id="gameMenu">
+      <button class="menu-btn settings-btn" id="menuSettings" title="设置">设置</button>
+      <button class="menu-btn skip-btn" id="menuSkip" title="跳过动画">跳过</button>
+      <button class="menu-btn quit-btn" id="menuQuit" title="退出">退出</button>
     </div>
 
     <div class="error-section" id="errorSection">
@@ -286,164 +1402,892 @@
     </div>
   </div>
 
-  <div class="version-text">v1.0.0</div>
+  <!-- 报警覆盖层（独立弹窗）-->
+  <div class="alert-overlay" id="alertOverlay" role="alertdialog" aria-labelledby="alertTitle" aria-describedby="alertMessage">
+    <div class="alert-modal">
+      <div class="alert-icon">⚠</div>
+      <div class="alert-title" id="alertTitle">后端启动失败</div>
+      <div class="alert-message" id="alertMessage">健康检查失败，请检查后端服务。</div>
+      <div class="alert-actions">
+        <button class="alert-btn alert-btn-secondary" id="alertDismiss">忽略</button>
+        <button class="alert-btn alert-btn-primary" id="alertRetry">重试</button>
+      </div>
+    </div>
+  </div>
 
   <script>
-    const progressBar = document.getElementById('progressBar');
-    const statusText = document.getElementById('statusText');
-    const errorSection = document.getElementById('errorSection');
-    const errorTitle = document.getElementById('errorTitle');
-    const errorMessage = document.getElementById('errorMessage');
+    // 全局错误处理：确保页面在 JavaScript 错误时仍能显示
+    window.addEventListener('error', function(e) {
+      console.error('[Splash Error]', e.message, e.filename + ':' + e.lineno);
+      // 确保 body 可见（即使出错）
+      try {
+        document.body.style.display = 'flex';
+        document.body.style.opacity = '1';
+        var terminalBody = document.getElementById('terminalBody');
+        if (terminalBody) {
+          terminalBody.innerHTML = '<div style="color:#ef4444;padding:20px;font-size:12px;">⚠️ JS 错误: ' + e.message + '<br>文件: ' + e.filename + '<br>行号: ' + e.lineno + '</div>';
+        }
+      } catch (ex) {}
+    });
+
+    // 监听渲染进程控制台输出（调试用）
+    console.log('[Splash] Script loaded, document.readyState=' + document.readyState);
+    console.log('[Splash] window.splashAPI available:', typeof window.splashAPI);
+    console.log('[Splash] body element:', document.body ? 'exists' : 'null');
+
+    // 安全获取 DOM 元素（带 null 检查）
+    const terminalBody = document.getElementById('terminalBody') || { appendChild: function(){}, querySelector: function(){return null;}, querySelectorAll: function(){return [];}, scrollTop: 0 };
+    const progressBar = document.getElementById('progressBar') || { classList: { remove: function(){}, add: function(){} }, style: {}, getBoundingClientRect: function(){return {right: 400, top: 400};} };
+    const progressText = document.getElementById('progressText') || { textContent: '' };
+    const errorSection = document.getElementById('errorSection') || { classList: { add: function(){}}, style: {} };
+    const errorTitle = document.getElementById('errorTitle') || { textContent: '' };
+    const errorMessage = document.getElementById('errorMessage') || { textContent: '' };
+    const streakBadge = document.getElementById('streakBadge') || { hidden: true };
+    const streakText = document.getElementById('streakText') || { textContent: '' };
+
+    const MAX_VISIBLE_LINES = 8;
+    let lineCount = 1;
+    let lastProgress = 0;
+    let totalXPEarned = 0;
 
     /**
-     * 更新加载状态文本
+     * 无障碍检测：用户在系统设置中启用“减少动画”偏好
      */
-    function setStatus(text, type) {
-      statusText.textContent = text;
-      statusText.className = 'status-text dots';
-      if (type === 'error') {
-        statusText.classList.add('error');
-        statusText.classList.remove('dots');
-      } else if (type === 'success') {
-        statusText.classList.add('success');
-        statusText.classList.remove('dots');
+    const prefersReducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+    /**
+     * 阶段 XP 奖励配置（与 Dashboard 游戏化系统打通）
+     * rarity: common(灰)/ rare(蓝)/ epic(紫)/ legendary(金)
+     */
+    const phaseXPRewards = {
+      'checking-python':  { exp: 5,  rarity: 'common' },
+      'python-ready':     { exp: 10, rarity: 'common', label: 'Python' },
+      'checking-deps':    { exp: 5,  rarity: 'common' },
+      'deps-ok':          { exp: 15, rarity: 'rare', label: '依赖验证' },
+      'starting-backend': { exp: 10, rarity: 'common' },
+      'backend-port-ok':  { exp: 25, rarity: 'rare', label: '后端启动' },
+      'backend-ready':    { exp: 50, rarity: 'epic', label: '后端就绪' },
+      'health-check':     { exp: 5,  rarity: 'common' },
+      'health-ok':        { exp: 15, rarity: 'rare', label: '健康检查' },
+      'loading-modules':  { exp: 10, rarity: 'common' },
+      'loading-app':      { exp: 20, rarity: 'rare' },
+      'app-ready':        { exp: 200, rarity: 'legendary', label: '启动完成' }
+    };
+
+    /**
+     * 显示 XP 飞升 Toast（从进度条位置飞出）
+     */
+    function triggerXPToast(amount, rarity, reason) {
+      if (!amount) return;
+      const toast = document.createElement('div');
+      toast.className = 'xp-toast rarity-' + (rarity || 'common');
+
+      const reasonHtml = reason ? '<span class="xp-reason">' + escapeHtml(reason) + '</span>' : '';
+      toast.innerHTML = '<span class="xp-amount">+' + amount + ' EXP</span>' + reasonHtml;
+
+      // 定位到进度条右侧
+      const rect = progressBar.getBoundingClientRect();
+      toast.style.left = (rect.right + 16) + 'px';
+      toast.style.top = rect.top + 'px';
+
+      document.body.appendChild(toast);
+      totalXPEarned += amount;
+
+      // 1.4s 后移除
+      setTimeout(function() {
+        if (toast.parentNode) toast.remove();
+      }, 1400);
+    }
+
+    /**
+     * HTML 转义防 XSS（虽然这里是本地文件，但安全习惯要好）
+     */
+    function escapeHtml(str) {
+      return String(str)
+        .replace(/&/g, '&amp;')
+        .replace(/</g, '&lt;')
+        .replace(/>/g, '&gt;')
+        .replace(/"/g, '&quot;');
+    }
+
+    /**
+     * 更新启动连续天数徽章（从 localStorage 读取）
+     */
+    function updateStreakBadge() {
+      try {
+        const lastLaunchDate = localStorage.getItem('matux-last-launch');
+        const today = new Date().toDateString();
+        let streak = parseInt(localStorage.getItem('matux-launch-streak') || '0', 10);
+
+        if (lastLaunchDate === today) {
+          // 同一天不重复计数
+        } else {
+          const yesterday = new Date(Date.now() - 86400000).toDateString();
+          if (lastLaunchDate === yesterday) {
+            streak += 1;
+          } else if (lastLaunchDate) {
+            streak = 1; // 中断了重新计数
+          } else {
+            streak = 1; // 首次启动
+          }
+          localStorage.setItem('matux-last-launch', today);
+          localStorage.setItem('matux-launch-streak', String(streak));
+        }
+
+        if (streak >= 2) {
+          streakText.textContent = '连续启动 ' + streak + ' 天';
+          streakBadge.hidden = false;
+        }
+      } catch (err) {
+        // localStorage 可能被禁用，静默失败
       }
     }
 
     /**
-     * 显示错误信息
+     * 添加一行终端日志（逐字打字效果）
+     * 使用 requestAnimationFrame + setTimeout 组合实现拟真打字机
      */
-    function showError(title, message, showRetry) {
-      errorTitle.textContent = title;
-      errorMessage.textContent = message;
-      errorSection.classList.add('visible');
-      document.getElementById('retryButton').style.display = showRetry ? 'inline-block' : 'none';
-      progressBar.classList.remove('indeterminate');
-      progressBar.style.width = '100%';
-      progressBar.style.background = '#ef4444';
-      setStatus(message, 'error');
+    function addLogLine(text, type) {
+      // 移除旧光标
+      const oldCursor = terminalBody.querySelector('.cursor-blink');
+      if (oldCursor) oldCursor.remove();
+
+      const line = document.createElement('div');
+      line.className = 'log-line';
+
+      const isError = type === 'error';
+      const isWarn = type === 'warn';
+      const isSuccess = type === 'success';
+
+      // 错误信息慢速高亮，正常消息正常速度，警告稍微加快
+      // 【修复】打字速度太慢：从 25ms 减慢到 60ms，让用户能看清内容
+      const baseDelay = isError ? 100 : isWarn ? 80 : 60;
+      const variance = isError ? 40 : 50;
+      const punctuationPause = 180; // 标点符号停留
+
+      // 性能优化：减少动画时统一设为极快
+      const effectiveBase = prefersReducedMotion ? 0 : baseDelay;
+      const effectiveVariance = prefersReducedMotion ? 0 : variance;
+
+      const prefix = document.createElement('span');
+      prefix.className = 'prefix';
+      prefix.textContent = '▸ ';
+
+      const textSpan = document.createElement('span');
+      textSpan.className = 'text ' + (type || '');
+
+      line.appendChild(prefix);
+      line.appendChild(textSpan);
+      terminalBody.appendChild(line);
+      lineCount++;
+
+      // 迷你模式下标记只有最后一行可见
+      if (document.body.classList.contains('mini-mode')) {
+        terminalBody.querySelectorAll('.log-line.mini-visible').forEach(function(el) {
+          el.classList.remove('mini-visible');
+        });
+        line.classList.add('mini-visible');
+      }
+
+      // 全屏模式下滚动清理旧行
+      if (!document.body.classList.contains('mini-mode')) {
+        var allLines = terminalBody.querySelectorAll('.log-line');
+        if (allLines.length > MAX_VISIBLE_LINES) {
+          var oldest = allLines[0];
+          oldest.style.maxHeight = '0';
+          oldest.style.opacity = '0';
+          oldest.style.overflow = 'hidden';
+          setTimeout(function() { if (oldest.parentNode) oldest.remove(); }, 300);
+        }
+      }
+
+      // 逐字打字（使用 requestAnimationFrame + setTimeout 混合）
+      let i = 0;
+      let lastTime = 0;
+
+      function typeNextChar(timestamp) {
+        if (i >= text.length) {
+          // 完成：移除打字状态、恢复尾部光标
+          line.classList.remove('typing');
+          line.classList.remove('error-typing');
+          line.classList.add('complete');
+          if (!document.body.classList.contains('mini-mode')) {
+            var cursor = document.createElement('span');
+            cursor.className = 'cursor-blink';
+            terminalBody.appendChild(cursor);
+          }
+          return;
+        }
+
+        // 使用 requestAnimationFrame 控制帧率，同时用时间间隔控制打字速度
+        const elapsed = timestamp - lastTime;
+        const char = text[i];
+        const isPunctuation = /[,.!?;:]/.test(char);
+        const targetDelay = effectiveBase + Math.random() * effectiveVariance +
+                            (isPunctuation && !prefersReducedMotion ? punctuationPause : 0);
+
+        if (elapsed >= targetDelay || lastTime === 0) {
+          textSpan.textContent += char;
+          i++;
+          lastTime = timestamp;
+          // 滚动到底部
+          terminalBody.scrollTop = terminalBody.scrollHeight;
+        }
+
+        requestAnimationFrame(typeNextChar);
+      }
+
+      // 初始状态：打字中
+      line.classList.add(isError ? 'error-typing' : 'typing');
+      requestAnimationFrame(typeNextChar);
     }
 
     /**
-     * 重试按钮处理
+     * 更新进度（带里程碑金色脉冲）
+     * 里程碑定义：25% / 50% / 75% 三个关键进度节点
+     */
+    function updateProgress(progress) {
+      if (progress !== undefined && progress >= 0) {
+        progressBar.classList.remove('indeterminate');
+        const pct = Math.min(progress, 100);
+
+        // 数字滚动动画
+        animateNumber(progressText, lastProgress, pct, prefersReducedMotion ? 0 : 500);
+        progressBar.style.width = pct + '%';
+        lastProgress = pct;
+
+        // 里程碑检测（25/50/75）
+        const milestones = [25, 50, 75];
+        for (const m of milestones) {
+          if (pct >= m && (lastProgress < m || lastProgress === pct && pct === m)) {
+            triggerMilestone(m);
+          }
+        }
+      }
+    }
+
+    /**
+     * 数字滚动动画（使用 requestAnimationFrame）
+     */
+    function animateNumber(el, from, to, duration) {
+      if (duration === 0) {
+        el.textContent = to + '%';
+        return;
+      }
+      const start = performance.now();
+      const delta = to - from;
+      function step(now) {
+        const elapsed = now - start;
+        const t = Math.min(1, elapsed / duration);
+        const eased = 1 - Math.pow(1 - t, 3); // easeOutCubic
+        el.textContent = Math.round(from + delta * eased) + '%';
+        if (t < 1) requestAnimationFrame(step);
+      }
+      requestAnimationFrame(step);
+    }
+
+    /**
+     * 触发里程碑动画（金色脉冲 + 数字缩放）
+     */
+    function triggerMilestone(percent) {
+      progressBar.classList.remove('milestone');
+      progressText.classList.remove('milestone');
+      // 强制重排以重启动画
+      void progressBar.offsetWidth;
+      progressBar.classList.add('milestone');
+      progressText.classList.add('milestone');
+
+      // 动画结束后清理 class
+      setTimeout(function() {
+        progressBar.classList.remove('milestone');
+        progressText.classList.remove('milestone');
+      }, 1200);
+    }
+
+    /**
+     * app-ready 全屏庆祝（金色光扫 + 礼花粒子 + 完成徽章）
+     * 闭环游戏化体验，让启动过程产生持续高潮
+     */
+    function celebrateReady() {
+      // 1. 金色光扫过全屏
+      const sweep = document.createElement('div');
+      sweep.className = 'ready-sweep';
+      document.body.appendChild(sweep);
+      setTimeout(function() { if (sweep.parentNode) sweep.remove(); }, 1300);
+
+      // 2. 礼花粒子（50 颗，颜色随稀有度）
+      const confettiColors = ['#f59e0b', '#fde047', '#22c55e', '#3b82f6', '#a855f7', '#ec4899'];
+      const numConfetti = prefersReducedMotion ? 12 : 50;
+      for (let i = 0; i < numConfetti; i++) {
+        setTimeout(function() {
+          spawnConfetti(confettiColors[i % confettiColors.length]);
+        }, i * 15);
+      }
+
+      // 3. 中心完成徽章（100ms 后礼花先有空间散开）
+      setTimeout(function() {
+        const badge = document.createElement('div');
+        badge.className = 'ready-badge';
+        const streakValue = parseInt(localStorage.getItem('matux-launch-streak') || '0', 10);
+        const streakHtml = streakValue >= 2
+          ? '<div class="ready-badge-streak">🔥 连续启动 ' + streakValue + ' 天</div>'
+          : '';
+        badge.innerHTML =
+          '<div class="ready-badge-icon">🚀</div>' +
+          '<div class="ready-badge-text">MatuX 已就绪</div>' +
+          '<div class="ready-badge-sub">欢迎进入学习世界</div>' +
+          streakHtml;
+        document.body.appendChild(badge);
+        // 1.6s 后自动移除（与 fadeOutSplash 配合）
+        setTimeout(function() { if (badge.parentNode) badge.remove(); }, 1600);
+      }, 100);
+    }
+
+    /**
+     * 生成单个礼花粒子（随机方向 + 随机颜色 + 随机旋转）
+     */
+    function spawnConfetti(color) {
+      const el = document.createElement('div');
+      el.className = 'confetti';
+      // 随机方向（360°圆周）
+      const angle = Math.random() * Math.PI * 2;
+      const distance = 200 + Math.random() * 300;
+      const dx = Math.cos(angle) * distance;
+      const dy = Math.sin(angle) * distance;
+      const rot = (Math.random() * 720 - 360) + 'deg';
+      el.style.setProperty('--dx', dx + 'px');
+      el.style.setProperty('--dy', dy + 'px');
+      el.style.setProperty('--rot', rot);
+      el.style.background = color;
+      // 随机大小
+      const size = 4 + Math.random() * 8;
+      el.style.width = size + 'px';
+      el.style.height = size + 'px';
+      // 随机形状
+      if (Math.random() > 0.5) {
+        el.style.borderRadius = '50%';
+      } else {
+        el.style.borderRadius = '2px';
+      }
+      document.body.appendChild(el);
+      setTimeout(function() { if (el.parentNode) el.remove(); }, 1500);
+    }
+
+    /**
+     * 生成数据流粒子（最多 20 个，性能友好）
+     * 每个粒子独立动画时长（6-12s）、延迟（0-8s）
+     */
+    function spawnParticles() {
+      const container = document.getElementById('bgParticles');
+      if (!container) return;
+      for (let i = 0; i < 20; i++) {
+        const p = document.createElement('div');
+        p.className = 'particle';
+        p.style.top = (5 + Math.random() * 90) + '%';
+        p.style.animationDuration = (6 + Math.random() * 6) + 's';
+        p.style.animationDelay = (Math.random() * 8) + 's';
+        // 混合蓝色系和青色粒子
+        if (Math.random() > 0.7) {
+          p.style.background = '#22d3ee';
+          p.style.boxShadow = '0 0 8px #22d3ee, 0 0 16px rgba(34, 211, 238, 0.4)';
+        }
+        container.appendChild(p);
+      }
+    }
+
+    /**
+     * ====== P2 功能：ESC 跳过动画 ======
+     * 监听 ESC 键，立即跳到 mini-mode 并将进度置为 100%
+     * localStorage 记忆用户跳过偏好
+     */
+    let skipRequested = false;
+
+    function handleKeyDown(e) {
+      if (e.key === 'Escape' && !skipRequested) {
+        skipRequested = true;
+        // 通知主进程跳过
+        if (window.splashAPI && window.splashAPI.skip) {
+          window.splashAPI.skip();
+        }
+        // 直接进入 mini-mode 并完成
+        if (!document.body.classList.contains('mini-mode')) {
+          enterMiniMode();
+        }
+        // 立即填充进度条
+        updateProgress(100);
+        // 触发一次最终日志
+        addLogLine('MatuX 已就绪 🚀', 'success');
+        // 3s 后淡出
+        setTimeout(function() { fadeOutSplash(); }, 1000);
+      }
+    }
+    document.addEventListener('keydown', handleKeyDown);
+
+    /**
+     * ====== P2 功能：终端可点击展开 ======
+     * 切换 terminal-body 的 max-height，在全屏展开和受限之间切换
+     */
+    function toggleTerminalExpand() {
+      const body = document.body;
+      const terminalBody = document.getElementById('terminalBody');
+      const hint = document.getElementById('terminalExpandHint');
+
+
+      if (body.classList.contains('expanded')) {
+        body.classList.remove('expanded');
+        terminalBody.style.maxHeight = '180px';
+        hint.querySelector('.arrow').textContent = '▲';
+      } else {
+        body.classList.add('expanded');
+        terminalBody.style.maxHeight = 'none';
+        hint.querySelector('.arrow').textContent = '▼';
+      }
+    }
+
+    /**
+     * ====== P2 功能：设置面板 ======
+     */
+    function toggleSettingsPanel(e) {
+      if (e) e.stopPropagation();
+      const panel = document.getElementById('settingsPanel');
+      panel.classList.toggle('open');
+    }
+
+    // 点击外部关闭设置面板
+    document.addEventListener('click', function(e) {
+      const panel = document.getElementById('settingsPanel');
+      const btn = document.getElementById('settingsBtn');
+      if (panel.classList.contains('open') &&
+          !panel.contains(e.target) &&
+          !btn.contains(e.target)) {
+        panel.classList.remove('open');
+      }
+    });
+
+    /**
+     * 动画开关切换（立即生效 + localStorage 记忆）
+     */
+    function onAnimationToggle(enabled) {
+      try {
+        localStorage.setItem('matux-animations', enabled ? 'true' : 'false');
+      } catch (err) {}
+
+      if (!enabled) {
+        // 立即触发 prefers-reduced-motion 风格降级
+        document.body.classList.add('reduced-motion');
+        // 跳过动画直接完成
+        if (!skipRequested) {
+          skipRequested = true;
+          if (!document.body.classList.contains('mini-mode')) {
+            enterMiniMode();
+          }
+          updateProgress(100);
+          addLogLine('MatuX 已就绪 🚀', 'success');
+          setTimeout(function() { fadeOutSplash(); }, 500);
+        }
+      } else {
+        document.body.classList.remove('reduced-motion');
+      }
+    }
+
+    /**
+     * ====== P2 功能：启动音效（Web Audio API，无需外部资源）======
+     */
+    let audioCtx = null;
+    let soundEnabled = false;
+
+    function getAudioContext() {
+      if (!audioCtx) {
+        try {
+          audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+        } catch (err) {
+          return null;
+        }
+      }
+      return audioCtx;
+    }
+
+    /**
+     * 播放阶段完成音效（金属敲击声，Web Audio API 合成）
+     */
+    function playPhaseSound() {
+      if (!soundEnabled) return;
+      const ctx = getAudioContext();
+      if (!ctx) return;
+
+
+      // 金属敲击声：短促正弦波 + 快速衰减
+      const osc = ctx.createOscillator();
+      const gain = ctx.createGain();
+      osc.connect(gain);
+      gain.connect(ctx.destination);
+      osc.type = 'sine';
+      osc.frequency.setValueAtTime(800, ctx.currentTime);
+      osc.frequency.exponentialRampToValueAtTime(400, ctx.currentTime + 0.1);
+      gain.gain.setValueAtTime(0.15, ctx.currentTime);
+      gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + 0.15);
+      osc.start(ctx.currentTime);
+      osc.stop(ctx.currentTime + 0.15);
+    }
+
+    /**
+     * 播放 app-ready 史诗完成音效（和声 + 渐强）
+     */
+    function playReadySound() {
+      if (!soundEnabled) return;
+      const ctx = getAudioContext();
+      if (!ctx) return;
+
+      const notes = [523, 659, 784, 1047]; // C5 E5 G5 C6 和弦
+      notes.forEach(function(freq, i) {
+        const osc = ctx.createOscillator();
+        const gain = ctx.createGain();
+        osc.connect(gain);
+        gain.connect(ctx.destination);
+        osc.type = 'triangle';
+        osc.frequency.setValueAtTime(freq, ctx.currentTime);
+        const startTime = ctx.currentTime + i * 0.12;
+        gain.gain.setValueAtTime(0, startTime);
+        gain.gain.linearRampToValueAtTime(0.12, startTime + 0.05);
+        gain.gain.exponentialRampToValueAtTime(0.001, startTime + 0.8);
+        osc.start(startTime);
+        osc.stop(startTime + 0.8);
+      });
+    }
+
+    /**
+     * 音效开关切换（localStorage 记忆）
+     */
+    function onSoundToggle(enabled) {
+      soundEnabled = enabled;
+      try {
+        localStorage.setItem('matux-sound', enabled ? 'true' : 'false');
+      } catch (err) {}
+
+      // 启用时播放一个测试音效（确保 AudioContext 可用）
+      if (enabled) {
+        playPhaseSound();
+      }
+    }
+
+    /**
+     * 显示错误（独立报警弹窗 + 启动弹窗红警闪烁）
+     */
+    function showError(title, message, showRetry) {
+      // 兼容旧 DOM 引用，同步旧错误区域文本但不显示
+      if (errorTitle) errorTitle.textContent = title;
+      if (errorMessage) errorMessage.textContent = message;
+
+      // 1. 填充新报警弹窗
+      const alertTitle = document.getElementById('alertTitle');
+      const alertMessage = document.getElementById('alertMessage');
+      const alertOverlay = document.getElementById('alertOverlay');
+      const alertRetry = document.getElementById('alertRetry');
+      const alertDismiss = document.getElementById('alertDismiss');
+
+      if (alertTitle) alertTitle.textContent = title;
+      if (alertMessage) alertMessage.textContent = message;
+      if (alertRetry) alertRetry.style.display = showRetry ? 'inline-block' : 'none';
+      if (alertOverlay) alertOverlay.classList.add('visible');
+
+      // 2. 启动弹窗进入红警闪烁状态（科幻游戏风格）
+      document.body.classList.add('alarm-active');
+
+      // 3. 进度条变红、停止动画
+      progressBar.classList.remove('indeterminate');
+      progressBar.style.width = '100%';
+      progressBar.style.background = '#ef4444';
+
+      // 4. 记录日志
+      addLogLine('ERROR: ' + message, 'error');
+
+      // 5. 绑定按钮事件（一次性绑定，确保多次触发都生效）
+      if (alertRetry && !alertRetry.dataset.bound) {
+        alertRetry.dataset.bound = '1';
+        alertRetry.addEventListener('click', function() {
+          hideAlert();
+          handleRetry();
+        });
+      }
+      if (alertDismiss && !alertDismiss.dataset.bound) {
+        alertDismiss.dataset.bound = '1';
+        alertDismiss.addEventListener('click', hideAlert);
+      }
+    }
+
+    /**
+     * 关闭报警弹窗 + 停止闪烁
+     */
+    function hideAlert() {
+      const alertOverlay = document.getElementById('alertOverlay');
+      if (alertOverlay) alertOverlay.classList.remove('visible');
+      document.body.classList.remove('alarm-active');
+      progressBar.style.background = '';
+    }
+
+    /**
+     * 重试
      */
     function handleRetry() {
-      errorSection.classList.remove('visible');
-      progressBar.style.background = '';
+      hideAlert();
       progressBar.classList.add('indeterminate');
       progressBar.style.width = '';
-      setStatus('正在重新启动...');
+      progressText.textContent = '0%';
+      addLogLine('Retrying startup...', 'warn');
       if (window.splashAPI) {
         window.splashAPI.retry();
       }
     }
 
     /**
-     * 更新模块加载进度显示
+     * 菜单按钮事件处理
      */
-    function updateModuleProgress(modules) {
-      const moduleProgress = document.getElementById('moduleProgress');
-      const moduleList = document.getElementById('moduleList');
+    // 设置按钮 - 打开设置面板
+    document.getElementById('menuSettings')?.addEventListener('click', function() {
+      addLogLine('Opening settings...', 'info');
+      showSettingsPanel();
+    });
 
-      if (!modules || !Array.isArray(modules) || modules.length === 0) return;
+    // 跳过按钮 - 跳过动画进入迷你模式
+    document.getElementById('menuSkip')?.addEventListener('click', function() {
+      addLogLine('Skipping animation...', 'warn');
+      if (!document.body.classList.contains('mini-mode')) {
+        enterMiniMode();
+      }
+    });
 
-      moduleProgress.classList.add('visible');
+    // 退出按钮 - 退出应用
+    document.getElementById('menuQuit')?.addEventListener('click', function() {
+      addLogLine('Exiting MatuX...', 'error');
+      if (window.splashAPI && window.splashAPI.quit) {
+        window.splashAPI.quit();
+      } else {
+        window.close();
+      }
+    });
 
-      // 只显示 Tier 0 和 Tier 1 模块（最多显示 8 个）
-      const tierLabels = { tier_0_core: '核心', tier_1_high: '高优先' };
-      const relevantModules = modules
-        .filter(m => tierLabels[m.tier] && m.state !== 'disabled')
-        .slice(0, 8);
+    /**
+     * 切换到迷你横条模式
+     */
+    function enterMiniMode() {
+      document.body.classList.add('mini-mode');
+      // 确保最后一行有 mini-visible 标记
+      var lines = terminalBody.querySelectorAll('.log-line');
+      lines.forEach(function(el) { el.classList.remove('mini-visible'); });
+      if (lines.length > 0) {
+        lines[lines.length - 1].classList.add('mini-visible');
+      }
+      // 通知主进程调整窗口尺寸
+      if (window.splashAPI && window.splashAPI.notifyMiniMode) {
+        window.splashAPI.notifyMiniMode();
+      }
+    }
 
-      const stateLabels = {
-        active: '已就绪',
-        loading: '加载中...',
-        degraded: '降级运行',
-        failed: '失败',
-        unloaded: '等待中',
+    /**
+     * 完全淡出
+     * 【启动优化 P1-2】淡出完成（CSS transition 结束）后通知主进程，避免主进程硬等 900ms
+     * - CSS 动画时间 0.6s
+     * - 兑底超时 800ms：防止 transitionend 不触发（极端场景）
+     */
+    function fadeOutSplash() {
+      var body = document.body;
+      if (body.classList.contains('fade-out')) {
+        // 已经在淡出中，不重复处理
+        return;
+      }
+      body.classList.add('fade-out');
+
+      var notified = false;
+      var notify = function() {
+        if (notified) return;
+        notified = true;
+        if (window.splashAPI && window.splashAPI.notifyFadeOutComplete) {
+          window.splashAPI.notifyFadeOutComplete();
+        }
       };
 
-      moduleList.innerHTML = relevantModules.map(m => {
-        const stateClass = m.state || 'unloaded';
-        const label = stateLabels[stateClass] || stateClass;
-        return `<div class="module-item ${stateClass}">
-          <span class="module-dot"></span>
-          <span class="module-label">${m.name}</span>
-          <span style="font-size:10px;opacity:0.7">${label}</span>
-        </div>`;
-      }).join('');
+      // 正常路径：CSS transition 结束
+      body.addEventListener('transitionend', function onEnd(e) {
+        if (e.target === body && e.propertyName === 'opacity') {
+          body.removeEventListener('transitionend', onEnd);
+          notify();
+        }
+      });
+
+      // 兑底：800ms 强制通知（防止 transitionend 不触发）
+      setTimeout(notify, 800);
     }
+
+    /**
+     * 阶段文本映射
+     */
+    var phaseMessages = {
+      'checking-python':  'Detecting Python environment...',
+      'python-ready':     'Python 3.12 ✓',
+      'python-missing':   'ERROR: Python not found',
+      'checking-deps':    'Checking dependencies...',
+      'deps-ok':          'Core dependencies verified ✓',
+      'starting-backend': 'Launching backend service...',
+      'waiting-backend':  'Waiting for backend port...',
+      'backend-port-ok':  'Backend port open ✓',
+      'backend-ready':    'Backend service ready ✓',
+      'health-check':     'Running health check...',
+      'health-ok':        'Health check passed ✓',
+      'loading-modules':  'Loading core modules...',
+      'loading-app':      'Loading application...',
+      'app-ready':        'MatuX is ready!',
+      'degraded-mode':    'Running in frontend-only mode (no backend)',
+    };
 
     /**
      * 接收主进程状态更新
      */
     if (window.splashAPI) {
-      window.splashAPI.onStatusUpdate((data) => {
-      const { phase, text, progress, modules } = data;
+      window.splashAPI.onStatusUpdate(function(data) {
+        var phase = data.phase;
+        var text = data.text;
+        var progress = data.progress;
+        var detail = data.detail;
+        var modules = data.modules;
+        var miniMode = data.miniMode;
+        var fadeOut = data.fadeOut;
 
-      setStatus(text);
+        // 【修复】app-ready 时：先进入迷你模式，再淡出
+        // 确保用户能看到迷你横条后再关闭 Splash
+        if (fadeOut) {
+          if (!document.body.classList.contains('mini-mode')) {
+            enterMiniMode();
+          }
+          // 延迟 200ms 再淡出，让用户看到迷你横条
+          setTimeout(function() {
+            fadeOutSplash();
+          }, 200);
+          return;
+        }
 
-      if (progress !== undefined && progress >= 0) {
-        progressBar.classList.remove('indeterminate');
-        progressBar.style.width = `${Math.min(progress, 100)}%`;
-      }
+        // 【新增】后端真实日志：直接打印到终端，不影响进度和 XP
+        if (phase === 'backend-log' && text) {
+          var logType = (data && data.stream === 'stderr') ? 'error' : 'info';
+          // 避免 SQL 探查日志等洪水。跳过纯探查行，只取关键事件
+          if (!/sqlalchemy\.engine\.Engine/.test(text)) {
+            addLogLine(text, logType);
+          }
+          return; // 不进入下面的进度/XP 逻辑
+        }
 
-      if (modules) {
-        updateModuleProgress(modules);
-      }
+        // 切换迷你模式（非 fadeOut 触发的独立切换）
+        if (miniMode && !document.body.classList.contains('mini-mode')) {
+          enterMiniMode();
+        }
 
-      switch (phase) {
-        case 'checking-python':
-          setStatus('正在检测 Python 环境...');
-          break;
-        case 'python-missing':
-          showError(
-            '未检测到 Python 环境',
-            'MatuX 需要 Python 3.9+ 来运行后端服务。\n\n请安装 Python 后重试：\nhttps://www.python.org/downloads/',
-            true
-          );
-          break;
-        case 'starting-backend':
-          setStatus('正在启动后端服务');
-          break;
-        case 'waiting-backend':
-          setStatus('等待后端服务就绪');
-          break;
-        case 'backend-ready':
-          setStatus('后端服务就绪', 'success');
-          break;
-        case 'backend-timeout':
-          showError(
-            '后端启动超时',
-            '后端服务未能在预期时间内启动。\n\n可能原因：\n• Python 依赖未安装\n• 端口 8000 被占用\n• 系统资源不足',
-            true
-          );
-          break;
-        case 'backend-error':
-          showError(
-            '后端启动失败',
-            data.detail || '后端进程异常退出，请检查日志。',
-            true
-          );
-          break;
-        case 'loading-app':
-          setStatus('正在加载应用');
-          break;
-        case 'modules':
-          // 模块加载进度更新
-          if (text) setStatus(text);
-          if (modules) updateModuleProgress(modules);
-          break;
-        case 'app-ready':
-          setStatus('即将进入 MatuX', 'success');
-          break;
-        default:
-          break;
-      }
-    });
+        // 更新进度
+        updateProgress(progress);
+
+        // 阶段 XP 奖励（从 phase 映射表查询）
+        if (phase && phaseXPRewards[phase] && lastProgress >= 0) {
+          const reward = phaseXPRewards[phase];
+          // 迷你模式下不弹出 XP toast（避免干扰横条）
+          if (!document.body.classList.contains('mini-mode')) {
+            triggerXPToast(reward.exp, reward.rarity, reward.label);
+          }
+          // 播放阶段完成音效（金属敲击声）
+          playPhaseSound();
+        }
+
+        // 添加终端日志
+        var logText = text || phaseMessages[phase];
+        if (logText) {
+          var type = '';
+          if (phase && (phase.indexOf('error') >= 0 || phase === 'backend-timeout' || phase === 'python-missing')) {
+            type = 'error';
+          } else if (phase && (phase.indexOf('ready') >= 0 || phase.indexOf('ok') >= 0 || phase === 'app-ready')) {
+            type = 'success';
+          } else if (phase && (phase.indexOf('warn') >= 0 || phase === 'degraded-mode')) {
+            type = 'warn';
+          }
+          addLogLine(logText, type);
+        }
+
+        // 模块进度
+        if (modules && Array.isArray(modules)) {
+          var activeModules = modules.filter(function(m) {
+            return m.state === 'loading' || m.state === 'active';
+          });
+          activeModules.slice(0, 3).forEach(function(m) {
+            var stateLabel = m.state === 'active' ? ' ✓' : '...';
+            addLogLine('  ' + m.name + stateLabel, m.state === 'active' ? 'success' : '');
+          });
+        }
+
+        // 错误处理
+        switch (phase) {
+          case 'python-missing':
+            showError(
+              '未检测到 Python 环境',
+              'MatuX 需要 Python 3.9+ 来运行后端服务。\n请安装 Python 后重试：https://www.python.org/downloads/',
+              true
+            );
+            break;
+          case 'backend-timeout':
+            showError(
+              '后端启动超时',
+              '后端服务未能在预期时间内启动。\n\n可能原因：\n• Python 依赖未安装\n• 端口被占用\n• 系统资源不足',
+              true
+            );
+            break;
+          case 'backend-error':
+            showError('后端启动失败', detail || '后端进程异常退出，请检查日志。', true);
+            break;
+          case 'degraded-mode':
+            addLogLine('Some features may be limited: course sync, AI tutor, progress saving', 'warn');
+            // 降级模式不触发庆祝动画，仅进入迷你模式后延迟淡出
+            enterMiniMode();
+            setTimeout(function() {
+              fadeOutSplash();
+            }, 1500);
+            break;
+          case 'app-ready':
+            addLogLine('Welcome to MatuX 🚀', 'success');
+            // 触发全屏庆祝（光扫 + 礼花 + 完成徽章）
+            celebrateReady();
+            // 播放史诗完成音效
+            playReadySound();
+            break;
+        }
+      });
     }
 
-    console.log('[Splash] 启动画面已就绪');
+    // 启动光标
+    var initCursor = document.createElement('span');
+    initCursor.className = 'cursor-blink';
+    terminalBody.appendChild(initCursor);
+
+    // 初始化启动连续天数徽章
+    updateStreakBadge();
+
+    // 恢复 localStorage 记忆的音效和动画设置
+    try {
+      const savedSound = localStorage.getItem('matux-sound');
+      if (savedSound === 'true') {
+        soundEnabled = true;
+        const soundToggle = document.getElementById('toggleSound');
+        if (soundToggle) soundToggle.checked = true;
+      }
+      const savedAnimations = localStorage.getItem('matux-animations');
+      if (savedAnimations === 'false') {
+        document.body.classList.add('reduced-motion');
+        const animToggle = document.getElementById('toggleAnimations');
+        if (animToggle) animToggle.checked = false;
+      }
+    } catch (err) {}
+
+    console.log('[Splash] 科技感启动画面已就绪 · 逐字打字 + XP 奖励已启用');
+    if (prefersReducedMotion) {
+      console.log('[Splash] 检测到 prefers-reduced-motion：动画已降级');
+    } else {
+      // 生成数据流粒子（仅在正常动画模式下）
+      spawnParticles();
+    }
   </script>
 </body>
 </html>

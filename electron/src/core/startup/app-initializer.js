@@ -9,7 +9,7 @@ const { app, BrowserWindow, Tray, Menu } = require('electron');
 const fs = require('fs');
 const path = require('path');
 
-const { checkPythonEnvironment, verifyBackendHealth } = require('./python-checker');
+const { checkPythonEnvironment, verifyBackendHealth, isDegradedMode } = require('./python-checker');
 const { BackendManager, HealthCheckService, preloadTier1Modules } = require('../../../services');
 const { registerGlobalShortcuts, unregisterGlobalShortcuts } = require('../shortcuts');
 const { checkForUpdates } = require('../updates');
@@ -69,6 +69,7 @@ class AppInitializer {
     this._maxHistorySize = 10;  // 最多保留10条历史
     this.isQuitting = false;
     this._isRestarting = false;  // 防止重复重启
+    this.isDegraded = false;     // 降级模式标记（无 Python 后端时为 true）
     this.tray = null;
     this.pluginInstaller = null;
     this.pluginDownloader = null;
@@ -214,6 +215,17 @@ class AppInitializer {
       sendSplashStatus: this.sendSplashStatus,
     });
 
+    // 【降级模式】用户跳过 Python 或依赖缺失 → 进入降级模式而非阻塞启动
+    if (isDegradedMode(pythonInfo)) {
+      this.isDegraded = true;
+      console.log(`[INFO] 进入降级模式（无 Python 后端，原因: ${pythonInfo.reason}）`);
+      // 执行不依赖后端的初始化步骤
+      await this._initializePlugins();
+      setTimeout(() => this._initDeviceProfiler(), 1000);
+      setTimeout(() => this._initPhase5(), 1000);
+      return 'degraded';
+    }
+
     if (!pythonInfo) {
       return false;
     }
@@ -229,19 +241,31 @@ class AppInitializer {
       onProgress: this.sendSplashStatus,
     });
 
+    const healthCheck = this._healthCheck;
+
     if (!isReady) {
-      console.error('[ERROR] 后端服务启动失败');
-      return false;
+      // 【启动优化 P0-1】waitForReady 失败 → 调 verifyBackendHealth 触发错误处理（弹窗 + 停止后端）
+      // 传入 alreadyVerified=false，走错误处理路径
+      const isHealthy = await verifyBackendHealth({
+        sendSplashStatus: this.sendSplashStatus,
+        healthCheck,
+        backendManager: this.backendManager,
+        alreadyVerified: false,
+      });
+      if (!isHealthy) {
+        return false;
+      }
+      // 兑底：verifyBackendHealth 兑底路径可能仍返回 true（极罕见），认作成功
+      console.warn('[WARN] waitForReady 失败但 verifyBackendHealth 走兑底路径返回 true');
     }
 
-    // 4. 验证后端健康
-    const healthCheck = this._healthCheck;
+    // 4. 【启动优化 P0-1】waitForReady 成功时，跳过重复的健康检查（已默认走快速路径）
+    // 默认 alreadyVerified=true，verifyBackendHealth 立即返回 true，不重复探测（节省 50-1000ms）
     const isHealthy = await verifyBackendHealth({
       sendSplashStatus: this.sendSplashStatus,
       healthCheck,
       backendManager: this.backendManager,
     });
-
     if (!isHealthy) {
       return false;
     }
@@ -609,6 +633,14 @@ class AppInitializer {
    */
   getBackendManager() {
     return this.backendManager;
+  }
+
+  /**
+   * 是否正在降级模式运行
+   * @returns {boolean}
+   */
+  isRunningDegraded() {
+    return this.isDegraded;
   }
 
   /**
