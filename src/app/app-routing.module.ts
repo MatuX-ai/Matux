@@ -1,9 +1,8 @@
-import { NgModule } from '@angular/core';
-import { RouterModule, Routes } from '@angular/router';
-
 import { CustomPreloadingStrategy } from './core/services/custom-preloading.strategy';
 import { ModuleActiveGuard } from './core/guards/module-active.guard';
 import { ROUTES } from './routes.const';
+import { NgModule } from '@angular/core';
+import { RouterModule, Routes } from '@angular/router';
 
 const routes: Routes = [
   // 首页重定向到用户仪表板
@@ -92,10 +91,7 @@ const routes: Routes = [
   // OpenSciEDU Module - 公共课程（懒加载）
   {
     path: 'opensciedu',
-    loadComponent: () =>
-      import('./opensciedu/opensciedu-page.component').then(
-        (m) => m.OpenscieduPageComponent
-      ),
+    loadComponent: () => import('./opensciedu/opensciedu-page.component').then((m) => m.OpenscieduPageComponent),
   },
 ];
 
