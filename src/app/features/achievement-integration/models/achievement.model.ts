@@ -114,6 +114,12 @@ export interface AchievementFilter {
   searchQuery?: string;
 }
 
+/** 成就条件 */
+export interface AchievementCondition {
+  text: string;
+  done: boolean;
+}
+
 /** 完整成就条目 */
 export interface Achievement {
   id: string;
@@ -130,6 +136,8 @@ export interface Achievement {
   points: number;
   tags: string[];
   requirements: string[];
+  conditions?: AchievementCondition[];
+  txHash?: string;
 }
 
 /** 成就审核记录 */
