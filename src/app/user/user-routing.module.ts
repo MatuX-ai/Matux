@@ -9,13 +9,12 @@ import { RouterModule, Routes } from '@angular/router';
 
 import { UserPageLayoutComponent } from './components/user-page-layout/user-page-layout.component';
 import { UserCenterGuard } from './guards/user-center.guard';
-import { UserCenterComponent } from './user-center.component';
 
 const routes: Routes = [
-  // Dashboard 使用 UserCenterComponent（自带导航）
+  // Dashboard 使用 UserPageLayoutComponent（统一布局）
   {
     path: 'dashboard',
-    component: UserCenterComponent,
+    component: UserPageLayoutComponent,
     canActivate: [UserCenterGuard],
     children: [
       {
@@ -100,6 +99,13 @@ const routes: Routes = [
         loadComponent: () =>
           import('./components/ai-teacher-settings/ai-teacher-settings.component').then(
             (m) => m.AITeacherSettingsComponent
+          ),
+      },
+      {
+        path: 'settings',
+        loadComponent: () =>
+          import('./components/settings/settings.component').then(
+            (m) => m.SettingsComponent
           ),
       },
       // 教学管理/学生管理路由已解耦至 OpenMTEduInst 项目

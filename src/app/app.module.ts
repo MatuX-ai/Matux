@@ -19,6 +19,7 @@ import { BrowserAnimationsModule } from '@angular/platform-browser/animations';
 // import { ServiceWorkerModule } from '@angular/service-worker'; // 已禁用
 import { MonacoEditorModule } from 'ngx-monaco-editor-v2';
 
+import { HttpAuthInterceptor } from './core/interceptors/http-auth.interceptor';
 import { HttpTimeoutInterceptor } from './core/interceptors/http-timeout.interceptor';
 import { StatusBarComponent } from './shared/components/status-bar/status-bar.component';
 import { SharedModule } from './shared/shared.module';
@@ -58,6 +59,11 @@ import { AppRoutingModule } from './app-routing.module';
     MonacoEditorModule.forRoot(),
   ],
   providers: [
+    {
+      provide: HTTP_INTERCEPTORS,
+      useClass: HttpAuthInterceptor,
+      multi: true,
+    },
     {
       provide: HTTP_INTERCEPTORS,
       useClass: HttpTimeoutInterceptor,

@@ -1,0 +1,143 @@
+<header class="user-navbar">
+  <div class="navbar-container">
+    <!-- Logo -->
+    <div class="navbar-logo" (click)="navigateTo(ROUTES.USER.DASHBOARD)">
+      <span class="logo-icon">🧊</span>
+      <span class="logo-text">MatuX</span>
+    </div>
+
+    <!-- 水平导航菜单（桌面端） -->
+    <nav class="navbar-nav" *ngIf="!isMobile">
+      <a
+        *ngFor="let item of navItems"
+        [routerLink]="item.route"
+        routerLinkActive="active"
+        class="nav-link"
+        [matTooltip]="item.label"
+      >
+        <mat-icon>{{ item.icon }}</mat-icon>
+        <span>{{ item.label }}</span>
+      </a>
+    </nav>
+
+    <!-- 搜索和通知 -->
+    <div class="navbar-actions">
+      <button mat-icon-button class="action-btn" title="搜索 (Ctrl+K)" (click)="toggleSearch()">
+        <mat-icon>search</mat-icon>
+      </button>
+      <button mat-icon-button class="action-btn notification-btn" title="通知">
+        <mat-icon>notifications</mat-icon>
+        <span class="notification-badge" *ngIf="unreadNotifications > 0">
+          {{ unreadNotifications }}
+        </span>
+      </button>
+    </div>
+
+    <!-- 用户菜单 -->
+    <div class="navbar-user">
+      <button mat-button [matMenuTriggerFor]="userMenu" class="user-menu-btn">
+        <div class="user-avatar-small">
+          <mat-icon>account_circle</mat-icon>
+        </div>
+        <span class="username" [innerHTML]="safeDisplayName"></span>
+        <mat-icon>arrow_drop_down</mat-icon>
+      </button>
+
+      <mat-menu #userMenu="matMenu" class="user-dropdown-menu">
+        <div class="user-menu-header" *ngIf="currentUser">
+          <div class="user-avatar">
+            <img [src]="safeAvatar" [alt]="'用户头像'" (error)="onAvatarError($event)" />
+          </div>
+          <div class="user-info">
+            <div class="username" [innerHTML]="safeDisplayName"></div>
+            <div class="user-type-badge">{{ getUserTypeLabel() }}</div>
+          </div>
+        </div>
+
+        <mat-divider></mat-divider>
+
+        <button mat-menu-item [routerLink]="ROUTES.USER.PROFILE">
+          <mat-icon>person</mat-icon>
+          <span>个人资料</span>
+        </button>
+
+        <button mat-menu-item [routerLink]="ROUTES.USER.TOKEN">
+          <mat-icon>token</mat-icon>
+          <span>Token管理</span>
+        </button>
+
+        <button mat-menu-item [routerLink]="ROUTES.USER.ACHIEVEMENTS">
+          <mat-icon>emoji_events</mat-icon>
+          <span>成就系统</span>
+        </button>
+
+        <mat-divider></mat-divider>
+
+        <button mat-menu-item [routerLink]="ROUTES.USER.AI_TEACHER_SETTINGS">
+          <mat-icon>smart_toy</mat-icon>
+          <span>AI教师设置</span>
+        </button>
+
+        <button mat-menu-item [routerLink]="ROUTES.USER.SETTINGS">
+          <mat-icon>settings</mat-icon>
+          <span>系统设置</span>
+        </button>
+
+        <mat-divider></mat-divider>
+
+        <button mat-menu-item (click)="logout()">
+          <mat-icon>logout</mat-icon>
+          <span>退出登录</span>
+        </button>
+      </mat-menu>
+    </div>
+
+    <!-- 移动端汉堡菜单 -->
+    <button
+      mat-icon-button
+      class="hamburger-menu"
+      [matMenuTriggerFor]="mobileMenu"
+      *ngIf="isMobile"
+    >
+      <mat-icon>menu</mat-icon>
+    </button>
+
+    <mat-menu #mobileMenu="matMenu">
+      <div class="mobile-menu-header" *ngIf="currentUser">
+        <span [innerHTML]="safeDisplayName"></span>
+      </div>
+      <button mat-menu-item *ngFor="let item of navItems" [routerLink]="item.route">
+        <mat-icon>{{ item.icon }}</mat-icon>
+        <span>{{ item.label }}</span>
+      </button>
+      <mat-divider></mat-divider>
+      <button mat-menu-item [routerLink]="ROUTES.USER.PROFILE">
+        <mat-icon>person</mat-icon>
+        <span>个人资料</span>
+      </button>
+      <button mat-menu-item [routerLink]="ROUTES.USER.SETTINGS">
+        <mat-icon>settings</mat-icon>
+        <span>系统设置</span>
+      </button>
+      <button mat-menu-item (click)="logout()">
+        <mat-icon>logout</mat-icon>
+        <span>退出登录</span>
+      </button>
+    </mat-menu>
+  </div>
+
+  <!-- 搜索面板 -->
+  <div class="search-panel" *ngIf="showSearch" (click)="toggleSearch()">
+    <div class="search-container" (click)="$event.stopPropagation()">
+      <mat-icon class="search-icon">search</mat-icon>
+      <input
+        type="text"
+        class="search-input"
+        placeholder="搜索课程、项目、内容..."
+        autofocus
+        (keyup.escape)="toggleSearch()"
+      />
+      <span class="search-hint">按 ESC 关闭</span>
+    </div>
+  </div>
+</header>

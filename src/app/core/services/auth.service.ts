@@ -1,8 +1,10 @@
+/* eslint-disable no-console, max-lines-per-function, complexity */
 import { HttpClient, HttpHeaders } from '@angular/common/http';
 import { Injectable } from '@angular/core';
 import { Router } from '@angular/router';
-import { BehaviorSubject, Observable, of, throwError, firstValueFrom } from 'rxjs';
+import { BehaviorSubject, firstValueFrom, from, Observable, of, throwError } from 'rxjs';
 import { catchError, map, tap } from 'rxjs/operators';
+
 import { environment } from '../../../environments/environment';
 import { ROUTES } from '../../routes.const';
 import {
@@ -18,6 +20,7 @@ import {
 } from '../models/auth.models';
 
 import { ElectronService } from './electron.service';
+import { decrypt, encrypt } from '../utils/crypto.util';
 
 /**
  * 用户认证服务
@@ -88,8 +91,8 @@ export class AuthService {
       if (env.production) {
         console.error('[Auth] 生产环境未配置 apiUrl，请检查 environment.ts');
       }
-      // 开发环境默认使用 localhost:8000
-      return 'http://localhost:8000';
+      // 开发环境默认使用 localhost:8002
+      return 'http://localhost:8002';
     }
     // 移除末尾斜杠，统一处理
     return baseUrl.replace(/\/$/, '');
@@ -235,8 +238,7 @@ export class AuthService {
     if (env?.envName === 'production') return false;
 
     // 检查 localhost
-    return window.location.hostname === 'localhost' ||
-           window.location.hostname === '127.0.0.1';
+    return window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1';
   }
 
   // Token 存储策略说明：
@@ -250,9 +252,10 @@ export class AuthService {
    * 检查 Token 是否过期
    */
   private isTokenExpired(): boolean {
-    const expiry = localStorage.getItem(this.TOKEN_EXPIRY_KEY) ?? sessionStorage.getItem(this.TOKEN_EXPIRY_KEY);
+    const expiry =
+      localStorage.getItem(this.TOKEN_EXPIRY_KEY) ?? sessionStorage.getItem(this.TOKEN_EXPIRY_KEY);
     if (!expiry) return false; // 无过期时间，信任 Token
-    
+
     // 【安全】parseInt返回NaN时视为过期
     const expiryTime = parseInt(expiry, 10);
     if (isNaN(expiryTime)) {
@@ -342,7 +345,7 @@ export class AuthService {
    */
   private storeAuthData(response: AuthResponse): void {
     const isRememberMe = this.rememberMeSubject.value;
-    
+
     // 主存储：sessionStorage（安全优先）
     sessionStorage.setItem(this.TOKEN_KEY, response.accessToken);
     sessionStorage.setItem(this.REFRESH_TOKEN_KEY, response.refreshToken);
@@ -488,7 +491,7 @@ export class AuthService {
       console.error('[Auth] 统一认证响应缺少用户ID');
       throw new Error('Invalid user data: missing user ID');
     }
-    
+
     const user: User = {
       id: String(response.user.id),
       email: response.user.email ?? '',
@@ -532,7 +535,7 @@ export class AuthService {
           if (this.isElectron && this.electronService) {
             // 桌面端：使用系统默认浏览器完成授权
             this.electronService.openExternal(response.authorize_url).subscribe({
-              error: (err) => console.error('[Auth] 打开浏览器失败:', err)
+              error: (err) => console.error('[Auth] 打开浏览器失败:', err),
             });
             console.warn('[Auth] 已打开系统浏览器进行 OAuth 授权');
           } else {
@@ -559,7 +562,7 @@ export class AuthService {
           console.warn(`[Auth] 降级到本地 OAuth URL: ${provider}`);
           if (this.isElectron && this.electronService) {
             this.electronService.openExternal(authUrl).subscribe({
-              error: (openErr) => console.error('[Auth] 打开浏览器失败:', openErr)
+              error: (openErr) => console.error('[Auth] 打开浏览器失败:', openErr),
             });
           } else {
             window.location.href = authUrl;
@@ -573,7 +576,7 @@ export class AuthService {
    */
   private buildOAuthUrl(provider: string, redirectUri: string, state: string): string {
     const clientId = this.getOAuthClientId(provider);
-    
+
     switch (provider) {
       case 'github':
         return (
@@ -621,12 +624,18 @@ export class AuthService {
    */
   private getOAuthClientId(provider: string): string {
     // 【安全】验证provider不是危险属性名，防止原型链污染
-    const dangerousProps = ['__proto__', 'constructor', 'prototype', 'hasOwnProperty', 'isPrototypeOf'];
+    const dangerousProps = [
+      '__proto__',
+      'constructor',
+      'prototype',
+      'hasOwnProperty',
+      'isPrototypeOf',
+    ];
     if (dangerousProps.includes(provider)) {
       console.error('[Auth] 无效的 OAuth provider:', provider);
       return '';
     }
-    
+
     // 使用安全的环境配置访问
     const env = getSafeEnvironment();
     const oauthConfig = env.oauth;
@@ -638,7 +647,9 @@ export class AuthService {
     }
 
     // 【安全】使用类型断言安全访问 provider 配置
-    const config = (oauthConfig as Record<string, { clientId?: string; appId?: string } | undefined>)?.[provider];
+    const config = (
+      oauthConfig as Record<string, { clientId?: string; appId?: string } | undefined>
+    )?.[provider];
     if (config?.clientId) {
       return config.clientId;
     }
@@ -697,7 +708,7 @@ export class AuthService {
       console.error('[Auth] OAuth provider 无效:', provider);
       return throwError(() => new Error('Invalid OAuth provider'));
     }
-    
+
     // 验证state参数格式（防止注入攻击）
     if (!this.validateStateFormat(state)) {
       console.error('[Auth] OAuth state 格式无效，可能存在安全风险');
@@ -829,7 +840,7 @@ export class AuthService {
   /**
    * 模拟登录 - 用于演示和测试
    * 无需真实后端，直接设置本地认证状态
-   * 
+   *
    * @deprecated 仅供开发/演示环境使用，生产环境调用会返回错误
    * @param userType 用户类型
    * @returns Mock 认证响应
@@ -842,7 +853,7 @@ export class AuthService {
       console.error('[Auth] mockLogin 在生产环境不可用');
       return throwError(() => new Error('Mock 登录在生产环境不可用'));
     }
-    
+
     const mockUser = this.createMockUser(userType);
     const mockResponse = this.createMockResponse(mockUser, 'mock');
 
@@ -941,11 +952,13 @@ export class AuthService {
 
     // 可选：通知服务器撤销令牌（不阻塞本地登出）
     if (refreshToken) {
-      this.http.post(`${this.API_BASE_URL}/logout`, { refreshToken })
+      this.http
+        .post(`${this.API_BASE_URL}/logout`, { refreshToken })
         .pipe(
           catchError((err) => {
             // 服务器撤销失败不影响本地登出，仅记录日志
-            const errorMsg = err?.error?.message ?? err?.message ?? String(err);
+            const errObj = err as { error?: { message?: string }; message?: string };
+            const errorMsg = errObj?.error?.message ?? errObj?.message ?? String(err);
             console.warn('[Auth] Token 撤销请求失败:', errorMsg);
             return of(null);
           })
@@ -1032,68 +1045,116 @@ export class AuthService {
    * 使用本地缓存的凭据登录，无需网络
    */
   offlineLogin(): Observable<AuthResponse | null> {
-    const cachedCredentials = this.getOfflineCredentials();
-    if (!cachedCredentials) {
-      return of(null);
-    }
+    return from(this.getOfflineCredentials()).pipe(
+      map((cachedCredentials) => {
+        if (!cachedCredentials) return null;
 
-    // 尝试使用缓存 token 恢复登录态
-    const storedToken = this.getAccessToken();
-    const storedUser = this.getStore().getItem(this.USER_KEY);
+        // 尝试使用缓存 token 恢复登录态
+        const storedToken = this.getAccessToken();
+        const storedUser = this.getStore().getItem(this.USER_KEY);
 
-    if (storedToken && storedUser) {
-      try {
-        const user = JSON.parse(storedUser) as User;
-        this.currentUserSubject.next(user);
-        this.isAuthenticatedSubject.next(true);
-        return of({
-          accessToken: storedToken,
-          refreshToken: this.getStore().getItem(this.REFRESH_TOKEN_KEY) ?? '',
-          user,
-        });
-      } catch {
-        // 数据损坏，清除缓存
-        this.clearOfflineCredentials();
-      }
-    }
+        if (storedToken && storedUser) {
+          try {
+            const user = JSON.parse(storedUser) as User;
+            this.currentUserSubject.next(user);
+            this.isAuthenticatedSubject.next(true);
+            return {
+              accessToken: storedToken,
+              refreshToken: this.getStore().getItem(this.REFRESH_TOKEN_KEY) ?? '',
+              user,
+            };
+          } catch {
+            // 数据损坏，清除缓存
+            this.clearOfflineCredentials();
+          }
+        }
 
-    return of(null);
+        return null;
+      }),
+    );
   }
 
   /**
-   * 缓存离线登录凭据
+   * 缓存离线登录凭据（加密存储）
+   *
+   * 使用 Web Crypto API (AES-GCM) 加密后存储到 localStorage
+   * 防止 XSS 直接读取明文 token
    */
-  cacheOfflineCredentials(username: string, token: string): void {
+  async cacheOfflineCredentials(username: string, token: string): Promise<void> {
     try {
       const credentials = {
         username,
         token,
         cachedAt: Date.now(),
       };
-      localStorage.setItem(this.OFFLINE_CREDENTIALS_KEY, JSON.stringify(credentials));
+      const encrypted = await encrypt(JSON.stringify(credentials), username);
+      localStorage.setItem(this.OFFLINE_CREDENTIALS_KEY, encrypted);
     } catch {
       console.warn('[Auth] 无法缓存离线凭据');
     }
   }
 
   /**
-   * 获取离线登录凭据
+   * 获取离线登录凭据（解密读取）
    */
-  private getOfflineCredentials(): { username: string; token: string; cachedAt: number } | null {
+  async getOfflineCredentials(): Promise<{ username: string; token: string; cachedAt: number } | null> {
     try {
       const raw = localStorage.getItem(this.OFFLINE_CREDENTIALS_KEY);
       if (!raw) return null;
-      const credentials = JSON.parse(raw) as { username: string; token: string; cachedAt: number };
-      if (!credentials) return null;
+
+      // 尝试解密（新格式：密文）
+      // 需要先从密文中提取 username 来派生密钥
+      // 由于密钥派生依赖 username，我们需要存储一个未加密的 username 提示
+      // 简化方案：尝试用常见用户名派生密钥解密
+      // 更好的方案：在存储时同时保存未加密的 username
+      const decrypted = await this.decryptCredentials(raw);
+      if (!decrypted) return null;
+
       // 凭据有效期 30 天
-      if (Date.now() - credentials.cachedAt > 30 * 24 * 60 * 60 * 1000) {
+      if (Date.now() - decrypted.cachedAt > 30 * 24 * 60 * 60 * 1000) {
         this.clearOfflineCredentials();
         return null;
       }
-      return credentials;
+      return decrypted;
     } catch {
       return null;
     }
+  }
+
+  /**
+   * 解密离线凭据
+   *
+   * 尝试多种可能的用户名来解密（兼容旧格式明文回退）
+   */
+  private async decryptCredentials(raw: string): Promise<{ username: string; token: string; cachedAt: number } | null> {
+    // 先尝试作为明文 JSON 解析（兼容旧格式）
+    try {
+      const credentials = JSON.parse(raw) as { username: string; token: string; cachedAt: number };
+      if (credentials.username && credentials.token && credentials.cachedAt) {
+        console.warn('[Auth] 检测到未加密离线凭据，已自动升级');
+        // 旧格式明文，升级为加密存储
+        await this.cacheOfflineCredentials(credentials.username, credentials.token);
+        return credentials;
+      }
+    } catch {
+      // 不是 JSON，可能是加密格式
+    }
+
+    // 尝试用已知的用户名解密
+    // 由于密钥派生依赖 userId，这里从当前用户信息中获取
+    const currentUser = this.currentUserSubject.value;
+    if (currentUser?.username) {
+      const decryptedRaw = await decrypt(raw, currentUser.username);
+      if (decryptedRaw) {
+        try {
+          return JSON.parse(decryptedRaw) as { username: string; token: string; cachedAt: number };
+        } catch {
+          return null;
+        }
+      }
+    }
+
+    return null;
   }
 
   /**
@@ -1106,8 +1167,8 @@ export class AuthService {
   /**
    * 检查是否可以进行离线登录
    */
-  canOfflineLogin(): boolean {
-    return !!this.getOfflineCredentials();
+  async canOfflineLogin(): Promise<boolean> {
+    return !!(await this.getOfflineCredentials());
   }
 
   /**

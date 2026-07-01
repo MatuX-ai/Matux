@@ -179,11 +179,12 @@ export class OAuthManager {
 
   /**
    * 生成随机state参数
+   * 使用 crypto.getRandomValues 生成密码学安全的随机数，防止 CSRF 攻击
    */
   generateState(): string {
-    return (
-      Math.random().toString(36).substring(2, 15) + Math.random().toString(36).substring(2, 15)
-    );
+    const array = new Uint8Array(16);
+    crypto.getRandomValues(array);
+    return Array.from(array, (b) => b.toString(16).padStart(2, '0')).join('');
   }
 
   /**

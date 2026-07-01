@@ -33,6 +33,7 @@ export const ROUTES = {
     ACHIEVEMENTS: '/user/achievements',
     EMOTIONAL_COMPANION: '/user/emotional-companion',
     AI_TEACHER_SETTINGS: '/user/ai-teacher-settings',
+    SETTINGS: '/user/settings',
   },
 
   // AI 编程教育
