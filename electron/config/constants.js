@@ -55,7 +55,11 @@ const EXEC_SYNC_PIP_TIMEOUT = 15000;
 const MAX_FILE_SIZE = 1 * 1024 * 1024;
 
 // Splash 画面渲染等待时间
-const SPLASH_RENDER_DELAY = 200;
+// 【启动优化 P3-8】从 200ms 改为 0ms
+// - Splash 窗口内部的 ready-to-show 事件会负责 show()
+// - 与主窗口创建/后端启动完全独立，可并行进行
+// - 设置为 0 节省 200ms
+const SPLASH_RENDER_DELAY = 0;
 
 // ==================== HTTP 请求配置 ====================
 
@@ -94,25 +98,52 @@ const DEFAULT_WINDOW_SIZE = {
 };
 
 const SPLASH_WINDOW_SIZE = {
-  width: 480,
-  height: 520,
+  width: 620,
+  height: 680,
 };
 
 // ==================== 路径配置 ====================
 
 /**
  * 获取后端目录路径
+ * 开发环境: __dirname = electron/config/，向上两级到项目根，再进入 backend/
+ * 生产环境: backend 作为 extraResources 打包在 resources/backend/
  */
 function getBackendDir() {
-  return path.join(__dirname, '..', 'backend');
+  if (!isDev && process.resourcesPath) {
+    // 生产环境: backend 在 resources/backend/ 目录（extraResources 配置）
+    return path.join(process.resourcesPath, 'backend');
+  }
+  // 开发环境: 从 electron/config/ 向上两级到项目根
+  return path.join(__dirname, '..', '..', 'backend');
 }
 
 /**
  * 获取前端入口 HTML 路径
+ * 开发环境: electron/config/  →  项目根/dist/imatuproject/index.html
+ * 生产环境: 打包在 resources/dist/imatuproject/index.html （electron-builder.yml extraResources）
+ *
+ * 【修复 1.0.2 蓝屏】之前 __dirname 在 asar 中指向 app.asar/config/，
+ *   path.join(__dirname, '..', '..', 'dist', 'imatuproject') 解析为 app.asar/dist/imatuproject，
+ *   但 asar 里压根没有 dist（asar files 不支持 ../dist/xxx 这种跳出 app 根的相对路径），
+ *   导致 fs.existsSync(index.html) 始终 false → 主窗口 ready-to-show 永远不触发 → 蓝屏无显示。
  */
 function getFrontendIndex() {
-  // 前端构建输出在项目根目录的 dist/imatuproject
+  if (!isDev && process.resourcesPath) {
+    return path.join(process.resourcesPath, 'dist', 'imatuproject', 'index.html');
+  }
+  // 开发环境：从 electron/config/ 向上两级到项目根
   return path.join(__dirname, '..', '..', 'dist', 'imatuproject', 'index.html');
+}
+
+/**
+ * 获取前端目录路径（用于自定义协议 handler）
+ */
+function getFrontendDir() {
+  if (!isDev && process.resourcesPath) {
+    return path.join(process.resourcesPath, 'dist', 'imatuproject');
+  }
+  return path.join(__dirname, '..', '..', 'dist', 'imatuproject');
 }
 
 /**
@@ -136,11 +167,31 @@ function getBackendScriptPath() {
 
 const APP_PATHS = {
   backendDir: getBackendDir(),
+  frontendDir: getFrontendDir(),
   frontendIndex: getFrontendIndex(),
-  icon: path.join(__dirname, 'build', 'icon.ico'),
+  // 【修复 #4】icon.ico 位于 electron/build/ 下，__dirname 是 electron/config/
+  //   需向上跳一级才能访问 electron/build/icon.ico
+  icon: path.join(__dirname, '..', 'build', 'icon.ico'),
   preload: path.join(__dirname, '..', 'preload.js'),
   preloadSplash: path.join(__dirname, '..', 'preload-splash.js'),
   splashHtml: path.join(__dirname, '..', 'splash.html'),
+};
+
+// ==================== 自定义协议配置 ====================
+
+// 自定义协议名称（避免 file:// 协议下 ES module 加载限制）
+const APP_PROTOCOL = 'app';
+
+// 前端加载超时时间（30秒，超时后显示错误页）
+const FRONTEND_LOAD_TIMEOUT = 30000;
+
+// 注册自定义协议为 privileged（支持 fetch / CORS / ES module）
+const APP_PROTOCOL_PRIVILEGES = {
+  standard: true,
+  secure: true,
+  supportFetchAPI: true,
+  corsEnabled: true,
+  stream: true,
 };
 
 // ==================== Python 环境配置 ====================
@@ -173,6 +224,7 @@ module.exports = {
   BACKEND_PORT,
   BACKEND_HOST,
   BACKEND_URL,
+  BACKUP_PORTS,
   BACKEND_START_TIMEOUT,
   TIER1_PRELOAD_TIMEOUT,
   BACKEND_RESTART_DELAY,
@@ -211,8 +263,12 @@ module.exports = {
 
   // 路径
   APP_PATHS,
+  APP_PROTOCOL,
+  APP_PROTOCOL_PRIVILEGES,
+  FRONTEND_LOAD_TIMEOUT,
   getBackendDir,
   getFrontendIndex,
+  getFrontendDir,
   getBackendScriptPath,
 
   // Python
