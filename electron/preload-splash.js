@@ -19,6 +19,38 @@ contextBridge.exposeInMainWorld('splashAPI', {
   retry: () => {
     ipcRenderer.send('splash-retry');
   },
+
+  /**
+   * 通知主进程 Splash 已切换到迷你模式（主进程据此调整窗口尺寸并贴底）
+   */
+  notifyMiniMode: () => {
+    ipcRenderer.send('splash-mini-mode');
+  },
+
+  /**
+   * 【降级入口】用户主动点击"跳过"，主进程应立即标记为降级模式
+   * - 关闭 Splash 窗口
+   * - 主窗口 ready-to-show 后立即显示（即使后端未就绪）
+   * - 通知前端进入前端降级模式
+   */
+  skip: () => {
+    ipcRenderer.send('splash-skip');
+  },
+
+  /**
+   * 【启动优化 P1-2】通知主进程 Splash 淡出动画已完成
+   * 主进程收到后可以立即关闭窗口（无需硬等 900ms）
+   */
+  notifyFadeOutComplete: () => {
+    ipcRenderer.send('splash-fadeout-complete');
+  },
+
+  /**
+   * 退出应用
+   */
+  quit: () => {
+    ipcRenderer.send('splash-quit');
+  },
 });
 
 console.log('[Splash Preload] 启动画面预加载脚本已就绪');

@@ -173,7 +173,12 @@ function registerAppProtocol() {
       if (isApiOrAsset) {
         const backendUrl = `${process.env.BACKEND_URL || `http://localhost:${process.env.BACKEND_PORT || 8000}`}/${relativePath}`;
         console.log(`[Protocol] API代理: ${relativePath} -> ${backendUrl}`);
-        return net.fetch(backendUrl);
+        // 【修复】转发原始请求的 method、headers、body，确保 POST/PUT 等方法正确代理
+        return net.fetch(backendUrl, {
+          method: request.method,
+          headers: request.headers,
+          body: request.body,
+        });
       }
       if (hasExtension) {
         // 有扩展名但不是已知 API 路径（如 .json、.ico、.map 等）→ 404
@@ -914,7 +919,15 @@ app.whenReady().then(async () => {
   // 5. 启动后端（后端初始化在后台进行，不阻塞主窗口显示）
   //    - 前端加载与后端启动并行执行
   //    - Splash 会在主窗口 ready-to-show 时自动变形为底部横条
-  const initResult = await appInitializer.initialize();
+  // 【跳过入口】如果用户在 splash 上点了"跳过"，把 await 转成"等标志"的 race,
+  //   这样 initResult 会立刻得到 'degraded',主窗口立即显示。
+  let initResult;
+  if (global.__matuxUserSkippedStartup) {
+    console.log('[Main] 检测到用户跳过启动,直接走降级模式');
+    initResult = 'degraded';
+  } else {
+    initResult = await appInitializer.initialize();
+  }
 
   if (initResult === false) {
     console.error('[Main] 后端启动失败，Splash 保持显示错误状态');
@@ -958,6 +971,23 @@ app.whenReady().then(async () => {
       splashWindow.destroy();
     }
     app.quit();
+  });
+
+  // 【新增】splash-skip: 用户主动跳过启动等待,进入降级模式
+  // 设置全局标志,appInitializer.initialize() 会周期性检查并提前返回 'degraded'
+  ipcMain.on('splash-skip', () => {
+    console.log('[Main] User requested skip from splash → degraded mode');
+    global.__matuxUserSkippedStartup = true;
+    // 立即关闭 splash(主窗口 ready-to-show 事件会负责显示主窗口)
+    if (splashWindow && !splashWindow.isDestroyed()) {
+      splashWindow.destroy();
+      splashWindow = null;
+    }
+    // 直接显示主窗口(若已创建),避免用户继续看到黑屏
+    const win = windowManager?.getMainWindow?.();
+    if (win && !win.isDestroyed() && !win.isVisible()) {
+      win.show();
+    }
   });
 
   // 7. 通知前端后端状态

@@ -210,6 +210,16 @@ class AppInitializer {
   async initialize() {
     const mainWindow = this.windowManager?.getMainWindow();
 
+    // 【跳过启动】用户在 Splash 上点了"跳过" → 直接进入降级模式
+    if (global.__matuxUserSkippedStartup) {
+      console.log('[INFO] 用户主动跳过启动检查，进入降级模式');
+      this.isDegraded = true;
+      await this._initializePlugins();
+      setTimeout(() => this._initDeviceProfiler(), 1000);
+      setTimeout(() => this._initPhase5(), 1000);
+      return 'degraded';
+    }
+
     // 1. Python 环境检测
     const pythonInfo = await checkPythonEnvironment({
       sendSplashStatus: this.sendSplashStatus,
@@ -234,12 +244,18 @@ class AppInitializer {
     const manager = this._initBackendManager();
     await manager.start(this.sendSplashStatus);
 
-    // 3. 等待后端就绪
-    const isReady = await manager.waitForReady({
-      backendHost: BACKEND_HOST,
-      backendPort: BACKEND_PORT,
-      onProgress: this.sendSplashStatus,
-    });
+    // 3. 等待后端就绪（带跳过打断：每 500ms 检查一次用户是否点了跳过）
+    const isReady = await this._waitForReadyWithSkipCheck(manager);
+
+    // 【跳过打断】用户在 waitForReady 中点了跳过 → 直接返回降级
+    if (global.__matuxUserSkippedStartup) {
+      console.log('[INFO] 用户跳过启动,提前进入降级模式');
+      this.isDegraded = true;
+      await this._initializePlugins();
+      setTimeout(() => this._initDeviceProfiler(), 1000);
+      setTimeout(() => this._initPhase5(), 1000);
+      return 'degraded';
+    }
 
     const healthCheck = this._healthCheck;
 
@@ -286,6 +302,33 @@ class AppInitializer {
     setTimeout(() => this._initPhase5(), 1000);
 
     return true;
+  }
+
+  /**
+   * 【降级入口】包装 manager.waitForReady,周期性检查用户是否点了"跳过"
+   * - 用户未跳过:等待原生 ready结果返回
+   * - 用户已跳过:立即返回 false,调用方按降级模式处理
+   */
+  async _waitForReadyWithSkipCheck(manager) {
+    let resolved = false;
+    const POLL_INTERVAL_MS = 500;
+    const result = await Promise.race([
+      manager.waitForReady({
+        backendHost: BACKEND_HOST,
+        backendPort: BACKEND_PORT,
+        onProgress: this.sendSplashStatus,
+      }),
+      new Promise((resolve) => {
+        const timer = setInterval(() => {
+          if (global.__matuxUserSkippedStartup) {
+            clearInterval(timer);
+            resolved = true;
+            resolve(false);
+          }
+        }, POLL_INTERVAL_MS);
+      }),
+    ]);
+    return resolved ? false : result;
   }
 
   /**

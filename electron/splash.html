@@ -2048,9 +2048,14 @@
       showSettingsPanel();
     });
 
-    // 跳过按钮 - 跳过动画进入迷你模式
+    // 跳过按钮 - 跳过启动等待进入降级模式
     document.getElementById('menuSkip')?.addEventListener('click', function() {
-      addLogLine('Skipping animation...', 'warn');
+      addLogLine('User requested skip startup → degraded mode', 'warn');
+      // 通知主进程:用户主动跳过,启动进入降级模式
+      if (window.splashAPI && window.splashAPI.skip) {
+        window.splashAPI.skip();
+      }
+      // 同时本地切换到 mini-mode,作为视觉过渡
       if (!document.body.classList.contains('mini-mode')) {
         enterMiniMode();
       }
