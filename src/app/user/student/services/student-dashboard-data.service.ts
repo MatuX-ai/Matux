@@ -326,16 +326,23 @@ export class StudentDashboardDataService implements OnDestroy {
       achievements: this.fetchAchievements(userIdNum),
     }).pipe(
       map(({ progressStats, enrolledCourses, recommendedCourses, achievements }) => {
-        const continueLearningCourses = (enrolledCourses.items ?? []).slice(0, 3).map((item) => ({
-          id: item.course_id,
-          title: `课程 ${item.course_id}`,
-          teacher: '',
-          progress: item.progress_percentage ?? 0,
-          level: '',
-          duration: '',
-          sourceType: '',
-          sourceName: '',
-        }));
+        const continueLearningCourses = (enrolledCourses.items ?? [])
+          .slice(0, 3)
+          .map((item) => ({
+            id: item.course_id,
+            title: `课程 ${item.course_id}`,
+            teacher: '',
+            progress: item.progress_percentage ?? 0,
+            level: '',
+            duration: '',
+            sourceType: '',
+            sourceName: '',
+          }));
+
+        // 【P2 适配】每日任务与排行榜仍从 mock 拼装(后端暂无对应 API)
+        // 真实落地时,可将 getDailyTasks/getLeaderboard 接入 forkJoin 替换
+        const mockTasks = getMockDailyTasks();
+        const mockLeaderboard = getMockLeaderboard();
 
         return {
           progressStats,
@@ -346,6 +353,8 @@ export class StudentDashboardDataService implements OnDestroy {
           },
           achievements,
           recommendedCourses: recommendedCourses ?? [],
+          dailyTasks: mockTasks,
+          leaderboard: mockLeaderboard,
         };
       })
     );
