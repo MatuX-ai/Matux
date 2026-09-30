@@ -887,7 +887,30 @@ app.on('second-instance', (event, commandLine) => {
   });
 
 app.whenReady().then(async () => {
-  // 0. 注册自定义协议 handler（必须在创建窗口之前）
+  // 0. 注册 splash 关键 IPC handler（必须在 createSplashWindow 之前注册,
+  //   否则 initialize() 阻塞期间用户点击"跳过"会因无人监听被丢弃）
+  ipcMain.on('splash-quit', () => {
+    console.log('[Main] User requested quit from splash');
+    if (splashWindow && !splashWindow.isDestroyed()) {
+      splashWindow.destroy();
+    }
+    app.quit();
+  });
+
+  ipcMain.on('splash-skip', () => {
+    console.log('[Main] User requested skip from splash → degraded mode');
+    global.__matuxUserSkippedStartup = true;
+    if (splashWindow && !splashWindow.isDestroyed()) {
+      splashWindow.destroy();
+      splashWindow = null;
+    }
+    const win = windowManager?.getMainWindow?.();
+    if (win && !win.isDestroyed() && !win.isVisible()) {
+      win.show();
+    }
+  });
+
+  // 1. 注册自定义协议 handler（必须在创建窗口之前）
   registerAppProtocol();
 
   // 1. 创建应用启动器（必须在 registerIpcHandlers 之前）
@@ -930,9 +953,17 @@ app.whenReady().then(async () => {
   }
 
   if (initResult === false) {
-    console.error('[Main] 后端启动失败，Splash 保持显示错误状态');
+    console.error('[Main] 后端启动失败，进入降级模式继续运行');
     isStarting = false;
-    return;
+    // 【修复 P0】之前这里直接 return，导致 splash 永不关闭、主窗口不显示，
+    // 用户即便点了"跳过"也没机会进入降级模式。
+    // 现在即使后端启动失败，也强制走降级模式：
+    //   - 显示主窗口（带降级横幅）
+    //   - 通知前端 backend-degraded
+    initResult = 'degraded';
+    if (mainWindow && !mainWindow.isDestroyed() && !mainWindow.isVisible()) {
+      mainWindow.show();
+    }
   }
 
   const isDegraded = (initResult === 'degraded');
@@ -964,31 +995,8 @@ app.whenReady().then(async () => {
   // 兑底超时：降级模式需等待更久（splash 内部延迟 1.5s + CSS transition 0.6s）
   setTimeout(closeSplash, isDegraded ? 3000 : 800);
 
-  // 【新增】splash-quit: 直接退出应用
-  ipcMain.on('splash-quit', () => {
-    console.log('[Main] User requested quit from splash');
-    if (splashWindow && !splashWindow.isDestroyed()) {
-      splashWindow.destroy();
-    }
-    app.quit();
-  });
-
-  // 【新增】splash-skip: 用户主动跳过启动等待,进入降级模式
-  // 设置全局标志,appInitializer.initialize() 会周期性检查并提前返回 'degraded'
-  ipcMain.on('splash-skip', () => {
-    console.log('[Main] User requested skip from splash → degraded mode');
-    global.__matuxUserSkippedStartup = true;
-    // 立即关闭 splash(主窗口 ready-to-show 事件会负责显示主窗口)
-    if (splashWindow && !splashWindow.isDestroyed()) {
-      splashWindow.destroy();
-      splashWindow = null;
-    }
-    // 直接显示主窗口(若已创建),避免用户继续看到黑屏
-    const win = windowManager?.getMainWindow?.();
-    if (win && !win.isDestroyed() && !win.isVisible()) {
-      win.show();
-    }
-  });
+  // splash-quit / splash-skip handler 已在 app.whenReady() 顶部注册,
+  // 这样 initialize() 阻塞期间用户点击也能被及时处理
 
   // 7. 通知前端后端状态
   if (mainWindow && !mainWindow.isDestroyed()) {

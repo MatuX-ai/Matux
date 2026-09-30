@@ -854,6 +854,8 @@
 
     /* ====== 游戏风格菜单 ====== */
     .game-menu {
+      -webkit-app-region: no-drag;
+      pointer-events: auto;
       display: flex;
       justify-content: center;
       align-items: center;
@@ -866,8 +868,11 @@
       backdrop-filter: blur(10px);
     }
 
-    .menu-btn {
-      -webkit-app-region: no-drag;
+    button.menu-btn,
+.menu-btn {
+      -webkit-app-region: no-drag !important;
+      pointer-events: auto !important;
+      cursor: pointer;
       display: flex;
       align-items: center;
       justify-content: center;
@@ -876,6 +881,8 @@
       padding: 0 16px;
       border: 1px solid transparent;
       background: transparent;
+      position: relative;
+      z-index: 200;
       cursor: pointer;
       color: #22c55e;
       font-family: 'Courier New', 'Consolas', monospace;
@@ -2012,7 +2019,16 @@
       }
       if (alertDismiss && !alertDismiss.dataset.bound) {
         alertDismiss.dataset.bound = '1';
-        alertDismiss.addEventListener('click', hideAlert);
+        alertDismiss.addEventListener('click', function() {
+          hideAlert();
+          // 【修复 P0】"忽略" = 跳过启动等待,触发 splash-skip 进入降级模式
+          if (window.splashAPI && window.splashAPI.skip) {
+            window.splashAPI.skip();
+          }
+          if (!document.body.classList.contains('mini-mode')) {
+            enterMiniMode();
+          }
+        });
       }
     }
 

@@ -12,6 +12,7 @@ const path = require('path');
 const {
   DEFAULT_WINDOW_SIZE,
   APP_PATHS,
+  APP_PROTOCOL,
   isDev,
   WINDOW_STATE_FILE,
 } = require('../../config/constants');
@@ -67,13 +68,31 @@ function createWindowManager(options = {}) {
     const savedState = loadWindowState();
     const { width: DEF_W, height: DEF_H, minWidth: MIN_W, minHeight: MIN_H } = DEFAULT_WINDOW_SIZE;
 
+    // 【修复 P0】校验保存的窗口位置是否在当前显示器可见区域内
+    // 否则可能落在屏幕外（如断开第二屏时 x=2301 完全不可见）
+    const { screen } = require('electron');
+    const displays = screen.getAllDisplays();
+    const w = savedState.width || DEF_W;
+    const h = savedState.height || DEF_H;
+    const sx = savedState.x;
+    const sy = savedState.y;
+    const visible = (typeof sx === 'number' && typeof sy === 'number')
+      && displays.some((d) => {
+        const a = d.workArea;
+        // 至少 100×100 像素在显示器内
+        return sx + w > a.x + 50 && sx < a.x + a.width - 50
+          && sy + h > a.y + 50 && sy < a.y + a.height - 50;
+      });
+    const useX = visible ? sx : undefined;
+    const useY = visible ? sy : undefined;
+
     mainWindow = new BrowserWindow({
-      width: savedState.width || DEF_W,
-      height: savedState.height || DEF_H,
+      width: w,
+      height: h,
       minWidth: MIN_W,
       minHeight: MIN_H,
-      x: savedState.x,
-      y: savedState.y,
+      x: useX,
+      y: useY,
       show: false,
       webPreferences: {
         preload: APP_PATHS.preload,
@@ -95,7 +114,8 @@ function createWindowManager(options = {}) {
       mainWindow.loadURL('http://localhost:4200');
       mainWindow.webContents.openDevTools();
     } else {
-      mainWindow.loadFile(APP_PATHS.frontendIndex);
+      // 【启动优化】使用自定义协议 app:// 代替 file://
+      mainWindow.loadURL(`${APP_PROTOCOL}://./index.html`);
     }
 
     // 主窗口就绪后关闭 Splash
@@ -196,15 +216,18 @@ function createWindowManager(options = {}) {
     if (url.startsWith('http://') || url.startsWith('https://')) {
       childWin.loadURL(url);
     } else if (url.startsWith('/') || isDev) {
-      const baseUrl = isDev ? 'http://localhost:4200' : APP_PATHS.frontendIndex;
+      const baseUrl = isDev ? 'http://localhost:4200' : `${APP_PROTOCOL}://./index.html`;
       const hashPath = url.startsWith('/') ? url : `/${url}`;
       if (isDev) {
         childWin.loadURL(`${baseUrl}#${hashPath}`);
       } else {
-        childWin.loadFile(baseUrl, { hash: hashPath });
+        // 【启动优化】使用自定义协议加载子窗口
+        childWin.loadURL(`${baseUrl}#${hashPath}`);
       }
     } else {
-      childWin.loadFile(APP_PATHS.frontendIndex, { hash: url.startsWith('/') ? url : `/${url}` });
+      // 【启动优化】使用自定义协议加载子窗口
+      const hashPath = url.startsWith('/') ? url : `/${url}`;
+      childWin.loadURL(`${APP_PROTOCOL}://./index.html#${hashPath}`);
     }
 
     childWindows.add(childWin);

@@ -6,17 +6,16 @@
  */
 
 const { dialog, shell } = require('electron');
-const { execSync } = require('child_process');
-const path = require('path');
 
 const {
   detectPython,
+  validatePythonAtPath,
   checkPythonDeps,
-  isPythonVersionGte39,
+  installPythonDeps,
+  clearDepsCache,
 } = require('../backend');
 
 const {
-  EXEC_SYNC_TIMEOUT,
   APP_PATHS,
 } = require('../../../config/constants');
 
@@ -24,6 +23,11 @@ const {
   isPythonSkipped,
   markPythonSkipped,
   clearPythonSkipped,
+  // 【NSIS 集成】手动指定的 Python 路径优先级高于自动检测
+  consumePendingPythonPath,
+  getManualPythonPath,
+  setManualPythonPath,
+  clearManualPythonPath,
 } = require('../../../utils/install-state');
 
 // 【重构】安全验证
@@ -64,6 +68,27 @@ function isDegradedMode(info) {
  */
 async function checkPythonEnvironment({ sendSplashStatus }) {
   sendSplashStatus('checking-python', '正在检测 Python 环境...', 5);
+
+  // 【NSIS 集成】第1优先级：消费 NSIS pending 路径（一次性桥接）
+  consumePendingPythonPath(validatePythonAtPath);
+
+  // 【NSIS 集成】第2优先级：使用之前保存的手动路径
+  const savedManualPath = getManualPythonPath();
+  if (savedManualPath) {
+    const validated = validatePythonAtPath(savedManualPath);
+    if (validated.available) {
+      console.log(`[INFO] 使用手动指定的 Python: ${validated.path} (${validated.version})`);
+      // 跳过自动检测，直接进入后续依赖检查
+      const manualInfo = { available: true, version: validated.version, path: validated.path };
+      // 与自动检测路径相同的“清除跳过标记”逻辑
+      if (isPythonSkipped()) clearPythonSkipped();
+      return await _runDepsCheck(manualInfo, sendSplashStatus);
+    }
+    console.warn(`[WARN] 保存的手动 Python 路径已失效: ${savedManualPath} (${validated.error})`);
+    clearManualPythonPath();
+  }
+
+  // 【原逻辑】第3优先级：自动检测（PATH + 常见安装路径）
   let pythonInfo = detectPython();
 
   // 【P1 修复】如检测成功，主动清除可能存在的“跳过”标记（重置状态）
@@ -117,33 +142,26 @@ async function checkPythonEnvironment({ sendSplashStatus }) {
       });
 
       if (!result.canceled && result.filePaths.length > 0) {
-        const manualPath = result.filePaths[0];
-        try {
-          const versionOutput = execSync(`"${manualPath}" --version 2>&1`, {
-            encoding: 'utf-8',
-            timeout: EXEC_SYNC_TIMEOUT,
-          }).trim();
-          const versionMatch = versionOutput.match(/Python\s+(\d+\.\d+)/);
-          if (versionMatch && isPythonVersionGte39(versionMatch[1])) {
-            console.log(`[INFO] 用户手动指定 Python: ${manualPath} (${versionMatch[1]})`);
-            pythonInfo = { available: true, version: versionMatch[1], path: manualPath };
-            // 成功检测到 Python 后清除跳过标记
-            clearPythonSkipped();
-            break;
-          }
-          await dialog.showMessageBox({
-            type: 'error',
-            title: '版本不符',
-            message: `所选 Python 版本 ${versionMatch ? versionMatch[1] : '未知'} 不符合要求`,
-            detail: 'MatuX 需要 Python 3.9 或更高版本。',
-          });
-        } catch {
-          await dialog.showMessageBox({
-            type: 'error',
-            title: '无效的文件',
-            message: '所选文件不是有效的 Python 可执行文件，请重新选择。',
-          });
+        const validated = validatePythonAtPath(result.filePaths[0]);
+        if (validated.available) {
+          console.log(`[INFO] 用户手动指定 Python: ${validated.path} (${validated.version})`);
+          pythonInfo = { available: true, version: validated.version, path: validated.path };
+          // 成功检测到 Python 后清除跳过标记
+          clearPythonSkipped();
+          // 【NSIS 集成】持久化手动路径，后续启动可直接使用
+          setManualPythonPath(validated.path);
+          break;
         }
+        await dialog.showMessageBox({
+          type: 'error',
+          title: validated.error && validated.error.startsWith('version') ? '版本不符' : '无效的文件',
+          message: validated.error && validated.error.startsWith('version')
+            ? `所选 Python 版本 ${validated.version || '未知'} 不符合要求`
+            : '所选文件不是有效的 Python 可执行文件，请重新选择。',
+          detail: validated.error && validated.error.startsWith('version')
+            ? 'MatuX 需要 Python 3.9 或更高版本。'
+            : `错误信息：${validated.error || '未知错误'}`,
+        });
       }
       // 用户取消文件选择，继续循环重新弹窗
     } else {
@@ -155,36 +173,63 @@ async function checkPythonEnvironment({ sendSplashStatus }) {
   }
 
   console.log(`[INFO] 检测到 Python ${pythonInfo.version} (${pythonInfo.path})`);
+  return await _runDepsCheck(pythonInfo, sendSplashStatus);
+}
 
+/**
+ * 【重构】统一处理 Python 依赖检查与安装逻辑
+ * 自动检测路径和手动路径（NSIS 集成）都会调用这个函数。
+ * @param {{ available: boolean, version: string, path: string }} pythonInfo - Python 信息
+ * @param {Function} sendSplashStatus - Splash 状态回调
+ * @returns {Promise<Object>} pythonInfo 或降级模式标记
+ */
+async function _runDepsCheck(pythonInfo, sendSplashStatus) {
   // 检查 Python 关键依赖包
   sendSplashStatus('checking-deps', '正在检查 Python 依赖包...', 10);
   const missingDeps = checkPythonDeps(pythonInfo);
-  
+
   if (missingDeps.length > 0) {
     const msg = `缺少关键依赖: ${missingDeps.join(', ')}`;
     console.error(`[ERROR] ${msg}`);
-    sendSplashStatus('pip-missing', '缺少 Python 依赖包', 0, msg);
+    sendSplashStatus('pip-missing', '正在自动安装缺失依赖包...', 15, msg);
 
+    // 【增强】弹窗询问用户是否自动安装
     const { response: depResponse } = await dialog.showMessageBox({
       type: 'warning',
       title: '缺少 Python 依赖包',
-      message: '请先安装 Python 依赖包再启动',
-      detail: `检测到以下 Python 依赖包缺失:\n\n${missingDeps.join('\n')}\n\n请在终端中执行:\ncd backend\npip install -r requirements.txt`,
-      buttons: ['查看依赖文件', '暂不处理'],
+      message: '检测到以下 Python 依赖包缺失',
+      detail: `缺失的依赖:\n\n${missingDeps.join('\n')}\n\nMatuX 可以自动为您安装这些依赖，是否继续？`,
+      buttons: ['自动安装', '暂不处理'],
       defaultId: 0,
     });
 
     if (depResponse === 0) {
-      // 打开 requirements.txt
-      const reqPath = path.join(APP_PATHS.backendDir, 'requirements.txt');
-      const validation = validateFilePath(reqPath);
-      if (validation.valid) {
-        shell.openPath(reqPath);
+      // 用户选择自动安装
+      sendSplashStatus('pip-installing', '正在安装依赖包，请稍候...', 20);
+      const result = installPythonDeps(pythonInfo, missingDeps, (progressMsg) => {
+        sendSplashStatus('pip-installing', progressMsg, 30);
+      });
+
+      if (result.success) {
+        console.log('[INFO] Python 依赖自动安装成功');
+        sendSplashStatus('pip-success', '依赖安装成功', 35);
+        // 清除 deps 缓存，下次重新检查
+        clearDepsCache();
       } else {
-        console.error('[ERROR] 路径验证失败:', validation.error);
+        console.error(`[ERROR] 依赖安装失败: ${result.error}`);
+        sendSplashStatus('pip-failed', '依赖安装失败', 0, result.error);
+        await dialog.showMessageBox({
+          type: 'error',
+          title: '依赖安装失败',
+          message: '无法自动安装 Python 依赖包',
+          detail: `错误信息: ${result.error}\n\n请尝试手动安装:\ncd backend\npip install -r requirements.txt`,
+        });
+        return { ...DEGRADED_MODE_RESULT, reason: 'install-failed' };
       }
+    } else {
+      // 用户选择暂不处理
+      return { ...DEGRADED_MODE_RESULT, reason: 'missing-deps' };
     }
-    return { ...DEGRADED_MODE_RESULT, reason: 'missing-deps' };
   }
 
   return pythonInfo;
@@ -225,15 +270,10 @@ async function verifyBackendHealth({ sendSplashStatus, healthCheck, backendManag
   if (!healthResult.success) {
     const { BACKEND_PORT } = require('../../../config/constants');
     console.error(`[ERROR] 端口 ${BACKEND_PORT} 已开放但健康检查未通过`);
+    // 【修复 P0】之前弹原生模态对话框，强制独占输入焦点，挡住 splash
+    // 用户无法点击"跳过"。改为仅在 splash 显示错误状态，让用户继续操作。
     sendSplashStatus('backend-error', `端口 ${BACKEND_PORT} 无法连接后端服务`, 0,
-      `健康检查失败，请检查后端服务是否正常运行在端口 ${BACKEND_PORT}`);
-    const { dialog } = require('electron');
-    await dialog.showMessageBox({
-      type: 'error',
-      title: '后端连接失败',
-      message: `无法连接到后端服务 (端口 ${BACKEND_PORT})`,
-      detail: `检测到端口 ${BACKEND_PORT} 已开放，但无法识别为 MatuX 后端服务。\n\n请检查后端服务是否正常运行，或是否有其他程序占用了该端口。`,
-    });
+      `健康检查失败，请检查后端服务是否正常运行在端口 ${BACKEND_PORT}（点击跳过按钮进入降级模式）`);
     backendManager?.stop();
     return false;
   }
