@@ -68,21 +68,18 @@ function createWindowManager(options = {}) {
     const savedState = loadWindowState();
     const { width: DEF_W, height: DEF_H, minWidth: MIN_W, minHeight: MIN_H } = DEFAULT_WINDOW_SIZE;
 
-    // 【修复 P0】校验保存的窗口位置是否在当前显示器可见区域内
-    // 否则可能落在屏幕外（如断开第二屏时 x=2301 完全不可见）
+    // 【修复 P0】校验保存的窗口位置是否在主显示器可见区域内
+    // 严格限定主显示器，避免被还原到副屏导致用户看不到
     const { screen } = require('electron');
-    const displays = screen.getAllDisplays();
+    const primary = screen.getPrimaryDisplay();
+    const wa = primary.workArea;
     const w = savedState.width || DEF_W;
     const h = savedState.height || DEF_H;
     const sx = savedState.x;
     const sy = savedState.y;
     const visible = (typeof sx === 'number' && typeof sy === 'number')
-      && displays.some((d) => {
-        const a = d.workArea;
-        // 至少 100×100 像素在显示器内
-        return sx + w > a.x + 50 && sx < a.x + a.width - 50
-          && sy + h > a.y + 50 && sy < a.y + a.height - 50;
-      });
+      && sx + w > wa.x + 50 && sx < wa.x + wa.width - 50
+      && sy + h > wa.y + 50 && sy < wa.y + wa.height - 50;
     const useX = visible ? sx : undefined;
     const useY = visible ? sy : undefined;
 

@@ -339,19 +339,18 @@ function createMainWindow(windowManager) {
     if (typeof state.y === 'number' && state.y >= 0) result.y = state.y;
     if (typeof state.isMaximized === 'boolean') result.isMaximized = state.isMaximized;
 
-    // 校验 x/y 是否在任意显示器的 workArea 内（至少 100x100 像素可见）
+    // 校验 x/y 是否在主显示器的 workArea 内（至少 100x100 像素可见）
+    // 【修复】严格限定主显示器，避免窗口被还原到副屏导致用户看不到
     if (typeof result.x === 'number' && typeof result.y === 'number' &&
         typeof result.width === 'number' && typeof result.height === 'number') {
       try {
-        const displays = screen.getAllDisplays();
-        const isVisible = displays.some((d) => {
-          const wa = d.workArea; // { x, y, width, height }
-          const visibleW = Math.min(result.x + result.width, wa.x + wa.width) - Math.max(result.x, wa.x);
-          const visibleH = Math.min(result.y + result.height, wa.y + wa.height) - Math.max(result.y, wa.y);
-          return visibleW >= 100 && visibleH >= 100;
-        });
-        if (!isVisible) {
-          console.warn(`[Main] 保存的窗口坐标 (${result.x}, ${result.y}) 不在任何显示器内，使用默认居中`);
+        const primary = screen.getPrimaryDisplay();
+        const wa = primary.workArea;
+        const visibleW = Math.min(result.x + result.width, wa.x + wa.width) - Math.max(result.x, wa.x);
+        const visibleH = Math.min(result.y + result.height, wa.y + wa.height) - Math.max(result.y, wa.y);
+        const isOnPrimary = visibleW >= 100 && visibleH >= 100;
+        if (!isOnPrimary) {
+          console.warn(`[Main] 保存的窗口坐标 (${result.x}, ${result.y}) 不在主显示器内，使用主屏居中`);
           delete result.x;
           delete result.y;
         }
