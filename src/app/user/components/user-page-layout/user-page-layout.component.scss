@@ -1,0 +1,225 @@
+// STEM K12 设计系统 - 使用共享主题
+@use 'src/styles/shared/stem-theme' as stem;
+@use 'sass:color';
+
+.user-page-layout {
+  display: flex;
+  flex-direction: column;
+  min-height: 100vh;
+  background-color: var(--color-background, #f8fafc);
+}
+
+/* 【P2 修复】A11y: 跳过导航链接 */
+.skip-link {
+  position: absolute;
+  top: -100px;
+  left: 0;
+  z-index: 9999;
+  padding: 12px 20px;
+  border-radius: 0 0 8px 0;
+  background: var(--matux-color-primary, #3b82f6);
+  color: white;
+  font-weight: 600;
+  font-size: 14px;
+  text-decoration: none;
+  transition: top 200ms ease;
+}
+
+.skip-link:focus {
+  top: 0;
+  outline: 3px solid var(--matux-color-warning, #f59e0b);
+  outline-offset: 2px;
+}
+
+/* 【P2 修复】A11y: 主内容区可聚焦(skip-link 跳转目标) */
+.main-content:focus {
+  outline: none;
+}
+
+/* 主内容区 */
+.main-content {
+  display: flex;
+  flex: 1;
+  flex-direction: column;
+  padding-bottom: 28px; /* 为状态栏留空间 */
+}
+
+.content-wrapper {
+  flex: 1;
+  width: 100%;
+  max-width: 1400px;
+  margin: 0 auto;
+  padding: 24px;
+}
+
+/* 浮动 AI 助手按钮 */
+.ai-assistant-fab {
+  position: fixed;
+  right: 24px;
+  bottom: 48px;
+  z-index: 1000;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  width: 56px;
+  height: 56px;
+  border: none;
+  border-radius: 50%;
+  background: linear-gradient(135deg, stem.$stem-primary 0%, stem.$stem-primary-dark 100%);
+  box-shadow: stem.$stem-shadow;
+  color: white;
+  font-size: 24px;
+  cursor: pointer;
+  transition: all stem.$stem-transition;
+}
+
+.ai-assistant-fab:hover {
+  box-shadow: stem.$stem-shadow-hover;
+  transform: scale(1.1);
+}
+
+.ai-assistant-fab.expanded {
+  background: linear-gradient(135deg, stem.$stem-error 0%, color.adjust(stem.$stem-error, $lightness: -10%) 100%);
+}
+
+.ai-assistant-fab mat-icon {
+  width: 24px;
+  height: 24px;
+  font-size: 24px;
+}
+
+/* AI 对话面板 */
+.ai-panel {
+  position: fixed;
+  right: 24px;
+  bottom: 120px;
+  z-index: 999;
+  display: flex;
+  visibility: hidden;
+  overflow: hidden;
+  flex-direction: column;
+  width: 380px;
+  max-height: 500px;
+  border-radius: stem.$stem-radius-md;
+  background: white;
+  box-shadow: stem.$stem-shadow;
+  opacity: 0;
+  transition: all stem.$stem-transition;
+  transform: translateY(20px);
+}
+
+.ai-panel.show {
+  visibility: visible;
+  opacity: 1;
+  transform: translateY(0);
+}
+
+.ai-panel-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 16px;
+  background: linear-gradient(135deg, stem.$stem-primary 0%, stem.$stem-primary-dark 100%);
+  color: white;
+}
+
+.ai-panel-title {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-weight: 600;
+}
+
+.ai-panel-content {
+  overflow-y: auto;
+  flex: 1;
+  max-height: 300px;
+  padding: 16px;
+}
+
+.ai-message {
+  display: flex;
+  gap: 8px;
+  margin-bottom: 12px;
+}
+
+.ai-message.user {
+  flex-direction: row-reverse;
+}
+
+.ai-avatar {
+  display: flex;
+  flex-shrink: 0;
+  justify-content: center;
+  align-items: center;
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  background: var(--color-gray-100, #f1f5f9);
+  font-size: 16px;
+}
+
+.ai-bubble {
+  max-width: 80%;
+  padding: 12px 16px;
+  border-radius: stem.$stem-radius-sm;
+  background: var(--color-gray-100, #f1f5f9);
+  font-size: 14px;
+  line-height: 1.5;
+}
+
+.ai-message.user .ai-bubble {
+  background: linear-gradient(135deg, stem.$stem-primary 0%, stem.$stem-primary-dark 100%);
+  color: white;
+}
+
+.ai-panel-input {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 12px 16px;
+  border-top: 1px solid var(--color-divider, #e2e8f0);
+}
+
+.ai-input {
+  flex: 1;
+  padding: 10px 16px;
+  border: 1px solid var(--color-divider, #e2e8f0);
+  border-radius: stem.$stem-radius-lg;
+  outline: none;
+  font-size: 14px;
+  transition: border-color stem.$stem-transition;
+}
+
+.ai-input:focus {
+  border-color: stem.$stem-secondary;
+}
+
+/* 【P3 修复】底部状态栏已统一由全局 <app-status-bar> 渲染，此处不再保留样式 */
+
+/* 响应式 */
+@media (width <= 1024px) {
+  .content-wrapper {
+    padding: 16px;
+  }
+
+  .ai-panel {
+    right: 24px;
+    left: 24px;
+    width: calc(100vw - 48px);
+  }
+}
+
+@media (width <= 768px) {
+  .ai-panel {
+    right: 16px;
+    bottom: 100px;
+    left: 16px;
+    width: calc(100vw - 32px);
+  }
+
+  .ai-assistant-fab {
+    right: 16px;
+    bottom: 36px;
+  }
+}

@@ -1,0 +1,134 @@
+<div class="course-detail-container">
+  <!-- 返回按钮 + 面包屑 -->
+  <div class="page-header">
+    <button mat-icon-button (click)="goBack()" matTooltip="返回课程列表" aria-label="返回课程列表">
+      <mat-icon>arrow_back</mat-icon>
+    </button>
+    <span class="breadcrumb">课程</span>
+    <mat-icon class="breadcrumb-sep">chevron_right</mat-icon>
+    <span class="breadcrumb-current">{{ course?.title || '课程详情' }}</span>
+  </div>
+
+  <!-- 加载状态 -->
+  <div class="loading-state" *ngIf="loading">
+    <mat-spinner diameter="48"></mat-spinner>
+    <p>正在加载课程...</p>
+  </div>
+
+  <!-- 错误状态 -->
+  <mat-card class="error-card" *ngIf="!loading && error">
+    <mat-card-content>
+      <div class="error-content">
+        <mat-icon color="warn">error_outline</mat-icon>
+        <div>
+          <h3>加载失败</h3>
+          <p>{{ error }}</p>
+        </div>
+        <button mat-raised-button color="primary" (click)="goBack()">返回课程列表</button>
+      </div>
+    </mat-card-content>
+  </mat-card>
+
+  <!-- 课程主体 -->
+  <ng-container *ngIf="!loading && !error && course">
+    <!-- 课程封面与摘要 -->
+    <mat-card class="course-hero">
+      <div class="hero-content">
+        <div
+          class="hero-icon"
+          [class]="'icon-' + (course.category || 'general')"
+          [attr.aria-label]="getCategoryAriaLabel(course.category)"
+        >
+          {{ course.category === 'programming' ? '💻' :
+             course.category === 'science' ? '🔬' :
+             course.category === 'math' ? '📐' :
+             course.category === 'art' ? '🎨' : '📚' }}
+        </div>
+        <div class="hero-info">
+          <h1 class="course-title">{{ course.title }}</h1>
+          <p class="course-description" *ngIf="course.description">{{ course.description }}</p>
+          <div class="course-meta">
+            <span class="meta-item">
+              <mat-icon>school</mat-icon>
+              {{ difficultyLabel(course.difficulty) }}
+            </span>
+            <span class="meta-item">
+              <mat-icon>access_time</mat-icon>
+              {{ course.duration_minutes }} 分钟
+            </span>
+            <span class="meta-item" *ngIf="course.teacher_name">
+              <mat-icon>person</mat-icon>
+              {{ course.teacher_name }}
+            </span>
+            <span class="meta-item" *ngIf="course.source_type">
+              <mat-icon>source</mat-icon>
+              {{ course.source_type }}
+            </span>
+          </div>
+        </div>
+        <div class="hero-actions">
+          <button
+            mat-flat-button
+            color="primary"
+            class="cta-button"
+            (click)="continueLearning()"
+          >
+            <mat-icon>{{ enrolled ? 'play_arrow' : 'how_to_reg' }}</mat-icon>
+            {{ enrolled ? '继续学习' : '立即报名' }}
+          </button>
+        </div>
+      </div>
+
+      <!-- 进度条（已报名用户） -->
+      <div class="progress-section" *ngIf="enrolled">
+        <div class="progress-header">
+          <span>学习进度</span>
+          <span class="progress-value">{{ progressPercent }}%</span>
+        </div>
+        <mat-progress-bar mode="determinate" [value]="progressPercent"></mat-progress-bar>
+      </div>
+    </mat-card>
+
+    <!-- 章节列表 -->
+    <mat-card class="chapters-card">
+      <mat-card-header>
+        <mat-card-title>
+          <mat-icon>menu_book</mat-icon>
+          课程章节
+        </mat-card-title>
+        <mat-card-subtitle>共 {{ chapters.length }} 章 · 约 {{ course.duration_minutes }} 分钟</mat-card-subtitle>
+      </mat-card-header>
+      <mat-divider></mat-divider>
+      <mat-card-content>
+        <ul class="chapter-list">
+          <li
+            *ngFor="let chapter of chapters; let i = index"
+            class="chapter-item"
+            [class.completed]="chapter.completed"
+          >
+            <div class="chapter-status">
+              <mat-icon *ngIf="chapter.completed" class="status-done">check_circle</mat-icon>
+              <span *ngIf="!chapter.completed" class="status-todo">{{ i + 1 }}</span>
+            </div>
+            <div class="chapter-info">
+              <div class="chapter-title">{{ chapter.title }}</div>
+              <div class="chapter-meta">
+                <mat-icon>schedule</mat-icon>
+                {{ chapter.duration_minutes }} 分钟
+              </div>
+            </div>
+            <button
+              mat-stroked-button
+              color="primary"
+              [disabled]="!enrolled"
+              [matTooltip]="enrolled ? '进入本章' : '请先报名课程'"
+            >
+              <mat-icon>play_arrow</mat-icon>
+              {{ chapter.completed ? '复习' : '开始' }}
+            </button>
+          </li>
+        </ul>
+      </mat-card-content>
+    </mat-card>
+  </ng-container>
+</div>

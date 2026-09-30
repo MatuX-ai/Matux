@@ -47,6 +47,8 @@ interface ExperimentData {
   id?: string;
   name?: string;
   status?: string;
+  simulated?: boolean;
+  startTime?: number;
   [key: string]: unknown;
 }
 
@@ -337,10 +339,33 @@ export class ARLabComponent implements OnInit, OnDestroy {
 
   /**
    * 开始实验
+   * 【P2 修复】无硬件时进入"模拟实验"模式,使用预置数据
    */
   startExperiment(): void {
     if (!this.hardwareConnected) {
-      this.snackBar.open('请先连接硬件设备', '关闭', { duration: 3000 });
+      // 进入模拟实验模式,避免用户被"必须连接硬件"卡住
+      const useSimulation = confirm(
+        '未连接硬件设备。\n\n' +
+          '点击"确定"进入模拟实验模式(使用预置数据体验完整流程)\n' +
+          '点击"取消"返回并继续等待硬件'
+      );
+
+      if (!useSimulation) {
+        return;
+      }
+
+      // 模拟实验模式: 不调真实 API,直接构造实验对象
+      this.currentExperiment = {
+        id: 'sim-' + Date.now(),
+        name: '模拟实验 - LED 闪烁控制',
+        status: 'running',
+        startTime: Date.now(),
+        simulated: true,
+      };
+      this.isExperimentRunning = true;
+      this.hardwareConnected = true; // 模拟模式下视为已连接,解锁 UI
+      this.connectionStatus = '模拟模式';
+      this.snackBar.open('已进入模拟实验模式(无硬件)', '关闭', { duration: 3000 });
       return;
     }
 
@@ -353,7 +378,7 @@ export class ARLabComponent implements OnInit, OnDestroy {
         this.snackBar.open('实验开始', '关闭', { duration: 2000 });
       },
       error: (_error) => {
-        this.snackBar.open('实验启动失败', '关闭', { duration: 3000 });
+        this.snackBar.open('实验启动失败，请重试', '关闭', { duration: 3000 });
       },
     });
   }

@@ -11,17 +11,18 @@
  */
 
 import {
+  HttpErrorResponse,
   HttpEvent,
   HttpHandler,
   HttpInterceptor,
   HttpRequest,
-  HttpErrorResponse,
 } from '@angular/common/http';
 import { Injectable } from '@angular/core';
 import { Observable, throwError } from 'rxjs';
 import { catchError } from 'rxjs/operators';
 
 import { AuthService } from '../services/auth.service';
+import { ErrorLoggerService } from '../services/error-logger.service';
 
 /**
  * 不需要认证头的公开端点白名单
@@ -49,17 +50,15 @@ function isPublicEndpoint(url: string): boolean {
 export class HttpAuthInterceptor implements HttpInterceptor {
   constructor(
     private authService: AuthService,
+    private errorLogger: ErrorLoggerService
   ) {}
 
-  intercept(
-    request: HttpRequest<unknown>,
-    next: HttpHandler,
-  ): Observable<HttpEvent<unknown>> {
+  intercept(request: HttpRequest<unknown>, next: HttpHandler): Observable<HttpEvent<unknown>> {
     // 公开端点跳过认证头注入
     if (isPublicEndpoint(request.url)) {
-      return next.handle(request).pipe(
-        catchError((error: HttpErrorResponse) => this.handleError(error)),
-      );
+      return next
+        .handle(request)
+        .pipe(catchError((error: HttpErrorResponse) => this.handleError(error)));
     }
 
     // 获取当前访问令牌
@@ -75,20 +74,28 @@ export class HttpAuthInterceptor implements HttpInterceptor {
       });
     }
 
-    return next.handle(authRequest).pipe(
-      catchError((error: HttpErrorResponse) => this.handleError(error)),
-    );
+    return next
+      .handle(authRequest)
+      .pipe(catchError((error: HttpErrorResponse) => this.handleError(error)));
   }
 
   /**
    * 统一错误处理
    * 401 未授权 → 自动清除认证数据并跳转登录页
    * 403 禁止访问 → 提示权限不足
+   * 5xx 服务端错误 → 上报错误日志
    */
   private handleError(error: HttpErrorResponse): Observable<never> {
     if (error.status === 401) {
       // Token 过期或无效，调用登出清除数据并跳转登录
       this.authService.logout();
+    } else if (error.status >= 500) {
+      // 【P2 修复】5xx 服务端错误统一上报
+      this.errorLogger.logError({
+        message: `[HTTP ${error.status}] ${error.message} ${error.url ?? ''}`,
+        url: error.url ?? window.location.href,
+        source: 'manual',
+      });
     }
 
     return throwError(() => error);

@@ -26,6 +26,8 @@ export const ROUTES = {
     PROFILE: '/user/profile',
     TOKEN: '/user/token',
     COURSES: '/user/courses',
+    COURSE_DETAIL: '/user/courses/:courseId',
+    COURSE_LEARN: '/user/courses/:courseId/learn',
     LEARNING_PROFILE: '/user/learning-profile',
     GROWTH_TRAJECTORY: '/user/growth-trajectory',
     REPORTS: '/user/reports',
@@ -40,6 +42,39 @@ export const ROUTES = {
   AI_EDU: {
     BASE: '/ai-edu',
     DASHBOARD: '/ai-edu/dashboard',
+    CODING: '/ai-edu/coding',
+  },
+
+  // 测验
+  EXAM: {
+    BASE: '/exam',
+    LIST: '/exam',
+    TAKE: '/exam/:examId/take',
+    RESULT: '/exam/attempts/:attemptId/result',
+  },
+
+  // 插件商店
+  PLUGIN_STORE: {
+    BASE: '/plugins',
+    HOME: '/plugins',
+    INSTALLED: '/plugins/installed',
+  },
+
+  // 内容商店
+  STORE: {
+    BASE: '/store',
+    HOME: '/store',
+    SEARCH: '/store/search',
+    FEATURED: '/store/featured',
+    CATEGORY: '/store/category/:category',
+    CONTENT: '/store/content/:contentId',
+  },
+
+  // 订阅
+  SUBSCRIPTION: {
+    BASE: '/subscription',
+    PLANS: '/subscription/plans',
+    PLAN_DETAIL: '/subscription/plans/:planId',
   },
 
   // 学习实验室
@@ -52,7 +87,6 @@ export const ROUTES = {
   },
 
   // 其他功能模块
-  EXAM: '/exam',
   OFFLINE_MODE: '/offline-mode',
   CONTENT_STORE: '/content-store',
 
@@ -70,6 +104,10 @@ export const ROUTES = {
     DOWNLOAD_APP: '/download#app',
     HARDWARE: '/hardware',
   },
+
+  // 帮助与关于
+  HELP: '/help',
+  ABOUT: '/about',
 } as const;
 
 // 路由参数类型

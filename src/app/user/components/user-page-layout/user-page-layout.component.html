@@ -1,0 +1,61 @@
+<div class="user-page-layout">
+  <!-- 【P2 修复】A11y: 跳过导航直达主内容 -->
+  <a class="skip-link" href="#main-content">跳到主内容</a>
+
+  <!-- 顶部导航栏 -->
+  <app-user-navbar role="navigation"></app-user-navbar>
+
+  <!-- 主内容区 -->
+  <main id="main-content" class="main-content" role="main" tabindex="-1">
+    <div class="content-wrapper">
+      <router-outlet></router-outlet>
+    </div>
+    <app-user-footer></app-user-footer>
+  </main>
+
+  <!-- 浮动 AI 助手按钮 -->
+  <button
+    class="ai-assistant-fab"
+    (click)="toggleAIAssistant()"
+    matTooltip="AI 老师"
+    [class.expanded]="showAIAssistant"
+  >
+    <mat-icon>{{ showAIAssistant ? 'close' : 'smart_toy' }}</mat-icon>
+  </button>
+
+  <!-- AI 对话面板 -->
+  <div class="ai-panel" [class.show]="showAIAssistant">
+    <div class="ai-panel-header">
+      <div class="ai-panel-title">
+        <mat-icon>smart_toy</mat-icon>
+        <span>AI 老师</span>
+      </div>
+      <button mat-icon-button (click)="toggleAIAssistant()">
+        <mat-icon>close</mat-icon>
+      </button>
+    </div>
+    <div class="ai-panel-content">
+      <div class="ai-message ai-message-welcome">
+        <div class="ai-avatar">🤖</div>
+        <div class="ai-bubble">
+          你好！我是你的 AI 老师 👋<br /><br />
+          有什么我可以帮助你的吗？
+        </div>
+      </div>
+    </div>
+    <div class="ai-panel-input">
+      <input
+        type="text"
+        placeholder="输入你的问题..."
+        class="ai-input"
+        [(ngModel)]="aiMessage"
+        (keyup.enter)="sendAIMessage()"
+      />
+      <button mat-icon-button color="primary" (click)="sendAIMessage()">
+        <mat-icon>send</mat-icon>
+      </button>
+    </div>
+  </div>
+
+  <!-- 【P3 修复】底部状态栏已移至 AppComponent 全局 <app-status-bar>，此处不再重复渲染 -->
+</div>

@@ -19,6 +19,8 @@ import { MatCardModule } from '@angular/material/card';
 import { MatChipsModule } from '@angular/material/chips';
 import { MatIconModule } from '@angular/material/icon';
 import { MatProgressBarModule } from '@angular/material/progress-bar';
+import { MatSnackBarModule } from '@angular/material/snack-bar';
+import { MatSnackBar } from '@angular/material/snack-bar';
 import { MatTabsModule } from '@angular/material/tabs';
 import { MatTooltipModule } from '@angular/material/tooltip';
 import { Router } from '@angular/router';
@@ -30,6 +32,7 @@ import type { User } from '../../../core/models/auth.models';
 import { AuthService } from '../../../core/services/auth.service';
 import { CourseEnrollmentService } from '../../../core/services/course-enrollment.service';
 import { UnifiedCourseService } from '../../../core/services/unified-course.service';
+import { ROUTES } from '../../../routes.const';
 
 interface EnrolledCourse {
   course: UnifiedCourse;
@@ -48,6 +51,7 @@ interface EnrolledCourse {
     MatChipsModule,
     MatTabsModule,
     MatTooltipModule,
+    MatSnackBarModule,
   ],
   changeDetection: ChangeDetectionStrategy.OnPush,
   templateUrl: './my-courses.component.html',
@@ -98,7 +102,8 @@ export class MyCoursesComponent implements OnInit, OnDestroy {
     private unifiedCourseService: UnifiedCourseService,
     private authService: AuthService,
     private router: Router,
-    private cdr: ChangeDetectorRef
+    private cdr: ChangeDetectorRef,
+    private snackBar: MatSnackBar
   ) {}
 
   ngOnInit(): void {
@@ -353,11 +358,24 @@ export class MyCoursesComponent implements OnInit, OnDestroy {
   /**
    * 报名推荐课程 - 跳转到内容商店
    */
-  enrollCourse(course: UnifiedCourse): void {
-    // 跳转到内容商店并携带课程信息
-    void this.router.navigate(['/content-store'], {
-      queryParams: { courseId: course.id },
-    });
+  enrollCourse(course: UnifiedCourse, event?: Event): void {
+    if (event) {
+      event.stopPropagation();
+    }
+    // 跳转到课程详情页完成报名
+    void this.router.navigate([ROUTES.USER.COURSE_DETAIL.replace(':courseId', String(course.id))]);
+  }
+
+  /**
+   * 【P1 修复】点击"继续学习/复习"按钮 → 跳转课程详情页
+   */
+  onContinueLearning(item: EnrolledCourse): void {
+    const courseId = item.course?.id ?? item.enrollment?.course_id;
+    if (!courseId) {
+      this.snackBar.open('课程信息缺失，无法继续学习', '关闭', { duration: 2500 });
+      return;
+    }
+    void this.router.navigate([ROUTES.USER.COURSE_LEARN.replace(':courseId', String(courseId))]);
   }
 
   /**

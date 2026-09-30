@@ -14,13 +14,13 @@
           name="username"
           class="form-input"
           [(ngModel)]="userData.username"
+          (blur)="validateUsername()"
           required
           minlength="3"
           placeholder="请输入用户名（至少3个字符）"
         />
-        <div class="error-message" *ngIf="username.invalid && username.touched">
-          <span *ngIf="username.errors['required']">用户名不能为空</span>
-          <span *ngIf="username.errors['minlength']">用户名至少3个字符</span>
+        <div class="error-message" *ngIf="usernameError">
+          {{ usernameError }}
         </div>
       </div>
 
@@ -32,13 +32,13 @@
           name="email"
           class="form-input"
           [(ngModel)]="userData.email"
+          (blur)="validateEmail()"
           required
           email
           placeholder="请输入邮箱地址"
         />
-        <div class="error-message" *ngIf="email.invalid && email.touched">
-          <span *ngIf="email.errors['required']">邮箱地址不能为空</span>
-          <span *ngIf="email.errors['email']">请输入有效的邮箱地址</span>
+        <div class="error-message" *ngIf="emailError">
+          {{ emailError }}
         </div>
       </div>
 
@@ -51,9 +51,9 @@
             name="password"
             class="form-input"
             [(ngModel)]="userData.password"
+            (blur)="validatePassword()"
             required
-            minlength="6"
-            placeholder="请输入密码（至少6位）"
+            placeholder="请输入密码（至少8位，含字母和数字）"
           />
           <button
             type="button"
@@ -64,9 +64,12 @@
             <mat-icon>{{ showPassword ? 'visibility_off' : 'visibility' }}</mat-icon>
           </button>
         </div>
-        <div class="error-message" *ngIf="password.invalid && password.touched">
-          <span *ngIf="password.errors['required']">密码不能为空</span>
-          <span *ngIf="password.errors['minlength']">密码至少6个字符</span>
+        <div class="error-message" *ngIf="passwordError">
+          {{ passwordError }}
+        </div>
+        <div class="password-hint" *ngIf="!passwordError">
+          <mat-icon>info</mat-icon>
+          至少 8 个字符，必须同时包含字母和数字
         </div>
       </div>
 
@@ -79,6 +82,7 @@
             name="confirmPassword"
             class="form-input"
             [(ngModel)]="confirmPassword"
+            (blur)="confirmPasswordTouched = true"
             required
             placeholder="请再次输入密码"
           />
@@ -91,7 +95,7 @@
             <mat-icon>{{ showConfirmPassword ? 'visibility_off' : 'visibility' }}</mat-icon>
           </button>
         </div>
-        <div class="error-message" *ngIf="confirmPasswordMismatch && confirmPasswordTouched">
+        <div class="error-message" *ngIf="confirmPasswordMismatch">
           两次输入的密码不一致
         </div>
       </div>
@@ -125,7 +129,7 @@
       <button
         type="submit"
         class="register-button"
-        [disabled]="registerForm.invalid || loading || !agreeTerms"
+        [disabled]="loading || !isFormValid"
       >
         <span *ngIf="!loading">注册</span>
         <span *ngIf="loading" class="loading-spinner"></span>

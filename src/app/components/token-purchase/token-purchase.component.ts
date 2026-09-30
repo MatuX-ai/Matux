@@ -3,7 +3,7 @@
  *
  * 提供 Token 套餐选择和购买功能
  *
- * @author iMatu Development Team
+ * @author MatuX Lab
  * @version 1.0.0
  */
 
@@ -137,18 +137,33 @@ export class TokenPurchaseComponent implements OnInit {
     this.tokenService.purchasePackage(this.selectedPackageId, this.paymentMethod).subscribe({
       next: (response) => {
         this.loading = false;
-        this.snackBar.open('订单创建成功！正在跳转支付...', '关闭', { duration: 3000 });
+        const orderId = response?.order?.id ?? 'unknown';
+        this.snackBar.open(`订单创建成功 (订单号 ${orderId})，正在跳转支付...`, '关闭', {
+          duration: 3000,
+        });
 
-        // 跳转到支付页面
-        void this.router.navigate(['/payment', response.order.id]);
+        // 【P1 修复】先关闭弹窗，避免弹窗与新页面叠加，再跳转
+        this.dialogRef.close({ success: true, orderId });
 
-        this.dialogRef.close({ success: true, orderId: response.order.id });
+        // 当前无独立支付页 → 先回 token 仪表，用户可在仪表查看订单状态
+        // (后续接入支付网关后再跳 `/payment/${orderId}`)
+        void this.router.navigate(['/user/token']);
       },
       error: (error: Error) => {
         console.error('购买失败:', error);
-        this.snackBar.open(error.message || '购买失败，请稍后重试', '关闭', {
-          duration: 3000,
-        });
+        const errMsg =
+          (error as { error?: { message?: string }; message?: string })?.error?.message ??
+          error?.message ??
+          '购买失败，请稍后重试';
+        this.snackBar
+          .open(errMsg, '重试', {
+            duration: 5000,
+          })
+          .onAction()
+          .subscribe(() => {
+            // 用户点击"重试"时重新发起购买
+            this.purchase();
+          });
         this.loading = false;
       },
     });

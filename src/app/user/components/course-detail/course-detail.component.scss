@@ -1,0 +1,327 @@
+.course-detail-container {
+  max-width: 960px;
+  margin: 0 auto;
+  padding: 24px;
+}
+
+.page-header {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 16px;
+  color: var(--matux-color-text-secondary, #57534e);
+  font-size: 14px;
+}
+
+.breadcrumb-current {
+  color: var(--matux-color-text-primary, #0f172a);
+  font-weight: 600;
+}
+
+.breadcrumb-sep {
+  font-size: 18px;
+  width: 18px;
+  height: 18px;
+  color: var(--matux-color-text-disabled, #94a3b8);
+}
+
+.loading-state {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 12px;
+  padding: 80px 0;
+  color: var(--matux-color-text-secondary, #57534e);
+}
+
+.error-card {
+  border-radius: 16px;
+  margin-top: 32px;
+}
+
+.error-content {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  padding: 16px;
+
+  mat-icon {
+    font-size: 32px;
+    width: 32px;
+    height: 32px;
+  }
+
+  h3 {
+    margin: 0 0 4px;
+    font-size: 16px;
+    color: var(--matux-color-text-primary, #0f172a);
+  }
+
+  p {
+    margin: 0;
+    color: var(--matux-color-text-secondary, #57534e);
+    font-size: 14px;
+  }
+}
+
+.course-hero {
+  border-radius: 16px;
+  padding: 24px;
+  margin-bottom: 16px;
+  background: linear-gradient(135deg, rgba(59, 130, 246, 0.06), rgba(139, 92, 246, 0.04));
+}
+
+.hero-content {
+  display: flex;
+  gap: 20px;
+  align-items: flex-start;
+}
+
+.hero-icon {
+  display: flex;
+  flex-shrink: 0;
+  justify-content: center;
+  align-items: center;
+  width: 80px;
+  height: 80px;
+  border-radius: 20px;
+  background: linear-gradient(135deg, #3b82f6, #8b5cf6);
+  color: white;
+  font-size: 40px;
+  box-shadow: 0 8px 20px rgba(59, 130, 246, 0.25);
+}
+
+/* 【P3 修复】按课程分类差异化 icon 渐变背景 */
+.hero-icon.icon-programming {
+  background: linear-gradient(135deg, #3b82f6, #1d4ed8);
+  box-shadow: 0 8px 20px rgba(59, 130, 246, 0.35);
+}
+
+.hero-icon.icon-science {
+  background: linear-gradient(135deg, #10b981, #047857);
+  box-shadow: 0 8px 20px rgba(16, 185, 129, 0.35);
+}
+
+.hero-icon.icon-math {
+  background: linear-gradient(135deg, #f59e0b, #d97706);
+  box-shadow: 0 8px 20px rgba(245, 158, 11, 0.35);
+}
+
+.hero-icon.icon-art {
+  background: linear-gradient(135deg, #ec4899, #be185d);
+  box-shadow: 0 8px 20px rgba(236, 72, 153, 0.35);
+}
+
+.hero-icon.icon-music {
+  background: linear-gradient(135deg, #8b5cf6, #6d28d9);
+  box-shadow: 0 8px 20px rgba(139, 92, 246, 0.35);
+}
+
+.hero-icon.icon-language {
+  background: linear-gradient(135deg, #06b6d4, #0e7490);
+  box-shadow: 0 8px 20px rgba(6, 182, 212, 0.35);
+}
+
+.hero-icon.icon-general {
+  background: linear-gradient(135deg, #64748b, #475569);
+  box-shadow: 0 8px 20px rgba(100, 116, 139, 0.35);
+}
+
+/* 未知分类兜底 */
+.hero-icon:not([class*='icon-']) {
+  background: linear-gradient(135deg, #3b82f6, #8b5cf6);
+}
+
+.hero-info {
+  flex: 1;
+  min-width: 0;
+}
+
+.course-title {
+  margin: 0 0 8px;
+  font-size: 24px;
+  font-weight: 700;
+  color: var(--matux-color-text-primary, #0f172a);
+}
+
+.course-description {
+  margin: 0 0 12px;
+  font-size: 14px;
+  line-height: 1.6;
+  color: var(--matux-color-text-secondary, #475569);
+}
+
+.course-meta {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 16px;
+
+  .meta-item {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    font-size: 13px;
+    color: var(--matux-color-text-secondary, #475569);
+
+    mat-icon {
+      font-size: 16px;
+      width: 16px;
+      height: 16px;
+    }
+  }
+}
+
+.hero-actions {
+  flex-shrink: 0;
+}
+
+.cta-button {
+  border-radius: 12px;
+  padding: 8px 24px;
+  font-weight: 600;
+}
+
+.progress-section {
+  margin-top: 20px;
+  padding-top: 16px;
+  border-top: 1px solid var(--matux-color-divider, #e2e8f0);
+}
+
+.progress-header {
+  display: flex;
+  justify-content: space-between;
+  margin-bottom: 8px;
+  font-size: 13px;
+  color: var(--matux-color-text-secondary, #475569);
+}
+
+.progress-value {
+  font-weight: 700;
+  color: var(--matux-color-primary, #3b82f6);
+}
+
+.chapters-card {
+  border-radius: 16px;
+  margin-top: 16px;
+
+  mat-card-title {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 16px;
+
+    mat-icon {
+      color: var(--matux-color-primary, #3b82f6);
+    }
+  }
+}
+
+.chapter-list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+
+.chapter-item {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  padding: 14px 12px;
+  border-bottom: 1px solid var(--matux-color-divider, #f1f5f9);
+  transition: background 200ms ease;
+
+  &:last-child {
+    border-bottom: none;
+  }
+
+  &:hover {
+    background: var(--matux-color-background, #f8fafc);
+  }
+
+  &.completed .chapter-title {
+    color: var(--matux-color-text-secondary, #94a3b8);
+  }
+}
+
+.chapter-status {
+  display: flex;
+  flex-shrink: 0;
+  justify-content: center;
+  align-items: center;
+  width: 32px;
+  height: 32px;
+}
+
+.status-done {
+  color: var(--stem-success, #10b981);
+  font-size: 28px;
+  width: 28px;
+  height: 28px;
+}
+
+.status-todo {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  width: 28px;
+  height: 28px;
+  border-radius: 50%;
+  background: var(--matux-color-background, #f1f5f9);
+  color: var(--matux-color-text-secondary, #57534e);
+  font-size: 13px;
+  font-weight: 600;
+}
+
+.chapter-info {
+  flex: 1;
+  min-width: 0;
+}
+
+.chapter-title {
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--matux-color-text-primary, #0f172a);
+  margin-bottom: 4px;
+}
+
+.chapter-meta {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  font-size: 12px;
+  color: var(--matux-color-text-secondary, #64748b);
+
+  mat-icon {
+    font-size: 14px;
+    width: 14px;
+    height: 14px;
+  }
+}
+
+@media (max-width: 768px) {
+  .course-detail-container {
+    padding: 16px;
+  }
+
+  .hero-content {
+    flex-direction: column;
+  }
+
+  .hero-icon {
+    width: 64px;
+    height: 64px;
+    font-size: 32px;
+  }
+
+  .course-title {
+    font-size: 20px;
+  }
+
+  .hero-actions {
+    width: 100%;
+
+    .cta-button {
+      width: 100%;
+    }
+  }
+}

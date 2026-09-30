@@ -489,19 +489,25 @@ export class StoreHomeComponent implements OnInit {
   }
 
   selectPlan(plan: SubscriptionPlan): void {
-    void this.router.navigate(['/subscription/plans', plan.id]);
+    // 【P1 修复】订阅计划尚未对接,给用户明确反馈而非静默跳转
+    this.snackBar.open(`订阅计划"${plan.name}"暂未开放，预计下一版本上线`, '知道了', {
+      duration: 3500,
+    });
   }
 
   viewContent(content: ContentItem): void {
-    void this.router.navigate(['/store/content', content.id]);
+    // 【P1 修复】给出反馈而非跳转无效路由
+    this.snackBar.open(`内容详情 "${content.title}" 暂未上线,可关注后续更新`, '知道了', {
+      duration: 3000,
+    });
   }
 
   viewAllFeatured(): void {
-    void this.router.navigate(['/store/featured']);
+    this.snackBar.open('精选内容专区正在筹备中', '知道了', { duration: 2500 });
   }
 
   browseByCategory(category: { name: string }): void {
-    void this.router.navigate(['/store/category', category.name]);
+    this.snackBar.open(`"${category.name}" 分类浏览暂未上线`, '知道了', { duration: 2500 });
   }
 
   refreshRecommendations(): void {

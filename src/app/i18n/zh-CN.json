@@ -37,31 +37,17 @@
     "free": {
       "name": "免费版",
       "price": "¥0",
-      "features": [
-        "基础课程访问",
-        "社区支持",
-        "有限存储空间"
-      ]
+      "features": ["基础课程访问", "社区支持", "有限存储空间"]
     },
     "pro": {
       "name": "专业版",
       "price": "¥99/月",
-      "features": [
-        "所有课程访问",
-        "优先支持",
-        "无限存储空间",
-        "离线学习"
-      ]
+      "features": ["所有课程访问", "优先支持", "无限存储空间", "离线学习"]
     },
     "enterprise": {
       "name": "企业版",
       "price": "定制",
-      "features": [
-        "所有专业版功能",
-        "定制化课程",
-        "专属客服",
-        "数据分析报告"
-      ]
+      "features": ["所有专业版功能", "定制化课程", "专属客服", "数据分析报告"]
     }
   },
   "contact": {
@@ -87,5 +73,82 @@
     "reconnected": "网络已重新连接",
     "updateAvailable": "发现新版本,点击立即更新",
     "update": "更新"
+  },
+  "userNav": {
+    "home": "首页",
+    "courses": "课程",
+    "aiCoding": "AI 编程",
+    "arLab": "AR 实验室",
+    "creativity": "创作",
+    "search": "搜索",
+    "notifications": "通知",
+    "profile": "个人资料",
+    "token": "Token管理",
+    "achievements": "成就系统",
+    "learningProfile": "学习画像",
+    "growthTrajectory": "成长轨迹",
+    "teachingSuggestions": "教学建议",
+    "emotionalCompanion": "情感陪伴",
+    "reports": "学习报告",
+    "aiTeacherSettings": "AI教师设置",
+    "settings": "系统设置",
+    "logout": "退出登录",
+    "logoutConfirm": "确定要退出当前登录吗？",
+    "userTypeStudent": "学生",
+    "userTypeTeacher": "教师",
+    "userTypeAdmin": "管理员",
+    "userTypeEnterprise": "企业用户",
+    "userTypeDefault": "用户"
+  },
+  "userFooter": {
+    "profile": "个人资料",
+    "token": "Token管理",
+    "learningProfile": "学习画像",
+    "teachingSuggestions": "教学建议",
+    "emotionalCompanion": "情感陪伴",
+    "reports": "学习报告",
+    "settings": "系统设置",
+    "help": "帮助中心",
+    "about": "关于我们",
+    "copyright": "版权所有"
+  },
+  "login": {
+    "title": "登录 MatuX",
+    "subtitle": "欢迎回来，继续你的 AI 学习之旅",
+    "email": "邮箱地址",
+    "password": "密码",
+    "rememberMe": "记住我",
+    "loginButton": "登录",
+    "testLoginButton": "测试账号一键登录",
+    "testLoginTooltip": "仅开发环境可用：使用 test_student 测试账号快速登录,生产构建已自动隐藏",
+    "orOAuth": "或使用第三方登录",
+    "qq": "QQ 登录",
+    "wechat": "微信登录",
+    "google": "Google 登录",
+    "github": "GitHub 登录",
+    "noAccount": "还没有账号？",
+    "registerNow": "立即注册"
+  },
+  "register": {
+    "title": "创建账号",
+    "subtitle": "加入 MatuX 智能学习平台",
+    "username": "用户名",
+    "email": "邮箱",
+    "password": "密码",
+    "confirmPassword": "确认密码",
+    "passwordHint": "至少 8 个字符，必须同时包含字母和数字",
+    "agreeTerms": "我已阅读并同意",
+    "termsOfService": "服务条款",
+    "privacyPolicy": "隐私政策",
+    "submit": "注册",
+    "successMessage": "注册成功！正在跳转..."
+  },
+  "mock": {
+    "bannerTitle": "当前为演示数据",
+    "bannerTooltip": "此页面渲染的是演示数据，仅用于预览 UI 与交互"
+  },
+  "comingSoon": {
+    "backHome": "返回首页",
+    "browseCourses": "浏览课程"
   }
 }

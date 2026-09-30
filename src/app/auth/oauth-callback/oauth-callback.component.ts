@@ -44,6 +44,27 @@ interface OAuthState {
           <div class="error-icon">&#10007;</div>
           <h2>登录失败</h2>
           <p class="error-message">{{ errorMessage }}</p>
+
+          <!-- 【P3 修复】失败原因展开面板 -->
+          <details class="error-details">
+            <summary>查看可能原因</summary>
+            <ul class="error-reasons">
+              <li>授权码 (code) 已过期（通常 5 分钟内有效）</li>
+              <li>state 参数与登录时不一致（CSRF 防护触发）</li>
+              <li>第三方服务 (GitHub/Google/微信/QQ) 临时不可用</li>
+              <li>浏览器拦截了第三方 Cookie</li>
+              <li>网络连接中断</li>
+            </ul>
+            <p class="error-troubleshoot">
+              <strong>建议操作:</strong>
+              点击下方"重新尝试"按钮重新发起授权；若持续失败， 请<a
+                [routerLink]="ROUTES.USER.SETTINGS"
+                >检查账号设置</a
+              >
+              或切换其他登录方式。
+            </p>
+          </details>
+
           <button class="retry-button" (click)="retry()">重新尝试</button>
           <a class="back-link" [routerLink]="ROUTES.AUTH.LOGIN">返回登录页</a>
         </div>
@@ -74,8 +95,8 @@ interface OAuthState {
       .spinner {
         width: 48px;
         height: 48px;
-        border: 4px solid #e0e0e0;
-        border-top-color: #3b82f6;
+        border: 4px solid var(--matux-color-divider, #e2e8f0);
+        border-top-color: var(--matux-color-primary, #3b82f6);
         border-radius: 50%;
         animation: spin 0.8s linear infinite;
         margin: 0 auto 24px;
@@ -92,19 +113,19 @@ interface OAuthState {
       .error-state h2 {
         font-size: 22px;
         margin-bottom: 8px;
-        color: #1d1d1f;
+        color: var(--matux-color-text-primary, #1c1917);
       }
 
       .loading-state p,
       .success-state p {
-        color: #86868b;
+        color: var(--matux-color-text-secondary, #57534e);
         font-size: 14px;
       }
 
       .success-icon {
         width: 56px;
         height: 56px;
-        background: #34c759;
+        background: var(--stem-success, #059669);
         color: white;
         border-radius: 50%;
         display: flex;
@@ -117,7 +138,7 @@ interface OAuthState {
       .error-icon {
         width: 56px;
         height: 56px;
-        background: #ff3b30;
+        background: var(--stem-error, #ef4444);
         color: white;
         border-radius: 50%;
         display: flex;
@@ -128,15 +149,70 @@ interface OAuthState {
       }
 
       .error-message {
-        color: #ff3b30;
+        color: var(--stem-error, #ef4444);
         font-size: 14px;
-        margin: 12px 0 24px;
+        margin: 12px 0 16px;
+        font-weight: 600;
+      }
+
+      /* 【P3 修复】失败原因展开面板样式 */
+      .error-details {
+        margin: 12px 0 20px;
+        padding: 12px 16px;
+        border: 1px solid var(--matux-color-divider, #e2e8f0);
+        border-radius: 10px;
+        background: var(--matux-color-background, #f8fafc);
+        text-align: left;
+      }
+
+      .error-details summary {
+        cursor: pointer;
+        color: var(--matux-color-text-secondary, #475569);
+        font-size: 13px;
+        font-weight: 600;
+        user-select: none;
+        outline: none;
+      }
+
+      .error-details summary::-webkit-details-marker {
+        color: var(--matux-color-primary, #3b82f6);
+      }
+
+      .error-reasons {
+        margin: 12px 0 8px;
+        padding-left: 18px;
+        color: var(--matux-color-text-secondary, #475569);
+        font-size: 12px;
+        line-height: 1.8;
+      }
+
+      .error-reasons li {
+        list-style: disc;
+      }
+
+      .error-troubleshoot {
+        margin: 8px 0 0;
+        padding-top: 8px;
+        border-top: 1px dashed var(--matux-color-divider, #e2e8f0);
+        color: var(--matux-color-text-secondary, #475569);
+        font-size: 12px;
+        line-height: 1.6;
+      }
+
+      .error-troubleshoot a {
+        color: var(--matux-color-primary, #3b82f6);
+        text-decoration: none;
+        font-weight: 600;
+      }
+
+      .error-troubleshoot a:hover {
+        text-decoration: underline;
       }
 
       .retry-button {
         display: inline-block;
         padding: 12px 32px;
-        background: #3b82f6;
+        background: var(--matux-color-primary, #3b82f6);
         color: white;
         border: none;
         border-radius: 8px;
@@ -151,7 +227,7 @@ interface OAuthState {
 
       .back-link {
         display: block;
-        color: #3b82f6;
+        color: var(--matux-color-primary, #3b82f6);
         text-decoration: none;
         font-size: 14px;
       }
@@ -239,7 +315,11 @@ export class OAuthCallbackComponent implements OnInit {
           // 3 秒后跳转
           setTimeout(() => {
             if (this.success) {
-              const returnUrl = oauthState.redirectUrl ?? '/ai-edu';
+              // 【P1 修复】优先级: 1) 登录前 returnUrl; 2) OAuth state.redirectUrl; 3) dashboard
+              const sessionReturnUrl = sessionStorage.getItem('pre_login_return_url');
+              const returnUrl = sessionReturnUrl ?? oauthState.redirectUrl ?? '/user/dashboard';
+              // 清理已使用的 returnUrl,避免污染下次登录
+              sessionStorage.removeItem('pre_login_return_url');
               void this.router.navigateByUrl(returnUrl);
             }
           }, 3000);
@@ -249,6 +329,7 @@ export class OAuthCallbackComponent implements OnInit {
   }
 
   retry(): void {
-    window.location.href = ROUTES.AUTH.LOGIN;
+    // 【P1 修复】使用 Router.navigate 而非 window.location.href，避免完整页面刷新丢失 SPA 状态
+    void this.router.navigateByUrl(ROUTES.AUTH.LOGIN);
   }
 }

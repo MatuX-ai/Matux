@@ -211,7 +211,11 @@
         <!-- 主题设置 -->
         <div class="preference-item">
           <span class="item-label">主题模式</span>
-          <mat-button-toggle-group [(ngModel)]="userPreferences.theme" name="theme">
+          <mat-button-toggle-group
+            [(ngModel)]="userPreferences.theme"
+            name="theme"
+            (change)="applyThemePreference(userPreferences.theme)"
+          >
             <mat-button-toggle value="light">浅色</mat-button-toggle>
             <mat-button-toggle value="dark">深色</mat-button-toggle>
             <mat-button-toggle value="auto">自动</mat-button-toggle>

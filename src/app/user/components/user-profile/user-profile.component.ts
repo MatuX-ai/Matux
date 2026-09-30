@@ -3,7 +3,7 @@
  *
  * 提供用户个人信息的查看和编辑功能
  *
- * @author iMatu Development Team
+ * @author MatuX Lab
  * @version 1.0.0
  */
 
@@ -26,6 +26,7 @@ import { Subject, throwError, TimeoutError } from 'rxjs';
 import { catchError, takeUntil, timeout } from 'rxjs/operators';
 
 import { UserProfile } from '../../../core/models/group.models';
+import { ThemeService } from '../../../core/services/theme.service';
 import {
   AvatarCropDialogComponent,
   CropDialogResult,
@@ -110,12 +111,25 @@ export class UserProfileComponent implements OnInit, OnDestroy {
     private userProfileService: UserProfileService,
     private snackBar: MatSnackBar,
     private router: Router,
-    private dialog: MatDialog
+    private dialog: MatDialog,
+    private themeService: ThemeService
   ) {}
 
   ngOnInit(): void {
     this.loadUserProfile();
     this.loadUserPreferences();
+
+    // 启动时同步本地主题到 ThemeService（仅在用户已登录且有偏好时）
+    this.themeService.currentTheme$.pipe(takeUntil(this.destroy$)).subscribe((theme) => {
+      const prefTheme = this.userPreferences.theme;
+      if (prefTheme === 'auto') {
+        // 自动模式跟随系统，ThemeService 已处理
+        return;
+      }
+      if (prefTheme && (prefTheme === 'light' || prefTheme === 'dark') && prefTheme !== theme) {
+        this.themeService.setTheme(prefTheme);
+      }
+    });
   }
 
   ngOnDestroy(): void {
@@ -370,6 +384,9 @@ export class UserProfileComponent implements OnInit, OnDestroy {
       },
     };
 
+    // 立即应用主题切换（无需等待后端响应）
+    this.applyThemePreference(this.userPreferences.theme);
+
     this.userProfileService
       .updateUserPreferences(this.userPreferences)
       .pipe(takeUntil(this.destroy$))
@@ -384,6 +401,20 @@ export class UserProfileComponent implements OnInit, OnDestroy {
           console.error('保存偏好设置失败:', error);
         },
       });
+  }
+
+  /**
+   * 应用主题偏好
+   * - 'light' / 'dark'：立即调用 ThemeService.setTheme
+   * - 'auto' / undefined：不做处理（ThemeService 已自动跟随系统）
+   */
+  private applyThemePreference(theme: string | undefined): void {
+    if (!theme || theme === 'auto') return;
+    if (theme === 'light' || theme === 'dark') {
+      if (this.themeService.getCurrentTheme() !== theme) {
+        this.themeService.setTheme(theme);
+      }
+    }
   }
 
   /**

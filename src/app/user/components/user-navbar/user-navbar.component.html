@@ -7,27 +7,38 @@
     </div>
 
     <!-- 水平导航菜单（桌面端） -->
-    <nav class="navbar-nav" *ngIf="!isMobile">
+    <nav class="navbar-nav" *ngIf="!isMobile" aria-label="主导航">
       <a
         *ngFor="let item of navItems"
         [routerLink]="item.route"
         routerLinkActive="active"
         class="nav-link"
-        [matTooltip]="item.label"
+        [matTooltip]="getNavLabel(item)"
+        [attr.aria-label]="getNavLabel(item)"
       >
-        <mat-icon>{{ item.icon }}</mat-icon>
-        <span>{{ item.label }}</span>
+        <mat-icon aria-hidden="true">{{ item.icon }}</mat-icon>
+        <span>{{ getNavLabel(item) }}</span>
       </a>
     </nav>
 
     <!-- 搜索和通知 -->
     <div class="navbar-actions">
-      <button mat-icon-button class="action-btn" title="搜索 (Ctrl+K)" (click)="toggleSearch()">
-        <mat-icon>search</mat-icon>
+      <button
+        mat-icon-button
+        class="action-btn"
+        title="搜索 (Ctrl+K)"
+        [attr.aria-label]="i18n.translate('userNav.search') + ' (Ctrl+K)'"
+        (click)="toggleSearch()"
+      >
+        <mat-icon aria-hidden="true">search</mat-icon>
       </button>
-      <button mat-icon-button class="action-btn notification-btn" title="通知">
-        <mat-icon>notifications</mat-icon>
-        <span class="notification-badge" *ngIf="unreadNotifications > 0">
+      <button
+        mat-icon-button
+        class="action-btn notification-btn"
+        [attr.aria-label]="i18n.translate('userNav.notifications') + (unreadNotifications > 0 ? ', ' + unreadNotifications + ' 条未读' : '')"
+      >
+        <mat-icon aria-hidden="true">notifications</mat-icon>
+        <span class="notification-badge" *ngIf="unreadNotifications > 0" aria-live="polite">
           {{ unreadNotifications }}
         </span>
       </button>
@@ -35,61 +46,92 @@
 
     <!-- 用户菜单 -->
     <div class="navbar-user">
-      <button mat-button [matMenuTriggerFor]="userMenu" class="user-menu-btn">
+      <button
+        mat-button
+        [matMenuTriggerFor]="userMenu"
+        class="user-menu-btn"
+        aria-haspopup="menu"
+        [attr.aria-label]="safeDisplayName + ' 账户菜单'"
+      >
         <div class="user-avatar-small">
-          <mat-icon>account_circle</mat-icon>
+          <mat-icon aria-hidden="true">account_circle</mat-icon>
         </div>
         <span class="username" [innerHTML]="safeDisplayName"></span>
-        <mat-icon>arrow_drop_down</mat-icon>
-      </button>
+          <mat-icon aria-hidden="true">arrow_drop_down</mat-icon>
+        </button>
 
-      <mat-menu #userMenu="matMenu" class="user-dropdown-menu">
-        <div class="user-menu-header" *ngIf="currentUser">
-          <div class="user-avatar">
-            <img [src]="safeAvatar" [alt]="'用户头像'" (error)="onAvatarError($event)" />
+        <mat-menu #userMenu="matMenu" class="user-dropdown-menu">
+          <div class="user-menu-header" *ngIf="currentUser">
+            <div class="user-avatar">
+              <img [src]="safeAvatar" [alt]="'用户头像'" (error)="onAvatarError($event)" />
+            </div>
+            <div class="user-info">
+              <div class="username" [innerHTML]="safeDisplayName"></div>
+              <div class="user-type-badge">{{ getUserTypeLabel() }}</div>
+            </div>
           </div>
-          <div class="user-info">
-            <div class="username" [innerHTML]="safeDisplayName"></div>
-            <div class="user-type-badge">{{ getUserTypeLabel() }}</div>
-          </div>
-        </div>
 
-        <mat-divider></mat-divider>
+          <mat-divider></mat-divider>
 
-        <button mat-menu-item [routerLink]="ROUTES.USER.PROFILE">
-          <mat-icon>person</mat-icon>
-          <span>个人资料</span>
-        </button>
+          <button mat-menu-item [routerLink]="ROUTES.USER.PROFILE">
+            <mat-icon>person</mat-icon>
+            <span>{{ i18n.translate('userNav.profile') }}</span>
+          </button>
 
-        <button mat-menu-item [routerLink]="ROUTES.USER.TOKEN">
-          <mat-icon>token</mat-icon>
-          <span>Token管理</span>
-        </button>
+          <button mat-menu-item [routerLink]="ROUTES.USER.TOKEN">
+            <mat-icon>token</mat-icon>
+            <span>{{ i18n.translate('userNav.token') }}</span>
+          </button>
 
-        <button mat-menu-item [routerLink]="ROUTES.USER.ACHIEVEMENTS">
-          <mat-icon>emoji_events</mat-icon>
-          <span>成就系统</span>
-        </button>
+          <button mat-menu-item [routerLink]="ROUTES.USER.ACHIEVEMENTS">
+            <mat-icon>emoji_events</mat-icon>
+            <span>{{ i18n.translate('userNav.achievements') }}</span>
+          </button>
 
-        <mat-divider></mat-divider>
+          <button mat-menu-item [routerLink]="ROUTES.USER.LEARNING_PROFILE">
+            <mat-icon>insights</mat-icon>
+            <span>{{ i18n.translate('userNav.learningProfile') }}</span>
+          </button>
 
-        <button mat-menu-item [routerLink]="ROUTES.USER.AI_TEACHER_SETTINGS">
-          <mat-icon>smart_toy</mat-icon>
-          <span>AI教师设置</span>
-        </button>
+          <button mat-menu-item [routerLink]="ROUTES.USER.GROWTH_TRAJECTORY">
+            <mat-icon>trending_up</mat-icon>
+            <span>{{ i18n.translate('userNav.growthTrajectory') }}</span>
+          </button>
 
-        <button mat-menu-item [routerLink]="ROUTES.USER.SETTINGS">
-          <mat-icon>settings</mat-icon>
-          <span>系统设置</span>
-        </button>
+          <button mat-menu-item [routerLink]="ROUTES.USER.TEACHING_SUGGESTIONS">
+            <mat-icon>lightbulb</mat-icon>
+            <span>{{ i18n.translate('userNav.teachingSuggestions') }}</span>
+          </button>
 
-        <mat-divider></mat-divider>
+          <button mat-menu-item [routerLink]="ROUTES.USER.EMOTIONAL_COMPANION">
+            <mat-icon>favorite</mat-icon>
+            <span>{{ i18n.translate('userNav.emotionalCompanion') }}</span>
+          </button>
 
-        <button mat-menu-item (click)="logout()">
-          <mat-icon>logout</mat-icon>
-          <span>退出登录</span>
-        </button>
-      </mat-menu>
+          <button mat-menu-item [routerLink]="ROUTES.USER.REPORTS">
+            <mat-icon>assessment</mat-icon>
+            <span>{{ i18n.translate('userNav.reports') }}</span>
+          </button>
+
+          <mat-divider></mat-divider>
+
+          <button mat-menu-item [routerLink]="ROUTES.USER.AI_TEACHER_SETTINGS">
+            <mat-icon>smart_toy</mat-icon>
+            <span>{{ i18n.translate('userNav.aiTeacherSettings') }}</span>
+          </button>
+
+          <button mat-menu-item [routerLink]="ROUTES.USER.SETTINGS">
+            <mat-icon>settings</mat-icon>
+            <span>{{ i18n.translate('userNav.settings') }}</span>
+          </button>
+
+          <mat-divider></mat-divider>
+
+          <button mat-menu-item (click)="logout()">
+            <mat-icon>logout</mat-icon>
+            <span>{{ i18n.translate('userNav.logout') }}</span>
+          </button>
+        </mat-menu>
     </div>
 
     <!-- 移动端汉堡菜单 -->

@@ -1,92 +1,161 @@
+<!--
+  学生仪表板模板（重构版）
+  - 4 个核心 dashboard 卡（学习/成就/创作/社交）
+  - 3 个次要 widget（每日任务/排行榜/学习日历）
+  - 推荐课程 + 课件库
+  - 顶部状态栏（积分/等级/连续天数）
+  - AI 老师浮动按钮（PRD 6.5 强制要求）
+-->
 <div class="student-dashboard">
-  <div class="page-header">
-    <h1 class="page-title">学习仪表板</h1>
-    <button mat-stroked-button (click)="openLayoutDialog()" matTooltip="自定义仪表盘布局">
-      <mat-icon>dashboard_customize</mat-icon>
-      布局
-    </button>
-  </div>
+  <!-- 【P1 修复】演示数据横幅(数据服务 fallback 时显示) -->
+  <app-mock-mode-banner
+    *ngIf="snapshot?.isUsingMock"
+    module="学生仪表盘"
+    note="WebSocket 进度推送走模拟数据,完成真实任务后真实数据将自动接入"
+  ></app-mock-mode-banner>
 
   <!-- 【一级】欢迎区域 -->
-  <div class="welcome-section section-primary fade-in" @fadeInUp *ngIf="layout.isVisible('welcome')">
+  <section
+    class="welcome-section"
+    *ngIf="layout.isVisible('welcome')"
+    aria-label="欢迎区域"
+  >
     <div class="welcome-header">
       <div class="welcome-greeting">
-        <h1 class="welcome-title">你好，{{ currentUser?.username || '同学' }} 👋</h1>
+        <h1 class="welcome-title">你好，{{ snapshot?.user?.username || '同学' }} 👋</h1>
         <p class="welcome-date">{{ currentDate }}</p>
       </div>
-    </div>
-
-    <!-- 精简快捷入口（仅保留2个核心入口，与菜单不重复）-->
-    <div class="quick-entry-grid">
-      <mat-card class="quick-entry-card" (click)="navigateTo(ROUTES.USER.COURSES)">
-        <div class="quick-entry-icon" style="background: var(--gradient-blue)">
-          <mat-icon>auto_awesome</mat-icon>
-        </div>
-        <span class="quick-entry-label">继续学习</span>
-      </mat-card>
-
-      <mat-card class="quick-entry-card" (click)="navigateTo('/ai-edu')">
-        <div class="quick-entry-icon" style="background: var(--gradient-green)">
-          <mat-icon>smart_toy</mat-icon>
-        </div>
-        <span class="quick-entry-label">AI 编程</span>
-      </mat-card>
-    </div>
-  </div>
-
-  <!-- 【二级】智能推荐区 -->
-  <div class="dual-section fade-in section-secondary" *ngIf="layout.isVisible('recommend')">
-    <div class="ai-recommend-section">
-      <h2 class="section-title">
-        <mat-icon>auto_awesome</mat-icon>
-        AI 推荐项目
-      </h2>
-      <div class="ai-recommend-grid">
-        <mat-card
-          *ngFor="let rec of aiRecommendations"
-          class="ai-recommend-card"
-          [style.background]="rec.gradient"
+      <div class="welcome-actions">
+        <button
+          mat-icon-button
+          (click)="openLayoutDialog()"
+          matTooltip="自定义仪表盘布局"
+          aria-label="自定义仪表盘布局"
         >
-          <mat-card-content>
-            <h3 class="recommend-title">{{ rec.title }}</h3>
-            <p class="recommend-desc">{{ rec.description }}</p>
-            <button mat-stroked-button class="recommend-btn">
-              <mat-icon>play_arrow</mat-icon>
-              开始实验
-            </button>
-          </mat-card-content>
-        </mat-card>
+          <mat-icon>dashboard_customize</mat-icon>
+        </button>
       </div>
     </div>
+  </section>
 
-    <div class="quick-tools-section">
+  <!-- 【一级】顶部状态栏（积分/等级/连续天数/通知） -->
+  <app-student-status-bar
+    *ngIf="snapshot && layout.isVisible('status')"
+    [snapshot]="snapshot"
+    [notificationCount]="notificationCount"
+    (navigate)="navigateTo($event)"
+  ></app-student-status-bar>
+
+  <!-- 【一级】4 个核心 dashboard 卡 -->
+  <section
+    class="core-cards-grid"
+    *ngIf="layout.isVisible('status')"
+    aria-label="核心功能"
+  >
+    <app-learning-center-card
+      [snapshot]="snapshot"
+      (navigate)="navigateTo($event)"
+      (aiCoding)="navigateTo('/ai-edu/coding')"
+    ></app-learning-center-card>
+
+    <app-achievement-center-card
+      [snapshot]="snapshot"
+      (navigate)="navigateTo($event)"
+    ></app-achievement-center-card>
+
+    <app-creation-center-card
+      [snapshot]="snapshot"
+      (navigate)="navigateTo($event)"
+    ></app-creation-center-card>
+
+    <app-social-center-card
+      [snapshot]="snapshot"
+      (navigate)="navigateTo($event)"
+    ></app-social-center-card>
+  </section>
+
+  <!-- 【二级】每日任务 + 排行榜（游戏化双列） -->
+  <section
+    class="tasks-leaderboard-row"
+    *ngIf="layout.isVisible('daily_tasks')"
+    aria-label="每日任务与排行榜"
+  >
+    <app-daily-tasks-widget
+      [tasks]="snapshot?.dailyTasks || []"
+      (taskCompleted)="onTaskCompleted($event)"
+    ></app-daily-tasks-widget>
+
+    <app-weekly-leaderboard-widget
+      [entries]="snapshot?.leaderboard || []"
+    ></app-weekly-leaderboard-widget>
+  </section>
+
+  <!-- 【二级】学习日历热力图 -->
+  <section
+    class="dash-section"
+    *ngIf="layout.isVisible('heatmap')"
+    aria-label="学习日历热力图"
+  >
+    <div class="section-header">
       <h2 class="section-title">
-        <mat-icon>apps</mat-icon>
-        快捷工具
+        <mat-icon>calendar_month</mat-icon>
+        学习日历
       </h2>
-      <!-- 常用工具改为紧凑的横排布局 -->
-      <div class="quick-tools-compact">
-        <div *ngFor="let tool of quickTools" class="quick-tool-chip" [matTooltip]="tool.label">
-          <div class="quick-tool-icon-wrapper" [style.background]="tool.color + '20'" [style.color]="tool.color">
-            <mat-icon>{{ tool.icon }}</mat-icon>
-          </div>
-        </div>
-      </div>
-      <!-- 快捷操作入口 -->
-      <div class="quick-actions-list">
-        <button mat-stroked-button class="quick-action-btn" (click)="navigateTo(ROUTES.USER.ACHIEVEMENTS)">
-          <mat-icon>emoji_events</mat-icon>
-          成就系统
-        </button>
-        <button mat-stroked-button class="quick-action-btn" (click)="navigateTo(ROUTES.USER.GROWTH_TRAJECTORY)">
-          <mat-icon>trending_up</mat-icon>
-          成长轨迹
-        </button>
-        <button mat-stroked-button class="quick-action-btn" (click)="navigateTo(ROUTES.USER.REPORTS)">
-          <mat-icon>assessment</mat-icon>
-          学习报告
-        </button>
-      </div>
     </div>
-  </div>
+    <app-learning-calendar-heatmap
+      [config]="heatmapConfig"
+    ></app-learning-calendar-heatmap>
+  </section>
+
+  <!-- 【二级】推荐课程 -->
+  <section
+    class="dash-section"
+    *ngIf="layout.isVisible('recommended_courses')"
+    aria-label="推荐课程"
+  >
+    <div class="section-header">
+      <h2 class="section-title">
+        <mat-icon>explore</mat-icon>
+        推荐课程
+      </h2>
+      <button mat-button (click)="navigateTo(ROUTES.USER.COURSES)">
+        查看全部
+        <mat-icon iconPositionEnd>arrow_forward</mat-icon>
+      </button>
+    </div>
+    <div class="course-grid" *ngIf="(snapshot?.recommendedCourses?.length || 0) > 0; else noRecommendedTpl">
+      <app-unified-course-card
+        *ngFor="let course of snapshot?.recommendedCourses || []"
+        [config]="{ course, showEnrollButton: true }"
+      ></app-unified-course-card>
+    </div>
+    <ng-template #noRecommendedTpl>
+      <div class="empty-state">
+        <mat-icon>explore</mat-icon>
+        <p>暂无推荐课程</p>
+      </div>
+    </ng-template>
+  </section>
+
+  <!-- 【二级】课件库 -->
+  <section
+    class="dash-section"
+    *ngIf="layout.isVisible('materials')"
+    aria-label="课件库"
+  >
+    <div class="section-header">
+      <h2 class="section-title">
+        <mat-icon>folder</mat-icon>
+        课件库
+      </h2>
+      <button mat-button>
+        查看全部
+        <mat-icon iconPositionEnd>arrow_forward</mat-icon>
+      </button>
+    </div>
+    <app-student-material-dashboard></app-student-material-dashboard>
+  </section>
+
+  <!-- AI 老师浮动按钮（PRD 6.5 强制要求） -->
+  <app-floating-ai-assistant></app-floating-ai-assistant>
 </div>

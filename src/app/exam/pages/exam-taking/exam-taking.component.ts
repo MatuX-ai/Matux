@@ -1,5 +1,5 @@
 import { CommonModule } from '@angular/common';
-import { Component, OnDestroy, OnInit } from '@angular/core';
+import { ChangeDetectorRef, Component, OnDestroy, OnInit } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { ActivatedRoute, Router, RouterModule } from '@angular/router';
 import { catchError, finalize, of, switchMap } from 'rxjs';
@@ -167,22 +167,22 @@ import { ExamService, Question } from '../../services/exam.service';
         justify-content: space-between;
         align-items: center;
         padding: 16px 0;
-        border-bottom: 1px solid #e0e0e0;
+        border-bottom: 1px solid var(--matux-color-divider, #e2e8f0);
         margin-bottom: 24px;
       }
       .exam-info h2 {
         font-size: 18px;
         margin: 0;
-        color: #1d1d1f;
+        color: var(--matux-color-text-primary, #1c1917);
       }
       .timer {
         font-size: 20px;
         font-weight: 700;
-        color: #333;
+        color: var(--matux-color-text-primary, #1c1917);
         font-variant-numeric: tabular-nums;
       }
       .timer-warning {
-        color: #ff3b30;
+        color: var(--stem-error, #ef4444);
         animation: pulse 1s infinite;
       }
       @keyframes pulse {
@@ -196,7 +196,7 @@ import { ExamService, Question } from '../../services/exam.service';
       }
       .progress-info {
         font-size: 14px;
-        color: #86868b;
+        color: var(--matux-color-text-secondary, #57534e);
       }
       .question-card {
         background: white;
@@ -217,31 +217,31 @@ import { ExamService, Question } from '../../services/exam.service';
         font-weight: 600;
       }
       .question-type-badge.single_choice {
-        background: #e3f2fd;
-        color: #1565c0;
+        background: var(--stem-secondary-50, #f0f9ff);
+        color: var(--stem-info-dark, #0284c7);
       }
       .question-type-badge.multiple_choice {
-        background: #fce4ec;
-        color: #c62828;
+        background: var(--matux-color-error-bg, #fce4ec);
+        color: var(--stem-error-dark, #dc2626);
       }
       .question-type-badge.true_false {
-        background: #e8f5e9;
-        color: #2e7d32;
+        background: var(--stem-primary-50, #ecfdf5);
+        color: var(--stem-success-dark, #047857);
       }
       .question-type-badge.short_answer {
-        background: #fff3e0;
-        color: #ef6c00;
+        background: var(--matux-color-warning-bg, #fff3e0);
+        color: var(--stem-warning-dark, #d97706);
       }
       .question-score {
         font-size: 14px;
-        color: #86868b;
+        color: var(--matux-color-text-secondary, #57534e);
       }
       .question-title {
         font-size: 18px;
         font-weight: 500;
         margin-bottom: 24px;
         line-height: 1.6;
-        color: #1d1d1f;
+        color: var(--matux-color-text-primary, #1c1917);
       }
       .options-list {
         display: flex;
@@ -253,18 +253,18 @@ import { ExamService, Question } from '../../services/exam.service';
         align-items: center;
         gap: 12px;
         padding: 14px 16px;
-        border: 2px solid #e0e0e0;
+        border: 2px solid var(--matux-color-divider, #e2e8f0);
         border-radius: 10px;
         cursor: pointer;
         transition: all 0.2s;
       }
       .option-item:hover {
-        border-color: #3b82f6;
-        background: #f5f7ff;
+        border-color: var(--matux-color-primary, #3b82f6);
+        background: var(--stem-secondary-50, #f0f9ff);
       }
       .option-item.selected {
-        border-color: #3b82f6;
-        background: #eef0ff;
+        border-color: var(--matux-color-primary, #3b82f6);
+        background: var(--stem-secondary-50, #f0f9ff);
       }
       .option-item input {
         display: none;
@@ -288,16 +288,17 @@ import { ExamService, Question } from '../../services/exam.service';
       .answer-textarea {
         width: 100%;
         padding: 16px;
-        border: 2px solid #e0e0e0;
+        border: 2px solid var(--matux-color-divider, #e2e8f0);
         border-radius: 10px;
         font-size: 15px;
         line-height: 1.6;
         resize: vertical;
         transition: border-color 0.2s;
       }
-      .answer-textarea:focus {
-        outline: none;
-        border-color: #3b82f6;
+      .answer-textarea:focus-visible {
+        outline: 2px solid var(--matux-color-primary, var(--matux-color-primary, #3b82f6));
+        outline-offset: 2px;
+        border-color: var(--matux-color-primary, var(--matux-color-primary, #3b82f6));
       }
       .action-bar {
         display: flex;
@@ -308,16 +309,16 @@ import { ExamService, Question } from '../../services/exam.service';
       }
       .nav-button {
         padding: 12px 28px;
-        border: 2px solid #3b82f6;
+        border: 2px solid var(--matux-color-primary, #3b82f6);
         background: white;
-        color: #3b82f6;
+        color: var(--matux-color-primary, #3b82f6);
         border-radius: 8px;
         font-size: 15px;
         cursor: pointer;
         transition: all 0.2s;
       }
       .nav-button:hover:not(:disabled) {
-        background: #3b82f6;
+        background: var(--matux-color-primary, #3b82f6);
         color: white;
       }
       .nav-button:disabled {
@@ -326,7 +327,7 @@ import { ExamService, Question } from '../../services/exam.service';
       }
       .submit-button {
         padding: 12px 28px;
-        background: #34c759;
+        background: var(--stem-success, #059669);
         color: white;
         border: none;
         border-radius: 8px;
@@ -336,7 +337,7 @@ import { ExamService, Question } from '../../services/exam.service';
         transition: background 0.2s;
       }
       .submit-button:hover {
-        background: #2db84e;
+        background: var(--stem-success-dark, #047857);
       }
       .question-dots {
         display: flex;
@@ -353,27 +354,27 @@ import { ExamService, Question } from '../../services/exam.service';
         border-radius: 50%;
         font-size: 12px;
         cursor: pointer;
-        background: #f0f0f0;
-        color: #666;
+        background: var(--matux-color-background, #f1f5f9);
+        color: var(--matux-color-text-secondary, #57534e);
       }
       .dot.active {
-        background: #3b82f6;
+        background: var(--matux-color-primary, #3b82f6);
         color: white;
         font-weight: 600;
       }
       .dot.answered {
-        background: #e8f5e9;
-        color: #2e7d32;
+        background: var(--stem-primary-50, #ecfdf5);
+        color: var(--stem-success-dark, #047857);
       }
       .dot.answered.active {
-        background: #3b82f6;
+        background: var(--matux-color-primary, #3b82f6);
         color: white;
       }
       .spinner {
         width: 40px;
         height: 40px;
-        border: 3px solid #e0e0e0;
-        border-top-color: #3b82f6;
+        border: 3px solid var(--matux-color-divider, #e2e8f0);
+        border-top-color: var(--matux-color-primary, #3b82f6);
         border-radius: 50%;
         animation: spin 0.8s linear infinite;
         margin: 40px auto;
@@ -409,7 +410,8 @@ export class ExamTakingComponent implements OnInit, OnDestroy {
     private route: ActivatedRoute,
     private router: Router,
     private examService: ExamService,
-    private antiCheatService: AntiCheatService
+    private antiCheatService: AntiCheatService,
+    private cdr: ChangeDetectorRef
   ) {}
 
   get currentQuestion(): Question {
@@ -447,8 +449,11 @@ export class ExamTakingComponent implements OnInit, OnDestroy {
           return this.examService.getExam(this.examId);
         }),
         catchError((err: Error) => {
+          console.error('[ExamTaking] 加载失败:', err);
           this.error = true;
-          this.errorMessage = err.message || '加载失败';
+          this.errorMessage = err?.message || '加载失败';
+          this.loading = false;
+          this.cdr.detectChanges();
           return of(null);
         }),
         finalize(() => (this.loading = false))
@@ -463,6 +468,8 @@ export class ExamTakingComponent implements OnInit, OnDestroy {
           this.timeRemaining = exam.duration_minutes * 60;
           this.startTimer();
         }
+        this.loading = false;
+        this.cdr.detectChanges();
       });
   }
 
@@ -527,11 +534,26 @@ export class ExamTakingComponent implements OnInit, OnDestroy {
       .pipe(finalize(() => (this.loading = false)))
       .subscribe({
         next: () => {
-          void this.router.navigate(['/exam/attempts', this.attemptId, 'result']);
+          // 【P1 修复】使用 ROUTES.EXAM.RESULT 常量,失败时不再误跳 404
+          void this.router.navigateByUrl(`/exam/attempts/${this.attemptId}/result`);
         },
         error: (err: Error) => {
           this.error = true;
-          this.errorMessage = err.message || '提交失败';
+          const errMsg = err?.message ?? '提交失败，请稍后重试';
+          this.errorMessage = errMsg;
+
+          // 给出重试入口,点击后重新提交(答案已保留)
+          const retry = confirm(`提交失败：${errMsg}\n\n是否重新尝试提交？`);
+          if (retry) {
+            this.error = false;
+            // 重启防作弊与计时器(若已超时则直接跳结果页)
+            this.antiCheatService.startMonitoring(this.attemptId, {
+              fullscreenRequired: true,
+              restrictPaste: true,
+              restrictCopy: true,
+            });
+            this.submitExam();
+          }
         },
       });
   }

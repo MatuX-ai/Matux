@@ -1,6 +1,5 @@
 import { CommonModule } from '@angular/common';
-import { HttpClient, HttpHeaders } from '@angular/common/http';
-import { Component, OnInit } from '@angular/core';
+import { Component } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { MatButtonModule } from '@angular/material/button';
 import { MatCardModule } from '@angular/material/card';
@@ -9,14 +8,12 @@ import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatIconModule } from '@angular/material/icon';
 import { MatInputModule } from '@angular/material/input';
 import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
-import { MatTooltipModule } from '@angular/material/tooltip';
-import { MatSelectModule } from '@angular/material/select';
-import { Router, RouterModule } from '@angular/router';
-import { firstValueFrom } from 'rxjs';
+import { ActivatedRoute, Router, RouterModule } from '@angular/router';
 
 import { environment } from '../../../environments/environment';
 import { LoginRequest } from '../../core/models/auth.models';
 import { AuthService } from '../../core/services/auth.service';
+import { I18nService } from '../../core/services/i18n.service';
 import { ROUTES } from '../../routes.const';
 
 // 测试账号配置（仅用于演示，敏感信息不应在前端硬编码）
@@ -80,16 +77,43 @@ export class LoginComponent {
   errorMessage = '';
   hidePassword = true;
 
+  /** 生产环境标志：从 environment.production 读取，模板用于隐藏测试按钮 */
+  readonly isProduction = environment.production;
+
   // 路由常量供模板使用
   readonly ROUTES = ROUTES;
 
   constructor(
     private authService: AuthService,
     private router: Router,
-    private http: HttpClient
+    private route: ActivatedRoute,
+    public i18n: I18nService
   ) {
     // 恢复记住我的设置
     this.rememberMe = this.authService.isRememberMe();
+
+    // 【P1 修复】从 URL ?returnUrl=xxx 中读取并暂存,登录成功后回跳
+    const returnUrl = this.route.snapshot.queryParamMap.get('returnUrl');
+    if (returnUrl && returnUrl !== '/auth/login') {
+      try {
+        sessionStorage.setItem('pre_login_return_url', returnUrl);
+      } catch {
+        // sessionStorage 不可用时静默失败
+      }
+    }
+  }
+
+  /**
+   * 【P1 修复】登录成功后跳转: 优先 returnUrl,否则 dashboard
+   */
+  private navigateAfterLogin(): void {
+    const sessionReturnUrl = sessionStorage.getItem('pre_login_return_url');
+    if (sessionReturnUrl) {
+      sessionStorage.removeItem('pre_login_return_url');
+      void this.router.navigateByUrl(sessionReturnUrl);
+    } else {
+      void this.router.navigate([ROUTES.USER.DASHBOARD]);
+    }
   }
 
   onLogin(): void {
@@ -102,7 +126,7 @@ export class LoginComponent {
 
     this.authService.signIn(this.credentials).subscribe({
       next: () => {
-        void this.router.navigate([ROUTES.USER.DASHBOARD]);
+        this.navigateAfterLogin();
       },
       error: (error: unknown) => {
         const errMsg = (error as { message?: string })?.message ?? '登录失败，请检查邮箱和密码';
@@ -132,7 +156,7 @@ export class LoginComponent {
   /**
    * 一键登录：使用测试学生账号快速登录
    * 仅在开发/演示环境可用
-   * 
+   *
    * @deprecated 生产环境应禁用此功能
    */
   loginAsTestUser(): void {
@@ -148,45 +172,24 @@ export class LoginComponent {
 
     // 使用 TEST_ACCOUNTS 中的学生账号
     const studentAccount = TEST_ACCOUNTS.find((a) => a.role === '学生') ?? TEST_ACCOUNTS[2];
-    
-    const body = new URLSearchParams();
-    body.set('username', studentAccount.username);
-    body.set('password', studentAccount.password);
-    const headers = new HttpHeaders({ 'Content-Type': 'application/x-www-form-urlencoded' });
 
-    // 使用 environment 配置的 API URL
-    const API_BASE = environment.apiUrl || 'http://localhost:8000';
-    
-    // 并行执行：获取 token + 获取用户信息
-    firstValueFrom(
-      this.http.post<{ access_token: string; token_type: string }>(
-        `${API_BASE}/api/v1/auth/token`,
-        body.toString(),
-        { headers }
-      )
-    )
-      .then(async (res) => {
-        // 使用标准登录流程
-        this.authService.signIn({
-          email: studentAccount.username,
-          password: studentAccount.password,
-        }).subscribe({
-          next: () => {
-            void this.router.navigate([ROUTES.USER.DASHBOARD]);
-          },
-          error: () => {
-            // signIn 失败时使用 token 直接登录（仅开发环境）
-            console.warn('[Dev] 标准登录失败，尝试 token 直接登录');
-            this.authService.setAccessTokenForTesting(res.access_token);
-            void this.router.navigate([ROUTES.USER.DASHBOARD]);
-          },
-        });
-        this.loading = false;
+    // 直接调用标准登录流程（单次 HTTP 请求）
+    this.authService.setRememberMe(true);
+    this.authService
+      .signIn({
+        email: studentAccount.username,
+        password: studentAccount.password,
       })
-      .catch((err: unknown) => {
-        const e = err as { error?: { detail?: string }; message?: string };
-        this.errorMessage = e?.error?.detail ?? e?.message ?? '测试账号登录失败';
-        this.loading = false;
+      .subscribe({
+        next: () => {
+          this.loading = false;
+          this.navigateAfterLogin();
+        },
+        error: (error: unknown) => {
+          const errMsg = (error as { message?: string })?.message ?? '测试账号登录失败';
+          this.errorMessage = errMsg;
+          this.loading = false;
+        },
       });
   }
 }

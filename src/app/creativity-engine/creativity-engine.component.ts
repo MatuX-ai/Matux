@@ -262,13 +262,20 @@ export class CreativityEngineComponent implements OnInit {
       const imagesArray: string[] = [imageResult.imageUrl].filter((url) => url !== '');
       this.generatedImages = imagesArray;
 
-      // 更新创意想法，关联图像 - 使用正确的接口
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any, @typescript-eslint/no-unsafe-argument
-      void this.creativityService.updateIdea(Number(ideaId), {
+      // 更新创意想法，关联图像 - 后端字段约定为 string(序列化)
+      const updatePayload = {
         images: JSON.stringify(
           this.generatedImages.map((url) => ({ url, generated_at: new Date().toISOString() }))
         ),
-      } as any); // eslint-disable-line @typescript-eslint/no-explicit-any
+      } as unknown as Parameters<typeof this.creativityService.updateIdea>[1];
+      this.creativityService.updateIdea(Number(ideaId), updatePayload).subscribe({
+        next: () => {
+          // 静默成功,UI 已通过 generatedImages 实时更新
+        },
+        error: (err: Error) => {
+          console.warn('关联图像到创意失败(非阻断):', err?.message);
+        },
+      });
     } catch (error) {
       console.error('图像生成失败:', error);
       this.snackBar.open('图像生成失败', '关闭', { duration: 3000 });
@@ -307,25 +314,35 @@ export class CreativityEngineComponent implements OnInit {
   }
 
   // 保存创意想法
-  async saveIdea(): Promise<void> {
+  saveIdea(): void {
     if (!this.currentIdea) return;
 
-    try {
-      const saveData = {
-        title: this.ideaForm.get('title')?.value ?? this.currentIdea.title,
-        description: this.ideaForm.get('description')?.value,
-        category: this.ideaForm.get('category')?.value,
-        is_public: false,
-      };
+    const saveData = {
+      title: this.ideaForm.get('title')?.value ?? this.currentIdea.title,
+      description: this.ideaForm.get('description')?.value,
+      category: this.ideaForm.get('category')?.value,
+      is_public: false,
+    };
 
-      this.creativityService.createIdea(saveData);
-      this.snackBar.open('创意想法保存成功!', '关闭', { duration: 3000 });
-
-      // 重新加载用户创意
-      await this.loadUserIdeas();
-    } catch (error) {
-      this.snackBar.open('保存失败', '关闭', { duration: 3000 });
-    }
+    this.creativityService.createIdea(saveData).subscribe({
+      next: () => {
+        this.snackBar.open('创意想法保存成功!', '关闭', { duration: 3000 });
+        // 重新加载用户创意列表(订阅链,无需 await)
+        void this.loadUserIdeas();
+      },
+      error: (error: Error) => {
+        console.error('保存创意失败:', error);
+        const errMsg = error?.message ?? '保存失败，请稍后重试';
+        this.snackBar
+          .open(errMsg, '重试', {
+            duration: 5000,
+          })
+          .onAction()
+          .subscribe(() => {
+            void this.saveIdea();
+          });
+      },
+    });
   }
 
   // 查看创意详情
@@ -348,21 +365,33 @@ export class CreativityEngineComponent implements OnInit {
   deleteIdea(ideaId: number): void {
     if (!confirm('确定要删除这个创意想法吗？')) return;
 
-    try {
-      void this.creativityService.deleteIdea(ideaId);
-      this.generatedIdeas = this.generatedIdeas.filter(
-        (idea: CreativeIdeaResponse) => idea.id !== ideaId
-      );
-      this.snackBar.open('删除成功!', '关闭', { duration: 3000 });
+    this.creativityService.deleteIdea(ideaId).subscribe({
+      next: () => {
+        // 后端删除成功后再从前端列表移除,避免乐观更新与服务端不一致
+        this.generatedIdeas = this.generatedIdeas.filter(
+          (idea: CreativeIdeaResponse) => idea.id !== ideaId
+        );
+        this.snackBar.open('删除成功!', '关闭', { duration: 3000 });
 
-      if (this.currentIdea?.id === ideaId) {
-        this.currentIdea = null;
-        this.scoreResults = null;
-        this.generatedImages = [];
-      }
-    } catch (error) {
-      this.snackBar.open('删除失败', '关闭', { duration: 3000 });
-    }
+        if (this.currentIdea?.id === ideaId) {
+          this.currentIdea = null;
+          this.scoreResults = null;
+          this.generatedImages = [];
+        }
+      },
+      error: (error: Error) => {
+        console.error('删除创意失败:', error);
+        const errMsg = error?.message ?? '删除失败，请稍后重试';
+        this.snackBar
+          .open(errMsg, '重试', {
+            duration: 5000,
+          })
+          .onAction()
+          .subscribe(() => {
+            this.deleteIdea(ideaId);
+          });
+      },
+    });
   }
 
   // 导出创意想法（支持 .imato 格式和 JSON 格式）

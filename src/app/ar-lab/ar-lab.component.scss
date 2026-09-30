@@ -36,6 +36,20 @@ $font-family-sensor: 'Courier New', monospace;
     }
   }
 
+  /* 【P2 修复】模拟实验模式徽章 */
+  .status-item.simulation-badge {
+    padding: 4px 12px;
+    border-radius: 12px;
+    background: linear-gradient(135deg, #f59e0b, #ef4444);
+    color: white;
+    font-weight: 600;
+    font-size: 13px;
+
+    mat-icon {
+      color: white;
+    }
+  }
+
   .spacer {
     flex: 1;
   }

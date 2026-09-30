@@ -7,16 +7,18 @@
 
 import { animate, state, style, transition, trigger } from '@angular/animations';
 import { CommonModule } from '@angular/common';
-import { Component } from '@angular/core';
+import { Component, Inject } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { MatButtonModule } from '@angular/material/button';
 import { MatCardModule } from '@angular/material/card';
-import { MatDialog, MatDialogModule } from '@angular/material/dialog';
+import { MAT_DIALOG_DATA, MatDialog, MatDialogModule } from '@angular/material/dialog';
 import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatIconModule } from '@angular/material/icon';
 import { MatSelectModule } from '@angular/material/select';
-import { MatSnackBar, MatSnackBarModule } from '@angular/material/snack-bar';
 import { MatSlideToggleModule } from '@angular/material/slide-toggle';
+import { MatSnackBar, MatSnackBarModule } from '@angular/material/snack-bar';
+
+import { ThemeService } from '../../../core/services/theme.service';
 
 // ============ 确认弹窗组件 ============
 @Component({
@@ -33,18 +35,32 @@ import { MatSlideToggleModule } from '@angular/material/slide-toggle';
       </mat-dialog-actions>
     </div>
   `,
-  styles: [`
-    .confirm-dialog-wrapper { border-radius: 16px; overflow: hidden; }
-    h2[mat-dialog-title] { font-size: 18px; font-weight: 700; }
-    mat-dialog-content { font-size: 14px; color: #64748b; margin-bottom: 16px; }
-    mat-dialog-actions { padding: 8px 0; }
-    [mat-dialog-close] { border-radius: 12px; }
-  `],
+  styles: [
+    `
+      .confirm-dialog-wrapper {
+        border-radius: 16px;
+        overflow: hidden;
+      }
+      h2[mat-dialog-title] {
+        font-size: 18px;
+        font-weight: 700;
+      }
+      mat-dialog-content {
+        font-size: 14px;
+        color: #64748b;
+        margin-bottom: 16px;
+      }
+      mat-dialog-actions {
+        padding: 8px 0;
+      }
+      [mat-dialog-close] {
+        border-radius: 12px;
+      }
+    `,
+  ],
 })
 export class ConfirmDialogComponent {
-  constructor(
-    public data: { title: string; message: string },
-  ) {}
+  constructor(@Inject(MAT_DIALOG_DATA) public data: { title: string; message: string }) {}
 }
 
 // ============ 主设置组件 ============
@@ -108,7 +124,7 @@ export class ConfirmDialogComponent {
               <span class="setting-desc">接收课程提醒、成就通知等</span>
             </div>
             <mat-slide-toggle
-              [checked]="settings.notifications"
+              [checked]="settings['notifications']"
               (change)="toggleSetting('notifications', $event.checked)"
             ></mat-slide-toggle>
           </div>
@@ -119,7 +135,7 @@ export class ConfirmDialogComponent {
               <span class="setting-desc">操作提示音和完成音效</span>
             </div>
             <mat-slide-toggle
-              [checked]="settings.sound"
+              [checked]="settings['sound']"
               (change)="toggleSetting('sound', $event.checked)"
             ></mat-slide-toggle>
           </div>
@@ -130,7 +146,7 @@ export class ConfirmDialogComponent {
               <span class="setting-desc">减少图片加载，节省网络流量</span>
             </div>
             <mat-slide-toggle
-              [checked]="settings.dataSaver"
+              [checked]="settings['dataSaver']"
               (change)="toggleSetting('dataSaver', $event.checked)"
             ></mat-slide-toggle>
           </div>
@@ -150,7 +166,7 @@ export class ConfirmDialogComponent {
               <span class="setting-desc">切换到深色主题保护眼睛</span>
             </div>
             <mat-slide-toggle
-              [checked]="settings.darkMode"
+              [checked]="settings['darkMode']"
               (change)="toggleSetting('darkMode', $event.checked)"
             ></mat-slide-toggle>
           </div>
@@ -161,7 +177,10 @@ export class ConfirmDialogComponent {
               <span class="setting-desc">界面显示语言</span>
             </div>
             <mat-form-field appearance="outline" class="language-select">
-              <mat-select [value]="settings.language" (selectionChange)="onLanguageChange($event.value)">
+              <mat-select
+                [value]="settings['language']"
+                (selectionChange)="onLanguageChange($event.value)"
+              >
                 <mat-option value="zh-CN">🇨🇳 简体中文</mat-option>
                 <mat-option value="en-US">🇺🇸 English</mat-option>
               </mat-select>
@@ -183,7 +202,7 @@ export class ConfirmDialogComponent {
               <span class="setting-desc">自动同步学习进度到云端</span>
             </div>
             <mat-slide-toggle
-              [checked]="settings.autoSync"
+              [checked]="settings['autoSync']"
               (change)="toggleSetting('autoSync', $event.checked)"
             ></mat-slide-toggle>
           </div>
@@ -209,7 +228,12 @@ export class ConfirmDialogComponent {
               <span class="setting-label">清除缓存</span>
               <span class="setting-desc">清除本地缓存数据</span>
             </div>
-            <button mat-stroked-button color="warn" (click)="clearCache()" [disabled]="clearingCache">
+            <button
+              mat-stroked-button
+              color="warn"
+              (click)="clearCache()"
+              [disabled]="clearingCache"
+            >
               <mat-icon *ngIf="clearingCache">hourglass_empty</mat-icon>
               {{ clearingCache ? '清除中...' : '清除缓存' }}
             </button>
@@ -244,136 +268,138 @@ export class ConfirmDialogComponent {
       </mat-card>
     </div>
   `,
-  styles: [`
-    .settings-container {
-      max-width: 720px;
-      margin: 0 auto;
-      padding: 24px 16px;
-    }
-
-    .settings-header {
-      margin-bottom: 24px;
-    }
-    .page-title {
-      display: flex;
-      align-items: center;
-      gap: 8px;
-      font-size: 24px;
-      font-weight: 700;
-      color: var(--matux-color-text-primary, #0f172a);
-      margin: 0;
-    }
-    .page-title mat-icon {
-      color: var(--matux-color-primary, #3b82f6);
-    }
-
-    /* 账号卡片 */
-    .account-card {
-      background: linear-gradient(135deg, #3b82f6, #8b5cf6);
-      border-radius: 16px;
-      padding: 20px;
-      margin-bottom: 16px;
-      color: #fff;
-    }
-    .account-info {
-      display: flex;
-      align-items: center;
-      gap: 16px;
-    }
-    .account-avatar {
-      width: 56px;
-      height: 56px;
-      border-radius: 50%;
-      background: rgba(255,255,255,0.2);
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      font-size: 28px;
-      border: 2px solid rgba(255,255,255,0.4);
-    }
-    .account-name {
-      font-size: 18px;
-      font-weight: 700;
-      margin: 0 0 4px;
-      color: #fff;
-    }
-    .account-grade {
-      font-size: 13px;
-      color: rgba(255,255,255,0.8);
-      margin: 0 0 2px;
-    }
-    .account-email {
-      font-size: 12px;
-      color: rgba(255,255,255,0.6);
-      margin: 0;
-    }
-
-    /* 设置分组 */
-    .settings-section {
-      margin-bottom: 16px;
-      border-radius: 16px;
-    }
-    .settings-section mat-card-header {
-      padding: 16px 16px 8px;
-    }
-    .settings-section mat-card-title {
-      font-size: 16px;
-      font-weight: 700;
-    }
-    .settings-section mat-card-content {
-      padding: 0 16px 16px;
-    }
-
-    /* 设置项 */
-    .setting-item {
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      padding: 12px 0;
-      border-bottom: 1px solid var(--matux-color-divider, #f1f5f9);
-    }
-    .setting-item:last-child {
-      border-bottom: none;
-    }
-    .setting-info {
-      flex: 1;
-      display: flex;
-      flex-direction: column;
-      gap: 2px;
-    }
-    .setting-label {
-      font-size: 14px;
-      font-weight: 500;
-      color: var(--matux-color-text-primary, #0f172a);
-    }
-    .setting-desc {
-      font-size: 12px;
-      color: var(--matux-color-text-secondary, #64748b);
-    }
-    .setting-value {
-      font-size: 13px;
-      color: var(--matux-color-text-secondary, #64748b);
-    }
-
-    .language-select {
-      width: 180px;
-    }
-    .language-select .mat-mdc-form-field-subscript-wrapper {
-      display: none;
-    }
-
-    /* 按钮样式 */
-    .setting-item button {
-      border-radius: 12px;
-      font-weight: 600;
-    }
-
-    @media (max-width: 768px) {
+  styles: [
+    `
       .settings-container {
-        padding: 16px 8px;
+        max-width: 720px;
+        margin: 0 auto;
+        padding: 24px 16px;
       }
-    }
-  `],
+
+      .settings-header {
+        margin-bottom: 24px;
+      }
+      .page-title {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        font-size: 24px;
+        font-weight: 700;
+        color: var(--matux-color-text-primary, #0f172a);
+        margin: 0;
+      }
+      .page-title mat-icon {
+        color: var(--matux-color-primary, #3b82f6);
+      }
+
+      /* 账号卡片 */
+      .account-card {
+        background: linear-gradient(135deg, #3b82f6, #8b5cf6);
+        border-radius: 16px;
+        padding: 20px;
+        margin-bottom: 16px;
+        color: #fff;
+      }
+      .account-info {
+        display: flex;
+        align-items: center;
+        gap: 16px;
+      }
+      .account-avatar {
+        width: 56px;
+        height: 56px;
+        border-radius: 50%;
+        background: rgba(255, 255, 255, 0.2);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 28px;
+        border: 2px solid rgba(255, 255, 255, 0.4);
+      }
+      .account-name {
+        font-size: 18px;
+        font-weight: 700;
+        margin: 0 0 4px;
+        color: #fff;
+      }
+      .account-grade {
+        font-size: 13px;
+        color: rgba(255, 255, 255, 0.8);
+        margin: 0 0 2px;
+      }
+      .account-email {
+        font-size: 12px;
+        color: rgba(255, 255, 255, 0.6);
+        margin: 0;
+      }
+
+      /* 设置分组 */
+      .settings-section {
+        margin-bottom: 16px;
+        border-radius: 16px;
+      }
+      .settings-section mat-card-header {
+        padding: 16px 16px 8px;
+      }
+      .settings-section mat-card-title {
+        font-size: 16px;
+        font-weight: 700;
+      }
+      .settings-section mat-card-content {
+        padding: 0 16px 16px;
+      }
+
+      /* 设置项 */
+      .setting-item {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        padding: 12px 0;
+        border-bottom: 1px solid var(--matux-color-divider, #f1f5f9);
+      }
+      .setting-item:last-child {
+        border-bottom: none;
+      }
+      .setting-info {
+        flex: 1;
+        display: flex;
+        flex-direction: column;
+        gap: 2px;
+      }
+      .setting-label {
+        font-size: 14px;
+        font-weight: 500;
+        color: var(--matux-color-text-primary, #0f172a);
+      }
+      .setting-desc {
+        font-size: 12px;
+        color: var(--matux-color-text-secondary, #64748b);
+      }
+      .setting-value {
+        font-size: 13px;
+        color: var(--matux-color-text-secondary, #64748b);
+      }
+
+      .language-select {
+        width: 180px;
+      }
+      .language-select .mat-mdc-form-field-subscript-wrapper {
+        display: none;
+      }
+
+      /* 按钮样式 */
+      .setting-item button {
+        border-radius: 12px;
+        font-weight: 600;
+      }
+
+      @media (max-width: 768px) {
+        .settings-container {
+          padding: 16px 8px;
+        }
+      }
+    `,
+  ],
 })
 export class SettingsComponent {
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -392,6 +418,7 @@ export class SettingsComponent {
   constructor(
     private dialog: MatDialog,
     private snackBar: MatSnackBar,
+    private themeService: ThemeService
   ) {}
 
   toggleSetting(key: keyof typeof this.settings, value: boolean): void {
@@ -404,6 +431,12 @@ export class SettingsComponent {
       language: '语言',
       autoSync: '自动同步',
     };
+
+    // 【P0 修复】主题切换立即生效
+    if (key === 'darkMode') {
+      this.themeService.setTheme(value ? 'dark' : 'light');
+    }
+
     this.snackBar.open(`${labels[key]} 已${value ? '开启' : '关闭'}`, '知道了', {
       duration: 2000,
       panelClass: 'settings-toast',

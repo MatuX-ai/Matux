@@ -60,6 +60,20 @@ const routes: Routes = [
           import('./components/my-courses/my-courses.component').then((m) => m.MyCoursesComponent),
       },
       {
+        path: 'courses/:courseId',
+        loadComponent: () =>
+          import('./components/course-detail/course-detail.component').then(
+            (m) => m.CourseDetailComponent
+          ),
+      },
+      {
+        path: 'courses/:courseId/learn',
+        loadComponent: () =>
+          import('./components/course-detail/course-detail.component').then(
+            (m) => m.CourseDetailComponent
+          ),
+      },
+      {
         path: 'learning-profile',
         loadComponent: () =>
           import('./components/learning-profile/learning-profile.component').then(
@@ -104,9 +118,7 @@ const routes: Routes = [
       {
         path: 'settings',
         loadComponent: () =>
-          import('./components/settings/settings.component').then(
-            (m) => m.SettingsComponent
-          ),
+          import('./components/settings/settings.component').then((m) => m.SettingsComponent),
       },
       // 教学管理/学生管理路由已解耦至 OpenMTEduInst 项目
       // 学校管理员功能模块（已解耦至 OpenMTEduInst 项目）

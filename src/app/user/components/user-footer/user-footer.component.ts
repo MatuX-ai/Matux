@@ -11,6 +11,7 @@ import { MatIconModule } from '@angular/material/icon';
 import { MatToolbarModule } from '@angular/material/toolbar';
 import { RouterModule } from '@angular/router';
 
+import { I18nService } from '../../../core/services/i18n.service';
 import { ROUTES } from '../../../routes.const';
 
 @Component({
@@ -21,25 +22,81 @@ import { ROUTES } from '../../../routes.const';
     <footer class="user-footer">
       <div class="footer-content">
         <div class="footer-links">
-          <a mat-button [routerLink]="ROUTES.USER.PROFILE">
+          <a
+            mat-button
+            [routerLink]="ROUTES.USER.PROFILE"
+            [attr.aria-label]="i18n.translate('userFooter.profile')"
+          >
             <mat-icon>person</mat-icon>
-            个人资料
+            {{ i18n.translate('userFooter.profile') }}
           </a>
-          <a mat-button [routerLink]="ROUTES.USER.TOKEN">
+          <a
+            mat-button
+            [routerLink]="ROUTES.USER.TOKEN"
+            [attr.aria-label]="i18n.translate('userFooter.token')"
+          >
             <mat-icon>token</mat-icon>
-            Token管理
+            {{ i18n.translate('userFooter.token') }}
           </a>
-          <a mat-button href="javascript:void(0)" (click)="openHelp()">
+          <a
+            mat-button
+            [routerLink]="ROUTES.USER.LEARNING_PROFILE"
+            [attr.aria-label]="i18n.translate('userFooter.learningProfile')"
+          >
+            <mat-icon>insights</mat-icon>
+            {{ i18n.translate('userFooter.learningProfile') }}
+          </a>
+          <a
+            mat-button
+            [routerLink]="ROUTES.USER.TEACHING_SUGGESTIONS"
+            [attr.aria-label]="i18n.translate('userFooter.teachingSuggestions')"
+          >
+            <mat-icon>lightbulb</mat-icon>
+            {{ i18n.translate('userFooter.teachingSuggestions') }}
+          </a>
+          <a
+            mat-button
+            [routerLink]="ROUTES.USER.EMOTIONAL_COMPANION"
+            [attr.aria-label]="i18n.translate('userFooter.emotionalCompanion')"
+          >
+            <mat-icon>favorite</mat-icon>
+            {{ i18n.translate('userFooter.emotionalCompanion') }}
+          </a>
+          <a
+            mat-button
+            [routerLink]="ROUTES.USER.REPORTS"
+            [attr.aria-label]="i18n.translate('userFooter.reports')"
+          >
+            <mat-icon>assessment</mat-icon>
+            {{ i18n.translate('userFooter.reports') }}
+          </a>
+          <a
+            mat-button
+            [routerLink]="ROUTES.USER.SETTINGS"
+            [attr.aria-label]="i18n.translate('userFooter.settings')"
+          >
+            <mat-icon>settings</mat-icon>
+            {{ i18n.translate('userFooter.settings') }}
+          </a>
+          <a
+            mat-button
+            [routerLink]="ROUTES.HELP"
+            [attr.aria-label]="i18n.translate('userFooter.help')"
+          >
             <mat-icon>help_outline</mat-icon>
-            帮助中心
+            {{ i18n.translate('userFooter.help') }}
           </a>
-          <a mat-button href="javascript:void(0)" (click)="openAbout()">
+          <a
+            mat-button
+            [routerLink]="ROUTES.ABOUT"
+            [attr.aria-label]="i18n.translate('userFooter.about')"
+          >
             <mat-icon>info</mat-icon>
-            关于我们
+            {{ i18n.translate('userFooter.about') }}
           </a>
         </div>
         <div class="footer-copyright">
-          <span>&copy; {{ currentYear }} iMato. All rights reserved.</span>
+          <span>&copy; {{ currentYear }} iMato. {{ i18n.translate('userFooter.copyright') }}.</span>
           <span class="divider">|</span>
           <span>Powered by iMato Platform</span>
         </div>
@@ -85,14 +142,20 @@ import { ROUTES } from '../../../routes.const';
 
       .footer-copyright {
         font-size: 12px;
-        color: var(--color-text-disabled);
+        // 【对比度修复 #7】原 color: var(--color-text-disabled) 即 #a8a29e on #fff
+        // 对比度 2.52:1，12px 文本需要 WCAG AA 4.5:1，严重违规。
+        // 改用 --color-text-secondary (#57534e) 后对比度 7.63:1，通过 AAA。
+        color: var(--color-text-secondary, #57534e);
         display: flex;
         align-items: center;
         gap: 8px;
       }
 
       .divider {
-        color: var(--color-divider);
+        // 【对比度修复 #23】原 color: var(--color-divider) 即 #e7e5e4 on #fff
+        // 对比度 1.26:1，作为装饰性文字分隔符可接受，但为了语义一致性
+        // 仍升级为中灰 #64748b (4.92:1)。
+        color: var(--color-gray-500, #64748b);
       }
 
       @media (max-width: 768px) {
@@ -110,11 +173,6 @@ export class UserFooterComponent {
   // 路由常量供模板使用
   readonly ROUTES = ROUTES;
 
-  openHelp(): void {
-    console.warn('打开帮助中心');
-  }
-
-  openAbout(): void {
-    console.warn('打开关于我们');
-  }
+  // 【P2】i18n 服务供模板调用
+  constructor(public i18n: I18nService) {}
 }

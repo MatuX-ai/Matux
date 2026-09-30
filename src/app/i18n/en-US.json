@@ -37,11 +37,7 @@
     "free": {
       "name": "Free",
       "price": "$0",
-      "features": [
-        "Basic course access",
-        "Community support",
-        "Limited storage"
-      ]
+      "features": ["Basic course access", "Community support", "Limited storage"]
     },
     "pro": {
       "name": "Pro",
@@ -56,12 +52,7 @@
     "enterprise": {
       "name": "Enterprise",
       "price": "Custom",
-      "features": [
-        "All Pro features",
-        "Custom courses",
-        "Dedicated support",
-        "Analytics reports"
-      ]
+      "features": ["All Pro features", "Custom courses", "Dedicated support", "Analytics reports"]
     }
   },
   "contact": {
@@ -87,5 +78,82 @@
     "reconnected": "You are back online",
     "updateAvailable": "New version available. Click to update.",
     "update": "Update"
+  },
+  "userNav": {
+    "home": "Home",
+    "courses": "Courses",
+    "aiCoding": "AI Coding",
+    "arLab": "AR Lab",
+    "creativity": "Create",
+    "search": "Search",
+    "notifications": "Notifications",
+    "profile": "Profile",
+    "token": "Tokens",
+    "achievements": "Achievements",
+    "learningProfile": "Learning Profile",
+    "growthTrajectory": "Growth Trajectory",
+    "teachingSuggestions": "Teaching Tips",
+    "emotionalCompanion": "Emotional Companion",
+    "reports": "Learning Reports",
+    "aiTeacherSettings": "AI Teacher Settings",
+    "settings": "Settings",
+    "logout": "Logout",
+    "logoutConfirm": "Are you sure you want to log out?",
+    "userTypeStudent": "Student",
+    "userTypeTeacher": "Teacher",
+    "userTypeAdmin": "Admin",
+    "userTypeEnterprise": "Enterprise",
+    "userTypeDefault": "User"
+  },
+  "userFooter": {
+    "profile": "Profile",
+    "token": "Tokens",
+    "learningProfile": "Learning Profile",
+    "teachingSuggestions": "Teaching Tips",
+    "emotionalCompanion": "Emotional Companion",
+    "reports": "Learning Reports",
+    "settings": "Settings",
+    "help": "Help Center",
+    "about": "About Us",
+    "copyright": "All rights reserved"
+  },
+  "login": {
+    "title": "Sign in to MatuX",
+    "subtitle": "Welcome back, continue your AI learning journey",
+    "email": "Email",
+    "password": "Password",
+    "rememberMe": "Remember me",
+    "loginButton": "Sign in",
+    "testLoginButton": "One-click test account login",
+    "testLoginTooltip": "Dev only: signs in with test_student. Hidden in production builds.",
+    "orOAuth": "Or sign in with",
+    "qq": "QQ",
+    "wechat": "WeChat",
+    "google": "Google",
+    "github": "GitHub",
+    "noAccount": "No account yet?",
+    "registerNow": "Sign up now"
+  },
+  "register": {
+    "title": "Create account",
+    "subtitle": "Join the MatuX learning platform",
+    "username": "Username",
+    "email": "Email",
+    "password": "Password",
+    "confirmPassword": "Confirm password",
+    "passwordHint": "At least 8 characters, must include letters and digits",
+    "agreeTerms": "I have read and agree to the",
+    "termsOfService": "Terms of Service",
+    "privacyPolicy": "Privacy Policy",
+    "submit": "Sign up",
+    "successMessage": "Sign up successful! Redirecting..."
+  },
+  "mock": {
+    "bannerTitle": "Currently showing demo data",
+    "bannerTooltip": "This page is rendered with demo data for UI preview only"
+  },
+  "comingSoon": {
+    "backHome": "Back to home",
+    "browseCourses": "Browse courses"
   }
 }

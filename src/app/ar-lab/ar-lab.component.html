@@ -15,6 +15,12 @@
       <span>硬件: {{ connectionStatus }}</span>
     </div>
 
+    <!-- 【P2 修复】模拟模式标识 -->
+    <div class="status-item simulation-badge" *ngIf="currentExperiment?.simulated">
+      <mat-icon color="accent">science</mat-icon>
+      <span>模拟实验模式</span>
+    </div>
+
     <div class="status-item">
       <mat-icon [color]="isExperimentRunning ? 'accent' : 'basic'">
         {{ isExperimentRunning ? 'play_arrow' : 'stop' }}

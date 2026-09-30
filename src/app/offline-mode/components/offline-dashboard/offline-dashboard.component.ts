@@ -6,6 +6,7 @@ import { MatDividerModule } from '@angular/material/divider';
 import { MatGridListModule } from '@angular/material/grid-list';
 import { MatIconModule } from '@angular/material/icon';
 import { MatProgressBarModule } from '@angular/material/progress-bar';
+import { MatSnackBar } from '@angular/material/snack-bar';
 import { MatTooltipModule } from '@angular/material/tooltip';
 import { Subscription } from 'rxjs';
 
@@ -60,7 +61,8 @@ export class OfflineDashboardComponent implements OnInit, OnDestroy {
     private offlineStorage: OfflineStorageService,
     private courseStorage: OfflineCourseStorageService,
     private progressStorage: OfflineProgressStorageService,
-    private syncService: OfflineSyncService
+    private syncService: OfflineSyncService,
+    private snackBar: MatSnackBar
   ) {}
 
   ngOnInit(): void {
@@ -195,7 +197,46 @@ export class OfflineDashboardComponent implements OnInit, OnDestroy {
    * 触发同步
    */
   triggerSync(): void {
-    void this.syncService.manualSync();
+    if (this.isSyncing()) {
+      this.snackBar.open('同步正在进行中，请稍候', '关闭', { duration: 2000 });
+      return;
+    }
+
+    this.syncService.manualSync().then(
+      (report) => {
+        const total = report.totalOperations;
+        const synced = report.syncedCount;
+        const failed = report.failedCount;
+        // 【P2 修复】字段名以 SyncReport 定义为准: conflictCount
+        const conflicts = report.conflictCount ?? 0;
+
+        if (total === 0) {
+          this.snackBar.open('没有需要同步的数据', '关闭', { duration: 2000 });
+          return;
+        }
+
+        const summary = failed === 0
+          ? `同步完成：${synced} 项已上传`
+          : `同步部分成功：${synced} 成功，${failed} 失败`;
+        const detail = conflicts > 0 ? `, ${conflicts} 个冲突` : '';
+        this.snackBar.open(summary + detail, failed === 0 ? '关闭' : '查看', {
+          duration: 4000,
+        }).onAction().subscribe(() => {
+          // 用户点击"查看"时刷新扩展统计并跳转到 sync 面板
+          void this.loadExtendedStats();
+        });
+      },
+      (error: Error) => {
+        console.error('[OfflineDashboard] 手动同步失败:', error);
+        this.snackBar.open(
+          error?.message ?? '同步失败，请稍后重试',
+          '重试',
+          { duration: 5000 }
+        ).onAction().subscribe(() => {
+          this.triggerSync();
+        });
+      }
+    );
   }
 
   /**

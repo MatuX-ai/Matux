@@ -1,4 +1,5 @@
-// Login 组件样式 — MatuX 设计系统
+// Login 组件样式 — STEM 探索绿设计系统
+@use 'src/styles/shared/stem-theme' as stem;
 
 .login-container {
   display: flex;
@@ -18,14 +19,14 @@
   width: 100%;
   max-width: 440px;
   padding: 32px;
-  border-radius: var(--matux-radius-card, 16px);
+  border-radius: stem.$stem-radius-xl;
 }
 
 .login-header {
   display: flex;
   flex-direction: column;
   align-items: center;
-  margin-bottom: var(--matux-spacing-lg, 24px);
+  margin-bottom: 24px;
   padding: 0;
   text-align: center;
 }
@@ -37,13 +38,13 @@
   width: 56px;
   height: 56px;
   margin-bottom: 16px;
-  border-radius: var(--matux-radius-md, 14px);
+  border-radius: stem.$stem-radius-md;
   background: linear-gradient(
     135deg,
-    var(--matux-color-primary, #3b82f6),
-    var(--matux-color-primary-dark, #2563eb)
+    stem.$stem-primary 0%,
+    stem.$stem-primary-dark 100%
   );
-  box-shadow: 0 8px 24px rgb(59 130 246 / 30%);
+  box-shadow: 0 8px 24px rgba(stem.$stem-primary, 0.3);
 }
 
 .logo-mat-icon {
@@ -55,11 +56,13 @@
 
 .login-title {
   margin-bottom: 4px;
+  color: var(--color-text-primary);
   font-size: var(--matux-font-size-h3, 24px);
   font-weight: 700;
 }
 
 .login-subtitle {
+  color: var(--color-text-secondary);
   font-size: var(--matux-font-size-sm, 14px);
 }
 
@@ -84,16 +87,16 @@
   align-items: center;
   gap: 8px;
   padding: 12px 16px;
-  border: 1px solid var(--matux-color-error-border, #fecaca);
-  border-radius: var(--matux-radius-sm, 8px);
-  background: var(--matux-color-error-bg, #fef2f2);
-  color: var(--matux-color-error, #b91c1c);
+  border: 1px solid var(--color-error-border);
+  border-radius: stem.$stem-radius-sm;
+  background: var(--color-error-bg);
+  color: var(--color-error);
   font-size: var(--matux-font-size-sm, 14px);
 }
 
 .login-button {
   height: 48px;
-  border-radius: 9999px;
+  border-radius: stem.$stem-radius-full;
   font-size: var(--matux-font-size-body, 16px);
 }
 
@@ -107,7 +110,7 @@
   justify-content: center;
   align-items: center;
   padding: 16px 0 0;
-  color: var(--matux-color-text-tertiary, #64748b);
+  color: var(--color-text-disabled);
   font-size: var(--matux-font-size-sm, 14px);
 }
 
@@ -122,11 +125,11 @@
 .divider-line {
   flex: 1;
   height: 1px;
-  background: var(--matux-color-divider, #e2e8f0);
+  background: var(--color-divider);
 }
 
 .divider-text {
-  color: var(--matux-color-text-tertiary, #64748b);
+  color: var(--color-text-disabled);
   font-size: 13px;
   white-space: nowrap;
 }
@@ -145,15 +148,17 @@
   width: 48px;
   height: 48px;
   padding: 0;
-  background: transparent;
   border: none;
   border-radius: 50%;
-  transition: transform 0.15s, opacity 0.2s;
+  background: transparent;
   opacity: 0.85;
+  transition:
+    transform 0.15s,
+    opacity 0.2s;
 
   &:hover {
-    transform: translateY(-2px);
     opacity: 1;
+    transform: translateY(-2px);
   }
 
   mat-icon {
@@ -175,10 +180,21 @@
 
 // Google 多色
 .oauth-google {
-  .google-g { fill: #4285f4; }
-  .google-y { fill: #fbbc05; }
-  .google-r { fill: #ea4335; }
-  .google-e { fill: #34a853; }
+  .google-g {
+    fill: #4285f4;
+  }
+
+  .google-y {
+    fill: #fbbc05;
+  }
+
+  .google-r {
+    fill: #ea4335;
+  }
+
+  .google-e {
+    fill: #34a853;
+  }
 }
 
 // GitHub 黑
