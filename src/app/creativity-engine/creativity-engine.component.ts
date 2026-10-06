@@ -153,6 +153,17 @@ export class CreativityEngineComponent implements OnInit {
     }
   }
 
+  // 【P3-1 修复】slider 控件绑定（mat-slider 不支持 formControlName）
+  onTemperatureChange(event: { value: number } | number): void {
+    const value = typeof event === 'number' ? event : event?.value;
+    this.ideaForm.get('temperature')?.setValue(value ?? 0.8);
+  }
+
+  onMaxTokensChange(event: { value: number } | number): void {
+    const value = typeof event === 'number' ? event : event?.value;
+    this.ideaForm.get('maxTokens')?.setValue(value ?? 1500);
+  }
+
   // 构建创意生成请求
   private _buildIdeaRequest(formValue: {
     templateId: unknown;
@@ -659,10 +670,11 @@ export class CreativityEngineComponent implements OnInit {
   }
 
   // 检查表单有效性
+  // 【P3-1 修复】放宽要求：仅需 title 有效 + 已选择 category（默认值即满足）
+  // 不再强制需要 templateId/customPrompt，让用户可以一键生成“默认创意”
   isFormValid(): boolean {
-    return (
-      this.ideaForm.valid &&
-      (this.ideaForm.get('templateId')?.value || this.ideaForm.get('customPrompt')?.value)
-    );
+    if (!this.ideaForm.valid) return false;
+    const title = (this.ideaForm.get('title')?.value ?? '').toString().trim();
+    return title.length >= 3;
   }
 }

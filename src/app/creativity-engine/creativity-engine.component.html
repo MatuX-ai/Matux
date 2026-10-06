@@ -71,13 +71,14 @@
               <div class="param-row">
                 <span class="param-label">创造性温度:</span>
                 <mat-slider
-                  formControlName="temperature"
-                  min="0"
-                  max="1"
-                  step="0.1"
+                  [discrete]="true"
+                  [min]="0"
+                  [max]="1"
+                  [step]="0.1"
                   class="param-slider"
+                  (change)="onTemperatureChange($event)"
                 >
-                  <input matSliderThumb />
+                  <input matSliderThumb [value]="ideaForm.get('temperature')?.value" />
                 </mat-slider>
                 <span class="param-value">{{ ideaForm.get('temperature')?.value }}</span>
               </div>
@@ -85,13 +86,14 @@
               <div class="param-row">
                 <span class="param-label">最大长度:</span>
                 <mat-slider
-                  formControlName="maxTokens"
-                  min="500"
-                  max="3000"
-                  step="100"
+                  [discrete]="true"
+                  [min]="500"
+                  [max]="3000"
+                  [step]="100"
                   class="param-slider"
+                  (change)="onMaxTokensChange($event)"
                 >
-                  <input matSliderThumb />
+                  <input matSliderThumb [value]="ideaForm.get('maxTokens')?.value" />
                 </mat-slider>
                 <span class="param-value">{{ ideaForm.get('maxTokens')?.value }} tokens</span>
               </div>
