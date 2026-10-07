@@ -1,10 +1,10 @@
 #!/bin/bash
 
-# iMatuProject 代码格式化脚本 (Unix/Linux/macOS)
+# MatuX 代码格式化脚本 (Unix/Linux/macOS)
 # 统一执行前端和后端的代码格式化
 
 echo "========================================"
-echo "iMatuProject 代码格式化"
+echo "MatuX 代码格式化"
 echo "========================================"
 
 # 检查Node.js环境

@@ -132,7 +132,7 @@ function generateTokensFromExisting() {
 function generateTokensIndex(outputDir, tokenFiles) {
   const indexData = {
     metadata: {
-      name: "iMatuProject Design Tokens",
+      name: "MatuX Design Tokens",
       version: "1.0.0",
       exportedAt: new Date().toISOString(),
       format: "json"

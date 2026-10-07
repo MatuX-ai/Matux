@@ -1,7 +1,7 @@
 {
-  "name": "iMatuProject - 离线学习平台",
+  "name": "MatuX - 离线学习工具",
   "short_name": "iMatu离线版",
-  "theme_color": "#1976d2",
+  "theme_color": "#059669",
   "background_color": "#fafafa",
   "display": "standalone",
   "scope": "/",

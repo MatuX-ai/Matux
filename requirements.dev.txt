@@ -1,5 +1,5 @@
 # 开发环境依赖包
-# iMatuProject Backend 开发工具链
+# MatuX Backend 开发工具链
 
 # 代码格式化工具
 black>=23.0.0

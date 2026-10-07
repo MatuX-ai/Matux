@@ -5,7 +5,7 @@ const path = require("path");
 const pptx = new PptxGenJS();
 
 // 设置PPT元数据
-pptx.title = "iMatuProject - AI普惠教育平台";
+pptx.title = "MatuX - STEM 学习工具";
 pptx.author = "MatuX团队";
 
 // 颜色方案 - 科技蓝主题
@@ -25,7 +25,7 @@ const colors = {
 const slide1 = pptx.addSlide();
 slide1.background = { color: colors.primary };
 
-slide1.addText("iMatuProject", {
+slide1.addText("MatuX", {
   x: 0.5, y: 1.2, w: 9, h: 0.9,
   fontSize: 54, bold: true, color: colors.white,
   align: "center", fontFace: "Microsoft YaHei"
@@ -1794,7 +1794,7 @@ slide25.addText("让每个孩子都能享受优质的AI教育", {
   align: "center", fontFace: "Microsoft YaHei"
 });
 
-slide25.addText("iMatuProject团队", {
+slide25.addText("MatuX Lab", {
   x: 3.5, y: 5.2, w: 3, h: 0.5,
   align: "center", fontFace: "Microsoft YaHei",
   fontSize: 18, bold: true, color: colors.white

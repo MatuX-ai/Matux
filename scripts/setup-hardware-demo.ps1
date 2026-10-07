@@ -1,7 +1,7 @@
-# iMatuProject 硬件通信演示设置脚本
+# MatuX 硬件通信演示设置脚本
 # 用于快速搭建和运行硬件通信原型
 
-Write-Host "🚀 iMatuProject 硬件通信原型设置" -ForegroundColor Green
+Write-Host "🚀 MatuX 硬件通信原型设置" -ForegroundColor Green
 Write-Host "==================================" -ForegroundColor Green
 Write-Host ""
 

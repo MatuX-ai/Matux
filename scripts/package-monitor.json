@@ -15,7 +15,7 @@
     "test": "echo \"No tests\" && exit 0"
   },
   "keywords": ["monitor", "playwright", "marketing", "testing", "automation"],
-  "author": "iMato Team",
+  "author": "MatuX Lab",
   "license": "GPL-3.0",
   "dependencies": {
     "playwright": "^1.40.0",

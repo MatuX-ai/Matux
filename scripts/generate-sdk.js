@@ -134,7 +134,7 @@ print(json.dumps(openapi_schema, indent=2, ensure_ascii=False))
   }
 
   generateIndexFile() {
-    return `// iMatuProject TypeScript SDK Entry Point
+    return `// MatuX TypeScript SDK Entry Point
 export * from './client';
 export * from './types';
 export * from './config';

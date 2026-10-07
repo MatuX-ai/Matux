@@ -49,7 +49,7 @@ func LoadConfig() *SentinelConfig {
 			SSL:      getBoolEnv("REDIS_SSL", false),
 		},
 		License: LicenseConfig{
-			Issuer:          getEnv("LICENSE_ISSUER", "iMatuProject"),
+			Issuer:          getEnv("LICENSE_ISSUER", "MatuX"),
 			Audience:        getEnv("LICENSE_AUDIENCE", "enterprise"),
 			Algorithm:       getEnv("LICENSE_ALGORITHM", "HS256"),
 			ExpirationHours: getIntEnv("LICENSE_EXPIRATION_HOURS", 24),

@@ -1,9 +1,9 @@
 @echo off
-REM iMatuProject 代码格式化脚本 (Windows)
+REM MatuX 代码格式化脚本 (Windows)
 REM 统一执行前端和后端的代码格式化
 
 echo ========================================
-echo iMatuProject 代码格式化
+echo MatuX 代码格式化
 echo ========================================
 
 REM 检查Node.js环境

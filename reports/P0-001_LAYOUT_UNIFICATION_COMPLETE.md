@@ -207,6 +207,6 @@ export class MarketingXxxComponent {
 
 ---
 
-**报告人**: MatuX Team  
+**报告人**: MatuX Lab  
 **审核状态**: 待审核  
 **最后更新**: 2026-03-16  

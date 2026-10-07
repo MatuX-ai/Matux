@@ -5,16 +5,16 @@
   "version": "1.0.0",
   "description": "功能丰富的 Markdown 编辑器，支持实时预览、语法高亮、导出 PDF/HTML 等功能",
   "author": {
-    "name": "iMato Team",
-    "email": "team@imato.com",
-    "url": "https://imato.com"
+    "name": "MatuX Lab",
+    "email": "team@matux.com",
+    "url": "https://matux.com"
   },
   "license": "MIT",
   "icon": "resources/icon.svg",
   "categories": ["editor", "productivity", "writing"],
   "keywords": ["markdown", "editor", "preview", "export", "writing"],
-  "homepage": "https://github.com/imato/markdown-editor",
-  "repository": "https://github.com/imato/markdown-editor",
+  "homepage": "https://github.com/matux/markdown-editor",
+  "repository": "https://github.com/matux/markdown-editor",
   
   "deviceCompatibility": {
     "tier": "tier-a",

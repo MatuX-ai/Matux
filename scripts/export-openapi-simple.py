@@ -79,8 +79,8 @@ Authorization: Bearer <your_access_token>
 ```
                 """,
                 "contact": {
-                    "name": "iMatuProject Team",
-                    "email": "support@imatuproject.com",
+                    "name": "MatuX Lab",
+                    "email": "support@matux.com",
                     "url": "https://imatuproject.com"
                 },
                 "license": {
@@ -98,7 +98,7 @@ Authorization: Bearer <your_access_token>
                     "description": "测试环境"
                 },
                 {
-                    "url": "https://api.imatuproject.com",
+                    "url": "https://api.matux.com",
                     "description": "生产环境"
                 }
             ],

@@ -79,7 +79,7 @@ export REDIS_PASSWORD=
 export REDIS_DB=1
 
 # 许可证配置
-export LICENSE_ISSUER=iMatuProject
+export LICENSE_ISSUER=MatuX
 export LICENSE_AUDIENCE=enterprise
 export SECRET_KEY=your-super-secret-key-here
 export LICENSE_EXPIRATION_HOURS=24
@@ -206,7 +206,7 @@ handler = auth.Recovery(handler)
 | `REDIS_PORT` | 6379 | Redis端口 |
 | `REDIS_PASSWORD` | "" | Redis密码 |
 | `REDIS_DB` | 1 | Redis数据库编号 |
-| `LICENSE_ISSUER` | iMatuProject | JWT发行人 |
+| `LICENSE_ISSUER` | MatuX | JWT发行人 |
 | `LICENSE_AUDIENCE` | enterprise | JWT受众 |
 | `SECRET_KEY` | your-secret-key-here | JWT签名密钥 |
 | `LICENSE_EXPIRATION_HOURS` | 24 | 默认过期小时数 |

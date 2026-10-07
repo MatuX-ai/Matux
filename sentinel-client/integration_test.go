@@ -347,7 +347,7 @@ func TestCompatibilityWithPythonSystem(t *testing.T) {
 	
 	cfg := &config.SentinelConfig{
 		License: config.LicenseConfig{
-			Issuer:    "iMatuProject",  // 与Python配置保持一致
+			Issuer:    "MatuX",  // 与Python配置保持一致
 			Audience:  "enterprise",    // 与Python配置保持一致
 			SecretKey: "test-secret-key-for-compatibility",
 		},

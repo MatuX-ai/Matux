@@ -3,6 +3,10 @@ export const environment = {
   apiUrl: 'https://api.imatuproject.com',
   wsUrl: 'wss://api.imatuproject.com',
 
+  /** 【P4-A】选课记录相关 API 配置 */
+  enrollmentsApiUrl: '/api/v1/student/enrollments',
+  useRealEnrollmentsApi: true,
+
   /** OAuth 应用凭证 — CI/CD 注入实际值 */
   oauth: {
     github: {

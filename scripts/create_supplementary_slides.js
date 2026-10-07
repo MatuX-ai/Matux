@@ -4,8 +4,8 @@ const PptxGenJS = require('pptxgenjs');
 const pptx = new PptxGenJS();
 
 // 设置演示文稿属性
-pptx.title = 'MatuX商业计划书 - 补充幻灯片';
-pptx.author = 'iMato Team';
+pptx.title = 'MatuX STEM 学习工具商业计划书 - 补充幻灯片';
+pptx.author = 'MatuX Lab';
 
 // 定义配色方案
 const colors = {

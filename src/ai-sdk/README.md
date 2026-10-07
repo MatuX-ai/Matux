@@ -26,14 +26,14 @@ import { AIServiceClient, ModelProvider, ProgrammingLanguage } from './ai-sdk';
 // 创建客户端实例
 const client = new AIServiceClient({
   baseUrl: 'http://localhost:8000',
-  accessToken: 'your-access-token'
+  accessToken: 'your-access-token',
 });
 
 // 生成代码
 const response = await client.generateCode({
   prompt: '创建一个计算斐波那契数列的函数',
   provider: ModelProvider.OPENAI,
-  language: ProgrammingLanguage.PYTHON
+  language: ProgrammingLanguage.PYTHON,
 });
 
 console.log(response.code);
@@ -50,11 +50,12 @@ const reactComponent = await client.generateWithTemplate(
 );
 
 // 生成API服务
-const apiService = await client.generateWithTemplate(
-  'apiService',
-  'UserService',
-  ['getUserById', 'createUser', 'updateUser', 'deleteUser']
-);
+const apiService = await client.generateWithTemplate('apiService', 'UserService', [
+  'getUserById',
+  'createUser',
+  'updateUser',
+  'deleteUser',
+]);
 ```
 
 ## 核心概念
@@ -95,6 +96,7 @@ constructor(config: AIServiceConfig)
 ```
 
 配置选项：
+
 - `baseUrl`: API基础URL
 - `accessToken`: 访问令牌（可选）
 - `timeout`: 超时时间（毫秒，默认30000）
@@ -112,7 +114,7 @@ const response = await client.generateCode({
   provider: ModelProvider.OPENAI,
   language: ProgrammingLanguage.PYTHON,
   temperature: 0.7,
-  maxTokens: 2000
+  maxTokens: 2000,
 });
 ```
 
@@ -146,19 +148,19 @@ SDK提供了常用的代码生成模板：
 
 ```typescript
 // React组件
-client.generateReactComponent('Button', '{ onClick: () => void; children: React.ReactNode }')
+client.generateReactComponent('Button', '{ onClick: () => void; children: React.ReactNode }');
 
 // API服务
-client.generateApiService('UserService', ['getUser', 'createUser', 'updateUser'])
+client.generateApiService('UserService', ['getUser', 'createUser', 'updateUser']);
 
 // 数据模型
-client.generateDataModel('User', ['id', 'name', 'email'])
+client.generateDataModel('User', ['id', 'name', 'email']);
 
 // 工具函数
-client.generateUtilityFunction('validateEmail', '验证邮箱格式')
+client.generateUtilityFunction('validateEmail', '验证邮箱格式');
 
 // 单元测试
-client.generateUnitTest('calculateSum', ['正数相加', '负数相加', '零值处理'])
+client.generateUnitTest('calculateSum', ['正数相加', '负数相加', '零值处理']);
 ```
 
 ## 错误处理
@@ -188,7 +190,7 @@ import { AngularAIService } from './ai-sdk/angular-wrapper';
   template: `
     <button (click)="generateCode()">生成代码</button>
     <pre>{{ generatedCode }}</pre>
-  `
+  `,
 })
 export class CodeGeneratorComponent {
   generatedCode = '';
@@ -202,7 +204,7 @@ export class CodeGeneratorComponent {
     try {
       const response = await this.aiService.generateCode({
         prompt: '创建一个简单的计算器函数',
-        provider: ModelProvider.OPENAI
+        provider: ModelProvider.OPENAI,
       });
       this.generatedCode = response.code;
     } catch (error) {
@@ -219,7 +221,7 @@ export class CodeGeneratorComponent {
 ```typescript
 // 切换不同的AI提供商
 client.updateConfig({
-  baseUrl: 'https://new-api.example.com'
+  baseUrl: 'https://new-api.example.com',
 });
 
 // 切换访问令牌
@@ -232,7 +234,7 @@ client.setAccessToken('new-access-token');
 import { HttpClient } from './ai-sdk/http-client';
 
 const customClient = new HttpClient('https://api.example.com', 5000, {
-  'X-Custom-Header': 'value'
+  'X-Custom-Header': 'value',
 });
 ```
 
@@ -242,11 +244,11 @@ const customClient = new HttpClient('https://api.example.com', 5000, {
 const requests = [
   { prompt: '创建排序函数', language: ProgrammingLanguage.PYTHON },
   { prompt: '创建搜索函数', language: ProgrammingLanguage.JAVASCRIPT },
-  { prompt: '创建验证函数', language: ProgrammingLanguage.TYPESCRIPT }
+  { prompt: '创建验证函数', language: ProgrammingLanguage.TYPESCRIPT },
 ];
 
 const responses = await client.generateCodeBatch(requests);
-responses.forEach(response => {
+responses.forEach((response) => {
   console.log(response.code);
 });
 ```
@@ -285,7 +287,7 @@ async function getCachedModels(client) {
   if (cache.has(cacheKey)) {
     return cache.get(cacheKey);
   }
-  
+
   const models = await client.getAvailableModels();
   cache.set(cacheKey, models);
   return models;
@@ -298,11 +300,11 @@ async function getCachedModels(client) {
 // 添加请求监控
 async function monitoredGenerateCode(client, request) {
   const startTime = Date.now();
-  
+
   try {
     const response = await client.generateCode(request);
     const duration = Date.now() - startTime;
-    
+
     console.log(`代码生成成功，耗时: ${duration}ms`);
     return response;
   } catch (error) {
@@ -344,7 +346,7 @@ async function monitoredGenerateCode(client, request) {
 const client = new AIServiceClient({
   baseUrl: 'http://localhost:8000',
   accessToken: 'token',
-  timeout: 60000
+  timeout: 60000,
 });
 
 // 监控请求

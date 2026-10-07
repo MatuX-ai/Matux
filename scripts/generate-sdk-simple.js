@@ -303,7 +303,7 @@ export function create\${className}(client) {
     console.log('🔗 生成索引文件...');
     
     const indexPath = path.join(this.sdkDir, 'src', 'index.ts');
-    const indexContent = `// iMatuProject TypeScript SDK Entry Point
+    const indexContent = `// MatuX TypeScript SDK Entry Point
 export * from './client';
 export * from './types';
 export * from './config';

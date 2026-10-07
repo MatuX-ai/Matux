@@ -70,7 +70,7 @@ CMD ["bash"]
 EXPOSE 8000
 
 # 元数据
-LABEL maintainer="iMatu Development Team"
+LABEL maintainer="MatuX Lab"
 LABEL version="1.0"
 LABEL description="3D Model Library Python Tools"
 LABEL com.imato.project="3d-model-library"

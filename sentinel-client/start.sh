@@ -22,7 +22,7 @@ fi
 export REDIS_HOST=${REDIS_HOST:-localhost}
 export REDIS_PORT=${REDIS_PORT:-6379}
 export REDIS_DB=${REDIS_DB:-1}
-export LICENSE_ISSUER=${LICENSE_ISSUER:-iMatuProject}
+export LICENSE_ISSUER=${LICENSE_ISSUER:-MatuX}
 export LICENSE_AUDIENCE=${LICENSE_AUDIENCE:-enterprise}
 export SECRET_KEY=${SECRET_KEY:-super-secret-key-change-in-production}
 export PORT=${PORT:-8080}

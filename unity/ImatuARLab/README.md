@@ -65,4 +65,4 @@ ImatuARLab/
 
 ---
 **项目创建时间**: 2026年2月28日
-**项目负责人**: iMatuProject开发团队
+**项目负责人**: MatuX Lab

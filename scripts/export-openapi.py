@@ -62,12 +62,12 @@ def export_openapi_spec():
         # 添加额外的元数据
         openapi_schema.update({
             "info": {
-                "title": app.title or "iMatu API",
+                "title": app.title or "MatuX API",
                 "version": app.version or "1.0.0",
-                "description": app.description or "iMatu教育平台API",
+                "description": app.description or "MatuX STEM 学习工具API",
                 "contact": {
-                    "name": "iMatuProject Team",
-                    "email": "support@imatuproject.com"
+                    "name": "MatuX Lab",
+                    "email": "support@matux.com"
                 },
                 "license": {
                     "name": "MIT",
@@ -80,7 +80,7 @@ def export_openapi_spec():
                     "description": "开发环境"
                 },
                 {
-                    "url": "https://api.imatuproject.com",
+                    "url": "https://api.matux.com",
                     "description": "生产环境"
                 }
             ],

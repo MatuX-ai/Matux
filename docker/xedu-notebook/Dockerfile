@@ -4,7 +4,7 @@
 FROM jupyter/base-notebook:python-3.9.18
 
 # 维护者信息
-LABEL maintainer="iMato Team <support@imato.edu>"
+LABEL maintainer="MatuX Lab <support@matux.edu>"
 LABEL description="XEdu Toolchain for AI Education"
 LABEL version="2.0.1"
 

@@ -2,7 +2,7 @@
 
 ## 简介
 
-Design Tokens 是 iMatuProject 项目的原子化设计变量系统，为整个项目提供一致的设计规范。该系统包含颜色、字体、间距、圆角和阴影等核心设计变量，支持 TypeScript 和 SCSS 双格式输出。
+Design Tokens 是 MatuX 项目的原子化设计变量系统，为整个项目提供一致的设计规范。该系统包含颜色、字体、间距、圆角和阴影等核心设计变量，支持 TypeScript 和 SCSS 双格式输出。
 
 ## 目录结构
 
@@ -29,6 +29,7 @@ src/
 ## 核心特性
 
 ### 🎨 颜色系统 (Colors)
+
 - **主色系列**: primary, primary-light, primary-dark
 - **辅助色系列**: secondary, secondary-light, secondary-dark
 - **状态色**: success, warning, error, info
@@ -37,12 +38,14 @@ src/
 - **背景色**: background, surface, divider
 
 ### 🔤 字体系统 (Fonts)
+
 - **字体族**: sans-serif, serif, mono, system
 - **字号层级**: h1-h6, body-large/medium/small, caption
 - **行高**: tight, snug, normal, relaxed, loose
 - **字重**: thin, light, regular, medium, bold, black
 
 ### 📏 间距系统 (Spacing)
+
 - **基础网格**: 基于 8px 网格系统
 - **微小间距**: xxs (2px), xs (4px)
 - **基础间距**: sm (8px) 到 xxl (32px)
@@ -50,12 +53,14 @@ src/
 - **特大间距**: huge (80px), giant (96px), massive (128px)
 
 ### 🔄 圆角系统 (Border Radius)
+
 - **基础圆角**: none, xs, sm, md, lg, xl, full
 - **组件圆角**: button, input, card, modal, badge, avatar
 - **方向性圆角**: top, bottom, left, right
 - **响应式圆角**: mobile, desktop
 
-###  shadows 阴影系统 (Shadows)
+### shadows 阴影系统 (Shadows)
+
 - **基础阴影**: none, xs, sm, md, lg, xl
 - **组件阴影**: button, card, modal, dropdown, tooltip
 - **状态阴影**: focus, error, success, warning
@@ -181,7 +186,7 @@ const multipleShadows = shadows.utils.multiple(shadows.baseShadows.sm, shadows.s
 ✅ 变量命名语义清晰  
 ✅ 支持主题切换扩展  
 ✅ TypeScript 类型安全  
-✅ SCSS 语法正确  
+✅ SCSS 语法正确
 
 ## 维护指南
 
@@ -196,4 +201,4 @@ const multipleShadows = shadows.utils.multiple(shadows.baseShadows.sm, shadows.s
 
 ---
 
-*iMatuProject Design System v1.0*
+_MatuX Design System v1.0_

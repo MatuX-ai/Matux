@@ -1,4 +1,4 @@
-# iMatuProject Flutter Design System
+# MatuX Flutter Design System
 
 This Flutter application demonstrates the integration of Design Tokens with Flutter's ThemeData system.
 
