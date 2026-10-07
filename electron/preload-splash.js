@@ -46,6 +46,13 @@ contextBridge.exposeInMainWorld('splashAPI', {
   },
 
   /**
+   * 【复用模式修复】用户点击“强制重启”按钮：主进程杀掉占位进程并重新拉起后端
+   */
+  forceRestart: () => {
+    ipcRenderer.send('splash-force-restart');
+  },
+
+  /**
    * 退出应用
    */
   quit: () => {

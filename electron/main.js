@@ -909,6 +909,22 @@ app.whenReady().then(async () => {
     }
   });
 
+  // 【复用模式修复】Splash 上的“强制重启”按钮：异步执行 forceRestart（用户已点 Splash 上的弹窗按钮 = 确认）
+  ipcMain.on('splash-force-restart', async () => {
+    console.log('[Main] User confirmed force-restart from splash');
+    if (!appInitializer?.backendManager) {
+      console.error('[ERROR] appInitializer/backendManager 未就绪，无法执行 forceRestart');
+      return;
+    }
+    try {
+      // splash 点击 = 用户已确认，传入 skipUserConfirmation: true
+      const ok = await appInitializer.backendManager.forceRestart(null, { skipUserConfirmation: true });
+      console.log(`[Main] forceRestart 结果: ${ok ? '成功' : '失败'}`);
+    } catch (err) {
+      console.error('[ERROR] splash-force-restart 执行异常:', err.message);
+    }
+  });
+
   // 1. 注册自定义协议 handler（必须在创建窗口之前）
   registerAppProtocol();
 

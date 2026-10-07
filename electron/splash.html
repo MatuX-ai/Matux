@@ -782,6 +782,13 @@
       border: 1px solid #334155;
     }
     .alert-btn-secondary:hover { background: rgba(148, 163, 184, 0.08); color: #e2e8f0; }
+    /* 【复用模式修复】警告色（橙黄），区别于"错误"主按钮（红）和"忽略"（灰） */
+    .alert-btn-warning {
+      background: #f59e0b;
+      color: #1f2937;
+      font-weight: 600;
+    }
+    .alert-btn-warning:hover { background: #fbbf24; }
 
     /* ====== 启动弹窗红警闪烁（科幻游戏风格）====== */
     body.alarm-active .splash-container {
@@ -1418,6 +1425,8 @@
       <div class="alert-message" id="alertMessage">健康检查失败，请检查后端服务。</div>
       <div class="alert-actions">
         <button class="alert-btn alert-btn-secondary" id="alertDismiss">忽略</button>
+        <!-- 【复用模式修复】仅在"端口被外部进程占用"场景显示，强提示会杀后端进程 -->
+        <button class="alert-btn alert-btn-warning" id="alertForce" style="display:none">⚠ 强制重启</button>
         <button class="alert-btn alert-btn-primary" id="alertRetry">重试</button>
       </div>
     </div>
@@ -1981,7 +1990,7 @@
     /**
      * 显示错误（独立报警弹窗 + 启动弹窗红警闪烁）
      */
-    function showError(title, message, showRetry) {
+    function showError(title, message, showRetry, options = {}) {
       // 兼容旧 DOM 引用，同步旧错误区域文本但不显示
       if (errorTitle) errorTitle.textContent = title;
       if (errorMessage) errorMessage.textContent = message;
@@ -1992,10 +2001,16 @@
       const alertOverlay = document.getElementById('alertOverlay');
       const alertRetry = document.getElementById('alertRetry');
       const alertDismiss = document.getElementById('alertDismiss');
+      // 【复用模式修复】强制重启按钮（复用外部进程场景下显示）
+      const alertForce = document.getElementById('alertForce');
 
       if (alertTitle) alertTitle.textContent = title;
       if (alertMessage) alertMessage.textContent = message;
       if (alertRetry) alertRetry.style.display = showRetry ? 'inline-block' : 'none';
+      // 【复用模式修复】默认隐藏，showError 调用方可通过 options.showForce = true 开启
+      if (alertForce) {
+        alertForce.style.display = options.showForce ? 'inline-block' : 'none';
+      }
       if (alertOverlay) alertOverlay.classList.add('visible');
 
       // 2. 启动弹窗进入红警闪烁状态（科幻游戏风格）
@@ -2027,6 +2042,22 @@
           }
           if (!document.body.classList.contains('mini-mode')) {
             enterMiniMode();
+          }
+        });
+      }
+      // 【复用模式修复】点击"强制重启"按钮：先隐藏弹窗，发送 IPC 给主进程执行 forceRestart
+      if (alertForce && !alertForce.dataset.bound) {
+        alertForce.dataset.bound = '1';
+        alertForce.addEventListener('click', function() {
+          hideAlert();
+          addLogLine('User confirmed force-restart -> killing 占用进程...', 'warn');
+          progressBar.classList.add('indeterminate');
+          progressBar.style.width = '';
+          progressText.textContent = '0%';
+          if (window.splashAPI && window.splashAPI.forceRestart) {
+            window.splashAPI.forceRestart();
+          } else {
+            addLogLine('splashAPI.forceRestart 未实现', 'error');
           }
         });
       }
@@ -2259,6 +2290,24 @@
             break;
           case 'backend-error':
             showError('后端启动失败', detail || '后端进程异常退出，请检查日志。', true);
+            break;
+          // 【复用模式修复】端口被外部进程占用但探活成功：提示用户是否接管
+          case 'reuse-foreign':
+            showError(
+              '检测到端口被外部进程占用',
+              '端口 8000 被其他 Python 进程（PID ' + (data.pid || '?') + '）占用，但该服务能响应健康检查。\n\n当前为复用状态，自动重启无法生效。\n点 “强制重启” 会杀掉该进程后重新拉起本应用管理的后端。',
+              false,
+              { showForce: true }
+            );
+            break;
+          // 【复用模式修复】复用场景下连续 N 次健康检查未通过
+          case 'reuse-backend-unstable':
+            showError(
+              '复用后端不可达',
+              (text || '检测到复用后端连续健康检查未通过') + '\n\n点 “强制重启” 可杀掉占位进程后重新拉起本应用管理的后端。',
+              false,
+              { showForce: true }
+            );
             break;
           case 'degraded-mode':
             addLogLine('Some features may be limited: course sync, AI tutor, progress saving', 'warn');

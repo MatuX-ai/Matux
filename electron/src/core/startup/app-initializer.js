@@ -26,6 +26,13 @@ const {
   BACKEND_PORT,
 } = require('../../../config/constants');
 
+// 【复用模式修复】复用场景下健康检查连续失败阈值
+//   仅在“后台 owner 是外部进程（reuse-foreign）”时起作用：连续失败 N 次才推送升级通知，
+//   不再触发 _attemptBackendRestart（重复重启对外部进程无效）。
+const REUSE_FAILURE_THRESHOLD = 3;
+// 升级通知最小间隔（毫秒）：避免短时间内重复发送同一个告警
+const REUSE_ESCALATION_COOLDOWN_MS = 5 * 60 * 1000;
+
 /**
  * @typedef {Object} AppInitializerOptions
  * @property {Function} sendSplashStatus - 发送 Splash 状态回调
@@ -70,6 +77,10 @@ class AppInitializer {
     this.isQuitting = false;
     this._isRestarting = false;  // 防止重复重启
     this.isDegraded = false;     // 降级模式标记（无 Python 后端时为 true）
+    // 【复用模式修复】健康检查连续失败计数器：达阈值后推送升级通知（仅警告，不自动重启）
+    this._reuseHealthFailureCount = 0;
+    // 上次升级通知时间戳，避免短时间内重复打扰用户
+    this._reuseLastEscalationAt = 0;
     this.tray = null;
     this.pluginInstaller = null;
     this.pluginDownloader = null;
@@ -355,18 +366,87 @@ class AppInitializer {
 
   /**
    * 尝试重启后端
+   * 【复用模式修复】在 reusedExisting=true 时短路：
+   *   - stop() 会跳过复用进程，不杀掉后台 owner
+   *   - 重新调 start() 还会走同一条复用路径，“重复盯死”无意义
+   *   - 改为仅累加失败计数，达阈值后推送升级通知，要求用户决定。
    */
   async _attemptBackendRestart() {
     if (this._isRestarting) return;
     this._isRestarting = true;
-    
+
     try {
+      // 【复用模式】被占用进程不是我们 spawn 的，不能“重启”，仅警告
+      if (this.backendManager?.reusedExisting) {
+        this._reuseHealthFailureCount += 1;
+        console.warn(`[WARN] 复用模式健康检查失败 ${this._reuseHealthFailureCount}/${REUSE_FAILURE_THRESHOLD}，不触发自动重启`);
+        if (this._reuseHealthFailureCount >= REUSE_FAILURE_THRESHOLD) {
+          this._maybeEscalateReuseBackendIssue();
+          // 重置计数器，避免重复告警轰炸；下一次失败重新计起
+          this._reuseHealthFailureCount = 0;
+        }
+        return;
+      }
+
       console.log('[INFO] 尝试自动重启后端...');
       if (this.backendManager) {
         await this.backendManager.restart();
       }
     } catch (err) {
       console.error('[ERROR] 自动重启后端失败:', err.message);
+    } finally {
+      this._isRestarting = false;
+    }
+  }
+
+  /**
+   * 【复用模式修复】复用场景下的升级通知：受冷却时间约束，避免被反复打扰。
+   *   - 走前端 app-event 通道
+   *   - 同时走托盘通知（多通路到达）
+   */
+  _maybeEscalateReuseBackendIssue() {
+    const now = Date.now();
+    if (now - this._reuseLastEscalationAt < REUSE_ESCALATION_COOLDOWN_MS) {
+      console.log(`[INFO] 复用后端升级通知在冷却期内（${REUSE_ESCALATION_COOLDOWN_MS / 1000}s），跳过`);
+      return;
+    }
+    this._reuseLastEscalationAt = now;
+    const message = '复用后端连续多次健康检查未通过，但无法自动重启（不是由本应用创建的后端）。请通过托盘或主窗口的“强制重启”后端功能处理。';
+    console.warn(`[WARN] 复用后端不稳定：${message}`);
+    // 推 splash 弹窗（点“强制重启”可一键接管）
+    this.sendSplashStatus?.('reuse-backend-unstable', message, 95);
+    const mainWindow = this.windowManager?.getMainWindow();
+    if (mainWindow && !mainWindow.isDestroyed()) {
+      mainWindow.webContents.send('app-event', {
+        type: 'reuse-backend-unstable',
+        message,
+      });
+    }
+    if (typeof this.showTrayNotification === 'function') {
+      try { this.showTrayNotification('后端服务不稳定', message); } catch (_) { /* 静默失败不影响主流程 */ }
+    }
+  }
+
+  /**
+   * 【复用模式修复】用户确认后触发 force-restart。
+   *   - 调 backendManager.forceRestart() 杀进程 + spawn
+   *   - 重置计数
+   */
+  async _attemptBackendForceRestart() {
+    if (this._isRestarting) return false;
+    this._isRestarting = true;
+    try {
+      console.log('[INFO] 用户触发强制重启后端...');
+      if (this.backendManager) {
+        const ok = await this.backendManager.forceRestart(this.sendSplashStatus);
+        this._reuseHealthFailureCount = 0;
+        this._reuseLastEscalationAt = 0;
+        return !!ok;
+      }
+      return false;
+    } catch (err) {
+      console.error('[ERROR] 强制重启后端失败:', err.message);
+      return false;
     } finally {
       this._isRestarting = false;
     }
@@ -495,7 +575,11 @@ class AppInitializer {
       { label: `${statusEmoji} ${statusLabel}`, enabled: false },
       ...moduleItems,
       { type: 'separator' },
-      { label: '重启后端', click: () => this._restartBackend() },
+      // 【复用模式修复】复用场景下仅靠 stop() 不足以重启后端，需走 forceRestart
+      {
+        label: this.backendManager?.reusedExisting ? '⚠️ 强制重启后端' : '重启后端',
+        click: () => this._restartBackend(),
+      },
       { label: '学习提醒', click: () => this.showTrayNotification('学习提醒', '该继续今天的学习啦！') },
       { type: 'separator' },
       { label: '检查更新', click: () => this._checkForUpdates() },
@@ -610,10 +694,23 @@ class AppInitializer {
 
   /**
    * 重启后端
+   * 【复用模式修复】复用场景下调用 forceRestart()（后台进程需要被强杀后才能重启）。
+   * 非复用场景保留原行为：stop -> wait -> start。
    */
   async _restartBackend() {
     const { BACKEND_RESTART_DELAY } = require('../../../config/constants');
     if (!this.backendManager) return;
+
+    // 复用模式下：走强制重启（会杀占位进程）
+    if (this.backendManager.reusedExisting) {
+      console.log('[INFO] 托盘重启落在复用模式下，转交 forceRestart');
+      const ok = await this._attemptBackendForceRestart();
+      if (!ok) {
+        console.warn('[WARN] 托盘强制重启失败，请检查日志');
+      }
+      return;
+    }
+
     this.backendManager.stop();
     await new Promise((r) => setTimeout(r, BACKEND_RESTART_DELAY));
     await this.backendManager.start(this.sendSplashStatus);

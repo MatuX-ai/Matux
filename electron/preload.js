@@ -120,6 +120,12 @@ contextBridge.exposeInMainWorld('electronAPI', {
   restartBackend: () => ipcRenderer.invoke('backend:restart'),
 
   /**
+   * 【复用模式修复】强制重启后端（杀占位进程后重新拉起）
+   * @param {boolean} [confirmed=false] 调用方是否已获得用户确认（必须为 true）
+   */
+  forceRestartBackend: (confirmed = false) => ipcRenderer.invoke('backend:force-restart', { confirmed }),
+
+  /**
    * 查询当前是否处于降级模式（无 Python 后端）
    */
   isBackendDegraded: () => ipcRenderer.invoke('backend:is-degraded'),

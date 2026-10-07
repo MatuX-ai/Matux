@@ -27,6 +27,8 @@ function createTrayManager(options = {}) {
     onShowNotification = () => {},
     onCheckUpdates = () => {},
     onQuit = () => {},
+    // 【复用模式修复】是否处于复用外部进程的状态。返回 'foreign' / 'own-previous' / null
+    getReuseMode = () => null,
   } = options;
 
   let tray = null;
@@ -92,7 +94,8 @@ function createTrayManager(options = {}) {
       ...buildModuleSummaryItems(),
       { type: 'separator' },
       {
-        label: '重启后端',
+        // 【复用模式修复】复用外部进程时需要强调“强制重启”（仅靠 stop 不够）
+        label: (getReuseMode?.() === 'foreign') ? '⚠️ 强制重启后端' : '重启后端',
         click: () => onRestartBackend(),
       },
       {

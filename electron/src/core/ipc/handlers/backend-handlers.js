@@ -81,6 +81,27 @@ function createBackendHandlers(options = {}) {
       }
     });
 
+    // 【复用模式修复】强制重启后端（会杀占位进程）
+    //   - 用于复用外部进程的场景：用户明确授权后强制接管端口
+    //   - 如果后端不是复用模式，仍走正常 stop+start（复用模式下不会被走 stop）
+    safeHandle('backend:force-restart', async (_evt, payload = {}) => {
+      try {
+        if (!backendManager) {
+          return { success: false, error: '后端管理器未初始化' };
+        }
+        // 复用模式下需调用方提供 skipUserConfirmation=true（表示用户已确认）
+        const ok = await backendManager.forceRestart(null, {
+          skipUserConfirmation: payload?.confirmed === true,
+        });
+        return ok
+          ? { success: true, message: '强制重启完成' }
+          : { success: false, error: '强制重启失败或未获得用户确认（请传 { confirmed: true }）' };
+      } catch (err) {
+        console.error('[ERROR] 强制重启 IPC 处理失败:', err.message);
+        return { success: false, error: err.message };
+      }
+    });
+
     // 【降级模式】查询当前是否处于降级模式
     safeHandle('backend:is-degraded', () => {
       return {
