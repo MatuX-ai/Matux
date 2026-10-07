@@ -130,6 +130,6 @@ GPL-3.0 License
 
 ---
 
-**开发团队**: iMatu Development Team  
+**开发团队**: MatuX Lab  
 **版本**: 1.0.0  
 **更新时间**: 2026-03-14

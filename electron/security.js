@@ -22,7 +22,10 @@ const ALLOWED_EXTERNAL_DOMAINS = [
 ];
 
 // 允许访问的基础路径
-const ALLOWED_BASE_PATHS = [];
+const ALLOWED_BASE_PATHS = [
+  path.resolve(__dirname, '..', 'backend'),   // 后端目录
+  path.resolve(__dirname, '..', 'dist'),       // 前端构建输出
+];
 
 /**
  * 验证外部 URL 是否安全
@@ -109,8 +112,12 @@ function validateFilePath(filePath, allowedBasePaths = []) {
  * @returns {string[]}
  */
 function getAllowedPaths() {
-  // 可以从环境变量或配置文件读取
-  return ALLOWED_BASE_PATHS;
+  const paths = [...ALLOWED_BASE_PATHS];
+  // 生产环境追加 resources 目录下的 backend
+  if (process.resourcesPath) {
+    paths.push(path.join(process.resourcesPath, 'backend'));
+  }
+  return paths;
 }
 
 /**

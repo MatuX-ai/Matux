@@ -106,15 +106,20 @@ const SPLASH_WINDOW_SIZE = {
 
 /**
  * 获取后端目录路径
- * 开发环境: __dirname = electron/config/，向上两级到项目根，再进入 backend/
  * 生产环境: backend 作为 extraResources 打包在 resources/backend/
+ * 开发环境(从源码跑 electron .): electron 的 process.resourcesPath 指向 electron/dist/，
+ *   没有 backend 资源；若该路径下找不到 backend/main_ai_edu.py，回退到源码 backend/。
  */
 function getBackendDir() {
+  const fs = require('fs');
   if (!isDev && process.resourcesPath) {
     // 生产环境: backend 在 resources/backend/ 目录（extraResources 配置）
-    return path.join(process.resourcesPath, 'backend');
+    const packaged = path.join(process.resourcesPath, 'backend');
+    if (fs.existsSync(path.join(packaged, 'main_ai_edu.py'))) {
+      return packaged;
+    }
   }
-  // 开发环境: 从 electron/config/ 向上两级到项目根
+  // 开发环境/回退: 从 electron/config/ 向上两级到项目根
   return path.join(__dirname, '..', '..', 'backend');
 }
 
@@ -127,12 +132,17 @@ function getBackendDir() {
  *   path.join(__dirname, '..', '..', 'dist', 'imatuproject') 解析为 app.asar/dist/imatuproject，
  *   但 asar 里压根没有 dist（asar files 不支持 ../dist/xxx 这种跳出 app 根的相对路径），
  *   导致 fs.existsSync(index.html) 始终 false → 主窗口 ready-to-show 永远不触发 → 蓝屏无显示。
+ *
+ * 【修复开发模式蓝屏】从源码运行 electron . 时 process.resourcesPath 指向 electron/dist/，
+ *   没有 dist 资源；同样回退到源码路径。
  */
 function getFrontendIndex() {
+  const fs = require('fs');
   if (!isDev && process.resourcesPath) {
-    return path.join(process.resourcesPath, 'dist', 'imatuproject', 'index.html');
+    const packaged = path.join(process.resourcesPath, 'dist', 'imatuproject', 'index.html');
+    if (fs.existsSync(packaged)) return packaged;
   }
-  // 开发环境：从 electron/config/ 向上两级到项目根
+  // 开发环境/回退：从 electron/config/ 向上两级到项目根
   return path.join(__dirname, '..', '..', 'dist', 'imatuproject', 'index.html');
 }
 
@@ -140,8 +150,10 @@ function getFrontendIndex() {
  * 获取前端目录路径（用于自定义协议 handler）
  */
 function getFrontendDir() {
+  const fs = require('fs');
   if (!isDev && process.resourcesPath) {
-    return path.join(process.resourcesPath, 'dist', 'imatuproject');
+    const packaged = path.join(process.resourcesPath, 'dist', 'imatuproject');
+    if (fs.existsSync(path.join(packaged, 'index.html'))) return packaged;
   }
   return path.join(__dirname, '..', '..', 'dist', 'imatuproject');
 }

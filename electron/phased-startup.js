@@ -1,6 +1,6 @@
 /**
  * Electron 分阶段后端启动增强模块
- * 
+ *
  * 优化点:
  * 1. Tier 0 就绪后立即显示主窗口 (< 10 秒)
  * 2. Tier 1 后台静默预加载 (不阻塞 UI)
@@ -11,6 +11,7 @@
 const { ipcMain, BrowserWindow, Tray, Menu } = require('electron');
 const path = require('path');
 const fs = require('fs');
+const { safeHandle } = require('./src/core/ipc/handlers/index');
 
 // ==================== 配置 ====================
 
@@ -167,7 +168,7 @@ function createPhasedStartup(startBackendFn, createMainWindowFn, sendSplashStatu
  */
 function registerModuleIpcHandlers() {
   // 获取模块状态
-  ipcMain.handle('backend:get-module-status', async () => {
+  safeHandle('backend:get-module-status', async () => {
     try {
       const response = await fetch(MODULES_URL);
       if (!response.ok) return null;
@@ -179,7 +180,7 @@ function registerModuleIpcHandlers() {
   });
   
   // 激活模块
-  ipcMain.handle('backend:activate-module', async (event, moduleName) => {
+  safeHandle('backend:activate-module', async (event, moduleName) => {
     try {
       const response = await fetch(`${MODULES_URL}/${moduleName}/activate`, {
         method: 'POST',

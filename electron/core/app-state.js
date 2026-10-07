@@ -244,6 +244,8 @@ class AppState extends EventEmitter {
       '_isQuitting',
       '_isStarting',
       '_restartAttempts',
+      // 诊断信息：未处理的 Promise 拒绝记录
+      'lastUnhandledRejection',
     ];
     const sanitized = {};
     for (const key of allowedKeys) {

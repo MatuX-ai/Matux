@@ -1,3 +1,4 @@
+const { safeHandle } = require('./src/core/ipc/handlers/index');
 /**
  * Electron 插件安装器
  * 
@@ -836,7 +837,7 @@ function registerPluginInstallerIPC(installer) {
   /**
    * 安装插件
    */
-  ipcMain.handle('plugin:install', async (event, mxpPath, options) => {
+  safeHandle('plugin:install', async (event, mxpPath, options) => {
     try {
       const installOptions = new InstallOptions(options);
       
@@ -862,7 +863,7 @@ function registerPluginInstallerIPC(installer) {
   /**
    * 卸载插件
    */
-  ipcMain.handle('plugin:uninstall', async (event, pluginId, keepData) => {
+  safeHandle('plugin:uninstall', async (event, pluginId, keepData) => {
     try {
       const result = await installer.uninstall(pluginId, keepData);
       return result;
@@ -877,7 +878,7 @@ function registerPluginInstallerIPC(installer) {
   /**
    * 获取已安装插件列表
    */
-  ipcMain.handle('plugin:installed', async () => {
+  safeHandle('plugin:installed', async () => {
     try {
       const plugins = [];
       const files = fs.readdirSync(installer.pluginsDir);
@@ -899,7 +900,7 @@ function registerPluginInstallerIPC(installer) {
   /**
    * 启用/禁用插件
    */
-  ipcMain.handle('plugin:toggle', async (event, pluginId, enabled) => {
+  safeHandle('plugin:toggle', async (event, pluginId, enabled) => {
     try {
       const info = installer._getInstallInfo(pluginId);
       

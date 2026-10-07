@@ -1,3 +1,4 @@
+const { safeHandle } = require('./src/core/ipc/handlers/index');
 /**
  * Electron 插件下载器
  * 
@@ -643,7 +644,7 @@ function registerPluginDownloaderIPC(downloader) {
   /**
    * 下载插件
    */
-  ipcMain.handle('plugin:download', async (event, pluginId, version, url, options) => {
+  safeHandle('plugin:download', async (event, pluginId, version, url, options) => {
     try {
       const downloadOptions = new DownloadOptions(options);
       
@@ -666,7 +667,7 @@ function registerPluginDownloaderIPC(downloader) {
   /**
    * 取消下载
    */
-  ipcMain.handle('plugin:download-cancel', async (event, pluginId, version) => {
+  safeHandle('plugin:download-cancel', async (event, pluginId, version) => {
     downloader.cancel(pluginId, version);
     return { success: true };
   });
@@ -674,7 +675,7 @@ function registerPluginDownloaderIPC(downloader) {
   /**
    * 暂停下载
    */
-  ipcMain.handle('plugin:download-pause', async (event, pluginId, version) => {
+  safeHandle('plugin:download-pause', async (event, pluginId, version) => {
     downloader.pause(pluginId, version);
     return { success: true };
   });
@@ -682,7 +683,7 @@ function registerPluginDownloaderIPC(downloader) {
   /**
    * 恢复下载
    */
-  ipcMain.handle('plugin:download-resume', async (event, pluginId, version) => {
+  safeHandle('plugin:download-resume', async (event, pluginId, version) => {
     downloader.resume(pluginId, version);
     return { success: true };
   });
@@ -690,7 +691,7 @@ function registerPluginDownloaderIPC(downloader) {
   /**
    * 获取下载进度
    */
-  ipcMain.handle('plugin:download-progress', async (event, pluginId, version) => {
+  safeHandle('plugin:download-progress', async (event, pluginId, version) => {
     const progress = downloader.getProgress(pluginId, version);
     return { success: true, progress };
   });
@@ -698,7 +699,7 @@ function registerPluginDownloaderIPC(downloader) {
   /**
    * 获取所有下载任务
    */
-  ipcMain.handle('plugin:download-tasks', async () => {
+  safeHandle('plugin:download-tasks', async () => {
     const tasks = downloader.getAllTasks();
     return { success: true, tasks };
   });

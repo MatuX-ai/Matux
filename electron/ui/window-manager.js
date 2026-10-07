@@ -7,7 +7,7 @@
 const { BrowserWindow } = require('electron');
 const fs = require('fs');
 const path = require('path');
-const { DEFAULT_WINDOW_SIZE, APP_PATHS, isDev, WINDOW_STATE_FILE } = require('../config/constants');
+const { DEFAULT_WINDOW_SIZE, APP_PATHS, APP_PROTOCOL, isDev, WINDOW_STATE_FILE } = require('../config/constants');
 
 /**
  * 加载窗口状态
@@ -79,7 +79,8 @@ class WindowManager {
       this.mainWindow.loadURL('http://localhost:4200');
       this.mainWindow.webContents.openDevTools();
     } else {
-      this.mainWindow.loadFile(APP_PATHS.frontendIndex);
+      // 【启动优化】使用自定义协议 app:// 代替 file://
+      this.mainWindow.loadURL(`${APP_PROTOCOL}://./index.html`);
     }
 
     // 主窗口就绪后关闭 Splash
@@ -178,15 +179,16 @@ class WindowManager {
     if (url.startsWith('http://') || url.startsWith('https://')) {
       childWin.loadURL(url);
     } else if (url.startsWith('/') || isDev) {
-      const baseUrl = isDev ? 'http://localhost:4200' : APP_PATHS.frontendIndex;
+      const baseUrl = isDev ? 'http://localhost:4200' : `${APP_PROTOCOL}://./index.html`;
       const hashPath = url.startsWith('/') ? url : `/${url}`;
       if (isDev) {
         childWin.loadURL(`${baseUrl}#${hashPath}`);
       } else {
-        childWin.loadFile(baseUrl, { hash: hashPath });
+        childWin.loadURL(`${baseUrl}#${hashPath}`);
       }
     } else {
-      childWin.loadFile(APP_PATHS.frontendIndex, { hash: url.startsWith('/') ? url : `/${url}` });
+      const hashPath = url.startsWith('/') ? url : `/${url}`;
+      childWin.loadURL(`${APP_PROTOCOL}://./index.html#${hashPath}`);
     }
 
     this.childWindows.add(childWin);
