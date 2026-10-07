@@ -59,8 +59,9 @@ function safeReadFile(filePath) {
     // 路径规范化
     const normalizedPath = path.normalize(filePath);
 
-    // 防止路径遍历攻击
-    if (normalizedPath.includes('..') || normalizedPath.includes('~')) {
+    // 防止路径遍历攻击（按路径段检查，避免误拒含 ".." 子串的合法目录名）
+    const segments = normalizedPath.split(path.sep);
+    if (segments.includes('..') || normalizedPath.includes('~')) {
       return { success: false, error: '非法路径字符' };
     }
 
@@ -142,7 +143,7 @@ function validateFileContent(content, fileType) {
 
   // 验证类型匹配
   const typeMap = {
-    course: 'blockly-project|python-project|circuit-project',
+    course: 'course|blockly-project|python-project|circuit-project',
     blockly: 'blockly-project',
     circuit: 'circuit-project',
   };
@@ -158,8 +159,8 @@ function validateFileContent(content, fileType) {
   }
 
   // 验证必需字段
-  if (!content.data) {
-    return { valid: false, error: '缺少 data 字段' };
+  if (!content.data || (typeof content.data === 'object' && Object.keys(content.data).length === 0)) {
+    return { valid: false, error: '缺少 data 字段或 data 为空' };
   }
 
   if (!content.metadata) {

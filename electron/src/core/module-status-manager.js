@@ -1,3 +1,4 @@
+const { safeHandle } = require('./ipc/handlers/index');
 /**
  * 模块状态管理器
  * 负责后端模块状态的预加载、轮询和托盘状态更新
@@ -272,7 +273,7 @@ function updateTrayStatus() {
  */
 function registerModuleStatusIpcHandlers(ipcMain) {
   // 获取模块状态
-  ipcMain.handle('module:get-status', () => {
+  safeHandle('module:get-status', () => {
     return {
       overall: backendOverallStatus,
       modules: moduleStatusCache,
@@ -280,7 +281,7 @@ function registerModuleStatusIpcHandlers(ipcMain) {
   });
 
   // 手动刷新模块状态
-  ipcMain.handle('module:refresh', async () => {
+  safeHandle('module:refresh', async () => {
     await pollModuleStatus();
     return {
       overall: backendOverallStatus,

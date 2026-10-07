@@ -6,6 +6,7 @@
  */
 
 const { ipcMain } = require('electron');
+const { safeHandle } = require('./ipc-utils');
 
 /**
  * 创建插件 IPC Handlers
@@ -74,7 +75,7 @@ function createPluginHandlers(options = {}) {
    */
   function registerDeviceHandlers() {
     // 获取设备评估报告
-    ipcMain.handle('plugin:device-profile', async () => {
+    safeHandle('plugin:device-profile', async () => {
       try {
         if (!loadDeviceProfile) {
           return { success: false, error: '设备评估模块未初始化' };
@@ -99,7 +100,7 @@ function createPluginHandlers(options = {}) {
     });
 
     // 重新评估设备
-    ipcMain.handle('plugin:reassess-device', async () => {
+    safeHandle('plugin:reassess-device', async () => {
       try {
         if (!assessDevice) {
           return { success: false, error: '设备评估模块未初始化' };
@@ -125,7 +126,7 @@ function createPluginHandlers(options = {}) {
     });
 
     // 评估指定插件兼容性
-    ipcMain.handle('plugin:assess', async (_event, pluginId) => {
+    safeHandle('plugin:assess', async (_event, pluginId) => {
       try {
         if (!loadDeviceProfile) {
           return { success: false, error: '设备评估模块未初始化' };
@@ -170,7 +171,7 @@ function createPluginHandlers(options = {}) {
    */
   function registerRecommenderHandlers() {
     // 获取个性化推荐
-    ipcMain.handle('plugin:recommendations', async (_event, options = {}) => {
+    safeHandle('plugin:recommendations', async (_event, options = {}) => {
       try {
         if (!pluginRecommender) {
           return { success: false, error: '推荐引擎未初始化' };
@@ -183,7 +184,7 @@ function createPluginHandlers(options = {}) {
     });
 
     // 记录插件使用事件
-    ipcMain.handle('plugin:record-usage', async (_event, pluginId, eventType, duration = 0, features = {}) => {
+    safeHandle('plugin:record-usage', async (_event, pluginId, eventType, duration = 0, features = {}) => {
       try {
         if (!pluginRecommender) {
           return { success: false, error: '推荐引擎未初始化' };
@@ -196,7 +197,7 @@ function createPluginHandlers(options = {}) {
     });
 
     // 设置插件评分
-    ipcMain.handle('plugin:set-rating', async (_event, pluginId, rating, feedback = '') => {
+    safeHandle('plugin:set-rating', async (_event, pluginId, rating, feedback = '') => {
       try {
         if (!pluginRecommender) {
           return { success: false, error: '推荐引擎未初始化' };
@@ -209,7 +210,7 @@ function createPluginHandlers(options = {}) {
     });
 
     // 获取热门插件
-    ipcMain.handle('plugin:popular', async (_event, limit = 10) => {
+    safeHandle('plugin:popular', async (_event, limit = 10) => {
       try {
         if (!pluginRecommender) {
           return { success: false, error: '推荐引擎未初始化' };
@@ -222,7 +223,7 @@ function createPluginHandlers(options = {}) {
     });
 
     // 获取插件详情
-    ipcMain.handle('plugin:details', async (_event, pluginId) => {
+    safeHandle('plugin:details', async (_event, pluginId) => {
       try {
         if (!pluginRecommender) {
           return { success: false, error: '推荐引擎未初始化' };
@@ -235,7 +236,7 @@ function createPluginHandlers(options = {}) {
     });
 
     // 获取插件使用统计
-    ipcMain.handle('plugin:usage-stats', async (_event, pluginId) => {
+    safeHandle('plugin:usage-stats', async (_event, pluginId) => {
       try {
         if (!pluginRecommender || !pluginStoreEnhancer) {
           return { success: false, error: '推荐引擎未初始化' };
@@ -254,7 +255,7 @@ function createPluginHandlers(options = {}) {
    */
   function registerInstallConfigHandlers() {
     // 获取首次运行引导步骤
-    ipcMain.handle('plugin:first-run-guide', async () => {
+    safeHandle('plugin:first-run-guide', async () => {
       try {
         if (!installConfigManager) {
           return { success: false, error: '安装配置管理器未初始化' };
@@ -267,7 +268,7 @@ function createPluginHandlers(options = {}) {
     });
 
     // 检查是否已完成首次运行
-    ipcMain.handle('plugin:first-run-check', async () => {
+    safeHandle('plugin:first-run-check', async () => {
       try {
         if (!installConfigManager) {
           return { success: false, error: '安装配置管理器未初始化' };
@@ -280,7 +281,7 @@ function createPluginHandlers(options = {}) {
     });
 
     // 标记首次运行完成
-    ipcMain.handle('plugin:first-run-complete', async () => {
+    safeHandle('plugin:first-run-complete', async () => {
       try {
         if (!installConfigManager) {
           return { success: false, error: '安装配置管理器未初始化' };
@@ -293,7 +294,7 @@ function createPluginHandlers(options = {}) {
     });
 
     // 获取核心模块列表
-    ipcMain.handle('plugin:core-modules', async () => {
+    safeHandle('plugin:core-modules', async () => {
       try {
         if (!installConfigManager) {
           return { success: false, error: '安装配置管理器未初始化' };
@@ -306,7 +307,7 @@ function createPluginHandlers(options = {}) {
     });
 
     // 获取可选模块列表
-    ipcMain.handle('plugin:optional-modules', async (_event, deviceClass = null) => {
+    safeHandle('plugin:optional-modules', async (_event, deviceClass = null) => {
       try {
         if (!installConfigManager) {
           return { success: false, error: '安装配置管理器未初始化' };
@@ -319,7 +320,7 @@ function createPluginHandlers(options = {}) {
     });
 
     // 获取推荐模块
-    ipcMain.handle('plugin:recommended-modules', async (_event, deviceClass) => {
+    safeHandle('plugin:recommended-modules', async (_event, deviceClass) => {
       try {
         if (!installConfigManager) {
           return { success: false, error: '安装配置管理器未初始化' };
@@ -332,7 +333,7 @@ function createPluginHandlers(options = {}) {
     });
 
     // 获取安装统计
-    ipcMain.handle('plugin:install-stats', async () => {
+    safeHandle('plugin:install-stats', async () => {
       try {
         if (!installConfigManager) {
           return { success: false, error: '安装配置管理器未初始化' };
@@ -345,7 +346,7 @@ function createPluginHandlers(options = {}) {
     });
 
     // 添加已安装模块
-    ipcMain.handle('plugin:installed-module', async (_event, moduleId) => {
+    safeHandle('plugin:installed-module', async (_event, moduleId) => {
       try {
         if (!installConfigManager) {
           return { success: false, error: '安装配置管理器未初始化' };
@@ -358,7 +359,7 @@ function createPluginHandlers(options = {}) {
     });
 
     // 跳过模块安装
-    ipcMain.handle('plugin:skip-module', async (_event, moduleId) => {
+    safeHandle('plugin:skip-module', async (_event, moduleId) => {
       try {
         if (!installConfigManager) {
           return { success: false, error: '安装配置管理器未初始化' };
@@ -376,7 +377,7 @@ function createPluginHandlers(options = {}) {
    */
   function registerStoreEnhancerHandlers() {
     // 添加插件评论
-    ipcMain.handle('plugin:add-review', async (_event, reviewData) => {
+    safeHandle('plugin:add-review', async (_event, reviewData) => {
       try {
         if (!pluginStoreEnhancer) {
           return { success: false, error: '插件商店增强组件未初始化' };
@@ -389,7 +390,7 @@ function createPluginHandlers(options = {}) {
     });
 
     // 获取插件评论
-    ipcMain.handle('plugin:get-reviews', async (_event, pluginId, options = {}) => {
+    safeHandle('plugin:get-reviews', async (_event, pluginId, options = {}) => {
       try {
         if (!pluginStoreEnhancer) {
           return { success: false, error: '插件商店增强组件未初始化' };
@@ -402,7 +403,7 @@ function createPluginHandlers(options = {}) {
     });
 
     // 获取插件平均评分
-    ipcMain.handle('plugin:average-rating', async (_event, pluginId) => {
+    safeHandle('plugin:average-rating', async (_event, pluginId) => {
       try {
         if (!pluginStoreEnhancer) {
           return { success: false, error: '插件商店增强组件未初始化' };
@@ -415,7 +416,7 @@ function createPluginHandlers(options = {}) {
     });
 
     // 标记评论为有帮助
-    ipcMain.handle('plugin:mark-helpful', async (_event, reviewId, pluginId) => {
+    safeHandle('plugin:mark-helpful', async (_event, reviewId, pluginId) => {
       try {
         if (!pluginStoreEnhancer) {
           return { success: false, error: '插件商店增强组件未初始化' };
@@ -428,7 +429,7 @@ function createPluginHandlers(options = {}) {
     });
 
     // 检查插件更新
-    ipcMain.handle('plugin:check-updates', async (_event, installedPlugins) => {
+    safeHandle('plugin:check-updates', async (_event, installedPlugins) => {
       try {
         if (!pluginStoreEnhancer) {
           return { success: false, error: '插件商店增强组件未初始化' };
@@ -442,7 +443,7 @@ function createPluginHandlers(options = {}) {
     });
 
     // 获取待处理更新通知
-    ipcMain.handle('plugin:pending-notifications', async () => {
+    safeHandle('plugin:pending-notifications', async () => {
       try {
         if (!pluginStoreEnhancer) {
           return { success: false, error: '插件商店增强组件未初始化' };
@@ -455,7 +456,7 @@ function createPluginHandlers(options = {}) {
     });
 
     // 关闭更新通知
-    ipcMain.handle('plugin:dismiss-notification', async (_event, notificationId) => {
+    safeHandle('plugin:dismiss-notification', async (_event, notificationId) => {
       try {
         if (!pluginStoreEnhancer) {
           return { success: false, error: '插件商店增强组件未初始化' };
@@ -468,7 +469,7 @@ function createPluginHandlers(options = {}) {
     });
 
     // 标记通知已安装
-    ipcMain.handle('plugin:mark-installed', async (_event, notificationId) => {
+    safeHandle('plugin:mark-installed', async (_event, notificationId) => {
       try {
         if (!pluginStoreEnhancer) {
           return { success: false, error: '插件商店增强组件未初始化' };
@@ -481,7 +482,7 @@ function createPluginHandlers(options = {}) {
     });
 
     // 获取商店统计
-    ipcMain.handle('plugin:store-stats', async () => {
+    safeHandle('plugin:store-stats', async () => {
       try {
         if (!pluginStoreEnhancer) {
           return { success: false, error: '插件商店增强组件未初始化' };

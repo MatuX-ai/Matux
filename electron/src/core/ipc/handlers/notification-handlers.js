@@ -1,3 +1,4 @@
+const { safeHandle } = require('./ipc-utils');
 /**
  * 通知系统 IPC Handlers
  * @module ipc/handlers/notification-handlers
@@ -27,7 +28,7 @@ function createNotificationHandlers(options = {}) {
    */
   function register() {
     // 显示通知
-    ipcMain.handle('show-notification', async (_event, title, body, category) => {
+    safeHandle('show-notification', async (_event, title, body, category) => {
       if (showNotification) {
         showNotification(title, body, category, getMainWindow());
       } else {
@@ -44,7 +45,7 @@ function createNotificationHandlers(options = {}) {
     });
 
     // 显示错误通知
-    ipcMain.handle('show-error-notification', async (_event, title, body) => {
+    safeHandle('show-error-notification', async (_event, title, body) => {
       if (showNotification) {
         showNotification(title, body, 'error', getMainWindow());
       } else {
@@ -61,7 +62,7 @@ function createNotificationHandlers(options = {}) {
     });
 
     // 显示成功通知
-    ipcMain.handle('show-success-notification', async (_event, title, body) => {
+    safeHandle('show-success-notification', async (_event, title, body) => {
       if (showNotification) {
         showNotification(title, body, 'success', getMainWindow());
       } else {

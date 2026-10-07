@@ -7,14 +7,19 @@
  */
 
 const { autoUpdater } = require('electron-updater');
-const { ipcMain, BrowserWindow } = require('electron');
-const log = require('electron-log');
+const { ipcMain, BrowserWindow, Notification } = require('electron');
+
+// 使用 console 替代 electron-log（避免额外依赖）
+const log = {
+  info: (...args) => console.log('[AutoUpdater]', ...args),
+  warn: (...args) => console.warn('[AutoUpdater]', ...args),
+  error: (...args) => console.error('[AutoUpdater]', ...args),
+};
 
 class AutoUpdaterService {
   constructor() {
     // 配置日志
-    autoUpdater.logger = log;
-    autoUpdater.logger.transports.file.level = 'info';
+    autoUpdater.logger = console;
 
     // 自动下载
     autoUpdater.autoDownload = false;
@@ -30,6 +35,10 @@ class AutoUpdaterService {
    * 绑定事件
    */
   bindEvents() {
+    // 防止重复绑定事件监听器
+    if (this._eventsBound) return;
+    this._eventsBound = true;
+
     autoUpdater.on('checking-for-update', () => {
       log.info('[AutoUpdater] 正在检查更新...');
       this.sendStatusToWindow('checking-for-update');
@@ -81,7 +90,6 @@ class AutoUpdaterService {
    * 显示更新通知
    */
   showUpdateNotification(info) {
-    const { Notification } = require('electron');
     if (Notification.isSupported()) {
       const notification = new Notification({
         title: 'MatuX 更新可用',
@@ -155,10 +163,12 @@ class AutoUpdaterService {
   }
 
   /**
-   * 禁用版本号
+   * 禁用自动更新
    */
   disableVersion() {
-    autoUpdater.autoUpdater.disable();
+    autoUpdater.autoDownload = false;
+    autoUpdater.autoInstallOnAppQuit = false;
+    log.info('[AutoUpdater] 已禁用自动更新');
   }
 }
 

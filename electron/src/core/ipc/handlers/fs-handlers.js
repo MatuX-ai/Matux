@@ -7,6 +7,7 @@
 
 const fs = require('fs');
 const path = require('path');
+const { safeHandle } = require('./ipc-utils');
 
 /**
  * 创建文件系统 IPC Handlers
@@ -46,7 +47,7 @@ function createFsHandlers(options = {}) {
     const { ipcMain } = require('electron');
 
     // 读取文件
-    ipcMain.handle('fs-read-file', async (_event, filePath) => {
+    safeHandle('fs-read-file', async (_event, filePath) => {
       let validation;
       try {
         validation = deps.validateFilePath?.(filePath);
@@ -65,7 +66,7 @@ function createFsHandlers(options = {}) {
     });
 
     // 写入文件
-    ipcMain.handle('fs-write-file', async (_event, filePath, content) => {
+    safeHandle('fs-write-file', async (_event, filePath, content) => {
       let validation;
       try {
         validation = deps.validateFilePath?.(filePath);
@@ -92,7 +93,7 @@ function createFsHandlers(options = {}) {
     });
 
     // 保存对话框
-    ipcMain.handle('fs-save-dialog', async (_event, opts) => {
+    safeHandle('fs-save-dialog', async (_event, opts) => {
       if (!deps.mainWindow) return { success: false, error: '主窗口未就绪' };
       const defaultOpts = {
         title: '保存文件',
@@ -106,7 +107,7 @@ function createFsHandlers(options = {}) {
     });
 
     // 打开对话框
-    ipcMain.handle('fs-open-dialog', async () => {
+    safeHandle('fs-open-dialog', async () => {
       if (!deps.mainWindow) return { success: false, error: '主窗口未就绪' };
       const result = await deps.dialog.showOpenDialog(deps.mainWindow, {
         title: '打开项目文件',
@@ -129,7 +130,7 @@ function createFsHandlers(options = {}) {
     });
 
     // 列出目录
-    ipcMain.handle('fs-list-dir', async (_event, dirPath) => {
+    safeHandle('fs-list-dir', async (_event, dirPath) => {
       // 参数验证
       if (!dirPath || typeof dirPath !== 'string') {
         return { success: false, error: '目录路径不能为空' };
@@ -179,7 +180,7 @@ function createFsHandlers(options = {}) {
     });
 
     // 创建目录
-    ipcMain.handle('fs-make-dir', async (_event, dirPath) => {
+    safeHandle('fs-make-dir', async (_event, dirPath) => {
       let validation;
       try {
         validation = deps.validateFilePath?.(dirPath);
@@ -198,7 +199,7 @@ function createFsHandlers(options = {}) {
     });
 
     // 删除文件或目录
-    ipcMain.handle('fs-delete-file', async (_event, targetPath) => {
+    safeHandle('fs-delete-file', async (_event, targetPath) => {
       let validation;
       try {
         validation = deps.validateFilePath?.(targetPath);
@@ -225,7 +226,7 @@ function createFsHandlers(options = {}) {
     });
 
     // 检查文件存在
-    ipcMain.handle('fs-file-exists', async (_event, targetPath) => {
+    safeHandle('fs-file-exists', async (_event, targetPath) => {
       let validation;
       try {
         validation = deps.validateFilePath?.(targetPath);
@@ -243,7 +244,7 @@ function createFsHandlers(options = {}) {
     });
 
     // 获取文件信息
-    ipcMain.handle('fs-get-file-info', async (_event, filePath) => {
+    safeHandle('fs-get-file-info', async (_event, filePath) => {
       let validation;
       try {
         validation = deps.validateFilePath?.(filePath);
@@ -278,7 +279,7 @@ function createFsHandlers(options = {}) {
     });
 
     // 选择文件夹对话框
-    ipcMain.handle('fs-select-directory', async () => {
+    safeHandle('fs-select-directory', async () => {
       if (!deps.mainWindow) return { success: false, error: '主窗口未就绪' };
       try {
         const result = await deps.dialog.showOpenDialog(deps.mainWindow, {

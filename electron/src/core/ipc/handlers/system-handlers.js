@@ -4,6 +4,7 @@
  */
 
 const { ipcMain } = require('electron');
+const { safeHandle } = require('./ipc-utils');
 
 // 允许通过 IPC 读取的环境变量白名单（禁止读取敏感信息）
 const ALLOWED_ENV_KEYS = [
@@ -54,7 +55,7 @@ function createSystemHandlers(options = {}) {
    */
   function register() {
     // 获取应用信息
-    ipcMain.handle('get-app-info', () => {
+    safeHandle('get-app-info', () => {
       if (!app) {
         return {
           version: 'unknown',
@@ -74,13 +75,13 @@ function createSystemHandlers(options = {}) {
     });
 
     // 检查更新
-    ipcMain.handle('check-for-updates', async () => {
+    safeHandle('check-for-updates', async () => {
       // 更新检查逻辑由主文件处理，此处仅返回成功
       return { success: true };
     });
 
     // 获取应用路径
-    ipcMain.handle('get-app-path', (_event, name) => {
+    safeHandle('get-app-path', (_event, name) => {
       if (app) {
         try {
           return { success: true, path: app.getPath(name) };
@@ -92,7 +93,7 @@ function createSystemHandlers(options = {}) {
     });
 
     // 获取进程信息
-    ipcMain.handle('get-process-info', () => {
+    safeHandle('get-process-info', () => {
       return {
         success: true,
         pid: process.pid,
@@ -104,7 +105,7 @@ function createSystemHandlers(options = {}) {
     });
 
     // 获取环境变量（带白名单限制）
-    ipcMain.handle('get-env', (_event, key) => {
+    safeHandle('get-env', (_event, key) => {
       if (!key || typeof key !== 'string') {
         return { success: false, error: '未指定键名' };
       }
@@ -118,7 +119,7 @@ function createSystemHandlers(options = {}) {
     });
 
     // 获取当前工作目录
-    ipcMain.handle('get-cwd', () => {
+    safeHandle('get-cwd', () => {
       return { success: true, path: process.cwd() };
     });
   }

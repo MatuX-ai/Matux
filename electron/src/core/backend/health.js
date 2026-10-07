@@ -6,7 +6,14 @@
 const http = require('http');
 
 // 【P3-4修复】统一魔法数字为具名常量
-const HTTP_REQUEST_TIMEOUT = 5000;  // 健康检查超时 5 秒
+const HTTP_REQUEST_TIMEOUT = 5000;  // 通用 HTTP 请求超时 5 秒
+
+// 【启动优化 P0-4】健康检查专用超时：1.5s
+// 原因：后端 uvicorn listen 后，FastAPI 路由通常 < 200ms 就绪
+// - 命中：< 200ms 返回成功
+// - 未命中：1.5s 内必失败（连接拒绝 / 404），不会拖启动
+// 原 5s 超时在 backoff 场景下最坏会被拖 15s（3 路径串行扫描）
+const HEALTH_CHECK_TIMEOUT_MS = 1500;
 
 /**
  * 使用 Node.js http 模块进行 HTTP 请求
@@ -73,6 +80,7 @@ function httpGet(url, timeout = HTTP_REQUEST_TIMEOUT) {
 /**
  * 健康检查 - 使用 Node.js http 模块
  * 支持多种检查方式和更好的错误处理
+ * 【启动优化 P0-4】单次超时 5s → 1.5s，减少失败路径扫描时间
  * @param {string} backendHost 后端主机
  * @param {number} backendPort 后端端口
  * @param {string[]} checkPaths 要检查的路径列表
@@ -82,8 +90,9 @@ async function healthCheck(backendHost = 'localhost', backendPort = 8000, checkP
   const paths = checkPaths || ['/health', '/', '/docs'];
 
   for (const path of paths) {
+    // 【启动优化 P0-4】使用专用短超时 HEALTH_CHECK_TIMEOUT_MS
     const url = `http://${backendHost}:${backendPort}${path}`;
-    const result = await httpGet(url, HTTP_REQUEST_TIMEOUT);
+    const result = await httpGet(url, HEALTH_CHECK_TIMEOUT_MS);
 
     if (result.success) {
       // 检查响应状态码（包括重定向）

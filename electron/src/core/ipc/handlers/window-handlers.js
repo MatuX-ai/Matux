@@ -4,6 +4,7 @@
  */
 
 const { ipcMain } = require('electron');
+const { safeHandle } = require('./ipc-utils');
 
 /**
  * 验证坐标值是否有效
@@ -54,7 +55,7 @@ function createWindowHandlers(options = {}) {
    */
   function register() {
     // 获取窗口尺寸
-    ipcMain.handle('get-window-size', () => {
+    safeHandle('get-window-size', () => {
       const win = getMainWindow();
       if (!win) {
         return { width: 1400, height: 900 };
@@ -64,13 +65,13 @@ function createWindowHandlers(options = {}) {
     });
 
     // 窗口最小化
-    ipcMain.handle('window-minimize', () => {
+    safeHandle('window-minimize', () => {
       getMainWindow()?.minimize();
       return { success: true };
     });
 
     // 窗口最大化/还原
-    ipcMain.handle('window-maximize', () => {
+    safeHandle('window-maximize', () => {
       const win = getMainWindow();
       if (win?.isMaximized()) {
         win.unmaximize();
@@ -81,13 +82,13 @@ function createWindowHandlers(options = {}) {
     });
 
     // 窗口关闭
-    ipcMain.handle('window-close', () => {
+    safeHandle('window-close', () => {
       getMainWindow()?.close();
       return { success: true };
     });
 
     // 是否最大化
-    ipcMain.handle('window-is-maximized', () => {
+    safeHandle('window-is-maximized', () => {
       return {
         success: true,
         isMaximized: getMainWindow()?.isMaximized() || false
@@ -95,7 +96,7 @@ function createWindowHandlers(options = {}) {
     });
 
     // 全屏切换
-    ipcMain.handle('window-toggle-fullscreen', () => {
+    safeHandle('window-toggle-fullscreen', () => {
       const win = getMainWindow();
       if (win) {
         win.setFullScreen(!win.isFullScreen());
@@ -104,7 +105,7 @@ function createWindowHandlers(options = {}) {
     });
 
     // 获取窗口位置
-    ipcMain.handle('get-window-position', () => {
+    safeHandle('get-window-position', () => {
       const win = getMainWindow();
       if (!win) {
         return { x: 0, y: 0 };
@@ -114,7 +115,7 @@ function createWindowHandlers(options = {}) {
     });
 
     // 设置窗口位置（带参数验证）
-    ipcMain.handle('set-window-position', (_event, x, y) => {
+    safeHandle('set-window-position', (_event, x, y) => {
       const validX = validateCoordinate(x);
       const validY = validateCoordinate(y);
       
@@ -130,7 +131,7 @@ function createWindowHandlers(options = {}) {
     });
 
     // 设置窗口尺寸（带参数验证）
-    ipcMain.handle('set-window-size', (_event, width, height) => {
+    safeHandle('set-window-size', (_event, width, height) => {
       const validWidth = validateDimension(width, 100, 9999);
       const validHeight = validateDimension(height, 100, 9999);
       

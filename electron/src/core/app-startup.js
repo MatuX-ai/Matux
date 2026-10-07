@@ -76,7 +76,7 @@ function createAppStartup(options = {}) {
         title: '缺少 Python 环境',
         message: 'MatuX 需要 Python 3.9 或更高版本',
         detail: '检测到您的系统未安装 Python 或版本过低。\n\n您可以选择手动指定 Python 位置，或下载安装。',
-        buttons: ['下载 Python', '手动选择 Python 位置', '暂不处理'],
+        buttons: ['下载 Python', '手动选择 Python 位置', '跳过'],
         defaultId: 0,
         cancelId: 2,
       });

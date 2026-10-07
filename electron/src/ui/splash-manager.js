@@ -119,4 +119,8 @@ function createSplashManager(options = {}) {
   };
 }
 
-module.exports = { createSplashManager };
+// 【修复 #6】同时导出工厂函数和 SplashManager 别名（兼容旧 API 引用）
+// 原因：旧版 electron/ui/splash-manager.js 是一个 class，当前版本重构为工厂函数，
+// 两者的公共方法签名一致（create/show/close/report/getWindow/isDestroyed），
+// 可以在调用处互换使用，避免上游代码因导入名变更而崩溃。
+module.exports = { createSplashManager, SplashManager: createSplashManager };
