@@ -17,12 +17,12 @@
     <div class="status-group">
       <div
         class="status-item backend-status"
-        [matTooltip]="isBackendRunning ? 'Python 后端运行正常' : '后端未启动，点击重试'"
-        [class.clickable]="!isBackendRunning"
-        (click)="!isBackendRunning && onRefreshBackend()"
+        [matTooltip]="backendTooltip()"
+        [class.clickable]="backendStatus !== 'healthy'"
+        (click)="backendStatus !== 'healthy' && onRefreshBackend()"
       >
         <mat-icon [class]="getBackendStatusClass()">
-          {{ isBackendRunning ? 'check_circle' : 'error' }}
+          {{ backendIcon() }}
         </mat-icon>
         <span class="status-text">{{ getBackendStatusText() }}</span>
       </div>

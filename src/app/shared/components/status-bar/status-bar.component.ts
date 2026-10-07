@@ -16,6 +16,7 @@ import { Component, inject, OnDestroy, OnInit } from '@angular/core';
 import { MatIconModule } from '@angular/material/icon';
 import { MatTooltipModule } from '@angular/material/tooltip';
 import { Subject, takeUntil } from 'rxjs';
+import { filter, map, pairwise } from 'rxjs/operators';
 
 import { AuthService } from '../../../core/services/auth.service';
 import { ModuleStatusService, TierGroupStatus } from '../../../core/services/module-status.service';
@@ -40,10 +41,17 @@ export class StatusBarComponent implements OnInit, OnDestroy {
 
   // 基础状态
   isOnline = navigator.onLine;
-  isBackendRunning = false;
+  // 【P0 修复】三态后端状态：unknown 区分 healthy/unhealthy，
+  //   避免初次加载时（fetchHealth 还没回来）被误判为「后端未启动」。
+  backendStatus: 'unknown' | 'healthy' | 'unhealthy' = 'unknown';
   backendVersion = 'Python 3.12';
   appVersion = 'v1.0.0';
   currentUser: string = '';
+
+  /** 便捷派生属性：模板里 isBackendRunning 仍然可读，但语义仅在 healthy 时为 true */
+  get isBackendRunning(): boolean {
+    return this.backendStatus === 'healthy';
+  }
 
   // 模块状态（懒加载架构）
   tierGroups: TierGroupStatus[] = [];
@@ -58,6 +66,10 @@ export class StatusBarComponent implements OnInit, OnDestroy {
     window.addEventListener('online', this.onlineHandler);
     window.addEventListener('offline', this.offlineHandler);
 
+    // 【P0 修复】主动触发一次健康检查，让状态尽快从「检测中」跳到「运行中」。
+    //   避免用户在路由切换时看到长时间的「后端检测中…」占位。
+    this.moduleStatusService.fetchHealth();
+
     // 获取当前用户
     this.authService.currentUser$.pipe(takeUntil(this.destroy$)).subscribe((user) => {
       if (user) {
@@ -66,8 +78,17 @@ export class StatusBarComponent implements OnInit, OnDestroy {
     });
 
     // 订阅模块状态
-    this.moduleStatusService.healthy$.pipe(takeUntil(this.destroy$)).subscribe((healthy) => {
-      this.isBackendRunning = healthy;
+    // 【P0 修复】跳过 BehaviorSubject 的初始 false（未检测时），
+    //   只有当 healthy$ 有过一次“状态变化”才更新 UI，避免初次订阅被
+    //   初始默认值 false 误判为「后端未启动」。
+    this.moduleStatusService.healthy$.pipe(
+      pairwise(),
+      filter(([prev, curr]) => prev !== curr),
+      map(([, curr]) => curr),
+      takeUntil(this.destroy$)
+    ).subscribe((healthy) => {
+      // 【P0 修复】保留三态映射：healthy → 'healthy' / false → 'unhealthy'。
+      this.backendStatus = healthy ? 'healthy' : 'unhealthy';
     });
 
     this.moduleStatusService.tierGroups$.pipe(takeUntil(this.destroy$)).subscribe((groups) => {
@@ -135,18 +156,40 @@ export class StatusBarComponent implements OnInit, OnDestroy {
 
   /**
    * 获取后端状态文本
+   * 【P0 修复】unknown → 「检测中…」；unhealthy → 「后端未启动」；healthy → 模块摘要 / 运行中
    */
   getBackendStatusText(): string {
-    if (!this.isBackendRunning) return '后端未启动';
+    if (this.backendStatus === 'unknown') return '后端检测中…';
+    if (this.backendStatus === 'unhealthy') return '后端未启动';
     if (this.moduleSummaryText) return this.moduleSummaryText;
     return `${this.backendVersion} 运行中`;
   }
 
   /**
    * 获取后端状态颜色类
+   * 【P0 修复】unknown → status-checking（中性灰），区别于 healthy / unhealthy
    */
   getBackendStatusClass(): string {
-    return this.isBackendRunning ? 'status-running' : 'status-stopped';
+    if (this.backendStatus === 'unknown') return 'status-checking';
+    return this.backendStatus === 'healthy' ? 'status-running' : 'status-stopped';
+  }
+
+  /**
+   * 【P0 修复】后端状态图标 — 三态
+   */
+  backendIcon(): string {
+    if (this.backendStatus === 'unknown') return 'sync';
+    if (this.backendStatus === 'healthy') return 'check_circle';
+    return 'error';
+  }
+
+  /**
+   * 【P0 修复】后端状态 tooltip — 三态
+   */
+  backendTooltip(): string {
+    if (this.backendStatus === 'unknown') return '后端状态检测中…';
+    if (this.backendStatus === 'healthy') return 'Python 后端运行正常';
+    return '后端未启动，点击重试';
   }
 
   /**

@@ -15,8 +15,8 @@ import { MatButtonModule } from '@angular/material/button';
 import { MatCardModule } from '@angular/material/card';
 import { MatIconModule } from '@angular/material/icon';
 import { MatProgressBarModule } from '@angular/material/progress-bar';
-import { Subject, timer } from 'rxjs';
-import { switchMap, take, takeUntil } from 'rxjs/operators';
+import { Subject } from 'rxjs';
+import { takeUntil } from 'rxjs/operators';
 
 import { AuthService } from '../../../core/services/auth.service';
 import {
@@ -70,29 +70,24 @@ export class TeachingSuggestionsComponent implements OnInit, OnDestroy {
     // 【P3-3 修复】如果没有历史报告，自动运行一次初始诊断，避免空状态
     if (this.diagnosisService.getHistory().length === 0 && !this.report) {
       this.runDiagnosis();
-      // 【P3-3 修复】使用 RxJS timer + Zone.run 双重保险跳出 loading
-      // 既保证 3 秒后一定退出 loading 状态，又确保在 Angular Zone 内触发变更检测
-      this.zone.runOutsideAngular(() => {
-        timer(3000)
-          .pipe(
-            take(1),
-            takeUntil(this.destroy$),
-            switchMap(() => {
-              this.zone.run(() => {
-                if (this.isDiagnosing) {
-                  if (!this.report) {
-                    // 没有收到任何报告 → 构造一个空报告以跳出 loading
-                    this.report = this.buildEmptyReport();
-                  }
-                  this.isDiagnosing = false;
-                  this.cdr.markForCheck();
-                }
-              });
-              return [];
-            })
-          )
-          .subscribe();
-      });
+      // 【P1 修复】强制兑底：4s 后无论如何强制跳出「诊断中」状态
+      //   - 上一版 3s zone.runOutsideAngular 可能在某些环境下 markForCheck 未生效
+      //   - 这里改用 NgZone.run + detectChanges 双重保险
+      //   - 并且手动构建报告并 next 到 report$，保证即使是空报告也能渲染
+      setTimeout(() => {
+        this.zone.run(() => {
+          if (this.isDiagnosing) {
+            if (!this.report) {
+              const emptyReport = this.buildEmptyReport();
+              this.report = emptyReport;
+              this.history = this.diagnosisService.getHistory();
+              this.buildDimensionList(emptyReport);
+            }
+            this.isDiagnosing = false;
+            this.cdr.detectChanges();
+          }
+        });
+      }, 4_000);
     }
   }
 

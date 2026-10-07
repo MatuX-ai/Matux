@@ -5,7 +5,7 @@
  */
 import { CommonModule } from '@angular/common';
 import { HttpClient } from '@angular/common/http';
-import { AfterViewInit, Component, ElementRef, OnDestroy, OnInit, ViewChild } from '@angular/core';
+import { AfterViewInit, ChangeDetectorRef, Component, ElementRef, NgZone, OnDestroy, OnInit, ViewChild } from '@angular/core';
 import { MatButtonModule } from '@angular/material/button';
 import { MatCardModule } from '@angular/material/card';
 import { MatIconModule } from '@angular/material/icon';
@@ -14,9 +14,24 @@ import { MatSnackBar } from '@angular/material/snack-bar';
 import { MatTooltipModule } from '@angular/material/tooltip';
 import { ActivatedRoute } from '@angular/router';
 import { Subject } from 'rxjs';
-import { takeUntil } from 'rxjs/operators';
+import { takeUntil, timeout } from 'rxjs/operators';
 import * as THREE from 'three';
 import { OrbitControls } from 'three/examples/jsm/controls/OrbitControls.js';
+
+/**
+ * 【P1 修复】ARVR 课程加载统一超时兑底。避免后端代理 / CORS hang 时
+ *   页面永远卡在 loading。
+ */
+const COURSE_LOAD_TIMEOUT_MS = 8_000;
+
+/**
+ * 【P1 终极兑底】三级定时器兑底：5s / 10s / 15s。
+ *   - 5s: HTTP 应已返回或 timeout 触发（极大概率）
+ *   - 10s: 中级兑底
+ *   - 15s: 终极兑底，保证不再卡死
+ *   三层覆盖异常: 网络 hang / change detection 异常 / NgZone 跳出等场景。
+ */
+const FALLBACK_LEVEL_MS = [5_000, 10_000, 15_000];
 
 interface ARVRCourseData {
   id: number;
@@ -65,28 +80,53 @@ export class ARVRCoursePlayerComponent implements OnInit, AfterViewInit, OnDestr
   private model: THREE.Group | null = null;
   private animationFrameId: number | null = null;
   private destroy$ = new Subject<void>();
+  /** 【P1 终极兑底】三级 timer 句柄集合，供 ngOnDestroy 清理 */
+  private fallbackTimers: ReturnType<typeof setTimeout>[] = [];
 
   constructor(
     private route: ActivatedRoute,
     private http: HttpClient,
-    private snackBar: MatSnackBar
+    private snackBar: MatSnackBar,
+    private cdr: ChangeDetectorRef,
+    private zone: NgZone
   ) {}
 
   ngOnInit(): void {
-    this.courseId = this.route.snapshot.paramMap.get('id');
-    if (this.courseId) {
-      this.loadCourseData(this.courseId);
-    } else {
-      this.errorMessage = '课程 ID 无效';
-      this.isLoading = false;
+    try {
+      this.courseId = this.route.snapshot.paramMap.get('id');
+      if (this.courseId) {
+        this.loadCourseData(this.courseId);
+      } else {
+        this.zone.run(() => {
+          this.errorMessage = '课程 ID 无效';
+          this.isLoading = false;
+          this.cdr.detectChanges();
+        });
+      }
+    } catch (e) {
+      // 【P1 终极兑底】ngOnInit 任何异常都不能让 spinner 卡死。
+      console.error('[ARVRPlayer] ngOnInit error:', e);
+      this.zone.run(() => {
+        this.errorMessage = '页面初始化失败：' + (e instanceof Error ? e.message : String(e));
+        this.isLoading = false;
+        this.cdr.detectChanges();
+      });
     }
   }
 
   ngAfterViewInit(): void {
-    this.initThreeScene();
+    // 【P1 终极兑底】WebGL 初始化异常不能让 spinner 卡死。
+    try {
+      this.initThreeScene();
+    } catch (e) {
+      console.error('[ARVRPlayer] initThreeScene error:', e);
+      // 3D 场景初始化失败不影响课程数据展示，只是不渲染 3D
+    }
   }
 
   ngOnDestroy(): void {
+    this.fallbackTimers.forEach((t) => clearTimeout(t));
+    this.fallbackTimers = [];
     this.destroy$.next();
     this.destroy$.complete();
     this.cleanupThreeScene();
@@ -96,20 +136,55 @@ export class ARVRCoursePlayerComponent implements OnInit, AfterViewInit, OnDestr
     this.isLoading = true;
     this.errorMessage = null;
 
+    // 【P1 终极兑底】清理上一轮 timer，注册三级新 timer。
+    this.fallbackTimers.forEach((t) => clearTimeout(t));
+    this.fallbackTimers = [];
+    FALLBACK_LEVEL_MS.forEach((ms, idx) => {
+      const timer = setTimeout(() => {
+        if (this.isLoading) {
+          console.warn(`[ARVRPlayer] Fallback timer #${idx + 1} fired at ${ms}ms, forcing UI reset`);
+          this.zone.run(() => {
+            this.isLoading = false;
+            if (!this.courseData) {
+              this.errorMessage = idx === FALLBACK_LEVEL_MS.length - 1
+                ? '加载课程超时(15s)，可能是后端服务不可达'
+                : `加载较慢(${idx * 5 + 5}s)，后端可能不稳定`;
+            }
+            this.cdr.detectChanges();
+          });
+        }
+      }, ms);
+      this.fallbackTimers.push(timer);
+    });
+
     this.http
       .get<ARVRCourseData>(`/api/v1/arvr-courses/${id}`)
-      .pipe(takeUntil(this.destroy$))
+      .pipe(
+        // 【P1 修复】统一 8s 超时兑底。超时会被 catchError 接住。
+        timeout(COURSE_LOAD_TIMEOUT_MS),
+        takeUntil(this.destroy$)
+      )
       .subscribe({
         next: (data) => {
-          this.courseData = data;
-          this.isLoading = false;
+          this.fallbackTimers.forEach((t) => clearTimeout(t));
+          this.fallbackTimers = [];
+          this.zone.run(() => {
+            this.courseData = data;
+            this.isLoading = false;
+            this.cdr.detectChanges();
+          });
           if (data.model_url) {
             this.loadModel(data.model_url);
           }
         },
         error: (_error) => {
-          this.isLoading = false;
-          this.errorMessage = '加载课程失败，请稍后重试';
+          this.fallbackTimers.forEach((t) => clearTimeout(t));
+          this.fallbackTimers = [];
+          this.zone.run(() => {
+            this.isLoading = false;
+            this.errorMessage = '加载课程失败，请稍后重试';
+            this.cdr.detectChanges();
+          });
           this.snackBar.open('加载课程失败', '关闭', { duration: 3000 });
         },
       });

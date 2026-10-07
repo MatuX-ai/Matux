@@ -15,7 +15,16 @@
         <mat-card-title>🤖 AI 教师眼中的你</mat-card-title>
       </mat-card-header>
       <mat-card-content>
-        <div class="profile-summary-text" *ngIf="profile">
+        <!-- 【P1 修复】三态渲染。error 状态优先于 loading，保证手动重试入口可见。 -->
+        <div class="profile-error" *ngIf="loadErrorMsg && !isLoading">
+          <mat-icon color="warn">error_outline</mat-icon>
+          <p class="error-text">{{ loadErrorMsg }}</p>
+          <button mat-stroked-button color="primary" (click)="retryLoad()">
+            <mat-icon>refresh</mat-icon>
+            重新加载
+          </button>
+        </div>
+        <div class="profile-summary-text" *ngIf="profile && !loadErrorMsg">
           <p class="summary-quote">"{{ teacherSummary }}"</p>
           <div class="summary-meta">
             <div class="meta-item">
@@ -32,7 +41,7 @@
             </div>
           </div>
         </div>
-        <div class="profile-empty" *ngIf="!profile">
+        <div class="profile-empty" *ngIf="isLoading && !profile">
           <mat-icon>hourglass_empty</mat-icon>
           <p>正在生成你的学习画像...</p>
         </div>

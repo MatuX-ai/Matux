@@ -18,7 +18,13 @@
 import { HttpClient } from '@angular/common/http';
 import { Injectable } from '@angular/core';
 import { BehaviorSubject, Observable, of } from 'rxjs';
-import { catchError, switchMap, tap } from 'rxjs/operators';
+import { catchError, switchMap, tap, timeout } from 'rxjs/operators';
+
+/**
+ * 【P1 修复】统一业务 HTTP 超时兑底。避免后端代理 hang / CORS 预检超时 / 服务不可用
+ *   时调用者一直 pending、UI spinner 永远不消失。所有公开方法使用同一兑底时间。
+ */
+const AI_TEACHER_HTTP_TIMEOUT_MS = 8_000;
 
 import {
   AbilityTrendPoint,
@@ -92,6 +98,8 @@ export class AITeacherService {
   /** 获取学生学习画像 */
   getProfile(userId: string): Observable<StudentLearningProfile> {
     return this.http.get<StudentLearningProfile>(`${this.API_BASE}/profile/${userId}`).pipe(
+      // 【P1 修复】统一 8s 超时兑底，跳进 catchError → mock。
+      timeout(AI_TEACHER_HTTP_TIMEOUT_MS),
       tap((profile) => this.profileSubject.next(profile)),
       catchError(() => {
         // 降级为Mock数据
@@ -343,6 +351,8 @@ export class AITeacherService {
     return this.http
       .get<GrowthTrajectory>(`${this.API_BASE}/growth/${userId}`, { params: { months } })
       .pipe(
+        // 【P1 修复】统一超时兑底 → mock
+        timeout(AI_TEACHER_HTTP_TIMEOUT_MS),
         tap((growth) => this.growthSubject.next(growth)),
         catchError(() => {
           const mockGrowth = this.createMockGrowthTrajectory(months);
@@ -357,6 +367,8 @@ export class AITeacherService {
   /** 获取教学建议 */
   getTeachingSuggestions(userId: string): Observable<TeachingSuggestion[]> {
     return this.http.get<TeachingSuggestion[]>(`${this.API_BASE}/suggestions/${userId}`).pipe(
+      // 【P1 修复】统一超时兑底 → mock
+      timeout(AI_TEACHER_HTTP_TIMEOUT_MS),
       tap((suggestions) => this.suggestionsSubject.next(suggestions)),
       catchError(() => {
         const mockSuggestions = this.createMockSuggestions();
@@ -371,6 +383,8 @@ export class AITeacherService {
     return this.http
       .get<DailyLearningSuggestion>(`${this.API_BASE}/daily-suggestion/${userId}`)
       .pipe(
+        // 【P1 修复】统一超时兑底 → mock
+        timeout(AI_TEACHER_HTTP_TIMEOUT_MS),
         tap((suggestion) => this.dailySuggestionSubject.next(suggestion)),
         catchError(() => {
           const mock = this.createMockDailySuggestion();

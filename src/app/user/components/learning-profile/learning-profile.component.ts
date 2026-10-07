@@ -40,6 +40,13 @@ import type { User } from '../../../core/models/auth.models';
 import { AITeacherService } from '../../../core/services/ai-teacher.service';
 import { AuthService } from '../../../core/services/auth.service';
 
+/**
+ * 【P1 修复】画像加载兑底超时。Service 层已有 8s HTTP timeout，但兜底层 catchError
+ *   可能被上游算子拦截，这里加一个更保守的 UI 兑底：
+ *   超时后要么走兑底 profile，要么明确显示 error 以提供手动重试。
+ */
+const LOAD_FALLBACK_TIMEOUT_MS = 12_000;
+
 @Component({
   selector: 'app-learning-profile',
   standalone: true,
@@ -71,6 +78,9 @@ export class LearningProfileComponent implements OnInit, OnDestroy {
   private destroy$ = new Subject<void>();
 
   profile: StudentLearningProfile | null = null;
+  // 【P1 修复】明确划分 loading / error / loaded 三态，避免 spinner 永远不消失。
+  isLoading = true;
+  loadErrorMsg: string | null = null;
   teacherSummary = '';
   expandAll = false;
   expandedCategories = new Set<string>();
@@ -94,6 +104,16 @@ export class LearningProfileComponent implements OnInit, OnDestroy {
   ) {}
 
   ngOnInit(): void {
+    // 【P1 修复】兑底 timer：超时后若仍处于 loading，强制切换 error 状态并提供重试入口。
+    //   即使 service / HttpClient 上下游意外 hang，UI 也不会永远显示 spinner。
+    const fallbackTimer = setTimeout(() => {
+      if (this.isLoading && !this.profile) {
+        this.isLoading = false;
+        this.loadErrorMsg = '画像加载超时，可能是后端服务暂时不可达';
+        this.cdr.markForCheck();
+      }
+    }, LOAD_FALLBACK_TIMEOUT_MS);
+
     this.authService.currentUser$.pipe(takeUntil(this.destroy$)).subscribe((user) => {
       this.currentUser = user;
       if (user?.id) {
@@ -104,18 +124,47 @@ export class LearningProfileComponent implements OnInit, OnDestroy {
         this.loadProfile(1);
       }
     });
+
+    // 防止 destroy 后 setTimeout 仍然触发
+    this.destroy$.subscribe(() => clearTimeout(fallbackTimer));
+  }
+
+  /**
+   * 【P1 修复】手动重试入口 — 给 UI 「重新加载」按钮调用。
+   */
+  retryLoad(): void {
+    this.isLoading = true;
+    this.loadErrorMsg = null;
+    this.profile = null;
+    this.teacherSummary = '';
+    this.cdr.markForCheck();
+    const userId = this.currentUser?.id ?? 1;
+    this.loadProfile(Number(userId));
   }
 
   private loadProfile(userId: number): void {
+    this.isLoading = true;
+    this.loadErrorMsg = null;
     this.aiTeacherService
       .getProfile(String(userId))
       .pipe(takeUntil(this.destroy$))
-      .subscribe((profile) => {
-        this.profile = profile;
-        this.teacherSummary = this.aiTeacherService.generatePersonaSeed(profile);
-        this.buildSkillTree(profile);
-        this.buildRadarChart(profile);
-        this.cdr.markForCheck();
+      .subscribe({
+        next: (profile) => {
+          this.profile = profile;
+          this.teacherSummary = this.aiTeacherService.generatePersonaSeed(profile);
+          this.buildSkillTree(profile);
+          this.buildRadarChart(profile);
+          // 【P1 修复】明确切到 loaded 态，spinner 退出。
+          this.isLoading = false;
+          this.loadErrorMsg = null;
+          this.cdr.markForCheck();
+        },
+        error: () => {
+          // 即便 service 已兑底返回 mock，仍走这里保护（理论上不应发生）。
+          this.isLoading = false;
+          this.loadErrorMsg = '加载学习画像失败，请稍后重试';
+          this.cdr.markForCheck();
+        },
       });
   }
 
