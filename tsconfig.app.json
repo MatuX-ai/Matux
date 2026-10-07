@@ -14,6 +14,7 @@
     "src/**/*.ts"
   ],
   "exclude": [
+    "src/**/*.spec.ts",
     "src/app/admin/dashboard/dashboard.module.ts",
     "src/app/ai-code-generator/**/*",
     "src/ai-sdk/**/*",

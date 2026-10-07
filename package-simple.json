@@ -1,7 +1,7 @@
 {
-  "name": "imatuproject-design-system",
+  "name": "matux-design-system",
   "version": "1.0.0",
-  "description": "iMatuProject Design Token and Style System",
+  "description": "MatuX STEM Learning Tool - Design Token and Style System",
   "main": "src/design-tokens/index.ts",
   "scripts": {
     "test": "echo \"No tests specified\" && exit 0",
@@ -12,7 +12,7 @@
     "design-system",
     "education"
   ],
-  "author": "iMatuProject Team",
+  "author": "MatuX Lab",
   "license": "GPL-3.0",
   "dependencies": {
     "@tensorflow/tfjs": "^4.10.0",

@@ -12,10 +12,10 @@ exclude:
 
 # 文档信息
 package:
-  name: "iMatuProject Design System"
+  name: "MatuX Design System"
   version: "1.0.0"
-  description: "iMatuProject 设计系统样式文档"
-  homepage: "https://github.com/iMatuProject/design-system"
+  description: "MatuX 设计系统样式文档"
+  homepage: "https://github.com/matux/design-system"
   license: "GPL-3.0"
 
 # 分组配置

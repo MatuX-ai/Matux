@@ -3,10 +3,10 @@ requires = ["setuptools>=61.0", "wheel"]
 build-backend = "setuptools.build_meta"
 
 [project]
-name = "imatuproject-backend"
+name = "matux-backend"
 version = "1.0.0"
-description = "iMatuProject Backend Services"
-authors = [{name = "iMatuProject Team"}]
+description = "MatuX STEM Learning Tool - Backend Services"
+authors = [{name = "MatuX Lab"}]
 license = {text = "MIT"}
 readme = "README.md"
 requires-python = ">=3.8"

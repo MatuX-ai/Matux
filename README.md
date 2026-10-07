@@ -1,4 +1,6 @@
-# MatuX STEM 学习平台
+# MatuX STEM 学习工具
+
+> **项目定位**: 面向学生的 STEM 学习工具 | **维护团队**: MatuX Lab
 
 ## 🎯 项目亮点
 
@@ -741,7 +743,7 @@ POST   /api/v1/models/cleanup           # 清理闲置模型
 
 ## 项目概述
 
-MatuX 是一个面向学生的 **STEM 学习平台**，提供电脑桌面端（Electron）和移动端（Flutter）。平台融合 AI 编程教育、虚拟实验室、多模态激励等前沿技术，为学生打造沉浸式学习体验。
+MatuX 是一个面向学生的 **STEM 学习工具**，提供电脑桌面端（Electron）和移动端（Flutter）。工具融合 AI 编程教育、虚拟实验室、多模态激励等前沿技术，为学生打造沉浸式学习体验。
 
 > **用户范围**: MatuX 仅有 **学生** 一个角色（家长账号用于监护）。课件管理和机构管理功能已分别解耦至独立开源项目。
 
@@ -774,7 +776,7 @@ MatuX 与以下独立开源项目互联互通，共同构成完整的 STEM 教�
 
 | 项目 | 定位 | 技术栈 | 仓库 |
 |------|------|--------|------|
-| **MatuX** | STEM 学习平台（学生端） | Angular + FastAPI + Electron + Flutter | 本仓库 |
+| **MatuX** | STEM 学习工具（学生端） | Angular + FastAPI + Electron + Flutter | 本仓库 |
 | **OpenMTSciEd** | 开放 STEM 教育资源平台（课件管理） | Next.js + Neo4j | `G:\OpenMTSciEd` |
 | **OpenMTEduInst** | STEM 教育机构管理工具（机构管理） | Angular + FastAPI | `G:\OpenMTEduInst` |
 
@@ -1204,4 +1206,4 @@ const buttonStyle = {
 
 ---
 
-*MatuX Project Design System v1.0*
+*MatuX STEM 学习工具 | 维护团队: MatuX Lab | v2.0*

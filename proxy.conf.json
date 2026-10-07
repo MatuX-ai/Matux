@@ -1,22 +1,28 @@
 {
   "/api": {
-    "target": "http://localhost:8000",
+    "target": "http://localhost:8002",
     "secure": false,
     "changeOrigin": true
   },
   "/health": {
-    "target": "http://localhost:8000",
+    "target": "http://localhost:8002",
     "secure": false,
     "changeOrigin": true
   },
   "/metrics": {
-    "target": "http://localhost:8000",
+    "target": "http://localhost:8002",
     "secure": false,
     "changeOrigin": true
   },
   "/registry": {
-    "target": "http://localhost:8000",
+    "target": "http://localhost:8002",
     "secure": false,
     "changeOrigin": true
+  },
+  "/ws": {
+    "target": "http://localhost:8002",
+    "secure": false,
+    "changeOrigin": true,
+    "ws": true
   }
 }
