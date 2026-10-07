@@ -196,22 +196,20 @@ export class GrowthTrajectoryPageComponent implements OnInit, OnDestroy {
       this.loadGrowthTrajectory(idFromStorage);
     } else {
       // localStorage 都没有 — 退化到 authService（异步），并配置超时
-      this.authService.currentUser$
-        .pipe(take(1), timeout(LOAD_TIMEOUT_MS))
-        .subscribe({
-          next: (user: { id?: number | string } | null) => {
-            if (user?.id !== undefined && user.id !== null) {
-              this.loadGrowthTrajectory(Number(user.id));
-              return;
-            }
-            this.error = true;
-            this.cdr.markForCheck();
-          },
-          error: () => {
-            this.error = true;
-            this.cdr.markForCheck();
-          },
-        });
+      this.authService.currentUser$.pipe(take(1), timeout(LOAD_TIMEOUT_MS)).subscribe({
+        next: (user: { id?: number | string } | null) => {
+          if (user?.id !== undefined && user.id !== null) {
+            this.loadGrowthTrajectory(Number(user.id));
+            return;
+          }
+          this.error = true;
+          this.cdr.markForCheck();
+        },
+        error: () => {
+          this.error = true;
+          this.cdr.markForCheck();
+        },
+      });
     }
 
     // 【P1-3 修复】兜底：N 秒后仍未拿到 trajectory → 切到 error,并提供手动重试
@@ -221,7 +219,7 @@ export class GrowthTrajectoryPageComponent implements OnInit, OnDestroy {
         this.cdr.markForCheck();
       }
     }, LOAD_TIMEOUT_MS);
-  
+
     // 【P2-R01 增强】直接在组件内探测 backend 状态(不依赖 ModuleStatusService)。
     //   - ai-teacher.service.getGrowthTrajectory 有 catchError 兑底返回 mock 数据,
     //     所以 trajectory 走通不能证明 backend 可用。
@@ -263,22 +261,20 @@ export class GrowthTrajectoryPageComponent implements OnInit, OnDestroy {
     if (idFromStorage !== null) {
       this.loadGrowthTrajectory(idFromStorage);
     } else {
-      this.authService.currentUser$
-        .pipe(take(1), timeout(LOAD_TIMEOUT_MS))
-        .subscribe({
-          next: (user: { id?: number | string } | null) => {
-            if (user?.id !== undefined && user.id !== null) {
-              this.loadGrowthTrajectory(Number(user.id));
-              return;
-            }
-            this.error = true;
-            this.cdr.markForCheck();
-          },
-          error: () => {
-            this.error = true;
-            this.cdr.markForCheck();
-          },
-        });
+      this.authService.currentUser$.pipe(take(1), timeout(LOAD_TIMEOUT_MS)).subscribe({
+        next: (user: { id?: number | string } | null) => {
+          if (user?.id !== undefined && user.id !== null) {
+            this.loadGrowthTrajectory(Number(user.id));
+            return;
+          }
+          this.error = true;
+          this.cdr.markForCheck();
+        },
+        error: () => {
+          this.error = true;
+          this.cdr.markForCheck();
+        },
+      });
     }
   }
 

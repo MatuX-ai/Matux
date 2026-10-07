@@ -1,7 +1,9 @@
 @use 'src/styles/design-tokens' as *;
 
 // 本地阴影变量（如果 design-tokens 中未定义）
-$stem-shadow-card: 0 1px 3px rgb(5 150 105 / 8%), 0 1px 2px rgb(5 150 105 / 6%) !default;
+$stem-shadow-card:
+  0 1px 3px rgb(5 150 105 / 8%),
+  0 1px 2px rgb(5 150 105 / 6%) !default;
 
 .token-stats-chart {
   overflow: hidden;

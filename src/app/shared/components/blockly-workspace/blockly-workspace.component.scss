@@ -120,7 +120,11 @@
   flex-direction: column;
   width: 360px;
   border-left: 1px solid rgba(stem.$stem-primary, 0.1);
-  background: linear-gradient(135deg, stem.$stem-primary-dark 0%, color.adjust(stem.$stem-primary-dark, $lightness: -5%) 100%);
+  background: linear-gradient(
+    135deg,
+    stem.$stem-primary-dark 0%,
+    color.adjust(stem.$stem-primary-dark, $lightness: -5%) 100%
+  );
 
   .code-header {
     display: flex;

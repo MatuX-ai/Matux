@@ -8,11 +8,7 @@
  */
 
 import { CommonModule } from '@angular/common';
-import {
-  ChangeDetectionStrategy,
-  Component,
-  Inject,
-} from '@angular/core';
+import { ChangeDetectionStrategy, Component, Inject } from '@angular/core';
 import { MatButtonModule } from '@angular/material/button';
 import { MAT_DIALOG_DATA, MatDialogModule, MatDialogRef } from '@angular/material/dialog';
 import { MatIconModule } from '@angular/material/icon';
@@ -38,28 +34,19 @@ export interface LevelUpData {
           '400ms cubic-bezier(0.34, 1.56, 0.64, 1)',
           style({ opacity: 1, transform: 'scale(1.3) rotate(180deg)' })
         ),
-        animate(
-          '300ms ease-out',
-          style({ opacity: 1, transform: 'scale(1) rotate(360deg)' })
-        ),
+        animate('300ms ease-out', style({ opacity: 1, transform: 'scale(1) rotate(360deg)' })),
       ]),
     ]),
     trigger('textReveal', [
       transition(':enter', [
         style({ opacity: 0, transform: 'translateY(20px)' }),
-        animate(
-          '500ms 300ms ease-out',
-          style({ opacity: 1, transform: 'translateY(0)' })
-        ),
+        animate('500ms 300ms ease-out', style({ opacity: 1, transform: 'translateY(0)' })),
       ]),
     ]),
     trigger('sweep', [
       transition(':enter', [
         style({ transform: 'translateX(-100%)' }),
-        animate(
-          '1200ms 200ms ease-out',
-          style({ transform: 'translateX(100%)' })
-        ),
+        animate('1200ms 200ms ease-out', style({ transform: 'translateX(100%)' })),
       ]),
     ]),
   ],

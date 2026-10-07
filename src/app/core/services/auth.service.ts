@@ -1070,7 +1070,7 @@ export class AuthService {
         }
 
         return null;
-      }),
+      })
     );
   }
 
@@ -1097,7 +1097,11 @@ export class AuthService {
   /**
    * 获取离线登录凭据（解密读取）
    */
-  async getOfflineCredentials(): Promise<{ username: string; token: string; cachedAt: number } | null> {
+  async getOfflineCredentials(): Promise<{
+    username: string;
+    token: string;
+    cachedAt: number;
+  } | null> {
     try {
       const raw = localStorage.getItem(this.OFFLINE_CREDENTIALS_KEY);
       if (!raw) return null;
@@ -1126,7 +1130,9 @@ export class AuthService {
    *
    * 尝试多种可能的用户名来解密（兼容旧格式明文回退）
    */
-  private async decryptCredentials(raw: string): Promise<{ username: string; token: string; cachedAt: number } | null> {
+  private async decryptCredentials(
+    raw: string
+  ): Promise<{ username: string; token: string; cachedAt: number } | null> {
     // 先尝试作为明文 JSON 解析（兼容旧格式）
     try {
       const credentials = JSON.parse(raw) as { username: string; token: string; cachedAt: number };

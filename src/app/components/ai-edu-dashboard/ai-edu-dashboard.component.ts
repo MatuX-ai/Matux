@@ -117,9 +117,7 @@ const FALLBACK_MODULES: AIEduModule[] = [
         <div class="completion-bar">
           <div class="bar-fill" [style.width.%]="statistics.completion_rate"></div>
         </div>
-        <p class="completion-text">
-          完成率 {{ statistics.completion_rate }}%
-        </p>
+        <p class="completion-text">完成率 {{ statistics.completion_rate }}%</p>
       </section>
 
       <!-- 模块列表 -->
@@ -130,7 +128,7 @@ const FALLBACK_MODULES: AIEduModule[] = [
         </div>
 
         <div *ngIf="loading && modules.length === 0" class="module-skeleton">
-          <div class="skeleton-card" *ngFor="let i of [1,2,3]"></div>
+          <div class="skeleton-card" *ngFor="let i of [1, 2, 3]"></div>
         </div>
 
         <!-- 【P2-2 修复】模块卡列表 + 重试按钮（限时兑底，6s 后不依赖后端也能继续使用） -->
@@ -463,9 +461,7 @@ export class AIEduDashboardComponent implements OnInit, OnDestroy {
       this.fallbackTimer = null;
     }
     this.http
-      .get<{ success: boolean; data: AIEduModule[] }>(
-        `/api/v1/org/${this.orgId}/ai-edu/modules`
-      )
+      .get<{ success: boolean; data: AIEduModule[] }>(`/api/v1/org/${this.orgId}/ai-edu/modules`)
       .pipe(
         timeout({ each: 6000 }),
         catchError(() => {
@@ -515,7 +511,7 @@ export class AIEduDashboardComponent implements OnInit, OnDestroy {
     }
     this.cdr.markForCheck();
   }
-  
+
   /**
    * 【P2-2 修复】加载学习进度统计；失败时使用零值兑底
    * 同样增加 6s 限时

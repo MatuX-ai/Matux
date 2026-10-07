@@ -26,13 +26,9 @@ const IV_LEN = 12;
  */
 async function deriveKey(userId: string): Promise<CryptoKey> {
   const enc = new TextEncoder();
-  const keyMaterial = await crypto.subtle.importKey(
-    'raw',
-    enc.encode(userId),
-    DERIVE_ALG,
-    false,
-    ['deriveKey'],
-  );
+  const keyMaterial = await crypto.subtle.importKey('raw', enc.encode(userId), DERIVE_ALG, false, [
+    'deriveKey',
+  ]);
 
   return crypto.subtle.deriveKey(
     {
@@ -44,7 +40,7 @@ async function deriveKey(userId: string): Promise<CryptoKey> {
     keyMaterial,
     { name: ENC_ALG, length: 256 },
     false,
-    ['encrypt', 'decrypt'],
+    ['encrypt', 'decrypt']
   );
 }
 
@@ -64,7 +60,7 @@ export async function encrypt(plainText: string, userId: string): Promise<string
   const cipherText = await crypto.subtle.encrypt(
     { name: ENC_ALG, iv, tagLength: 128 },
     key,
-    enc.encode(plainText),
+    enc.encode(plainText)
   );
 
   // 拼接 salt + iv + ciphertext
@@ -97,7 +93,7 @@ export async function decrypt(cipherText: string, userId: string): Promise<strin
     const plainBuffer = await crypto.subtle.decrypt(
       { name: ENC_ALG, iv, tagLength: 128 },
       key,
-      data,
+      data
     );
 
     return new TextDecoder().decode(plainBuffer);

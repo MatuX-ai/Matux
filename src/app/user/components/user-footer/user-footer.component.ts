@@ -178,7 +178,10 @@ export class UserFooterComponent implements OnDestroy {
   private i18nSub: Subscription;
 
   // 【P2】i18n 服务供模板调用
-  constructor(public i18n: I18nService, private cdr: ChangeDetectorRef) {
+  constructor(
+    public i18n: I18nService,
+    private cdr: ChangeDetectorRef
+  ) {
     this.i18nSub = this.i18n.snapshots$.subscribe(() => {
       try {
         this.cdr.markForCheck();

@@ -79,7 +79,11 @@
 }
 
 .ai-assistant-fab.expanded {
-  background: linear-gradient(135deg, stem.$stem-error 0%, color.adjust(stem.$stem-error, $lightness: -10%) 100%);
+  background: linear-gradient(
+    135deg,
+    stem.$stem-error 0%,
+    color.adjust(stem.$stem-error, $lightness: -10%) 100%
+  );
 }
 
 .ai-assistant-fab mat-icon {

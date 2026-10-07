@@ -39,10 +39,17 @@
           [class]="'icon-' + (course.category || 'general')"
           [attr.aria-label]="getCategoryAriaLabel(course.category)"
         >
-          {{ course.category === 'programming' ? '💻' :
-             course.category === 'science' ? '🔬' :
-             course.category === 'math' ? '📐' :
-             course.category === 'art' ? '🎨' : '📚' }}
+          {{
+            course.category === 'programming'
+              ? '💻'
+              : course.category === 'science'
+                ? '🔬'
+                : course.category === 'math'
+                  ? '📐'
+                  : course.category === 'art'
+                    ? '🎨'
+                    : '📚'
+          }}
         </div>
         <div class="hero-info">
           <h1 class="course-title">{{ course.title }}</h1>
@@ -67,12 +74,7 @@
           </div>
         </div>
         <div class="hero-actions">
-          <button
-            mat-flat-button
-            color="primary"
-            class="cta-button"
-            (click)="continueLearning()"
-          >
+          <button mat-flat-button color="primary" class="cta-button" (click)="continueLearning()">
             <mat-icon>{{ enrolled ? 'play_arrow' : 'how_to_reg' }}</mat-icon>
             {{ enrolled ? '继续学习' : '立即报名' }}
           </button>
@@ -96,7 +98,9 @@
           <mat-icon>menu_book</mat-icon>
           课程章节
         </mat-card-title>
-        <mat-card-subtitle>共 {{ chapters.length }} 章 · 约 {{ course.duration_minutes }} 分钟</mat-card-subtitle>
+        <mat-card-subtitle
+          >共 {{ chapters.length }} 章 · 约 {{ course.duration_minutes }} 分钟</mat-card-subtitle
+        >
       </mat-card-header>
       <mat-divider></mat-divider>
       <mat-card-content>

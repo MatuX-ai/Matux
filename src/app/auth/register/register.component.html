@@ -95,9 +95,7 @@
             <mat-icon>{{ showConfirmPassword ? 'visibility_off' : 'visibility' }}</mat-icon>
           </button>
         </div>
-        <div class="error-message" *ngIf="confirmPasswordMismatch">
-          两次输入的密码不一致
-        </div>
+        <div class="error-message" *ngIf="confirmPasswordMismatch">两次输入的密码不一致</div>
       </div>
 
       <div class="terms-group">
@@ -126,11 +124,7 @@
         {{ successMessage }}
       </div>
 
-      <button
-        type="submit"
-        class="register-button"
-        [disabled]="loading || !isFormValid"
-      >
+      <button type="submit" class="register-button" [disabled]="loading || !isFormValid">
         <span *ngIf="!loading">注册</span>
         <span *ngIf="loading" class="loading-spinner"></span>
       </button>

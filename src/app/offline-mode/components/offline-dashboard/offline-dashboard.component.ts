@@ -215,26 +215,29 @@ export class OfflineDashboardComponent implements OnInit, OnDestroy {
           return;
         }
 
-        const summary = failed === 0
-          ? `同步完成：${synced} 项已上传`
-          : `同步部分成功：${synced} 成功，${failed} 失败`;
+        const summary =
+          failed === 0
+            ? `同步完成：${synced} 项已上传`
+            : `同步部分成功：${synced} 成功，${failed} 失败`;
         const detail = conflicts > 0 ? `, ${conflicts} 个冲突` : '';
-        this.snackBar.open(summary + detail, failed === 0 ? '关闭' : '查看', {
-          duration: 4000,
-        }).onAction().subscribe(() => {
-          // 用户点击"查看"时刷新扩展统计并跳转到 sync 面板
-          void this.loadExtendedStats();
-        });
+        this.snackBar
+          .open(summary + detail, failed === 0 ? '关闭' : '查看', {
+            duration: 4000,
+          })
+          .onAction()
+          .subscribe(() => {
+            // 用户点击"查看"时刷新扩展统计并跳转到 sync 面板
+            void this.loadExtendedStats();
+          });
       },
       (error: Error) => {
         console.error('[OfflineDashboard] 手动同步失败:', error);
-        this.snackBar.open(
-          error?.message ?? '同步失败，请稍后重试',
-          '重试',
-          { duration: 5000 }
-        ).onAction().subscribe(() => {
-          this.triggerSync();
-        });
+        this.snackBar
+          .open(error?.message ?? '同步失败，请稍后重试', '重试', { duration: 5000 })
+          .onAction()
+          .subscribe(() => {
+            this.triggerSync();
+          });
       }
     );
   }

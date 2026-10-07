@@ -156,10 +156,7 @@ export class ModuleStatusService implements OnDestroy {
         this.modules$.next([]);
         const now = Date.now();
         const staleSinceLastSuccess = now - this.lastSuccessTime > HEALTH_FAILURE_RESET_MS;
-        if (
-          this.consecutiveFailures >= HEALTH_FAILURE_THRESHOLD ||
-          staleSinceLastSuccess
-        ) {
+        if (this.consecutiveFailures >= HEALTH_FAILURE_THRESHOLD || staleSinceLastSuccess) {
           this.tierGroups$.next([]);
           this.healthy$.next(false);
         }

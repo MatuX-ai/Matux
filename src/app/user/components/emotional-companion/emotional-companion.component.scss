@@ -24,7 +24,11 @@
 .companion-mode-card {
   margin-bottom: 16px;
   border-radius: stem.$stem-radius-md;
-  background: linear-gradient(135deg, rgba(stem.$stem-primary, 0.1), rgba(stem.$stem-secondary, 0.1));
+  background: linear-gradient(
+    135deg,
+    rgba(stem.$stem-primary, 0.1),
+    rgba(stem.$stem-secondary, 0.1)
+  );
 }
 
 .companion-mode-header {
@@ -58,7 +62,11 @@
 .mood-card {
   margin-bottom: 16px;
   border-radius: stem.$stem-radius-md;
-  background: linear-gradient(135deg, rgba(stem.$stem-accent, 0.1), rgba(stem.$stem-secondary, 0.1));
+  background: linear-gradient(
+    135deg,
+    rgba(stem.$stem-accent, 0.1),
+    rgba(stem.$stem-secondary, 0.1)
+  );
 }
 
 .mood-title {

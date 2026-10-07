@@ -44,8 +44,26 @@ describe('AchievementService', () => {
         success: true,
         data: {
           achievements: [
-            { id: '1', name: '初次探索', description: '完成第一个课程', icon: 'school', rarity: 'common', point_value: 10, unlocked: true, unlocked_at: '2026-06-01' },
-            { id: '2', name: '代码大师', description: '完成10个编程挑战', icon: 'code', rarity: 'rare', point_value: 50, unlocked: true, unlocked_at: '2026-06-10' },
+            {
+              id: '1',
+              name: '初次探索',
+              description: '完成第一个课程',
+              icon: 'school',
+              rarity: 'common',
+              point_value: 10,
+              unlocked: true,
+              unlocked_at: '2026-06-01',
+            },
+            {
+              id: '2',
+              name: '代码大师',
+              description: '完成10个编程挑战',
+              icon: 'code',
+              rarity: 'rare',
+              point_value: 50,
+              unlocked: true,
+              unlocked_at: '2026-06-10',
+            },
           ],
           statistics: { total_achievements: 2, rarity_distribution: {}, total_points: 60 },
         },
@@ -138,8 +156,24 @@ describe('AchievementService', () => {
   describe('getLeaderboard', () => {
     it('should return sorted leaderboard', (done) => {
       const mockEntries: LeaderboardEntry[] = [
-        { rank: 1, user_id: 2, username: '学霸A', total_exp: 5000, weekly_change: 200, rank_change: 0, is_current_user: false },
-        { rank: 2, user_id: 1, username: '测试同学', total_exp: 2000, weekly_change: 100, rank_change: 1, is_current_user: true },
+        {
+          rank: 1,
+          user_id: 2,
+          username: '学霸A',
+          total_exp: 5000,
+          weekly_change: 200,
+          rank_change: 0,
+          is_current_user: false,
+        },
+        {
+          rank: 2,
+          user_id: 1,
+          username: '测试同学',
+          total_exp: 2000,
+          weekly_change: 100,
+          rank_change: 1,
+          is_current_user: true,
+        },
       ];
 
       service.getLeaderboard(10).subscribe((entries) => {
@@ -178,8 +212,26 @@ describe('AchievementService', () => {
     it('should have valid rarity values', () => {
       const validRarities = ['common', 'rare', 'epic', 'legendary'];
       const badges: AchievementBadge[] = [
-        { id: '1', name: 'Test', description: '', icon: 'star', rarity: 'common', point_value: 10, unlocked: true, unlocked_at: null },
-        { id: '2', name: 'Test2', description: '', icon: 'star', rarity: 'legendary', point_value: 200, unlocked: false, unlocked_at: null },
+        {
+          id: '1',
+          name: 'Test',
+          description: '',
+          icon: 'star',
+          rarity: 'common',
+          point_value: 10,
+          unlocked: true,
+          unlocked_at: null,
+        },
+        {
+          id: '2',
+          name: 'Test2',
+          description: '',
+          icon: 'star',
+          rarity: 'legendary',
+          point_value: 200,
+          unlocked: false,
+          unlocked_at: null,
+        },
       ];
       badges.forEach((badge) => {
         expect(validRarities).toContain(badge.rarity);

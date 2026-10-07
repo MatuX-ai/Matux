@@ -59,14 +59,14 @@ export class EmotionalCompanionComponent implements OnInit, OnDestroy {
   //                       #a1a1aa 2.62:1, #dc2626 4.83:1 (已 AA)
   moodOptions: { emotion: EmotionState; emoji: string; label: string; color: string }[] = [
     { emotion: 'very_happy', emoji: '😄', label: '很开心', color: '#15803d' }, // 5.13:1 AA
-    { emotion: 'happy', emoji: '🙂', label: '开心', color: '#16a34a' },      // 4.55:1 AA
-    { emotion: 'neutral', emoji: '😐', label: '一般', color: '#64748b' },     // 4.92:1 AA
-    { emotion: 'confused', emoji: '🤔', label: '困惑', color: '#b45309' },   // 4.62:1 AA
-    { emotion: 'sad', emoji: '😢', label: '难过', color: '#1d4ed8' },        // 7.62:1 AAA
-    { emotion: 'frustrated', emoji: '😫', label: '沮丧', color: '#c2410c' },  // 4.89:1 AA
-    { emotion: 'anxious', emoji: '😰', label: '焦虑', color: '#dc2626' },    // 4.83:1 AA
-    { emotion: 'bored', emoji: '😴', label: '无聊', color: '#71717a' },      // 4.81:1 AA
-    { emotion: 'angry', emoji: '😠', label: '生气', color: '#b91c1c' },      // 6.30:1 AA
+    { emotion: 'happy', emoji: '🙂', label: '开心', color: '#16a34a' }, // 4.55:1 AA
+    { emotion: 'neutral', emoji: '😐', label: '一般', color: '#64748b' }, // 4.92:1 AA
+    { emotion: 'confused', emoji: '🤔', label: '困惑', color: '#b45309' }, // 4.62:1 AA
+    { emotion: 'sad', emoji: '😢', label: '难过', color: '#1d4ed8' }, // 7.62:1 AAA
+    { emotion: 'frustrated', emoji: '😫', label: '沮丧', color: '#c2410c' }, // 4.89:1 AA
+    { emotion: 'anxious', emoji: '😰', label: '焦虑', color: '#dc2626' }, // 4.83:1 AA
+    { emotion: 'bored', emoji: '😴', label: '无聊', color: '#71717a' }, // 4.81:1 AA
+    { emotion: 'angry', emoji: '😠', label: '生气', color: '#b91c1c' }, // 6.30:1 AA
   ];
 
   constructor(private companionService: EmotionalCompanionService) {}

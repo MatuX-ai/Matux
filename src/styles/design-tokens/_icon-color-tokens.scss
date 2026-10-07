@@ -11,76 +11,76 @@
 // =============================================================================
 
 // 学习 - 探索绿（主色，自然/成长/好奇心）
-$icon-learning:        $stem-primary;        // #059669 Emerald-600
-$icon-learning-soft:   $stem-primary-light;  // #10b981 Emerald-500
-$icon-learning-deep:   $stem-primary-dark;   // #047857 Emerald-700
+$icon-learning: $stem-primary; // #059669 Emerald-600
+$icon-learning-soft: $stem-primary-light; // #10b981 Emerald-500
+$icon-learning-deep: $stem-primary-dark; // #047857 Emerald-700
 
 // 成就 - 琥珀金（已掌握/稀有度/奖杯）
-$icon-achievement:        $stem-mastered;       // #f59e0b Amber-500
-$icon-achievement-soft:   $stem-warning-light;  // #fbbf24 Amber-400
-$icon-achievement-deep:   $stem-points-dark;    // #d97706 Amber-600
+$icon-achievement: $stem-mastered; // #f59e0b Amber-500
+$icon-achievement-soft: $stem-warning-light; // #fbbf24 Amber-400
+$icon-achievement-deep: $stem-points-dark; // #d97706 Amber-600
 
 // 创作 - 天空蓝（创意/AI/科技感）
-$icon-creation:        $stem-secondary;       // #0ea5e9 Sky-500
-$icon-creation-soft:   $stem-secondary-light; // #38bdf8 Sky-400
-$icon-creation-deep:   $stem-info-dark;       // #0284c7 Sky-600
+$icon-creation: $stem-secondary; // #0ea5e9 Sky-500
+$icon-creation-soft: $stem-secondary-light; // #38bdf8 Sky-400
+$icon-creation-deep: $stem-info-dark; // #0284c7 Sky-600
 
 // 社交 - 深天蓝（信任/连接/团队）
-$icon-social:          $stem-secondary-dark;  // #0284c7 Sky-600
-$icon-social-soft:     $stem-info;            // #0ea5e9 Sky-500
-$icon-social-deep:     #0369a1;              // Sky-700（更可靠对比度）
+$icon-social: $stem-secondary-dark; // #0284c7 Sky-600
+$icon-social-soft: $stem-info; // #0ea5e9 Sky-500
+$icon-social-deep: #0369a1; // Sky-700（更可靠对比度）
 
 // =============================================================================
 // 状态图标（与 .mat-icon 旧 modifier 对应）
 // =============================================================================
 
-$icon-success:   $stem-success;       // #059669
-$icon-warning:   $stem-warning;       // #f59e0b
-$icon-error:     $stem-error;         // #ef4444
-$icon-info:      $stem-info;          // #0ea5e9
+$icon-success: $stem-success; // #059669
+$icon-warning: $stem-warning; // #f59e0b
+$icon-error: $stem-error; // #ef4444
+$icon-info: $stem-info; // #0ea5e9
 
 // =============================================================================
 // 学科图标（5 大学科）
 // =============================================================================
 
-$icon-subject-science:     $stem-subject-science;     // #059669 探索绿
-$icon-subject-technology:  $stem-subject-technology;  // #2563eb 科技蓝
+$icon-subject-science: $stem-subject-science; // #059669 探索绿
+$icon-subject-technology: $stem-subject-technology; // #2563eb 科技蓝
 $icon-subject-engineering: $stem-subject-engineering; // #f59e0b 琥珀橙
-$icon-subject-math:        $stem-subject-math;        // #8b5cf6 紫罗兰
-$icon-subject-arts:        $stem-subject-arts;        // #ec4899 粉红
+$icon-subject-math: $stem-subject-math; // #8b5cf6 紫罗兰
+$icon-subject-arts: $stem-subject-arts; // #ec4899 粉红
 
 // =============================================================================
 // 稀有度图标（游戏化）
 // =============================================================================
 
-$icon-rarity-common:     $stem-rarity-common;     // #94a3b8
-$icon-rarity-rare:       $stem-rarity-rare;       // #3b82f6
-$icon-rarity-epic:       $stem-rarity-epic;       // #7c3aed
-$icon-rarity-legendary:  $stem-rarity-legendary;  // #b45309
+$icon-rarity-common: $stem-rarity-common; // #94a3b8
+$icon-rarity-rare: $stem-rarity-rare; // #3b82f6
+$icon-rarity-epic: $stem-rarity-epic; // #7c3aed
+$icon-rarity-legendary: $stem-rarity-legendary; // #b45309
 
 // =============================================================================
 // 等级图标
 // =============================================================================
 
-$icon-level-common:     $stem-level-common;     // #64748b
-$icon-level-rare:       $stem-level-rare;       // #2563eb
-$icon-level-epic:       $stem-level-epic;       // #7c3aed
-$icon-level-legendary:  $stem-level-legendary;  // #b45309
+$icon-level-common: $stem-level-common; // #64748b
+$icon-level-rare: $stem-level-rare; // #2563eb
+$icon-level-epic: $stem-level-epic; // #7c3aed
+$icon-level-legendary: $stem-level-legendary; // #b45309
 
 // =============================================================================
 // 空状态图标（专用灰，比 #64748b 对比度更优）
 // =============================================================================
 
-$icon-empty:        $stem-gray-500;  // #78716c stone-500（5.74:1 对比度）
-$icon-empty-soft:   $stem-gray-400;  // #a8a29e stone-400（弱化场景）
-$icon-empty-deep:   $stem-gray-600;  // #57534e stone-600（更深 7.46:1）
+$icon-empty: $stem-gray-500; // #78716c stone-500（5.74:1 对比度）
+$icon-empty-soft: $stem-gray-400; // #a8a29e stone-400（弱化场景）
+$icon-empty-deep: $stem-gray-600; // #57534e stone-600（更深 7.46:1）
 
 // =============================================================================
 // 默认色（fallback）
 // =============================================================================
 
-$icon-default:      $stem-text-secondary;  // #57534e stone-600（7.46:1 对比度）
-$icon-default-soft: $stem-gray-400;        // #a8a29e
+$icon-default: $stem-text-secondary; // #57534e stone-600（7.46:1 对比度）
+$icon-default-soft: $stem-gray-400; // #a8a29e
 
 // =============================================================================
 // 反白图标（用于在主题色背景上的图标）
@@ -99,11 +99,11 @@ $icon-default-soft: $stem-gray-400;        // #a8a29e
 // 软白（90%）用于二选层状态（hover、未选中）：对比度 ≈ 3.5:1，边缘可用
 // 纯白（100%）用于选中/激活状态：对比度 ≈ 4.0:1，稳定通过 AA
 
-$icon-on-primary:        #ffffff;                   // 纯白用于选中/激活状态 (3.99:1 AA)
-$icon-on-primary-soft:   rgb(255 255 255 / 92%);     // 软白用于悬停/默认 (3.5:1, 边缘)
-$icon-on-success:        #ffffff;                   // 白字 + $stem-success 背景
-$icon-on-warning:        #1c1917;                   // 深色字 + $stem-warning 琥珀背景 (8.5:1)
-$icon-on-error:          #ffffff;                   // 白字 + $stem-error 红色背景
+$icon-on-primary: #ffffff; // 纯白用于选中/激活状态 (3.99:1 AA)
+$icon-on-primary-soft: rgb(255 255 255 / 92%); // 软白用于悬停/默认 (3.5:1, 边缘)
+$icon-on-success: #ffffff; // 白字 + $stem-success 背景
+$icon-on-warning: #1c1917; // 深色字 + $stem-warning 琥珀背景 (8.5:1)
+$icon-on-error: #ffffff; // 白字 + $stem-error 红色背景
 
 // =============================================================================
 // CSS 自定义属性层（穿透 Angular ViewEncapsulation）

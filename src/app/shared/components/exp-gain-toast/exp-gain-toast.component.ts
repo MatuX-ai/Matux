@@ -8,11 +8,7 @@
  */
 
 import { CommonModule } from '@angular/common';
-import {
-  ChangeDetectionStrategy,
-  Component,
-  Inject,
-} from '@angular/core';
+import { ChangeDetectionStrategy, Component, Inject } from '@angular/core';
 import { MAT_DIALOG_DATA, MatDialogModule, MatDialogRef } from '@angular/material/dialog';
 import { animate, style, transition, trigger } from '@angular/animations';
 
@@ -36,10 +32,7 @@ export interface ExpGainData {
           '300ms cubic-bezier(0.34, 1.56, 0.64, 1)',
           style({ opacity: 1, transform: 'translateY(-30px) scale(1.2)' })
         ),
-        animate(
-          '900ms ease-out',
-          style({ opacity: 0, transform: 'translateY(-100px) scale(1)' })
-        ),
+        animate('900ms ease-out', style({ opacity: 0, transform: 'translateY(-100px) scale(1)' })),
       ]),
     ]),
   ],

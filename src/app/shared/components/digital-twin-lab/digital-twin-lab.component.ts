@@ -1,6 +1,13 @@
 import { CommonModule, DecimalPipe, NgClass } from '@angular/common';
 import { HttpClient } from '@angular/common/http';
-import { ChangeDetectorRef, Component, ElementRef, OnDestroy, OnInit, ViewChild } from '@angular/core';
+import {
+  ChangeDetectorRef,
+  Component,
+  ElementRef,
+  OnDestroy,
+  OnInit,
+  ViewChild,
+} from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { MatButtonModule } from '@angular/material/button';
 import { MatCardModule } from '@angular/material/card';
@@ -122,7 +129,13 @@ export class DigitalTwinLabComponent implements OnInit, OnDestroy {
    * - failed: 超过最大重试次数后不再重连
    * - unsupported: 浏览器不支持 WebSocket / 脚本未生效
    */
-  websocketState: 'connecting' | 'connected' | 'disconnected' | 'reconnecting' | 'failed' | 'unsupported' = 'connecting';
+  websocketState:
+    | 'connecting'
+    | 'connected'
+    | 'disconnected'
+    | 'reconnecting'
+    | 'failed'
+    | 'unsupported' = 'connecting';
   /** 当前重试次数 */
   private wsReconnectAttempts = 0;
   /** 最大重试次数（指数退避后超过该值则进入 failed） */

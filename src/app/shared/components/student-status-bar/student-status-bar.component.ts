@@ -76,9 +76,7 @@ import type {
             <span class="metric-value">{{ totalPoints }}</span>
             <span class="metric-unit">EXP</span>
           </div>
-          <span class="weekly-trend" *ngIf="weeklyPoints > 0">
-            ↑ {{ weeklyPoints }}
-          </span>
+          <span class="weekly-trend" *ngIf="weeklyPoints > 0"> ↑ {{ weeklyPoints }} </span>
         </button>
       </div>
 
@@ -106,7 +104,9 @@ import type {
   `,
   styles: [
     `
-      :host { display: block; }
+      :host {
+        display: block;
+      }
 
       .status-bar {
         display: flex;

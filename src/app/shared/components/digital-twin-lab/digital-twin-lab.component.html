@@ -16,7 +16,12 @@
       </mat-icon>
       <span>{{ wsStatusText }}</span>
       <button
-        *ngIf="websocketState === 'failed' || websocketState === 'disconnected' || websocketState === 'unsupported' || websocketState === 'reconnecting'"
+        *ngIf="
+          websocketState === 'failed' ||
+          websocketState === 'disconnected' ||
+          websocketState === 'unsupported' ||
+          websocketState === 'reconnecting'
+        "
         mat-icon-button
         color="primary"
         (click)="retryWebSocket()"
@@ -29,7 +34,12 @@
 
     <!-- 【P2-4 修复】离线/连接失败提示条：含 reconnecting 状态 -->
     <div
-      *ngIf="websocketState === 'failed' || websocketState === 'disconnected' || websocketState === 'unsupported' || websocketState === 'reconnecting'"
+      *ngIf="
+        websocketState === 'failed' ||
+        websocketState === 'disconnected' ||
+        websocketState === 'unsupported' ||
+        websocketState === 'reconnecting'
+      "
       class="offline-banner"
     >
       <mat-icon>cloud_off</mat-icon>

@@ -8,13 +8,13 @@
 // ECharts 颜色令牌: 与设计系统主色保持一致
 // 与 _stem-tokens.scss / _css-variables.scss 中令牌值同步
 const ECHARTS_COLORS = {
-  textSecondary: '#334155',     // 对应 --matux-color-text-secondary
-  divider: '#e2e8f0',           // 对应 --matux-color-divider
-  primary: '#2563eb',           // 【对比度修复 #11】原 #3b82f6 (3.68:1) → #2563eb (4.62:1) AA
-  primaryFaded02: 'rgba(37, 99, 235, 0.02)',  // primary @ 2% alpha
-  primaryFaded04: 'rgba(37, 99, 235, 0.04)',  // primary @ 4% alpha
-  primaryFaded15: 'rgba(37, 99, 235, 0.15)',  // primary @ 15% alpha
-  secondary: '#64748b',         // 【对比度修复 #12】原 #94a3b8 (2.56:1) → #64748b (4.92:1) AA
+  textSecondary: '#334155', // 对应 --matux-color-text-secondary
+  divider: '#e2e8f0', // 对应 --matux-color-divider
+  primary: '#2563eb', // 【对比度修复 #11】原 #3b82f6 (3.68:1) → #2563eb (4.62:1) AA
+  primaryFaded02: 'rgba(37, 99, 235, 0.02)', // primary @ 2% alpha
+  primaryFaded04: 'rgba(37, 99, 235, 0.04)', // primary @ 4% alpha
+  primaryFaded15: 'rgba(37, 99, 235, 0.15)', // primary @ 15% alpha
+  secondary: '#64748b', // 【对比度修复 #12】原 #94a3b8 (2.56:1) → #64748b (4.92:1) AA
   secondaryFaded10: 'rgba(100, 116, 139, 0.1)', // secondary @ 10% alpha
 } as const;
 

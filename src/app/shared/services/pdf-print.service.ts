@@ -105,11 +105,9 @@ export class PdfPrintService {
     }
 
     if (options.showPreparingMessage !== false) {
-      this.snackBar.open(
-        options.preparingMessage || '正在打开打印对话框…',
-        '关闭',
-        { duration: 2000 }
-      );
+      this.snackBar.open(options.preparingMessage || '正在打开打印对话框…', '关闭', {
+        duration: 2000,
+      });
     }
 
     this.printing = true;

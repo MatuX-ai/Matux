@@ -15,11 +15,7 @@
   ></app-mock-mode-banner>
 
   <!-- 【一级】欢迎区域 -->
-  <section
-    class="welcome-section"
-    *ngIf="layout.isVisible('welcome')"
-    aria-label="欢迎区域"
-  >
+  <section class="welcome-section" *ngIf="layout.isVisible('welcome')" aria-label="欢迎区域">
     <div class="welcome-header">
       <div class="welcome-greeting">
         <h1 class="welcome-title">你好，{{ snapshot?.user?.username || '同学' }} 👋</h1>
@@ -47,11 +43,7 @@
   ></app-student-status-bar>
 
   <!-- 【一级】4 个核心 dashboard 卡 -->
-  <section
-    class="core-cards-grid"
-    *ngIf="layout.isVisible('status')"
-    aria-label="核心功能"
-  >
+  <section class="core-cards-grid" *ngIf="layout.isVisible('status')" aria-label="核心功能">
     <app-learning-center-card
       [snapshot]="snapshot"
       (navigate)="navigateTo($event)"
@@ -91,20 +83,14 @@
   </section>
 
   <!-- 【二级】学习日历热力图 -->
-  <section
-    class="dash-section"
-    *ngIf="layout.isVisible('heatmap')"
-    aria-label="学习日历热力图"
-  >
+  <section class="dash-section" *ngIf="layout.isVisible('heatmap')" aria-label="学习日历热力图">
     <div class="section-header">
       <h2 class="section-title">
         <mat-icon>calendar_month</mat-icon>
         学习日历
       </h2>
     </div>
-    <app-learning-calendar-heatmap
-      [config]="heatmapConfig"
-    ></app-learning-calendar-heatmap>
+    <app-learning-calendar-heatmap [config]="heatmapConfig"></app-learning-calendar-heatmap>
   </section>
 
   <!-- 【二级】推荐课程 -->
@@ -123,7 +109,10 @@
         <mat-icon iconPositionEnd>arrow_forward</mat-icon>
       </button>
     </div>
-    <div class="course-grid" *ngIf="(snapshot?.recommendedCourses?.length || 0) > 0; else noRecommendedTpl">
+    <div
+      class="course-grid"
+      *ngIf="(snapshot?.recommendedCourses?.length || 0) > 0; else noRecommendedTpl"
+    >
       <app-unified-course-card
         *ngFor="let course of snapshot?.recommendedCourses || []"
         [config]="{ course, showEnrollButton: true }"
@@ -138,11 +127,7 @@
   </section>
 
   <!-- 【二级】课件库 -->
-  <section
-    class="dash-section"
-    *ngIf="layout.isVisible('materials')"
-    aria-label="课件库"
-  >
+  <section class="dash-section" *ngIf="layout.isVisible('materials')" aria-label="课件库">
     <div class="section-header">
       <h2 class="section-title">
         <mat-icon>folder</mat-icon>

@@ -128,7 +128,10 @@ export class ElectronService {
         // 后端降级模式通知
         if (event.type === 'backend-degraded') {
           this.degradedModeSubject.next(true);
-          void api.showNotification('降级模式', 'Python 后端不可用，部分功能受限（课程同步、AI 教师、进度保存等）');
+          void api.showNotification(
+            '降级模式',
+            'Python 后端不可用，部分功能受限（课程同步、AI 教师、进度保存等）'
+          );
         }
 
         // 后端就绪时清除降级状态

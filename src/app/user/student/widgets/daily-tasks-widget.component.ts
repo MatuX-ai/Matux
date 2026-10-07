@@ -8,13 +8,7 @@
  */
 
 import { CommonModule } from '@angular/common';
-import {
-  ChangeDetectionStrategy,
-  Component,
-  EventEmitter,
-  Input,
-  Output,
-} from '@angular/core';
+import { ChangeDetectionStrategy, Component, EventEmitter, Input, Output } from '@angular/core';
 import { MatCardModule } from '@angular/material/card';
 import { MatIconModule } from '@angular/material/icon';
 import { MatProgressBarModule } from '@angular/material/progress-bar';
@@ -26,13 +20,7 @@ import type { DailyTask } from '../services/student-dashboard-data.service';
   selector: 'app-daily-tasks-widget',
   standalone: true,
   changeDetection: ChangeDetectionStrategy.OnPush,
-  imports: [
-    CommonModule,
-    MatCardModule,
-    MatIconModule,
-    MatProgressBarModule,
-    MatTooltipModule,
-  ],
+  imports: [CommonModule, MatCardModule, MatIconModule, MatProgressBarModule, MatTooltipModule],
   template: `
     <mat-card class="tasks-widget" aria-label="每日任务">
       <div class="widget-header">
@@ -70,9 +58,7 @@ import type { DailyTask } from '../services/student-dashboard-data.service';
             <div class="task-header">
               <mat-icon class="task-icon">{{ task.icon }}</mat-icon>
               <span class="task-title">{{ task.title }}</span>
-              <span class="task-reward" *ngIf="!task.completed">
-                +{{ task.rewardExp }} EXP
-              </span>
+              <span class="task-reward" *ngIf="!task.completed"> +{{ task.rewardExp }} EXP </span>
             </div>
             <p class="task-desc">{{ task.description }}</p>
             <!-- 进度（针对 streak 类任务） -->
@@ -108,7 +94,9 @@ import type { DailyTask } from '../services/student-dashboard-data.service';
   `,
   styles: [
     `
-      :host { display: block; }
+      :host {
+        display: block;
+      }
 
       .tasks-widget {
         padding: 20px;
@@ -179,7 +167,10 @@ import type { DailyTask } from '../services/student-dashboard-data.service';
         border-radius: 12px;
         background: var(--matux-color-background, #f1f5f9);
         cursor: pointer;
-        transition: transform 200ms ease, box-shadow 200ms ease, background 200ms ease;
+        transition:
+          transform 200ms ease,
+          box-shadow 200ms ease,
+          background 200ms ease;
       }
 
       .task-item:hover:not(.completed) {
@@ -204,7 +195,9 @@ import type { DailyTask } from '../services/student-dashboard-data.service';
         background: var(--stem-rarity-common, var(--matux-color-text-disabled, #94a3b8));
       }
 
-      .task-item.rarity-common .rarity-bar { background: var(--matux-color-text-disabled, #94a3b8); }
+      .task-item.rarity-common .rarity-bar {
+        background: var(--matux-color-text-disabled, #94a3b8);
+      }
       .task-item.rarity-rare .rarity-bar {
         background: var(--matux-color-primary, #3b82f6);
         box-shadow: 0 0 6px rgba(59, 130, 246, 0.4);
@@ -221,8 +214,13 @@ import type { DailyTask } from '../services/student-dashboard-data.service';
       }
 
       @keyframes rarity-pulse {
-        0%, 100% { box-shadow: 0 0 6px rgba(168, 85, 247, 0.4); }
-        50% { box-shadow: 0 0 14px rgba(168, 85, 247, 0.7); }
+        0%,
+        100% {
+          box-shadow: 0 0 6px rgba(168, 85, 247, 0.4);
+        }
+        50% {
+          box-shadow: 0 0 14px rgba(168, 85, 247, 0.7);
+        }
       }
 
       .task-content {
@@ -329,8 +327,13 @@ import type { DailyTask } from '../services/student-dashboard-data.service';
       }
 
       @keyframes all-done-glow {
-        0%, 100% { box-shadow: 0 2px 8px rgba(5, 150, 105, 0.3); }
-        50% { box-shadow: 0 4px 16px rgba(5, 150, 105, 0.5); }
+        0%,
+        100% {
+          box-shadow: 0 2px 8px rgba(5, 150, 105, 0.3);
+        }
+        50% {
+          box-shadow: 0 4px 16px rgba(5, 150, 105, 0.5);
+        }
       }
     `,
   ],

@@ -27,9 +27,27 @@ interface TestAccount {
 }
 
 const TEST_ACCOUNTS: TestAccount[] = [
-  { username: 'test_admin', password: 'TestAdmin123!', role: '管理员', description: '完整管理权限', icon: 'admin_panel_settings' },
-  { username: 'test_teacher', password: 'TestTeacher123!', role: '教师', description: '教学管理权限', icon: 'school' },
-  { username: 'test_student', password: 'TestStudent123!', role: '学生', description: '学习体验权限', icon: 'person' },
+  {
+    username: 'test_admin',
+    password: 'TestAdmin123!',
+    role: '管理员',
+    description: '完整管理权限',
+    icon: 'admin_panel_settings',
+  },
+  {
+    username: 'test_teacher',
+    password: 'TestTeacher123!',
+    role: '教师',
+    description: '教学管理权限',
+    icon: 'school',
+  },
+  {
+    username: 'test_student',
+    password: 'TestStudent123!',
+    role: '学生',
+    description: '学习体验权限',
+    icon: 'person',
+  },
 ];
 
 // 登录阶段定义（与 splash 启动阶段对齐：每个阶段有进度 + XP 奖励）
@@ -44,12 +62,56 @@ interface LoginPhase {
 }
 
 const LOGIN_PHASES: Record<string, LoginPhase> = {
-  validating: { key: 'validating', text: 'Validating credentials...', type: 'info', progress: 20, exp: 5, rarity: 'common' },
-  contacting:  { key: 'contacting',  text: 'Contacting auth server...', type: 'info', progress: 40, exp: 5, rarity: 'common' },
-  verifying:   { key: 'verifying',   text: 'Verifying token signature...', type: 'info', progress: 60, exp: 10, rarity: 'common' },
-  loading:     { key: 'loading',     text: 'Loading user profile...', type: 'info', progress: 80, exp: 25, rarity: 'rare', label: '加载画像' },
-  ready:       { key: 'ready',       text: 'Welcome to MatuX!', type: 'success', progress: 100, exp: 100, rarity: 'legendary', label: '登录完成' },
-  failed:      { key: 'failed',      text: 'Authentication failed', type: 'error', progress: 100, exp: 0, rarity: 'common' },
+  validating: {
+    key: 'validating',
+    text: 'Validating credentials...',
+    type: 'info',
+    progress: 20,
+    exp: 5,
+    rarity: 'common',
+  },
+  contacting: {
+    key: 'contacting',
+    text: 'Contacting auth server...',
+    type: 'info',
+    progress: 40,
+    exp: 5,
+    rarity: 'common',
+  },
+  verifying: {
+    key: 'verifying',
+    text: 'Verifying token signature...',
+    type: 'info',
+    progress: 60,
+    exp: 10,
+    rarity: 'common',
+  },
+  loading: {
+    key: 'loading',
+    text: 'Loading user profile...',
+    type: 'info',
+    progress: 80,
+    exp: 25,
+    rarity: 'rare',
+    label: '加载画像',
+  },
+  ready: {
+    key: 'ready',
+    text: 'Welcome to MatuX!',
+    type: 'success',
+    progress: 100,
+    exp: 100,
+    rarity: 'legendary',
+    label: '登录完成',
+  },
+  failed: {
+    key: 'failed',
+    text: 'Authentication failed',
+    type: 'error',
+    progress: 100,
+    exp: 0,
+    rarity: 'common',
+  },
 };
 
 interface TerminalLine {
@@ -135,8 +197,7 @@ export class LoginComponent implements OnInit, OnDestroy {
   private confettiSeq = 0;
   private timers: ReturnType<typeof setTimeout>[] = [];
   private readonly prefersReducedMotion =
-    typeof window !== 'undefined' &&
-    window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+    typeof window !== 'undefined' && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
 
   constructor(
     private authService: AuthService,
@@ -151,7 +212,9 @@ export class LoginComponent implements OnInit, OnDestroy {
     if (returnUrl && returnUrl !== '/auth/login') {
       try {
         sessionStorage.setItem('pre_login_return_url', returnUrl);
-      } catch { /* sessionStorage 不可用 */ }
+      } catch {
+        /* sessionStorage 不可用 */
+      }
     }
   }
 
@@ -216,7 +279,13 @@ export class LoginComponent implements OnInit, OnDestroy {
 
   // ============ 阶段状态机 ============
   private pushLine(text: string, type: TerminalLine['type'] = 'info'): void {
-    const line: TerminalLine = { text, type, typing: true, complete: false, timestamp: Date.now() + Math.random() };
+    const line: TerminalLine = {
+      text,
+      type,
+      typing: true,
+      complete: false,
+      timestamp: Date.now() + Math.random(),
+    };
     this.terminalLines = [...this.terminalLines, line];
     // 限制最多 6 行，超出则清理最早的
     if (this.terminalLines.length > 6) {
@@ -371,7 +440,9 @@ export class LoginComponent implements OnInit, OnDestroy {
         localStorage.setItem('matux-last-login', this._pendingStreakWrite.today);
         localStorage.setItem('matux-login-streak', String(this._pendingStreakWrite.next));
       }
-    } catch { /* ignore */ }
+    } catch {
+      /* ignore */
+    }
 
     const sessionReturnUrl = sessionStorage.getItem('pre_login_return_url');
     if (sessionReturnUrl) {
@@ -397,10 +468,18 @@ export class LoginComponent implements OnInit, OnDestroy {
   }
 
   // ============ OAuth 入口（保持原有逻辑） ============
-  loginWithQQ(): void { this.authService.signInWithQQ(); }
-  loginWithWechat(): void { this.authService.signInWithWeChat(); }
-  loginWithGoogle(): void { this.authService.signInWithGoogle(); }
-  loginWithGithub(): void { this.authService.signInWithGitHub(); }
+  loginWithQQ(): void {
+    this.authService.signInWithQQ();
+  }
+  loginWithWechat(): void {
+    this.authService.signInWithWeChat();
+  }
+  loginWithGoogle(): void {
+    this.authService.signInWithGoogle();
+  }
+  loginWithGithub(): void {
+    this.authService.signInWithGitHub();
+  }
 
   /**
    * 一键登录：使用测试学生账号快速登录（仅开发/演示环境）

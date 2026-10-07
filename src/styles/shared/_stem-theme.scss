@@ -7,14 +7,14 @@
 // =============================================
 
 // STEM 主色调 - 探索绿
-$stem-primary: #059669;       // Emerald-600
+$stem-primary: #059669; // Emerald-600
 $stem-primary-light: #10b981; // Emerald-500
-$stem-primary-dark: #047857;  // Emerald-700
+$stem-primary-dark: #047857; // Emerald-700
 
 // STEM 辅助色 - 天空蓝
-$stem-secondary: #0ea5e9;       // Sky-500
+$stem-secondary: #0ea5e9; // Sky-500
 $stem-secondary-light: #38bdf8; // Sky-400
-$stem-secondary-dark: #0284c7;   // Sky-600
+$stem-secondary-dark: #0284c7; // Sky-600
 
 // STEM 强调色 - 青色
 $stem-accent: #06b6d4; // Cyan-500
@@ -22,18 +22,18 @@ $stem-accent-dark: #0e7490; // Cyan-700（vs #fff 5.51:1，AA）
 
 // 功能色
 $stem-success: #059669; // 成功绿
-$stem-warning: #f59e0b;  // 警告黄
-$stem-error: #ef4444;    // 错误红
+$stem-warning: #f59e0b; // 警告黄
+$stem-error: #ef4444; // 错误红
 
 // 功能色深色变体（用于文字/图标，确保 WCAG AA 4.5:1 / 3:1）
 // 背景：原 $stem-success (#22c55e 实测 2.28:1)、$stem-warning (#f59e0b 2.15:1)
 //       $stem-error (#ef4444 3.77:1)、$stem-secondary (#0ea5e9 2.77:1) 在白底上
 //       均未达 4.5:1 正文要求。Dark 变体满足 AA 文本及图标标准。
-$stem-success-dark: #15803d;          // vs #fff 5.13:1，AA
-$stem-warning-dark: #b45309;          // vs #fff 4.62:1，AA（12-14px 文字适用）
+$stem-success-dark: #15803d; // vs #fff 5.13:1，AA
+$stem-warning-dark: #b45309; // vs #fff 4.62:1，AA（12-14px 文字适用）
 $stem-warning-dark-emphasis: #92400e; // vs #fff 7.81:1，AAA（大字/图标强调）
-$stem-error-dark: #dc2626;            // vs #fff 4.83:1，AA
-$stem-accent-blue-dark: #2563eb;       // MatuX 蓝 dark，vs #fff 5.16:1，AA
+$stem-error-dark: #dc2626; // vs #fff 4.83:1，AA
+$stem-accent-blue-dark: #2563eb; // MatuX 蓝 dark，vs #fff 5.16:1，AA
 
 // 简短别名
 $success: $stem-success;
@@ -42,14 +42,14 @@ $error: $stem-error;
 
 // 文本色 token
 // 注：文本色 - 依据 WCAG AA 4.5:1 标准选定
-$stem-text-primary: #1c1917;   // Stone-900 vs #fff 对比度 17.5:1（AAA）
+$stem-text-primary: #1c1917; // Stone-900 vs #fff 对比度 17.5:1（AAA）
 $stem-text-secondary: #57534e; // Stone-600 vs #fff 对比度 7.63:1（AAA）
-$stem-text-tertiary: #78716c;  // Stone-500 vs #fff 对比度 4.96:1（AA）
+$stem-text-tertiary: #78716c; // Stone-500 vs #fff 对比度 4.96:1（AA）
 
 // 背景色 token
-$stem-bg-page: #fafaf9;        // Stone-50 页面背景
-$stem-bg-surface: #ffffff;     // 卡片表面
-$stem-bg-muted: #f5f5f4;       // Stone-100 弱化背景
+$stem-bg-page: #fafaf9; // Stone-50 页面背景
+$stem-bg-surface: #ffffff; // 卡片表面
+$stem-bg-muted: #f5f5f4; // Stone-100 弱化背景
 
 // =============================================
 // STEM 圆角系统
@@ -69,13 +69,25 @@ $stem-radius-full: 9999px;
 // =============================================
 
 $stem-shadow-xs: 0 1px 2px 0 rgb(0 0 0 / 5%);
-$stem-shadow-sm: 0 1px 3px 0 rgb(0 0 0 / 10%), 0 1px 2px -1px rgb(0 0 0 / 10%);
-$stem-shadow-md: 0 4px 6px -1px rgb(0 0 0 / 10%), 0 2px 4px -2px rgb(0 0 0 / 10%);
-$stem-shadow-lg: 0 10px 15px -3px rgb(0 0 0 / 10%), 0 4px 6px -4px rgb(0 0 0 / 10%);
-$stem-shadow-xl: 0 20px 25px -5px rgb(0 0 0 / 10%), 0 8px 10px -6px rgb(0 0 0 / 10%);
+$stem-shadow-sm:
+  0 1px 3px 0 rgb(0 0 0 / 10%),
+  0 1px 2px -1px rgb(0 0 0 / 10%);
+$stem-shadow-md:
+  0 4px 6px -1px rgb(0 0 0 / 10%),
+  0 2px 4px -2px rgb(0 0 0 / 10%);
+$stem-shadow-lg:
+  0 10px 15px -3px rgb(0 0 0 / 10%),
+  0 4px 6px -4px rgb(0 0 0 / 10%);
+$stem-shadow-xl:
+  0 20px 25px -5px rgb(0 0 0 / 10%),
+  0 8px 10px -6px rgb(0 0 0 / 10%);
 $stem-shadow-2xl: 0 25px 50px -12px rgb(0 0 0 / 25%);
-$stem-shadow-card: 0 4px 6px -1px rgb(0 0 0 / 8%), 0 2px 4px -2px rgb(0 0 0 / 8%);
-$stem-shadow-card-hover: 0 14px 28px rgb(5 150 105 / 12%), 0 10px 10px rgb(5 150 105 / 6%);
+$stem-shadow-card:
+  0 4px 6px -1px rgb(0 0 0 / 8%),
+  0 2px 4px -2px rgb(0 0 0 / 8%);
+$stem-shadow-card-hover:
+  0 14px 28px rgb(5 150 105 / 12%),
+  0 10px 10px rgb(5 150 105 / 6%);
 
 // 简短别名（供旧组件兼容）
 $stem-shadow: $stem-shadow-sm;
@@ -84,7 +96,6 @@ $stem-shadow-hover: $stem-shadow-card-hover;
 // =============================================
 // STEM 动画系统
 // =============================================
-
 
 $stem-transition-fast: 150ms ease;
 $stem-transition-normal: 300ms ease;
@@ -117,8 +128,8 @@ $stem-gradient-primary-safe: linear-gradient(135deg, $stem-primary 0%, $stem-pri
 $stem-gradient-nature-safe: linear-gradient(135deg, $stem-primary 0%, $stem-primary-dark 100%);
 
 // 状态文字色 token（用于带色背景上的文字）
-$stem-text-on-primary: #ffffff;        // 用于 $stem-primary 背景上的文字（对比度 3.79:1，仅适合大文本/图标）
-$stem-text-on-primary-safe: #ffffff;   // 用于 $stem-primary-dark 背景上的文字（对比度 5.49:1，正常文本可用）
+$stem-text-on-primary: #ffffff; // 用于 $stem-primary 背景上的文字（对比度 3.79:1，仅适合大文本/图标）
+$stem-text-on-primary-safe: #ffffff; // 用于 $stem-primary-dark 背景上的文字（对比度 5.49:1，正常文本可用）
 
 // =============================================
 // 功能色（用于UI状态指示）
@@ -167,7 +178,9 @@ $stem-status-info-border: rgba($stem-secondary, 0.2);
   border-radius: $stem-radius-xl;
   background: white;
   box-shadow: $stem-shadow-sm;
-  transition: box-shadow $stem-transition-normal, transform $stem-transition-normal;
+  transition:
+    box-shadow $stem-transition-normal,
+    transform $stem-transition-normal;
 
   &:hover {
     box-shadow: $stem-shadow-card-hover;

@@ -13,7 +13,12 @@ import { FormsModule } from '@angular/forms';
 import { MatButtonModule } from '@angular/material/button';
 import { MatCardModule } from '@angular/material/card';
 import { MatChipsModule } from '@angular/material/chips';
-import { MAT_DIALOG_DATA, MatDialog, MatDialogModule, MatDialogRef } from '@angular/material/dialog';
+import {
+  MAT_DIALOG_DATA,
+  MatDialog,
+  MatDialogModule,
+  MatDialogRef,
+} from '@angular/material/dialog';
 import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatIconModule } from '@angular/material/icon';
 import { MatInputModule } from '@angular/material/input';
@@ -38,12 +43,33 @@ import {
 import { AchievementService } from '../../services/achievement.service';
 
 // ============ 稀有度配置 ============
-const RARITY_CONFIG: Record<AchievementRarity, { label: string; color: string; bg: string; border: string; glow: string }> = {
+const RARITY_CONFIG: Record<
+  AchievementRarity,
+  { label: string; color: string; bg: string; border: string; glow: string }
+> = {
   common: { label: '普通', color: '#64748b', bg: '#f1f5f9', border: '#e2e8f0', glow: '' },
   uncommon: { label: '少见', color: '#047857', bg: '#d1fae5', border: '#a7f3d0', glow: '' },
-  rare: { label: '稀有', color: '#0284c7', bg: '#bae6fd', border: '#7dd3fc', glow: '0 0 12px rgba(2,132,199,0.2)' },
-  epic: { label: '史诗', color: '#7c3aed', bg: '#ede9fe', border: '#c4b5fd', glow: '0 0 16px rgba(124,58,237,0.3)' },
-  legendary: { label: '传说', color: '#b45309', bg: '#fef3c7', border: '#fcd34d', glow: '0 0 20px rgba(245,158,11,0.4)' },
+  rare: {
+    label: '稀有',
+    color: '#0284c7',
+    bg: '#bae6fd',
+    border: '#7dd3fc',
+    glow: '0 0 12px rgba(2,132,199,0.2)',
+  },
+  epic: {
+    label: '史诗',
+    color: '#7c3aed',
+    bg: '#ede9fe',
+    border: '#c4b5fd',
+    glow: '0 0 16px rgba(124,58,237,0.3)',
+  },
+  legendary: {
+    label: '传说',
+    color: '#b45309',
+    bg: '#fef3c7',
+    border: '#fcd34d',
+    glow: '0 0 20px rgba(245,158,11,0.4)',
+  },
 };
 
 const CATEGORY_LABELS: Record<AchievementCategory, string> = {
@@ -74,7 +100,14 @@ export interface AchievementDialogData {
 @Component({
   selector: 'app-achievement-detail-dialog',
   standalone: true,
-  imports: [CommonModule, MatButtonModule, MatIconModule, MatProgressBarModule, MatDialogModule, MatSnackBarModule],
+  imports: [
+    CommonModule,
+    MatButtonModule,
+    MatIconModule,
+    MatProgressBarModule,
+    MatDialogModule,
+    MatSnackBarModule,
+  ],
   template: `
     <div class="dialog-wrapper">
       <!-- 头部渐变背景 -->
@@ -90,12 +123,18 @@ export interface AchievementDialogData {
 
         <h3 class="badge-name">{{ data.name }}</h3>
         <div class="badge-tags">
-          <span class="tag-rarity" [style.color]="rarityCfg.color" [style.background]="rarityCfg.bg">
+          <span
+            class="tag-rarity"
+            [style.color]="rarityCfg.color"
+            [style.background]="rarityCfg.bg"
+          >
             {{ rarityCfg.label }}
           </span>
           <span class="tag-category">{{ getCategoryLabel(data.category) }}</span>
         </div>
-        <p class="badge-date" *ngIf="data.unlockedDate">获得于 {{ data.unlockedDate | date: 'yyyy-MM-dd' }}</p>
+        <p class="badge-date" *ngIf="data.unlockedDate">
+          获得于 {{ data.unlockedDate | date: 'yyyy-MM-dd' }}
+        </p>
       </div>
 
       <!-- 内容区 -->
@@ -157,7 +196,12 @@ export interface AchievementDialogData {
             </button>
           </ng-container>
           <ng-template #unlockTpl>
-            <button mat-flat-button color="primary" class="action-btn unlock-btn" (click)="onUnlock()">
+            <button
+              mat-flat-button
+              color="primary"
+              class="action-btn unlock-btn"
+              (click)="onUnlock()"
+            >
               <mat-icon>auto_awesome</mat-icon> 去解锁
             </button>
           </ng-template>
@@ -165,193 +209,232 @@ export interface AchievementDialogData {
       </div>
     </div>
   `,
-  styles: [`
-    .dialog-wrapper {
-      max-width: 400px;
-      border-radius: 24px;
-      overflow: hidden;
-      background: #fff;
-    }
-    .dialog-header {
-      padding: 32px 24px 24px;
-      text-align: center;
-      position: relative;
-      color: #fff;
-    }
-    .close-btn {
-      position: absolute;
-      top: 8px;
-      right: 8px;
-      color: rgba(255,255,255,0.8);
-    }
-    .close-btn:hover { color: #fff; }
-    .badge-icon-circle {
-      width: 96px;
-      height: 96px;
-      border-radius: 50%;
-      background: rgba(255,255,255,0.2);
-      backdrop-filter: blur(8px);
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      margin: 0 auto 12px;
-      border: 2px solid rgba(255,255,255,0.4);
-    }
-    .badge-emoji {
-      font-size: 48px;
-    }
-    .badge-name {
-      font-size: 20px;
-      font-weight: 700;
-      margin: 0 0 8px;
-      color: #fff;
-    }
-    .badge-tags {
-      display: flex;
-      gap: 6px;
-      justify-content: center;
-    }
-    .tag-rarity {
-      font-size: 10px;
-      padding: 2px 8px;
-      border-radius: 12px;
-      font-weight: 600;
-    }
-    .tag-category {
-      font-size: 10px;
-      padding: 2px 8px;
-      border-radius: 12px;
-      background: rgba(255,255,255,0.2);
-      color: #fff;
-    }
-    .badge-date {
-      font-size: 12px;
-      color: rgba(255,255,255,0.8);
-      margin: 8px 0 0;
-    }
+  styles: [
+    `
+      .dialog-wrapper {
+        max-width: 400px;
+        border-radius: 24px;
+        overflow: hidden;
+        background: #fff;
+      }
+      .dialog-header {
+        padding: 32px 24px 24px;
+        text-align: center;
+        position: relative;
+        color: #fff;
+      }
+      .close-btn {
+        position: absolute;
+        top: 8px;
+        right: 8px;
+        color: rgba(255, 255, 255, 0.8);
+      }
+      .close-btn:hover {
+        color: #fff;
+      }
+      .badge-icon-circle {
+        width: 96px;
+        height: 96px;
+        border-radius: 50%;
+        background: rgba(255, 255, 255, 0.2);
+        backdrop-filter: blur(8px);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        margin: 0 auto 12px;
+        border: 2px solid rgba(255, 255, 255, 0.4);
+      }
+      .badge-emoji {
+        font-size: 48px;
+      }
+      .badge-name {
+        font-size: 20px;
+        font-weight: 700;
+        margin: 0 0 8px;
+        color: #fff;
+      }
+      .badge-tags {
+        display: flex;
+        gap: 6px;
+        justify-content: center;
+      }
+      .tag-rarity {
+        font-size: 10px;
+        padding: 2px 8px;
+        border-radius: 12px;
+        font-weight: 600;
+      }
+      .tag-category {
+        font-size: 10px;
+        padding: 2px 8px;
+        border-radius: 12px;
+        background: rgba(255, 255, 255, 0.2);
+        color: #fff;
+      }
+      .badge-date {
+        font-size: 12px;
+        color: rgba(255, 255, 255, 0.8);
+        margin: 8px 0 0;
+      }
 
-    .dialog-body {
-      padding: 20px 24px 24px;
-    }
-    .section {
-      margin-bottom: 16px;
-    }
-    .section-label {
-      font-size: 10px;
-      font-weight: 700;
-      text-transform: uppercase;
-      letter-spacing: 0.05em;
-      color: #94a3b8;
-      margin: 0 0 8px;
-    }
-    .section-text {
-      font-size: 14px;
-      color: #334155;
-      line-height: 1.6;
-      margin: 0;
-    }
-    .conditions-list {
-      list-style: none;
-      padding: 0;
-      margin: 0;
-    }
-    .condition-item {
-      display: flex;
-      align-items: flex-start;
-      gap: 8px;
-      padding: 6px 0;
-      font-size: 13px;
-    }
-    .condition-item span { flex: 1; }
-    .condition-item span.done { color: #334155; }
-    .condition-item span:not(.done) { color: #94a3b8; }
-    .cond-check {
-      width: 20px;
-      height: 20px;
-      border-radius: 50%;
-      border: 2px solid #cbd5e1;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      flex-shrink: 0;
-      margin-top: 1px;
-    }
-    .cond-check.done {
-      background: #dcfce7;
-      border-color: #22c55e;
-    }
-    .check-icon {
-      font-size: 14px;
-      width: 14px;
-      height: 14px;
-      color: #16a34a;
-    }
+      .dialog-body {
+        padding: 20px 24px 24px;
+      }
+      .section {
+        margin-bottom: 16px;
+      }
+      .section-label {
+        font-size: 10px;
+        font-weight: 700;
+        text-transform: uppercase;
+        letter-spacing: 0.05em;
+        color: #94a3b8;
+        margin: 0 0 8px;
+      }
+      .section-text {
+        font-size: 14px;
+        color: #334155;
+        line-height: 1.6;
+        margin: 0;
+      }
+      .conditions-list {
+        list-style: none;
+        padding: 0;
+        margin: 0;
+      }
+      .condition-item {
+        display: flex;
+        align-items: flex-start;
+        gap: 8px;
+        padding: 6px 0;
+        font-size: 13px;
+      }
+      .condition-item span {
+        flex: 1;
+      }
+      .condition-item span.done {
+        color: #334155;
+      }
+      .condition-item span:not(.done) {
+        color: #94a3b8;
+      }
+      .cond-check {
+        width: 20px;
+        height: 20px;
+        border-radius: 50%;
+        border: 2px solid #cbd5e1;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        flex-shrink: 0;
+        margin-top: 1px;
+      }
+      .cond-check.done {
+        background: #dcfce7;
+        border-color: #22c55e;
+      }
+      .check-icon {
+        font-size: 14px;
+        width: 14px;
+        height: 14px;
+        color: #16a34a;
+      }
 
-    .progress-box {
-      background: #f8fafc;
-      border-radius: 12px;
-      padding: 12px 16px;
-    }
-    .progress-header {
-      display: flex;
-      justify-content: space-between;
-      margin-bottom: 8px;
-    }
-    .progress-label { font-size: 12px; color: #64748b; }
-    .progress-value { font-size: 12px; font-weight: 700; color: #0f172a; }
-    .progress-bar { margin-bottom: 8px; }
-    .progress-hint {
-      font-size: 10px;
-      color: #94a3b8;
-      margin: 0;
-    }
+      .progress-box {
+        background: #f8fafc;
+        border-radius: 12px;
+        padding: 12px 16px;
+      }
+      .progress-header {
+        display: flex;
+        justify-content: space-between;
+        margin-bottom: 8px;
+      }
+      .progress-label {
+        font-size: 12px;
+        color: #64748b;
+      }
+      .progress-value {
+        font-size: 12px;
+        font-weight: 700;
+        color: #0f172a;
+      }
+      .progress-bar {
+        margin-bottom: 8px;
+      }
+      .progress-hint {
+        font-size: 10px;
+        color: #94a3b8;
+        margin: 0;
+      }
 
-    .cert-box {
-      background: #f8fafc;
-      border: 1px solid #e2e8f0;
-      border-radius: 12px;
-      padding: 12px 16px;
-    }
-    .cert-header {
-      display: flex;
-      align-items: center;
-      gap: 6px;
-      margin-bottom: 4px;
-    }
-    .cert-header mat-icon { font-size: 16px; width: 16px; height: 16px; color: #3b82f6; }
-    .cert-label { font-size: 12px; font-weight: 700; color: #475569; }
-    .cert-hash {
-      font-size: 10px;
-      color: #94a3b8;
-      font-family: monospace;
-      margin: 0;
-      word-break: break-all;
-    }
+      .cert-box {
+        background: #f8fafc;
+        border: 1px solid #e2e8f0;
+        border-radius: 12px;
+        padding: 12px 16px;
+      }
+      .cert-header {
+        display: flex;
+        align-items: center;
+        gap: 6px;
+        margin-bottom: 4px;
+      }
+      .cert-header mat-icon {
+        font-size: 16px;
+        width: 16px;
+        height: 16px;
+        color: #3b82f6;
+      }
+      .cert-label {
+        font-size: 12px;
+        font-weight: 700;
+        color: #475569;
+      }
+      .cert-hash {
+        font-size: 10px;
+        color: #94a3b8;
+        font-family: monospace;
+        margin: 0;
+        word-break: break-all;
+      }
 
-    .dialog-actions {
-      display: flex;
-      gap: 8px;
-      padding-top: 8px;
-    }
-    .action-btn {
-      flex: 1;
-      border-radius: 12px;
-      font-weight: 600;
-      font-size: 13px;
-    }
-    .share-btn { color: #7c3aed; border-color: #ede9fe; }
-    .cert-btn { color: #4338ca; border-color: #e0e7ff; }
-    .unlock-btn { background: linear-gradient(135deg, #3b82f6, #8b5cf6); color: #fff; }
-  `],
+      .dialog-actions {
+        display: flex;
+        gap: 8px;
+        padding-top: 8px;
+      }
+      .action-btn {
+        flex: 1;
+        border-radius: 12px;
+        font-weight: 600;
+        font-size: 13px;
+      }
+      .share-btn {
+        color: #7c3aed;
+        border-color: #ede9fe;
+      }
+      .cert-btn {
+        color: #4338ca;
+        border-color: #e0e7ff;
+      }
+      .unlock-btn {
+        background: linear-gradient(135deg, #3b82f6, #8b5cf6);
+        color: #fff;
+      }
+    `,
+  ],
 })
 export class AchievementDetailDialogComponent {
   constructor(
     @Inject(MAT_DIALOG_DATA) public data: AchievementDialogData,
     private dialogRef: MatDialogRef<AchievementDetailDialogComponent>,
-    private snackBar: MatSnackBar,
+    private snackBar: MatSnackBar
   ) {}
 
-  get rarityCfg() { return RARITY_CONFIG[this.data.rarity]; }
+  get rarityCfg() {
+    return RARITY_CONFIG[this.data.rarity];
+  }
 
   get headerGradient(): string {
     if (this.data.status !== 'completed') {
@@ -465,13 +548,19 @@ export class AchievementDetailDialogComponent {
           *ngFor="let achievement of filteredAchievements; let i = index"
           [class.completed]="achievement.status === 'completed'"
           [class.locked]="achievement.status === 'locked'"
-          [class.rarity-legendary]="achievement.rarity === 'legendary' && achievement.status === 'completed'"
+          [class.rarity-legendary]="
+            achievement.rarity === 'legendary' && achievement.status === 'completed'
+          "
           (click)="openDetail(achievement)"
           [@fadeIn]
           [style.animationDelay]="i * 40 + 'ms'"
         >
           <!-- 稀有度标记 -->
-          <div class="rarity-badge" [style.background]="rarityCfg(achievement.rarity).bg" [style.color]="rarityCfg(achievement.rarity).color">
+          <div
+            class="rarity-badge"
+            [style.background]="rarityCfg(achievement.rarity).bg"
+            [style.color]="rarityCfg(achievement.rarity).color"
+          >
             {{ rarityCfg(achievement.rarity).label }}
           </div>
 
@@ -480,7 +569,9 @@ export class AchievementDetailDialogComponent {
             [style.background]="rarityCfg(achievement.rarity).bg"
             [style.color]="rarityCfg(achievement.rarity).color"
           >
-            <span class="icon-emoji">{{ achievement.status === 'completed' ? achievement.icon : '🔒' }}</span>
+            <span class="icon-emoji">{{
+              achievement.status === 'completed' ? achievement.icon : '🔒'
+            }}</span>
           </div>
           <div class="card-body">
             <h4 class="card-title">{{ achievement.name }}</h4>
@@ -503,7 +594,10 @@ export class AchievementDetailDialogComponent {
           </div>
 
           <!-- 传说徽章旋转光效 -->
-          <div class="legendary-glow" *ngIf="achievement.rarity === 'legendary' && achievement.status === 'completed'"></div>
+          <div
+            class="legendary-glow"
+            *ngIf="achievement.rarity === 'legendary' && achievement.status === 'completed'"
+          ></div>
         </div>
       </div>
 
@@ -643,12 +737,16 @@ export class AchievementDetailDialogComponent {
         inset: 0;
         pointer-events: none;
         border-radius: 16px;
-        background: conic-gradient(from 0deg, transparent, rgba(245,158,11,0.15), transparent);
+        background: conic-gradient(from 0deg, transparent, rgba(245, 158, 11, 0.15), transparent);
         animation: legendarySpin 8s linear infinite;
       }
       @keyframes legendarySpin {
-        from { transform: rotate(0deg); }
-        to { transform: rotate(360deg); }
+        from {
+          transform: rotate(0deg);
+        }
+        to {
+          transform: rotate(360deg);
+        }
       }
 
       .empty-state {
@@ -691,7 +789,7 @@ export class AchievementGalleryComponent implements OnInit, OnDestroy {
 
   constructor(
     private achievementService: AchievementService,
-    private dialog: MatDialog,
+    private dialog: MatDialog
   ) {}
 
   ngOnInit(): void {
@@ -736,11 +834,9 @@ export class AchievementGalleryComponent implements OnInit, OnDestroy {
       points: 0,
       tags: [],
       requirements: [],
-      conditions: badge.unlocked ? [
-        { text: badge.description, done: true },
-      ] : [
-        { text: badge.description, done: false },
-      ],
+      conditions: badge.unlocked
+        ? [{ text: badge.description, done: true }]
+        : [{ text: badge.description, done: false }],
     };
   }
 

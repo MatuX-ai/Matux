@@ -72,7 +72,7 @@ describe('StudentDashboardDataService', () => {
     );
     mockUnifiedCourseService.getCoursesBatch.and.returnValue(of([] as never[]));
     // 用 unknown 绕过严格类型 (jasmine.createSpyObj 不推断返回类型)
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     mockAchievementService.getUserAchievements.and.returnValue(of([] as any));
     mockWsService.onProgressUpdate.and.returnValue(of({} as any));
 

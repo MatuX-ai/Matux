@@ -9,47 +9,47 @@
 
 :root {
   /* ========== 文本颜色 ========== */
-  --color-text-primary: #1c1917;      // 主文本 - 深暖灰 (STEM)
-  --color-text-secondary: #57534e;    // 次要文本 - 中灰 (STEM)
-  --color-text-disabled: #a8a29e;      // 禁用文本 - 浅灰 (STEM)
-  --color-text-inverse: #fff;         // 反色文本 - 白
+  --color-text-primary: #1c1917; // 主文本 - 深暖灰 (STEM)
+  --color-text-secondary: #57534e; // 次要文本 - 中灰 (STEM)
+  --color-text-disabled: #a8a29e; // 禁用文本 - 浅灰 (STEM)
+  --color-text-inverse: #fff; // 反色文本 - 白
 
   /* ========== 背景颜色 ========== */
-  --color-background: #fafaf9;       // 页面背景 - 暖白 (STEM)
-  --color-surface: #fff;             // 卡片表面 - 纯白
-  --color-surface-elevated: #fff;    // 悬浮表面 - 纯白
+  --color-background: #fafaf9; // 页面背景 - 暖白 (STEM)
+  --color-surface: #fff; // 卡片表面 - 纯白
+  --color-surface-elevated: #fff; // 悬浮表面 - 纯白
 
   /* ========== 分割线 ========== */
-  --color-divider: #e7e5e4;          // 分割线 (STEM)
-  --color-border: #e2e8f0;          // 边框色 (MatuX)
+  --color-divider: #e7e5e4; // 分割线 (STEM)
+  --color-border: #e2e8f0; // 边框色 (MatuX)
 
   /* ========== 功能色 ========== */
-  --color-success: #059669;         // 成功绿 - STEM Emerald-600
-  --color-success-light: #10b981;   // 浅成功绿 - Emerald-500
-  --color-warning: #f59e0b;          // 警告黄 - Amber-500
-  --color-warning-text: #b45309;     // 警告黄文本 - Amber-700 WCAG AA 4.6:1
-  --color-warning-light: #fbbf24;  // 浅警告黄 - Amber-400
-  --color-error: #ef4444;           // 错误红 - Red-500
-  --color-error-light: #f87171;     // 浅错误红 - Red-400
-  --color-info: #0ea5e9;            // 信息蓝 - Sky-500
+  --color-success: #059669; // 成功绿 - STEM Emerald-600
+  --color-success-light: #10b981; // 浅成功绿 - Emerald-500
+  --color-warning: #f59e0b; // 警告黄 - Amber-500
+  --color-warning-text: #b45309; // 警告黄文本 - Amber-700 WCAG AA 4.6:1
+  --color-warning-light: #fbbf24; // 浅警告黄 - Amber-400
+  --color-error: #ef4444; // 错误红 - Red-500
+  --color-error-light: #f87171; // 浅错误红 - Red-400
+  --color-info: #0ea5e9; // 信息蓝 - Sky-500
 
   /* ========== MatuX 兼容色 ========== */
-  --matux-color-primary: #3b82f6;    // MatuX主色 - Blue-500
+  --matux-color-primary: #3b82f6; // MatuX主色 - Blue-500
   --matux-color-primary-dark: #2563eb; // MatuX深蓝
-  --matux-color-slate-900: #0f172a;  // MatuX藏青色
-  --matux-color-slate-800: #1e293b;  // MatuX藏青灰
+  --matux-color-slate-900: #0f172a; // MatuX藏青色
+  --matux-color-slate-800: #1e293b; // MatuX藏青灰
 
   /* ========== 通用灰色系 ========== */
-  --color-gray-50: #fafaf9;         // Gray-50
-  --color-gray-100: #f5f5f4;         // Gray-100
-  --color-gray-200: #e7e5e4;         // Gray-200
-  --color-gray-300: #d6d3d1;         // Gray-300
-  --color-gray-400: #a8a29e;         // Gray-400
-  --color-gray-500: #78716c;         // Gray-500
-  --color-gray-600: #57534e;         // Gray-600
-  --color-gray-700: #44403c;         // Gray-700
-  --color-gray-800: #292524;         // Gray-800
-  --color-gray-900: #1c1917;        // Gray-900
+  --color-gray-50: #fafaf9; // Gray-50
+  --color-gray-100: #f5f5f4; // Gray-100
+  --color-gray-200: #e7e5e4; // Gray-200
+  --color-gray-300: #d6d3d1; // Gray-300
+  --color-gray-400: #a8a29e; // Gray-400
+  --color-gray-500: #78716c; // Gray-500
+  --color-gray-600: #57534e; // Gray-600
+  --color-gray-700: #44403c; // Gray-700
+  --color-gray-800: #292524; // Gray-800
+  --color-gray-900: #1c1917; // Gray-900
 
   /* ========== 兼容旧的 MatuX 变量名 ========== */
   --mat-app-background-color: var(--color-background);
@@ -63,13 +63,13 @@
   --mat-app-surface-container-low: #f9f9f9;
 
   /* ========== 状态背景色 ========== */
-  --color-success-bg: #f0fdf4;       // 成功背景
-  --color-warning-bg: #fffbeb;       // 警告背景
-  --color-error-bg: #fef2f2;          // 错误背景
-  --color-info-bg: #f0f9ff;          // 信息背景
+  --color-success-bg: #f0fdf4; // 成功背景
+  --color-warning-bg: #fffbeb; // 警告背景
+  --color-error-bg: #fef2f2; // 错误背景
+  --color-info-bg: #f0f9ff; // 信息背景
 
   /* ========== 状态边框色 ========== */
-  --color-success-border: #bbf7d0;   // 成功边框
-  --color-warning-border: #fde68a;    // 警告边框
-  --color-error-border: #fecaca;      // 错误边框
+  --color-success-border: #bbf7d0; // 成功边框
+  --color-warning-border: #fde68a; // 警告边框
+  --color-error-border: #fecaca; // 错误边框
 }

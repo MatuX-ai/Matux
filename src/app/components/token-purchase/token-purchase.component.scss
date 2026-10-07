@@ -66,7 +66,11 @@ $stem-transition: 250ms cubic-bezier(0.4, 0, 0.2, 1);
       gap: 4px;
       padding: $spacing-xs $spacing-sm;
       border-radius: $stem-radius-lg;
-      background: linear-gradient(135deg, $stem-error 0%, color.adjust($stem-error, $lightness: -10%) 100%);
+      background: linear-gradient(
+        135deg,
+        $stem-error 0%,
+        color.adjust($stem-error, $lightness: -10%) 100%
+      );
       box-shadow: 0 2px 4px rgba($stem-error, 0.3);
       color: white;
       font-size: $font-size-xs;

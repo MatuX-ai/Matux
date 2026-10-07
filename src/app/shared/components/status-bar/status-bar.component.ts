@@ -81,15 +81,17 @@ export class StatusBarComponent implements OnInit, OnDestroy {
     // 【P0 修复】跳过 BehaviorSubject 的初始 false（未检测时），
     //   只有当 healthy$ 有过一次“状态变化”才更新 UI，避免初次订阅被
     //   初始默认值 false 误判为「后端未启动」。
-    this.moduleStatusService.healthy$.pipe(
-      pairwise(),
-      filter(([prev, curr]) => prev !== curr),
-      map(([, curr]) => curr),
-      takeUntil(this.destroy$)
-    ).subscribe((healthy) => {
-      // 【P0 修复】保留三态映射：healthy → 'healthy' / false → 'unhealthy'。
-      this.backendStatus = healthy ? 'healthy' : 'unhealthy';
-    });
+    this.moduleStatusService.healthy$
+      .pipe(
+        pairwise(),
+        filter(([prev, curr]) => prev !== curr),
+        map(([, curr]) => curr),
+        takeUntil(this.destroy$)
+      )
+      .subscribe((healthy) => {
+        // 【P0 修复】保留三态映射：healthy → 'healthy' / false → 'unhealthy'。
+        this.backendStatus = healthy ? 'healthy' : 'unhealthy';
+      });
 
     this.moduleStatusService.tierGroups$.pipe(takeUntil(this.destroy$)).subscribe((groups) => {
       this.tierGroups = groups;

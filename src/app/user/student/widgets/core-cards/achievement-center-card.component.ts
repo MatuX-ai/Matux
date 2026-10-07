@@ -11,13 +11,7 @@
  */
 
 import { CommonModule } from '@angular/common';
-import {
-  ChangeDetectionStrategy,
-  Component,
-  EventEmitter,
-  Input,
-  Output,
-} from '@angular/core';
+import { ChangeDetectionStrategy, Component, EventEmitter, Input, Output } from '@angular/core';
 import { MatCardModule } from '@angular/material/card';
 import { MatIconModule } from '@angular/material/icon';
 import { MatProgressBarModule } from '@angular/material/progress-bar';
@@ -30,13 +24,7 @@ import type { ExtendedAchievementBadge } from '../../student-dashboard.mock';
   selector: 'app-achievement-center-card',
   standalone: true,
   changeDetection: ChangeDetectionStrategy.OnPush,
-  imports: [
-    CommonModule,
-    MatCardModule,
-    MatIconModule,
-    MatProgressBarModule,
-    MatTooltipModule,
-  ],
+  imports: [CommonModule, MatCardModule, MatIconModule, MatProgressBarModule, MatTooltipModule],
   template: `
     <mat-card
       class="core-card core-card--achievement"
@@ -44,8 +32,13 @@ import type { ExtendedAchievementBadge } from '../../student-dashboard.mock';
       tabindex="0"
       role="button"
       [attr.aria-label]="
-        '成就中心：连续打卡 ' + streakDays + ' 天，已解锁 ' +
-          unlockedCount + '/' + totalCount + ' 徽章'
+        '成就中心：连续打卡 ' +
+        streakDays +
+        ' 天，已解锁 ' +
+        unlockedCount +
+        '/' +
+        totalCount +
+        ' 徽章'
       "
       (click)="onClick()"
       (keyup.enter)="onClick()"
@@ -73,9 +66,7 @@ import type { ExtendedAchievementBadge } from '../../student-dashboard.mock';
                 color="accent"
               ></mat-progress-bar>
             </div>
-            <div class="exp-text">
-              {{ level.exp }} / {{ level.expToNext }} EXP
-            </div>
+            <div class="exp-text">{{ level.exp }} / {{ level.expToNext }} EXP</div>
           </div>
         </div>
 
@@ -112,7 +103,9 @@ import type { ExtendedAchievementBadge } from '../../student-dashboard.mock';
   `,
   styles: [
     `
-      :host { display: block; }
+      :host {
+        display: block;
+      }
 
       .core-card {
         display: flex;
@@ -125,15 +118,19 @@ import type { ExtendedAchievementBadge } from '../../student-dashboard.mock';
         background: var(--stem-bg-surface, #ffffff);
         box-shadow: var(--stem-shadow-sm, 0 1px 3px rgba(5, 150, 105, 0.08));
         cursor: pointer;
-        transition: transform 200ms ease, box-shadow 200ms ease;
+        transition:
+          transform 200ms ease,
+          box-shadow 200ms ease;
 
-        &:hover, &:focus-visible {
+        &:hover,
+        &:focus-visible {
           outline: none;
           transform: translateY(-4px);
           box-shadow: var(--stem-shadow-card-hover, 0 14px 28px rgba(5, 150, 105, 0.12));
         }
 
-        &:hover .card-arrow, &:focus-visible .card-arrow {
+        &:hover .card-arrow,
+        &:focus-visible .card-arrow {
           transform: translateX(4px);
           color: var(--stem-warning, #f59e0b);
         }
@@ -187,7 +184,9 @@ import type { ExtendedAchievementBadge } from '../../student-dashboard.mock';
         height: 20px;
         color: var(--matux-color-text-disabled, #94a3b8);
         font-size: 20px;
-        transition: transform 200ms ease, color 200ms ease;
+        transition:
+          transform 200ms ease,
+          color 200ms ease;
       }
 
       .level-row {
@@ -322,14 +321,16 @@ export class AchievementCenterCardComponent {
   @Output() navigate = new EventEmitter<string>();
 
   get level(): UserLevel {
-    return this.snapshot?.level ?? {
-      current: 1,
-      title: '初学者',
-      exp: 0,
-      expToNext: 100,
-      expProgressPercent: 0,
-      totalExp: 0,
-    };
+    return (
+      this.snapshot?.level ?? {
+        current: 1,
+        title: '初学者',
+        exp: 0,
+        expToNext: 100,
+        expProgressPercent: 0,
+        totalExp: 0,
+      }
+    );
   }
 
   get streakDays(): number {

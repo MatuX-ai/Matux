@@ -27,8 +27,8 @@ import { TokenTimeStats } from '../../models/token.models';
 // ECharts 颜色令牌: 与设计系统主色保持一致
 // 与 _stem-tokens.scss / _css-variables.scss 中令牌值同步
 const ECHARTS_PALETTE = {
-  consumed: '#ef4444',     // 消费 - 对应 --stem-error
-  purchased: '#10b981',    // 充值 - 对应 --stem-primary-light
+  consumed: '#ef4444', // 消费 - 对应 --stem-error
+  purchased: '#10b981', // 充值 - 对应 --stem-primary-light
 } as const;
 
 // ECharts 类型定义（原生库无完整类型声明）

@@ -7,11 +7,7 @@
  */
 
 import { CommonModule } from '@angular/common';
-import {
-  ChangeDetectionStrategy,
-  Component,
-  Input,
-} from '@angular/core';
+import { ChangeDetectionStrategy, Component, Input } from '@angular/core';
 import { MatIconModule } from '@angular/material/icon';
 import { MatProgressBarModule } from '@angular/material/progress-bar';
 
@@ -44,16 +40,16 @@ import type { UserLevel } from '../services/student-dashboard-data.service';
         </div>
         <div class="progress-footer" *ngIf="!compact">
           <span class="total-exp">总经验 {{ level.totalExp }}</span>
-          <span class="to-next">
-            距离下一级还需 {{ level.expToNext - level.exp }} EXP
-          </span>
+          <span class="to-next"> 距离下一级还需 {{ level.expToNext - level.exp }} EXP </span>
         </div>
       </div>
     </div>
   `,
   styles: [
     `
-      :host { display: block; }
+      :host {
+        display: block;
+      }
 
       .level-progress {
         display: flex;
@@ -108,8 +104,13 @@ import type { UserLevel } from '../services/student-dashboard-data.service';
       }
 
       @keyframes legendary-pulse {
-        0%, 100% { box-shadow: 0 4px 16px rgba(245, 158, 11, 0.5); }
-        50% { box-shadow: 0 4px 24px rgba(245, 158, 11, 0.8); }
+        0%,
+        100% {
+          box-shadow: 0 4px 16px rgba(245, 158, 11, 0.5);
+        }
+        50% {
+          box-shadow: 0 4px 24px rgba(245, 158, 11, 0.8);
+        }
       }
 
       .level-text {

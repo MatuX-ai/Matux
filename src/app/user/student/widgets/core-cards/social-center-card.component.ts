@@ -11,13 +11,7 @@
  */
 
 import { CommonModule } from '@angular/common';
-import {
-  ChangeDetectionStrategy,
-  Component,
-  EventEmitter,
-  Input,
-  Output,
-} from '@angular/core';
+import { ChangeDetectionStrategy, Component, EventEmitter, Input, Output } from '@angular/core';
 import { MatCardModule } from '@angular/material/card';
 import { MatIconModule } from '@angular/material/icon';
 import { MatTooltipModule } from '@angular/material/tooltip';
@@ -55,15 +49,16 @@ import type {
 
         <!-- 我的排名 -->
         <div class="my-rank" *ngIf="myRankEntry">
-          <div class="rank-badge" [class]="'rank-' + myRankEntry.rank">
-            #{{ myRankEntry.rank }}
-          </div>
+          <div class="rank-badge" [class]="'rank-' + myRankEntry.rank">#{{ myRankEntry.rank }}</div>
           <div class="rank-info">
             <div class="rank-label">本周排名</div>
             <div class="rank-points">{{ myRankEntry.totalExp }} EXP</div>
           </div>
           <div class="rank-change" *ngIf="myRankEntry.rankChange !== 0">
-            <mat-icon [class.up]="myRankEntry.rankChange > 0" [class.down]="myRankEntry.rankChange < 0">
+            <mat-icon
+              [class.up]="myRankEntry.rankChange > 0"
+              [class.down]="myRankEntry.rankChange < 0"
+            >
               {{ myRankEntry.rankChange > 0 ? 'trending_up' : 'trending_down' }}
             </mat-icon>
             <span [class.up]="myRankEntry.rankChange > 0" [class.down]="myRankEntry.rankChange < 0">
@@ -111,7 +106,9 @@ import type {
   `,
   styles: [
     `
-      :host { display: block; }
+      :host {
+        display: block;
+      }
 
       .core-card {
         display: flex;
@@ -124,15 +121,19 @@ import type {
         background: var(--stem-bg-surface, #ffffff);
         box-shadow: var(--stem-shadow-sm, 0 1px 3px rgba(5, 150, 105, 0.08));
         cursor: pointer;
-        transition: transform 200ms ease, box-shadow 200ms ease;
+        transition:
+          transform 200ms ease,
+          box-shadow 200ms ease;
 
-        &:hover, &:focus-visible {
+        &:hover,
+        &:focus-visible {
           outline: none;
           transform: translateY(-4px);
           box-shadow: var(--stem-shadow-card-hover, 0 14px 28px rgba(5, 150, 105, 0.12));
         }
 
-        &:hover .card-arrow, &:focus-visible .card-arrow {
+        &:hover .card-arrow,
+        &:focus-visible .card-arrow {
           transform: translateX(4px);
           color: var(--stem-primary, #059669);
         }
@@ -186,7 +187,9 @@ import type {
         height: 20px;
         color: var(--matux-color-text-disabled, var(--matux-color-text-disabled, #94a3b8));
         font-size: 20px;
-        transition: transform 200ms ease, color 200ms ease;
+        transition:
+          transform 200ms ease,
+          color 200ms ease;
       }
 
       .my-rank {
@@ -212,9 +215,15 @@ import type {
         box-shadow: 0 2px 4px rgba(0, 0, 0, 0.06);
       }
 
-      .rank-badge.rank-1 { color: var(--stem-warning, #f59e0b); }
-      .rank-badge.rank-2 { color: var(--matux-color-text-disabled, #94a3b8); }
-      .rank-badge.rank-3 { color: var(--stem-rarity-legendary, #b45309); }
+      .rank-badge.rank-1 {
+        color: var(--stem-warning, #f59e0b);
+      }
+      .rank-badge.rank-2 {
+        color: var(--matux-color-text-disabled, #94a3b8);
+      }
+      .rank-badge.rank-3 {
+        color: var(--stem-rarity-legendary, #b45309);
+      }
 
       .rank-info {
         flex: 1;
@@ -245,11 +254,13 @@ import type {
         font-size: 14px;
       }
 
-      .rank-change mat-icon.up, .rank-change span.up {
+      .rank-change mat-icon.up,
+      .rank-change span.up {
         color: var(--stem-success, #059669);
       }
 
-      .rank-change mat-icon.down, .rank-change span.down {
+      .rank-change mat-icon.down,
+      .rank-change span.down {
         color: var(--stem-error, #ef4444);
       }
 
@@ -274,9 +285,15 @@ import type {
         font-weight: 700;
       }
 
-      .avatar-mini.rank-1 { background: linear-gradient(135deg, #fef3c7 0%, #fbbf24 100%); }
-      .avatar-mini.rank-2 { background: linear-gradient(135deg, #e2e8f0 0%, #cbd5e1 100%); }
-      .avatar-mini.rank-3 { background: linear-gradient(135deg, #fed7aa 0%, #fb923c 100%); }
+      .avatar-mini.rank-1 {
+        background: linear-gradient(135deg, #fef3c7 0%, #fbbf24 100%);
+      }
+      .avatar-mini.rank-2 {
+        background: linear-gradient(135deg, #e2e8f0 0%, #cbd5e1 100%);
+      }
+      .avatar-mini.rank-3 {
+        background: linear-gradient(135deg, #fed7aa 0%, #fb923c 100%);
+      }
 
       .avatar-mini.is-me {
         box-shadow: 0 0 0 2px var(--stem-primary, #059669);

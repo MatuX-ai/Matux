@@ -130,9 +130,9 @@ export class AchievementService {
    */
   getProgress(userId: number): Observable<AchievementProgress> {
     const params = new HttpParams().set('userId', userId.toString());
-    return this.http.get<AchievementProgress>(`${this.apiUrl}/progress`, { params }).pipe(
-      catchError(() => of(this.buildFallbackProgress()))
-    );
+    return this.http
+      .get<AchievementProgress>(`${this.apiUrl}/progress`, { params })
+      .pipe(catchError(() => of(this.buildFallbackProgress())));
   }
 
   /**
@@ -191,9 +191,9 @@ export class AchievementService {
    */
   getUserAchievementProgress(userId: number): Observable<AchievementProgress> {
     const params = new HttpParams().set('userId', userId.toString());
-    return this.http.get<AchievementProgress>(`${this.apiUrl}/progress`, { params }).pipe(
-      catchError(() => of(this.buildFallbackProgress()))
-    );
+    return this.http
+      .get<AchievementProgress>(`${this.apiUrl}/progress`, { params })
+      .pipe(catchError(() => of(this.buildFallbackProgress())));
   }
 
   /**
@@ -257,8 +257,7 @@ export class AchievementService {
       totalBadges,
       unlockedBadges,
       overallProgress: unlockedBadges,
-      completionPercentage:
-        totalBadges > 0 ? Math.round((unlockedBadges / totalBadges) * 100) : 0,
+      completionPercentage: totalBadges > 0 ? Math.round((unlockedBadges / totalBadges) * 100) : 0,
       averageScore: 78,
       totalAchievements: totalBadges,
       completedAchievements: unlockedBadges,

@@ -309,12 +309,24 @@ $font-family-sensor: 'Courier New', monospace;
       }
     }
 
-    .face-front  { transform: translateZ(60px); }
-    .face-back   { transform: rotateY(180deg) translateZ(60px); }
-    .face-right  { transform: rotateY(90deg) translateZ(60px); }
-    .face-left   { transform: rotateY(-90deg) translateZ(60px); }
-    .face-top    { transform: rotateX(90deg) translateZ(60px); }
-    .face-bottom { transform: rotateX(-90deg) translateZ(60px); }
+    .face-front {
+      transform: translateZ(60px);
+    }
+    .face-back {
+      transform: rotateY(180deg) translateZ(60px);
+    }
+    .face-right {
+      transform: rotateY(90deg) translateZ(60px);
+    }
+    .face-left {
+      transform: rotateY(-90deg) translateZ(60px);
+    }
+    .face-top {
+      transform: rotateX(90deg) translateZ(60px);
+    }
+    .face-bottom {
+      transform: rotateX(-90deg) translateZ(60px);
+    }
   }
 
   @keyframes cube-rotate {

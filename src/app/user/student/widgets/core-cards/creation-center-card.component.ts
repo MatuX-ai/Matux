@@ -10,13 +10,7 @@
  */
 
 import { CommonModule } from '@angular/common';
-import {
-  ChangeDetectionStrategy,
-  Component,
-  EventEmitter,
-  Input,
-  Output,
-} from '@angular/core';
+import { ChangeDetectionStrategy, Component, EventEmitter, Input, Output } from '@angular/core';
 import { MatButtonModule } from '@angular/material/button';
 import { MatCardModule } from '@angular/material/card';
 import { MatIconModule } from '@angular/material/icon';
@@ -31,13 +25,7 @@ import type {
   selector: 'app-creation-center-card',
   standalone: true,
   changeDetection: ChangeDetectionStrategy.OnPush,
-  imports: [
-    CommonModule,
-    MatCardModule,
-    MatIconModule,
-    MatButtonModule,
-    MatTooltipModule,
-  ],
+  imports: [CommonModule, MatCardModule, MatIconModule, MatButtonModule, MatTooltipModule],
   template: `
     <mat-card
       class="core-card core-card--creation"
@@ -58,11 +46,7 @@ import type {
         </div>
 
         <!-- AI 推荐项目预览 -->
-        <div
-          class="rec-preview"
-          *ngIf="topRec"
-          [style.background]="topRec.gradient"
-        >
+        <div class="rec-preview" *ngIf="topRec" [style.background]="topRec.gradient">
           <mat-icon class="rec-sparkle">auto_awesome</mat-icon>
           <div class="rec-info">
             <div class="rec-title">{{ topRec.title }}</div>
@@ -81,35 +65,25 @@ import type {
             <mat-icon>code</mat-icon>
             <span>AI 编程</span>
           </button>
-          <button
-            class="entry-btn"
-            mat-button
-            (click)="onMaterials($event)"
-            matTooltip="课件库"
-          >
+          <button class="entry-btn" mat-button (click)="onMaterials($event)" matTooltip="课件库">
             <mat-icon>folder</mat-icon>
             <span>课件库</span>
           </button>
-          <button
-            class="entry-btn"
-            mat-button
-            (click)="onProjects($event)"
-            matTooltip="实战项目"
-          >
+          <button class="entry-btn" mat-button (click)="onProjects($event)" matTooltip="实战项目">
             <mat-icon>rocket_launch</mat-icon>
             <span>实战</span>
           </button>
         </div>
 
-        <div class="rec-counter" *ngIf="recsCount > 1">
-          +{{ recsCount - 1 }} 个推荐项目等你探索
-        </div>
+        <div class="rec-counter" *ngIf="recsCount > 1">+{{ recsCount - 1 }} 个推荐项目等你探索</div>
       </div>
     </mat-card>
   `,
   styles: [
     `
-      :host { display: block; }
+      :host {
+        display: block;
+      }
 
       .core-card {
         display: flex;
@@ -122,15 +96,19 @@ import type {
         background: var(--stem-bg-surface, #ffffff);
         box-shadow: var(--stem-shadow-sm, 0 1px 3px rgba(5, 150, 105, 0.08));
         cursor: pointer;
-        transition: transform 200ms ease, box-shadow 200ms ease;
+        transition:
+          transform 200ms ease,
+          box-shadow 200ms ease;
 
-        &:hover, &:focus-visible {
+        &:hover,
+        &:focus-visible {
           outline: none;
           transform: translateY(-4px);
           box-shadow: var(--stem-shadow-card-hover, 0 14px 28px rgba(5, 150, 105, 0.12));
         }
 
-        &:hover .card-arrow, &:focus-visible .card-arrow {
+        &:hover .card-arrow,
+        &:focus-visible .card-arrow {
           transform: translateX(4px);
           color: var(--stem-secondary, #0ea5e9);
         }
@@ -184,7 +162,9 @@ import type {
         height: 20px;
         color: var(--matux-color-text-disabled, #94a3b8);
         font-size: 20px;
-        transition: transform 200ms ease, color 200ms ease;
+        transition:
+          transform 200ms ease,
+          color 200ms ease;
       }
 
       .rec-preview {
@@ -245,7 +225,9 @@ import type {
         color: var(--matux-color-text-secondary, #57534e) !important;
         font-size: 10px !important;
         font-weight: 600 !important;
-        transition: background 200ms ease, color 200ms ease;
+        transition:
+          background 200ms ease,
+          color 200ms ease;
       }
 
       .entry-btn mat-icon {

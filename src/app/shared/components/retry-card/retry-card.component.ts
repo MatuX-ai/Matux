@@ -70,11 +70,7 @@ import { MatIconModule } from '@angular/material/icon';
         background: var(--matux-color-surface, #ffffff);
         box-shadow: 0 4px 16px rgba(15, 23, 42, 0.08);
         border: 1px solid rgba(239, 68, 68, 0.18);
-        background: linear-gradient(
-          180deg,
-          rgba(239, 68, 68, 0.04) 0%,
-          rgba(239, 68, 68, 0) 100%
-        );
+        background: linear-gradient(180deg, rgba(239, 68, 68, 0.04) 0%, rgba(239, 68, 68, 0) 100%);
       }
 
       .icon-wrap {

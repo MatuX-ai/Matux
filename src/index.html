@@ -9,12 +9,12 @@
          - Electron app:// 协议: app://./index.html → / 解析为 app://./，行为与 ./ 一致；
            且 Electron 自定义协议 SPA fallback 会把 index.html/<x> 重定向到 <x>，与绝对 base href 配合更稳。
          - 历史相对路径兼容：构建输出仍包含 main 等同源资源，不受 base href 切换影响。 -->
-    <base href="/">
+    <base href="/" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <link rel="icon" type="image/svg+xml" href="assets/branding/logo.svg" />
 
     <!-- PWA 配置 -->
-    <link rel="manifest" href="manifest.webmanifest">
+    <link rel="manifest" href="manifest.webmanifest" />
     <meta name="theme-color" content="#059669" />
     <meta name="description" content="MatuX STEM 学习工具 - 支持离线学习的现代化教育系统" />
 

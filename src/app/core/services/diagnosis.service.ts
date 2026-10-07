@@ -172,7 +172,8 @@ export class DiagnosisService {
     const trends = this.analyzeTrends(growth as unknown as GrowthTrajectory);
 
     // 【P3-3 修复】后端无数据时补充初始诊断建议，避免页面“什么都看不到”
-    const finalSuggestions = suggestions.length > 0 ? suggestions : this.buildInitialSuggestions(dimensionScores);
+    const finalSuggestions =
+      suggestions.length > 0 ? suggestions : this.buildInitialSuggestions(dimensionScores);
 
     return {
       userId,
@@ -188,7 +189,9 @@ export class DiagnosisService {
   /**
    * 构造初始诊断建议（后端未返回时使用）
    */
-  private buildInitialSuggestions(scores: Record<DiagnosisDimension, number>): TeachingSuggestion[] {
+  private buildInitialSuggestions(
+    scores: Record<DiagnosisDimension, number>
+  ): TeachingSuggestion[] {
     const now = new Date().toISOString();
     const items: TeachingSuggestion[] = [];
     if (scores.knowledge < 60) {

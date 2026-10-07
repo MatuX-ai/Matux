@@ -5,7 +5,16 @@
  */
 import { CommonModule } from '@angular/common';
 import { HttpClient } from '@angular/common/http';
-import { AfterViewInit, ChangeDetectorRef, Component, ElementRef, NgZone, OnDestroy, OnInit, ViewChild } from '@angular/core';
+import {
+  AfterViewInit,
+  ChangeDetectorRef,
+  Component,
+  ElementRef,
+  NgZone,
+  OnDestroy,
+  OnInit,
+  ViewChild,
+} from '@angular/core';
 import { MatButtonModule } from '@angular/material/button';
 import { MatCardModule } from '@angular/material/card';
 import { MatIconModule } from '@angular/material/icon';
@@ -142,13 +151,16 @@ export class ARVRCoursePlayerComponent implements OnInit, AfterViewInit, OnDestr
     FALLBACK_LEVEL_MS.forEach((ms, idx) => {
       const timer = setTimeout(() => {
         if (this.isLoading) {
-          console.warn(`[ARVRPlayer] Fallback timer #${idx + 1} fired at ${ms}ms, forcing UI reset`);
+          console.warn(
+            `[ARVRPlayer] Fallback timer #${idx + 1} fired at ${ms}ms, forcing UI reset`
+          );
           this.zone.run(() => {
             this.isLoading = false;
             if (!this.courseData) {
-              this.errorMessage = idx === FALLBACK_LEVEL_MS.length - 1
-                ? '加载课程超时(15s)，可能是后端服务不可达'
-                : `加载较慢(${idx * 5 + 5}s)，后端可能不稳定`;
+              this.errorMessage =
+                idx === FALLBACK_LEVEL_MS.length - 1
+                  ? '加载课程超时(15s)，可能是后端服务不可达'
+                  : `加载较慢(${idx * 5 + 5}s)，后端可能不稳定`;
             }
             this.cdr.detectChanges();
           });

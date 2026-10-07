@@ -42,7 +42,8 @@ $transition-action-btn:
   color $stem-transition;
 
 // 等宽字体变量
-$font-family-output: 'Cascadia Code', 'Fira Code', 'JetBrains Mono', 'Geist Mono', consolas, monospace;
+$font-family-output:
+  'Cascadia Code', 'Fira Code', 'JetBrains Mono', 'Geist Mono', consolas, monospace;
 
 // 动画变量
 $animation-pulse: pulse 1.5s ease-in-out infinite;

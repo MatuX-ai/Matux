@@ -545,7 +545,8 @@ export function getExtendedAchievementBadges(): ExtendedAchievementBadge[] {
     return {
       ...badge,
       rarity,
-      pointValue: rarity === 'legendary' ? 200 : rarity === 'epic' ? 100 : rarity === 'rare' ? 50 : 20,
+      pointValue:
+        rarity === 'legendary' ? 200 : rarity === 'epic' ? 100 : rarity === 'rare' ? 50 : 20,
     };
   });
 }

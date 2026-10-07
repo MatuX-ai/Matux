@@ -30,7 +30,8 @@ const BROWSER_STATIC_PLUGINS: PluginListItem[] = [
     id: 'ai-assistant-pro',
     name: 'AI 助手 Pro',
     version: '1.4.0',
-    description: '集成多模型 AI 对话、代码补全与文档问答，支持 DeepSeek、OpenAI、Anthropic 等多后端。',
+    description:
+      '集成多模型 AI 对话、代码补全与文档问答，支持 DeepSeek、OpenAI、Anthropic 等多后端。',
     author: 'iMato Lab',
     categories: ['ai-assistant', 'productivity'],
     state: 'available',
@@ -234,9 +235,9 @@ export class PluginStoreService {
       params = params.set('compatible_only', 'true');
     }
 
-    return this.http.get<PluginListItem[]>(this.baseUrl, { params }).pipe(
-      catchError(() => of(this.filterStaticPlugins(BROWSER_STATIC_PLUGINS, options)))
-    );
+    return this.http
+      .get<PluginListItem[]>(this.baseUrl, { params })
+      .pipe(catchError(() => of(this.filterStaticPlugins(BROWSER_STATIC_PLUGINS, options))));
   }
 
   /**
@@ -302,16 +303,15 @@ export class PluginStoreService {
       } as PluginStats);
     }
     return this.http.get<PluginStats>(`${this.baseUrl}/stats`).pipe(
-      catchError(
-        () =>
-          of({
-            total_installed: 0,
-            total_enabled: 0,
-            total_disabled: 0,
-            total_loaded: 0,
-            total_errors: 0,
-            categories: {},
-          } as PluginStats)
+      catchError(() =>
+        of({
+          total_installed: 0,
+          total_enabled: 0,
+          total_disabled: 0,
+          total_loaded: 0,
+          total_errors: 0,
+          categories: {},
+        } as PluginStats)
       )
     );
   }

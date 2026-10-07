@@ -49,7 +49,7 @@ import { PdfPrintService } from '../../services/pdf-print.service';
         [matTooltip]="pdfTooltip || '导出为 PDF'"
       >
         <mat-icon>picture_as_pdf</mat-icon>
-        {{ exporting ? '导出中...' : (pdfLabel || '导出PDF') }}
+        {{ exporting ? '导出中...' : pdfLabel || '导出PDF' }}
       </button>
       <button
         *ngIf="showPrint"

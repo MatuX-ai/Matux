@@ -146,8 +146,17 @@ const ECHARTS_COLORS = {
               />
 
               <!-- 图例 -->
-              <line x1="60" y1="15" x2="85" y2="15" [attr.stroke]="SVG_PALETTE.primary" stroke-width="2.5" />
-              <text x="90" y="19" font-size="11" [attr.fill]="SVG_PALETTE.legendText">编程思维</text>
+              <line
+                x1="60"
+                y1="15"
+                x2="85"
+                y2="15"
+                [attr.stroke]="SVG_PALETTE.primary"
+                stroke-width="2.5"
+              />
+              <text x="90" y="19" font-size="11" [attr.fill]="SVG_PALETTE.legendText">
+                编程思维
+              </text>
               <line
                 x1="170"
                 y1="15"
@@ -157,7 +166,9 @@ const ECHARTS_COLORS = {
                 stroke-width="2.5"
                 stroke-dasharray="6,3"
               />
-              <text x="200" y="19" font-size="11" [attr.fill]="SVG_PALETTE.legendText">STEM实验</text>
+              <text x="200" y="19" font-size="11" [attr.fill]="SVG_PALETTE.legendText">
+                STEM实验
+              </text>
             </svg>
           </div>
         </mat-card-content>
@@ -192,7 +203,14 @@ const ECHARTS_COLORS = {
                   *ngFor="let level of week; let d = index"
                   class="heatmap-cell"
                   [class]="getHeatmapClass(level)"
-                  [matTooltip]="'第' + (w + 1) + '周 周' + ['日','一','二','三','四','五','六'][d] + ': ' + getHeatmapLabel(level)"
+                  [matTooltip]="
+                    '第' +
+                    (w + 1) +
+                    '周 周' +
+                    ['日', '一', '二', '三', '四', '五', '六'][d] +
+                    ': ' +
+                    getHeatmapLabel(level)
+                  "
                 ></div>
               </div>
             </div>
@@ -215,7 +233,9 @@ const ECHARTS_COLORS = {
                 <div class="heatmap-stat-desc">密集学习周</div>
               </div>
               <div class="heatmap-stat">
-                <div class="heatmap-stat-num rest">{{ heatmapStats.total - heatmapStats.active }}</div>
+                <div class="heatmap-stat-num rest">
+                  {{ heatmapStats.total - heatmapStats.active }}
+                </div>
                 <div class="heatmap-stat-desc">休息天数</div>
               </div>
             </div>
@@ -231,7 +251,9 @@ const ECHARTS_COLORS = {
         </mat-card-header>
         <mat-card-content>
           <div class="timeline">
-            <ng-container *ngFor="let milestone of trajectory?.milestones ?? []; let last = last; let i = index">
+            <ng-container
+              *ngFor="let milestone of trajectory?.milestones ?? []; let last = last; let i = index"
+            >
               <div class="timeline-item" (click)="toggleMilestone(i)">
                 <div class="timeline-dot">
                   <mat-icon>{{ getMilestoneIcon(milestone) }}</mat-icon>
@@ -241,11 +263,16 @@ const ECHARTS_COLORS = {
                   <span class="timeline-date">{{ milestone.achievedAt | date: 'yyyy-MM-dd' }}</span>
                   <span class="timeline-title">{{ milestone.title }}</span>
                   <span class="timeline-desc">{{ milestone.description }}</span>
-                  <mat-icon class="expand-icon" [class.expanded]="expandedMilestone === i">expand_more</mat-icon>
+                  <mat-icon class="expand-icon" [class.expanded]="expandedMilestone === i"
+                    >expand_more</mat-icon
+                  >
                 </div>
               </div>
               <!-- 展开详情 -->
-              <div class="timeline-detail" [@expandCollapse]="expandedMilestone === i ? 'expanded' : 'collapsed'">
+              <div
+                class="timeline-detail"
+                [@expandCollapse]="expandedMilestone === i ? 'expanded' : 'collapsed'"
+              >
                 <div class="timeline-detail-inner">
                   <p class="timeline-detail-desc">{{ milestone.description }}</p>
                   <div class="timeline-detail-reward" *ngIf="milestone.reward">
@@ -386,7 +413,11 @@ const ECHARTS_COLORS = {
       .ai-avatar {
         font-size: 40px;
         color: var(--matux-color-primary, #3b82f6);
-        background: linear-gradient(135deg, var(--matux-color-info-50, #dbeafe), var(--matux-color-info-100, #bfdbfe));
+        background: linear-gradient(
+          135deg,
+          var(--matux-color-info-50, #dbeafe),
+          var(--matux-color-info-100, #bfdbfe)
+        );
         border-radius: 50%;
         padding: 8px;
       }
@@ -482,16 +513,36 @@ const ECHARTS_COLORS = {
       .heatmap-cell:hover {
         transform: scale(1.3);
       }
-      .heatmap-cell.level-0 { background: #f1f5f9; }
-      .heatmap-cell.level-1 { background: #bbf7d0; }
-      .heatmap-cell.level-2 { background: #4ade80; }
-      .heatmap-cell.level-3 { background: #22c55e; }
-      .heatmap-cell.level-4 { background: #16a34a; }
-      .heatmap-cell.legend-l0 { background: #f1f5f9; }
-      .heatmap-cell.legend-l1 { background: #bbf7d0; }
-      .heatmap-cell.legend-l2 { background: #4ade80; }
-      .heatmap-cell.legend-l3 { background: #22c55e; }
-      .heatmap-cell.legend-l4 { background: #16a34a; }
+      .heatmap-cell.level-0 {
+        background: #f1f5f9;
+      }
+      .heatmap-cell.level-1 {
+        background: #bbf7d0;
+      }
+      .heatmap-cell.level-2 {
+        background: #4ade80;
+      }
+      .heatmap-cell.level-3 {
+        background: #22c55e;
+      }
+      .heatmap-cell.level-4 {
+        background: #16a34a;
+      }
+      .heatmap-cell.legend-l0 {
+        background: #f1f5f9;
+      }
+      .heatmap-cell.legend-l1 {
+        background: #bbf7d0;
+      }
+      .heatmap-cell.legend-l2 {
+        background: #4ade80;
+      }
+      .heatmap-cell.legend-l3 {
+        background: #22c55e;
+      }
+      .heatmap-cell.legend-l4 {
+        background: #16a34a;
+      }
       .heatmap-legend {
         display: flex;
         align-items: center;
@@ -521,8 +572,12 @@ const ECHARTS_COLORS = {
         font-weight: 700;
         color: var(--matux-color-text-primary, #0f172a);
       }
-      .heatmap-stat-num.intense { color: #22c55e; }
-      .heatmap-stat-num.rest { color: #f97316; }
+      .heatmap-stat-num.intense {
+        color: #22c55e;
+      }
+      .heatmap-stat-num.rest {
+        color: #f97316;
+      }
       .heatmap-stat-desc {
         font-size: 10px;
         color: var(--matux-color-text-disabled, #94a3b8);
@@ -701,7 +756,11 @@ const ECHARTS_COLORS = {
       }
       .interest-bar-fill {
         height: 100%;
-        background: linear-gradient(90deg, var(--matux-color-primary-light, #60a5fa), var(--matux-color-primary, #3b82f6));
+        background: linear-gradient(
+          90deg,
+          var(--matux-color-primary-light, #60a5fa),
+          var(--matux-color-primary, #3b82f6)
+        );
         border-radius: 4px;
       }
       .interest-pct {
@@ -941,7 +1000,7 @@ export class GrowthTrajectoryComponent {
 
     this.radarOption = {
       radar: {
-        indicator: radarData.map(d => ({ name: d.name, max: 100 })),
+        indicator: radarData.map((d) => ({ name: d.name, max: 100 })),
         shape: 'circle',
         splitNumber: 4,
         name: {
@@ -973,7 +1032,7 @@ export class GrowthTrajectoryComponent {
           symbolSize: 6,
           data: [
             {
-              value: radarData.map(d => d.current),
+              value: radarData.map((d) => d.current),
               name: '当前',
               areaStyle: {
                 color: ECHARTS_COLORS.primaryFaded15,
@@ -987,7 +1046,7 @@ export class GrowthTrajectoryComponent {
               },
             },
             {
-              value: radarData.map(d => d.prev),
+              value: radarData.map((d) => d.prev),
               name: '3个月前',
               areaStyle: {
                 color: ECHARTS_COLORS.secondaryFaded10,
@@ -1024,14 +1083,20 @@ export class GrowthTrajectoryComponent {
       const week: number[] = [];
       let weekHasIntense = false;
       for (let d = 0; d < days; d++) {
-        const weekendBoost = (d === 0 || d === 6) ? 0.3 : 0;
-        const recentBoost = w / weeks * 0.4;
+        const weekendBoost = d === 0 || d === 6 ? 0.3 : 0;
+        const recentBoost = (w / weeks) * 0.4;
         const base = 0.2 + weekendBoost + recentBoost;
         const random = Math.random();
-        const level = random < base * 0.3 ? 0 :
-                      random < base * 0.6 ? 1 :
-                      random < base * 0.85 ? 2 :
-                      random < base ? 3 : 4;
+        const level =
+          random < base * 0.3
+            ? 0
+            : random < base * 0.6
+              ? 1
+              : random < base * 0.85
+                ? 2
+                : random < base
+                  ? 3
+                  : 4;
         if (level > 0) activeCount++;
         if (level === 4) weekHasIntense = true;
         week.push(level);

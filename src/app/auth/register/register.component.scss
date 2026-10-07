@@ -10,11 +10,7 @@ $animation-spin: spin 0.8s linear infinite;
   align-items: center;
   min-height: 100vh;
   padding: 16px;
-  background: linear-gradient(
-    135deg,
-    stem.$stem-primary 0%,
-    stem.$stem-primary-dark 100%
-  );
+  background: linear-gradient(135deg, stem.$stem-primary 0%, stem.$stem-primary-dark 100%);
 }
 
 .register-card {
@@ -192,11 +188,7 @@ $animation-spin: spin 0.8s linear infinite;
   padding: 14px 24px;
   border: none;
   border-radius: stem.$stem-radius-full;
-  background: linear-gradient(
-    135deg,
-    stem.$stem-primary 0%,
-    stem.$stem-primary-dark 100%
-  );
+  background: linear-gradient(135deg, stem.$stem-primary 0%, stem.$stem-primary-dark 100%);
   color: white;
   font-size: var(--matux-font-size-body, 16px);
   font-weight: 600;

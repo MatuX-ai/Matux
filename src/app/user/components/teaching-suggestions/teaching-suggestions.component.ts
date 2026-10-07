@@ -134,7 +134,7 @@ export class TeachingSuggestionsComponent implements OnInit, OnDestroy {
     // 原色 vs #fff 背景: #22c55e 2.28:1、#f59e0b 2.15:1、#ef4444 3.77:1 - 全部未达 4.5:1
     if (score >= 70) return '#15803d'; // 5.13:1 AA
     if (score >= 45) return '#b45309'; // 4.62:1 AA
-    return '#dc2626';                  // 4.83:1 AA
+    return '#dc2626'; // 4.83:1 AA
   }
 
   getScoreLevel(score: number): string {

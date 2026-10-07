@@ -103,7 +103,11 @@ $stem-transition: 250ms cubic-bezier(0.4, 0, 0.2, 1);
           }
 
           &.count-icon {
-            background: linear-gradient(135deg, $stem-warning 0%, color.adjust($stem-warning, $lightness: -10%) 100%);
+            background: linear-gradient(
+              135deg,
+              $stem-warning 0%,
+              color.adjust($stem-warning, $lightness: -10%) 100%
+            );
           }
 
           &.average-icon {
@@ -111,7 +115,11 @@ $stem-transition: 250ms cubic-bezier(0.4, 0, 0.2, 1);
           }
 
           &.trend-icon {
-            background: linear-gradient(135deg, $stem-success 0%, color.adjust($stem-success, $lightness: 10%) 100%);
+            background: linear-gradient(
+              135deg,
+              $stem-success 0%,
+              color.adjust($stem-success, $lightness: 10%) 100%
+            );
           }
 
           &.last-icon {

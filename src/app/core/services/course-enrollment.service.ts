@@ -132,10 +132,10 @@ export class CourseEnrollmentService {
       if (query?.page_size) params = params.set('page_size', String(query.page_size));
       if (query?.status) params = params.set('status', query.status);
       return this.http
-        .get<{ total: number; page: number; page_size: number; items: CourseEnrollment[] } | CourseEnrollment[]>(
-          realApiBase,
-          { params }
-        )
+        .get<
+          | { total: number; page: number; page_size: number; items: CourseEnrollment[] }
+          | CourseEnrollment[]
+        >(realApiBase, { params })
         .pipe(
           map((raw) => {
             if (Array.isArray(raw)) {
@@ -149,7 +149,9 @@ export class CourseEnrollmentService {
             return raw;
           }),
           catchError((err) =>
-            throwError(() => new Error(`加载选课记录失败: ${err?.message || err?.statusText || String(err)}`))
+            throwError(
+              () => new Error(`加载选课记录失败: ${err?.message || err?.statusText || String(err)}`)
+            )
           )
         );
     }
@@ -185,10 +187,16 @@ export class CourseEnrollmentService {
 
     if (useReal && realApiBase) {
       return this.http
-        .post<CourseEnrollment>(realApiBase, { course_id: courseId, user_id: userId, org_id: orgId })
+        .post<CourseEnrollment>(realApiBase, {
+          course_id: courseId,
+          user_id: userId,
+          org_id: orgId,
+        })
         .pipe(
           catchError((err) =>
-            throwError(() => new Error(`报名课程失败: ${err?.message || err?.statusText || String(err)}`))
+            throwError(
+              () => new Error(`报名课程失败: ${err?.message || err?.statusText || String(err)}`)
+            )
           )
         );
     }

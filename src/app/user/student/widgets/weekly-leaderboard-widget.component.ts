@@ -8,13 +8,7 @@
  */
 
 import { CommonModule } from '@angular/common';
-import {
-  ChangeDetectionStrategy,
-  Component,
-  EventEmitter,
-  Input,
-  Output,
-} from '@angular/core';
+import { ChangeDetectionStrategy, Component, EventEmitter, Input, Output } from '@angular/core';
 import { MatCardModule } from '@angular/material/card';
 import { MatIconModule } from '@angular/material/icon';
 
@@ -68,7 +62,13 @@ import type { LeaderboardEntry } from '../services/student-dashboard-data.servic
           <div class="change-cell">
             <div class="weekly-change">
               <mat-icon [class.up]="entry.weeklyChange > 0" [class.down]="entry.weeklyChange < 0">
-                {{ entry.weeklyChange > 0 ? 'trending_up' : entry.weeklyChange < 0 ? 'trending_down' : 'trending_flat' }}
+                {{
+                  entry.weeklyChange > 0
+                    ? 'trending_up'
+                    : entry.weeklyChange < 0
+                      ? 'trending_down'
+                      : 'trending_flat'
+                }}
               </mat-icon>
               <span class="change-num">+{{ entry.weeklyChange }}</span>
             </div>
@@ -78,7 +78,8 @@ import type { LeaderboardEntry } from '../services/student-dashboard-data.servic
               [class.up]="entry.rankChange > 0"
               [class.down]="entry.rankChange < 0"
             >
-              {{ entry.rankChange > 0 ? '↑' : '↓' }}{{ entry.rankChange > 0 ? entry.rankChange : -entry.rankChange }}
+              {{ entry.rankChange > 0 ? '↑' : '↓'
+              }}{{ entry.rankChange > 0 ? entry.rankChange : -entry.rankChange }}
             </div>
           </div>
         </div>
@@ -87,7 +88,9 @@ import type { LeaderboardEntry } from '../services/student-dashboard-data.servic
   `,
   styles: [
     `
-      :host { display: block; }
+      :host {
+        display: block;
+      }
 
       .leaderboard-widget {
         padding: 20px;
@@ -182,9 +185,15 @@ import type { LeaderboardEntry } from '../services/student-dashboard-data.servic
         font-weight: 700;
       }
 
-      .avatar.rank-1 { background: linear-gradient(135deg, #fef3c7 0%, #fbbf24 100%); }
-      .avatar.rank-2 { background: linear-gradient(135deg, #e2e8f0 0%, #cbd5e1 100%); }
-      .avatar.rank-3 { background: linear-gradient(135deg, #fed7aa 0%, #fb923c 100%); }
+      .avatar.rank-1 {
+        background: linear-gradient(135deg, #fef3c7 0%, #fbbf24 100%);
+      }
+      .avatar.rank-2 {
+        background: linear-gradient(135deg, #e2e8f0 0%, #cbd5e1 100%);
+      }
+      .avatar.rank-3 {
+        background: linear-gradient(135deg, #fed7aa 0%, #fb923c 100%);
+      }
 
       .me-marker {
         position: absolute;
@@ -239,16 +248,24 @@ import type { LeaderboardEntry } from '../services/student-dashboard-data.servic
         font-size: 12px;
       }
 
-      .weekly-change mat-icon.up { color: var(--stem-success, #059669); }
-      .weekly-change mat-icon.down { color: var(--stem-error, #ef4444); }
+      .weekly-change mat-icon.up {
+        color: var(--stem-success, #059669);
+      }
+      .weekly-change mat-icon.down {
+        color: var(--stem-error, #ef4444);
+      }
 
       .rank-change {
         font-size: 10px;
         font-weight: 600;
       }
 
-      .rank-change.up { color: var(--stem-success, #059669); }
-      .rank-change.down { color: var(--stem-error, #ef4444); }
+      .rank-change.up {
+        color: var(--stem-success, #059669);
+      }
+      .rank-change.down {
+        color: var(--stem-error, #ef4444);
+      }
     `,
   ],
 })

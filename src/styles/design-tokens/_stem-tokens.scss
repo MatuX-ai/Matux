@@ -143,7 +143,9 @@ $stem-shadow-xl:
 $stem-shadow-2xl: 0 25px 50px -12px rgb(5 150 105 / 15%);
 
 // 特殊阴影 (用于 STEM 元素)
-$stem-shadow-card: 0 1px 3px rgb(5 150 105 / 8%), 0 1px 2px rgb(5 150 105 / 6%);
+$stem-shadow-card:
+  0 1px 3px rgb(5 150 105 / 8%),
+  0 1px 2px rgb(5 150 105 / 6%);
 $stem-shadow-glow: 0 0 20px rgb(5 150 105 / 30%);
 $stem-shadow-glow-sm: 0 0 10px rgb(5 150 105 / 20%);
 $stem-shadow-card-hover:
@@ -397,7 +399,9 @@ $color-stem-error: $stem-error;
 // =============================================================================
 
 // 卡片阴影hover（共享样式需要）
-$stem-shadow-card-hover: 0 14px 28px rgb(5 150 105 / 12%), 0 10px 10px rgb(5 150 105 / 6%);
+$stem-shadow-card-hover:
+  0 14px 28px rgb(5 150 105 / 12%),
+  0 10px 10px rgb(5 150 105 / 6%);
 
 // 渐变硬件背景
 $stem-accent: #06b6d4; // Cyan-500

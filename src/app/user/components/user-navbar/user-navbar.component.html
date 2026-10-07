@@ -35,7 +35,10 @@
       <button
         mat-icon-button
         class="action-btn notification-btn"
-        [attr.aria-label]="i18n.translate('userNav.notifications') + (unreadNotifications > 0 ? ', ' + unreadNotifications + ' 条未读' : '')"
+        [attr.aria-label]="
+          i18n.translate('userNav.notifications') +
+          (unreadNotifications > 0 ? ', ' + unreadNotifications + ' 条未读' : '')
+        "
       >
         <mat-icon aria-hidden="true">notifications</mat-icon>
         <span class="notification-badge" *ngIf="unreadNotifications > 0" aria-live="polite">
@@ -57,81 +60,81 @@
           <mat-icon aria-hidden="true">account_circle</mat-icon>
         </div>
         <span class="username" [innerHTML]="safeDisplayName"></span>
-          <mat-icon aria-hidden="true">arrow_drop_down</mat-icon>
+        <mat-icon aria-hidden="true">arrow_drop_down</mat-icon>
+      </button>
+
+      <mat-menu #userMenu="matMenu" class="user-dropdown-menu">
+        <div class="user-menu-header" *ngIf="currentUser">
+          <div class="user-avatar">
+            <img [src]="safeAvatar" [alt]="'用户头像'" (error)="onAvatarError($event)" />
+          </div>
+          <div class="user-info">
+            <div class="username" [innerHTML]="safeDisplayName"></div>
+            <div class="user-type-badge">{{ getUserTypeLabel() }}</div>
+          </div>
+        </div>
+
+        <mat-divider></mat-divider>
+
+        <button mat-menu-item [routerLink]="ROUTES.USER.PROFILE">
+          <mat-icon>person</mat-icon>
+          <span>{{ i18n.translate('userNav.profile') }}</span>
         </button>
 
-        <mat-menu #userMenu="matMenu" class="user-dropdown-menu">
-          <div class="user-menu-header" *ngIf="currentUser">
-            <div class="user-avatar">
-              <img [src]="safeAvatar" [alt]="'用户头像'" (error)="onAvatarError($event)" />
-            </div>
-            <div class="user-info">
-              <div class="username" [innerHTML]="safeDisplayName"></div>
-              <div class="user-type-badge">{{ getUserTypeLabel() }}</div>
-            </div>
-          </div>
+        <button mat-menu-item [routerLink]="ROUTES.USER.TOKEN">
+          <mat-icon>token</mat-icon>
+          <span>{{ i18n.translate('userNav.token') }}</span>
+        </button>
 
-          <mat-divider></mat-divider>
+        <button mat-menu-item [routerLink]="ROUTES.USER.ACHIEVEMENTS">
+          <mat-icon>emoji_events</mat-icon>
+          <span>{{ i18n.translate('userNav.achievements') }}</span>
+        </button>
 
-          <button mat-menu-item [routerLink]="ROUTES.USER.PROFILE">
-            <mat-icon>person</mat-icon>
-            <span>{{ i18n.translate('userNav.profile') }}</span>
-          </button>
+        <button mat-menu-item [routerLink]="ROUTES.USER.LEARNING_PROFILE">
+          <mat-icon>insights</mat-icon>
+          <span>{{ i18n.translate('userNav.learningProfile') }}</span>
+        </button>
 
-          <button mat-menu-item [routerLink]="ROUTES.USER.TOKEN">
-            <mat-icon>token</mat-icon>
-            <span>{{ i18n.translate('userNav.token') }}</span>
-          </button>
+        <button mat-menu-item [routerLink]="ROUTES.USER.GROWTH_TRAJECTORY">
+          <mat-icon>trending_up</mat-icon>
+          <span>{{ i18n.translate('userNav.growthTrajectory') }}</span>
+        </button>
 
-          <button mat-menu-item [routerLink]="ROUTES.USER.ACHIEVEMENTS">
-            <mat-icon>emoji_events</mat-icon>
-            <span>{{ i18n.translate('userNav.achievements') }}</span>
-          </button>
+        <button mat-menu-item [routerLink]="ROUTES.USER.TEACHING_SUGGESTIONS">
+          <mat-icon>lightbulb</mat-icon>
+          <span>{{ i18n.translate('userNav.teachingSuggestions') }}</span>
+        </button>
 
-          <button mat-menu-item [routerLink]="ROUTES.USER.LEARNING_PROFILE">
-            <mat-icon>insights</mat-icon>
-            <span>{{ i18n.translate('userNav.learningProfile') }}</span>
-          </button>
+        <button mat-menu-item [routerLink]="ROUTES.USER.EMOTIONAL_COMPANION">
+          <mat-icon>favorite</mat-icon>
+          <span>{{ i18n.translate('userNav.emotionalCompanion') }}</span>
+        </button>
 
-          <button mat-menu-item [routerLink]="ROUTES.USER.GROWTH_TRAJECTORY">
-            <mat-icon>trending_up</mat-icon>
-            <span>{{ i18n.translate('userNav.growthTrajectory') }}</span>
-          </button>
+        <button mat-menu-item [routerLink]="ROUTES.USER.REPORTS">
+          <mat-icon>assessment</mat-icon>
+          <span>{{ i18n.translate('userNav.reports') }}</span>
+        </button>
 
-          <button mat-menu-item [routerLink]="ROUTES.USER.TEACHING_SUGGESTIONS">
-            <mat-icon>lightbulb</mat-icon>
-            <span>{{ i18n.translate('userNav.teachingSuggestions') }}</span>
-          </button>
+        <mat-divider></mat-divider>
 
-          <button mat-menu-item [routerLink]="ROUTES.USER.EMOTIONAL_COMPANION">
-            <mat-icon>favorite</mat-icon>
-            <span>{{ i18n.translate('userNav.emotionalCompanion') }}</span>
-          </button>
+        <button mat-menu-item [routerLink]="ROUTES.USER.AI_TEACHER_SETTINGS">
+          <mat-icon>smart_toy</mat-icon>
+          <span>{{ i18n.translate('userNav.aiTeacherSettings') }}</span>
+        </button>
 
-          <button mat-menu-item [routerLink]="ROUTES.USER.REPORTS">
-            <mat-icon>assessment</mat-icon>
-            <span>{{ i18n.translate('userNav.reports') }}</span>
-          </button>
+        <button mat-menu-item [routerLink]="ROUTES.USER.SETTINGS">
+          <mat-icon>settings</mat-icon>
+          <span>{{ i18n.translate('userNav.settings') }}</span>
+        </button>
 
-          <mat-divider></mat-divider>
+        <mat-divider></mat-divider>
 
-          <button mat-menu-item [routerLink]="ROUTES.USER.AI_TEACHER_SETTINGS">
-            <mat-icon>smart_toy</mat-icon>
-            <span>{{ i18n.translate('userNav.aiTeacherSettings') }}</span>
-          </button>
-
-          <button mat-menu-item [routerLink]="ROUTES.USER.SETTINGS">
-            <mat-icon>settings</mat-icon>
-            <span>{{ i18n.translate('userNav.settings') }}</span>
-          </button>
-
-          <mat-divider></mat-divider>
-
-          <button mat-menu-item (click)="logout()">
-            <mat-icon>logout</mat-icon>
-            <span>{{ i18n.translate('userNav.logout') }}</span>
-          </button>
-        </mat-menu>
+        <button mat-menu-item (click)="logout()">
+          <mat-icon>logout</mat-icon>
+          <span>{{ i18n.translate('userNav.logout') }}</span>
+        </button>
+      </mat-menu>
     </div>
 
     <!-- 移动端汉堡菜单 -->

@@ -109,7 +109,6 @@ export interface CoursewareNodeListResponse {
   items: CoursewareNodeResponse[];
 }
 
-
 // ==================== 层级查询模型 ====================
 
 /** 祖先节点 */
@@ -158,7 +157,6 @@ export interface CoursewareSubtreeResponse {
   total_nodes: number;
 }
 
-
 // ==================== 批量操作模型 ====================
 
 /** 批量创建 */
@@ -179,7 +177,6 @@ export interface BatchDeleteResponse {
   errors: Array<{ node_id: number; error: string }>;
 }
 
-
 // ==================== 一致性验证 ====================
 
 /** 一致性验证结果 */
@@ -194,7 +191,6 @@ export interface ClosureValidationResult {
   cycle_detected: boolean;
   details: string;
 }
-
 
 // ==================== 迁移模型 ====================
 
@@ -217,7 +213,6 @@ export interface RollbackResult {
   errors: string[];
   duration_seconds: number;
 }
-
 
 // ==================== 工具函数 ====================
 

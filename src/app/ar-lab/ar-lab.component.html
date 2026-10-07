@@ -165,7 +165,8 @@
 
           <h2>Unity WebGL 构建待部署</h2>
           <p class="placeholder-lead">
-            当前仓库仅包含 Unity 工程源码（<code>unity/ImatuARLab/</code>），尚未导出 WebGL 构建产物。
+            当前仓库仅包含 Unity 工程源码（<code>unity/ImatuARLab/</code>），尚未导出 WebGL
+            构建产物。
           </p>
           <p class="placeholder-detail">
             期望文件路径：<code>{{ unityBuildPath }}</code>
@@ -177,7 +178,10 @@
               <li>用 Unity 2021.3 LTS 打开 <code>unity/ImatuARLab</code></li>
               <li>File → Build Settings → 选中 WebGL → Build</li>
               <li>把 Build 目录下的全部产物复制到 <code>src/assets/ar-lab/build/</code></li>
-              <li>重新运行 <code>ng build</code> 让 Angular 把它拷贝到 <code>dist/.../assets/ar-lab/build/</code></li>
+              <li>
+                重新运行 <code>ng build</code> 让 Angular 把它拷贝到
+                <code>dist/.../assets/ar-lab/build/</code>
+              </li>
               <li>刷新页面，HEAD 探测成功后会自动加载 UnityLoader</li>
             </ol>
           </div>
