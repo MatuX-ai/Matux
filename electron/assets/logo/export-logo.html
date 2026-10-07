@@ -1,0 +1,50 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8" />
+  <title>MatuX Logo Export</title>
+  <style>
+    body { margin: 0; padding: 20px; background: #f0f0f0; font-family: Arial, sans-serif; }
+    .container { display: flex; flex-wrap: wrap; gap: 20px; }
+    .preview { text-align: center; }
+    .preview img { border: 2px solid #333; }
+    h3 { margin: 10px 0 0 0; color: #333; font-size: 14px; }
+  </style>
+</head>
+<body>
+  <h1>MatuX Logo Resources</h1>
+  <p>SVG格式的MatuX冰块Logo，可用于导出为PNG/ICO格式</p>
+  
+  <div class="container">
+    <div class="preview">
+      <img src="matux-logo.svg" width="256" height="256" alt="MatuX Logo 256x256">
+      <h3>matux-logo.svg</h3>
+    </div>
+    <div class="preview">
+      <img src="matux-logo.svg" width="128" height="128" alt="MatuX Logo 128x128">
+      <h3>128x128</h3>
+    </div>
+    <div class="preview">
+      <img src="matux-logo.svg" width="64" height="64" alt="MatuX Logo 64x64">
+      <h3>64x64</h3>
+    </div>
+    <div class="preview">
+      <img src="matux-logo.svg" width="32" height="32" alt="MatuX Logo 32x32">
+      <h3>32x32</h3>
+    </div>
+    <div class="preview">
+      <img src="matux-logo.svg" width="16" height="16" alt="MatuX Logo 16x16">
+      <h3>16x16 (Favicon)</h3>
+    </div>
+  </div>
+  
+  <h2>导出说明</h2>
+  <ol>
+    <li>使用浏览器打开此HTML文件</li>
+    <li>右键点击Logo图片，选择"图片另存为"</li>
+    <li>保存为PNG格式，命名为 matux-logo.png</li>
+    <li>使用在线工具（如 <a href="https://convertio.co/png-ico/" target="_blank">ConvertIO</a>）将PNG转换为ICO格式</li>
+    <li>将生成的 matux-logo.ico 放置到 electron/config/build/ 目录</li>
+  </ol>
+</body>
+</html>

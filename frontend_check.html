@@ -1,0 +1,48 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8"/>
+    <title>MatuX Design System</title>
+    <!-- Electron 使用自定义协议 app:// 加载（支持 ES module / fetch / Service Worker）
+         【修复 #2】使用 ./ 相对路径，兼容 http:// 部署和 app:// 自定义协议
+         - HTTP 场景: http://example.com/foo/index.html -> ./ 解析为 http://example.com/foo/
+         - Electron 场景: app://./index.html -> ./ 解析为 app://./  -->
+    <base href="./">
+    <meta name="viewport" content="width=device-width, initial-scale=1"/>
+    <link rel="icon" type="image/svg+xml" href="assets/branding/logo.svg"/>
+
+    <!-- PWA 配置 -->
+    <link rel="manifest" href="manifest.webmanifest">
+    <meta name="theme-color" content="#059669"/>
+    <meta name="description" content="MatuX STEM 学习工具 - 支持离线学习的现代化教育系统"/>
+
+    <!-- iOS Safari -->
+    <meta name="apple-mobile-web-app-capable" content="yes"/>
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent"/>
+    <meta name="apple-mobile-web-app-title" content="iMatu 离线版"/>
+
+    <!-- Windows -->
+    <meta name="msapplication-TileColor" content="#059669"/>
+    <link rel="apple-touch-icon" href="assets/icons/icon-192x192.png"/>
+
+    <!-- Material Icons - 已本地化通过 @fontsource 加载（见 angular.json） -->
+
+    <!-- Remix Icon (本地化，从 node_modules/remixicon 引入，见 angular.json) -->
+
+    <!-- Google Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;500;700&amp;display=swap" rel="stylesheet"/>
+
+    <!-- Geist Fonts (与原型站一致) -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&amp;display=swap" rel="stylesheet"/>
+    <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;600&amp;display=swap" rel="stylesheet"/>
+  <link rel="stylesheet" href="styles.css"></head>
+  <body>
+    <noscript>
+      <div style="text-align: center; padding: 2rem">
+        <h2>需要启用JavaScript</h2>
+        <p>请启用JavaScript以使用MatuX平台的所有功能。</p>
+      </div>
+    </noscript>
+    <app-root></app-root>
+  <script src="runtime.js" type="module"></script><script src="polyfills.js" type="module"></script><script src="styles.js" defer></script><script src="scripts.js" defer></script><script src="vendor.js" type="module"></script><script src="main.js" type="module"></script></body>
+</html>
