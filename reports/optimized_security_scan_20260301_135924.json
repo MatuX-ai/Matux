@@ -24607,7 +24607,7 @@
         "severity": "MEDIUM",
         "file_path": "src\\index.html",
         "line_number": 13,
-        "code_snippet": "<meta name=\"description\" content=\"iMatuProject教育平台 - 支持离线学习的现代化教育系统\">",
+        "code_snippet": "<meta name=\"description\" content=\"MatuX STEM 学习工具 - 支持离线学习的现代化教育系统\">",
         "description": "发现前端XSS漏洞 - 事件处理器",
         "fix_recommendation": "使用安全的DOM操作方法，避免innerHTML和危险事件处理器",
         "cvss_score": 6.1
