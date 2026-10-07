@@ -89,6 +89,12 @@ build_detailed.log
 tsc_check.log
 build_progress.log
 
+# Electron release artifacts (binaries only — keep README/builder-debug.yml)
+release/*.exe
+release/*.blockmap
+release/win-unpacked/
+release/win-ia32-unpacked/
+
 # Backup directories (auto-generated)
 backup_configs_*/
 backup_course_material/
