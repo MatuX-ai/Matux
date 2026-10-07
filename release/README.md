@@ -7,7 +7,7 @@
 | 1.0.0 | `iMato Setup 1.0.0.exe` | 2026-07-01 | 首次对外 |
 | 1.0.2 | `iMato Setup 1.0.2.exe` | 2026-08-17 | 修复迭代 |
 | 1.0.3 | `iMato Setup 1.0.3.exe` | 2026-08-17 | 上一个稳定版 |
-| **1.0.4** | `iMato Setup 1.0.4.exe` | 待构建 | 见阶段一 1.4（[docs/07-产品文档/rfc-2026-v2-ai-collab.md](../docs/07-产品文档/rfc-2026-v2-ai-collab.md)） |
+| **1.0.4** | `iMato Setup 1.0.4.exe`（87 MB / x64 NSIS）+ `iMato 1.0.4.exe`（78 MB / x64 Portable） | 2026-10-08 | 本次发布；修复 4 个新模块注册 + 错误日志持久化 + AR/VR 课程 + P4 UX；installer.nsh 简化为运行时 Python 检测 |
 
 ## 不入库的产物
 

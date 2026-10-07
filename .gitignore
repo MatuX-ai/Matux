@@ -7,6 +7,10 @@ yarn-error.log*
 # Production builds
 dist/
 build/
+# 例外：electron/build 包含 installer.nsh / icon.ico 等 NSIS 必需的构建资源
+!electron/build/
+!electron/build/**/*.nsh
+!electron/build/**/*.ico
 *.log
 
 # Environment files
