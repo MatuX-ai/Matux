@@ -479,9 +479,9 @@ function recordMetric(name: string, value: number) {
 ## 📞 技术支持
 
 如有问题，请联系：
-- 📧 邮箱：support@imatuproject.com
-- 🐛 GitHub Issues：[项目仓库](https://github.com/iMatuProject/auth-system)
-- 💬 开发者社区：[Discord](https://discord.gg/imatuproject)
+- 📧 邮箱：support@matux.com
+- 🐛 GitHub Issues：[项目仓库](https://github.com/matux/auth-system)
+- 💬 开发者社区：[Discord](https://discord.gg/matux)
 
 ---
 

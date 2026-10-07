@@ -312,4 +312,4 @@ dependencies:
 
 **版本信息**: v2.0.0  
 **最后更新**: 2026年2月26日  
-**作者**: iMatuProject开发团队
+**作者**: MatuX Lab

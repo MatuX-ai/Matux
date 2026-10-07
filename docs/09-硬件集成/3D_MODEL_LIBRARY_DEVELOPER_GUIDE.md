@@ -831,6 +831,6 @@ Get-Content logs\*.log -Tail 100
 
 **最后更新**: 2026-03-03  
 **文档版本**: v1.0  
-**维护者**: iMatu Development Team
+**维护者**: MatuX Lab
 
 *祝开发愉快!* 🚀

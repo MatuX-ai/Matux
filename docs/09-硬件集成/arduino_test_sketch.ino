@@ -1,5 +1,5 @@
 /*
- * iMatuProject 硬件通信测试固件
+ * MatuX 硬件通信测试固件
  * 用于测试WebUSB通信功能
  */
 
@@ -31,7 +31,7 @@ void setup() {
   digitalWrite(ledPin, LOW);
   analogWrite(ledBrightnessPin, 0);
   
-  Serial.println("iMatuProject硬件通信测试固件已启动");
+  Serial.println("MatuX硬件通信测试固件已启动");
   Serial.println("支持命令:");
   Serial.println("- 0x01 0x02 0x03 : 初始化");
   Serial.println("- 0x10 0x00 : 查询状态");

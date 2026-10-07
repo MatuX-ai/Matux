@@ -308,7 +308,7 @@
 ### 获取帮助
 - **在线帮助**: 应用内帮助文档
 - **客服热线**: 400-xxx-xxxx
-- **技术支持**: support@imatuproject.com
+- **技术支持**: support@matux.com
 - **社区论坛**: forum.imatuproject.com
 
 ### 反馈建议
@@ -341,4 +341,4 @@
 
 **版本**: 2.0.0  
 **发布日期**: 2026年2月26日  
-**版权所有**: © 2026 iMatuProject. 保留所有权利。
+**版权所有**: © 2026 MatuX Lab. 保留所有权利。

@@ -763,7 +763,7 @@ backend/notebooks/
 
 ---
 
-**文档维护**: iMato Team  
+**文档维护**: MatuX Lab  
 **最后更新**: 2026-03-08  
 **版本控制**: Git + Semantic Versioning  
 **AR 手势交互**: v1.0 (GestureDetector 增强版)

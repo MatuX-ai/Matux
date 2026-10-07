@@ -1,0 +1,317 @@
+{
+  "name": "iMatu STEM Design System",
+  "version": "1.0.0",
+  "description": "K12 STEM 教育场景专用设计系统 - 探索绿主题",
+  "theme": "explore-green",
+  "targetAudience": "K12 students (6-18 years)",
+  "lastUpdated": "2026-06-10",
+  "status": "production",
+  "appliedComponents": [
+    "student-dashboard",
+    "learning-reports",
+    "achievements",
+    "unified-course-card",
+    "stats-card",
+    "user-navbar",
+    "my-courses",
+    "learning-profile",
+    "growth-trajectory",
+    "status-bar"
+  ],
+  "lastComponentUpdate": "2026-06-10",
+
+  "brand": {
+    "name": "iMatu STEM",
+    "logo": "/assets/logo-stem.svg",
+    "icon": "🌱",
+    "tagline": "探索无限可能 · 创造美好未来"
+  },
+
+  "colors": {
+    "primary": {
+      "name": "探索绿",
+      "base": "#059669",
+      "light": "#10b981",
+      "dark": "#047857",
+      "gradient": "linear-gradient(135deg, #059669 0%, #0ea5e9 100%)",
+      "palette": {
+        "50": "#ecfdf5",
+        "100": "#d1fae5",
+        "200": "#a7f3d0",
+        "300": "#6ee7b7",
+        "400": "#34d399",
+        "500": "#10b981",
+        "600": "#059669",
+        "700": "#047857",
+        "800": "#065f46",
+        "900": "#064e3b"
+      },
+      "usage": "主按钮、主要操作、重点强调"
+    },
+    "secondary": {
+      "name": "科技蓝",
+      "base": "#0ea5e9",
+      "light": "#38bdf8",
+      "dark": "#0284c7",
+      "gradient": "linear-gradient(135deg, #0ea5e9 0%, #38bdf8 100%)",
+      "palette": {
+        "50": "#f0f9ff",
+        "100": "#e0f2fe",
+        "200": "#bae6fd",
+        "300": "#7dd3fc",
+        "400": "#38bdf8",
+        "500": "#0ea5e9",
+        "600": "#0284c7",
+        "700": "#0369a1",
+        "800": "#075985",
+        "900": "#0c4a6e"
+      },
+      "usage": "辅助操作、链接、科技元素"
+    },
+    "subjects": {
+      "science": { "name": "科学", "color": "#059669", "icon": "🔬" },
+      "technology": { "name": "技术", "color": "#2563eb", "icon": "💻" },
+      "engineering": { "name": "工程", "color": "#f59e0b", "icon": "⚙️" },
+      "math": { "name": "数学", "color": "#8b5cf6", "icon": "📐" },
+      "arts": { "name": "艺术", "color": "#ec4899", "icon": "🎨" }
+    },
+    "semantic": {
+      "success": { "color": "#059669", "bg": "#d1fae5", "text": "#065f46" },
+      "warning": { "color": "#f59e0b", "bg": "#fef3c7", "text": "#92400e" },
+      "error": { "color": "#ef4444", "bg": "#fee2e2", "text": "#991b1b" },
+      "info": { "color": "#0ea5e9", "bg": "#e0f2fe", "text": "#075985" }
+    },
+    "learningStates": {
+      "inProgress": { "name": "进行中", "color": "#059669" },
+      "completed": { "name": "已完成", "color": "#10b981" },
+      "locked": { "name": "已锁定", "color": "#94a3b8" },
+      "mastered": { "name": "已掌握", "color": "#f59e0b" },
+      "challenge": { "name": "挑战中", "color": "#ef4444" }
+    },
+    "neutral": {
+      "background": "#fafaf9",
+      "surface": "#ffffff",
+      "divider": "#e7e5e4",
+      "textPrimary": "#1c1917",
+      "textSecondary": "#57534e",
+      "textDisabled": "#a8a29e"
+    }
+  },
+
+  "typography": {
+    "fontFamilies": {
+      "sans": "'Inter', 'Noto Sans SC', 'PingFang SC', 'Microsoft YaHei', -apple-system, sans-serif",
+      "mono": "'JetBrains Mono', 'Fira Code', 'Source Code Pro', monospace",
+      "display": "'Nunito', 'Comic Sans MS', cursive"
+    },
+    "fontSizes": {
+      "xs": { "size": "12px", "lineHeight": "1.5" },
+      "sm": { "size": "14px", "lineHeight": "1.5" },
+      "base": { "size": "16px", "lineHeight": "1.6" },
+      "lg": { "size": "18px", "lineHeight": "1.6" },
+      "xl": { "size": "20px", "lineHeight": "1.5" },
+      "2xl": { "size": "24px", "lineHeight": "1.25" },
+      "3xl": { "size": "30px", "lineHeight": "1.25" },
+      "4xl": { "size": "36px", "lineHeight": "1.2" }
+    },
+    "fontWeights": {
+      "normal": 400,
+      "medium": 500,
+      "semibold": 600,
+      "bold": 700
+    }
+  },
+
+  "spacing": {
+    "base": 4,
+    "unit": "px",
+    "scale": {
+      "0": "0px",
+      "1": "4px",
+      "2": "8px",
+      "3": "12px",
+      "4": "16px",
+      "5": "20px",
+      "6": "24px",
+      "8": "32px",
+      "10": "40px",
+      "12": "48px",
+      "16": "64px"
+    },
+    "semantic": {
+      "xs": "8px",
+      "sm": "16px",
+      "md": "24px",
+      "lg": "32px",
+      "xl": "48px"
+    }
+  },
+
+  "borderRadius": {
+    "none": "0px",
+    "xs": "4px",
+    "sm": "8px",
+    "md": "12px",
+    "lg": "16px",
+    "xl": "20px",
+    "2xl": "24px",
+    "3xl": "32px",
+    "full": "9999px"
+  },
+
+  "shadows": {
+    "xs": "0 1px 2px 0 rgba(5, 150, 105, 0.05)",
+    "sm": "0 1px 3px 0 rgba(5, 150, 105, 0.08), 0 1px 2px 0 rgba(5, 150, 105, 0.04)",
+    "md": "0 4px 6px -1px rgba(5, 150, 105, 0.08), 0 2px 4px -1px rgba(5, 150, 105, 0.04)",
+    "lg": "0 10px 15px -3px rgba(5, 150, 105, 0.08), 0 4px 6px -2px rgba(5, 150, 105, 0.04)",
+    "xl": "0 20px 25px -5px rgba(5, 150, 105, 0.1), 0 10px 10px -5px rgba(5, 150, 105, 0.04)",
+    "2xl": "0 25px 50px -12px rgba(5, 150, 105, 0.15)",
+    "glow": "0 0 20px rgba(5, 150, 105, 0.3)",
+    "glowSm": "0 0 10px rgba(5, 150, 105, 0.2)"
+  },
+
+  "animations": {
+    "duration": {
+      "fast": "150ms",
+      "normal": "250ms",
+      "slow": "400ms",
+      "bounce": "500ms"
+    },
+    "easing": {
+      "default": "cubic-bezier(0.4, 0, 0.2, 1)",
+      "in": "cubic-bezier(0.4, 0, 1, 1)",
+      "out": "cubic-bezier(0, 0, 0.2, 1)",
+      "bounce": "cubic-bezier(0.34, 1.56, 0.64, 1)"
+    },
+    "keyframes": {
+      "bounceIn": "bounce-in 0.5s cubic-bezier(0.34, 1.56, 0.64, 1)",
+      "pulseGlow": "pulse-glow 2s ease-in-out infinite",
+      "shimmer": "shimmer 2s ease-in-out infinite",
+      "float": "float 3s ease-in-out infinite"
+    }
+  },
+
+  "components": {
+    "button": {
+      "heights": { "sm": "36px", "md": "44px", "lg": "52px" },
+      "paddingX": { "sm": "16px", "md": "24px", "lg": "32px" },
+      "fontSizes": { "sm": "14px", "md": "16px", "lg": "18px" },
+      "fontWeight": 600,
+      "borderRadius": "9999px",
+      "variants": {
+        "primary": {
+          "bg": "#059669",
+          "color": "#ffffff",
+          "shadow": "0 4px 6px -1px rgba(5, 150, 105, 0.08)",
+          "hoverBg": "#047857",
+          "hoverShadow": "0 10px 15px -3px rgba(5, 150, 105, 0.15)"
+        },
+        "secondary": {
+          "bg": "#ffffff",
+          "color": "#059669",
+          "border": "2px solid #059669",
+          "hoverBg": "#ecfdf5"
+        },
+        "ghost": {
+          "bg": "transparent",
+          "color": "#059669",
+          "hoverBg": "rgba(5, 150, 105, 0.08)"
+        },
+        "danger": {
+          "bg": "#ef4444",
+          "color": "#ffffff"
+        }
+      }
+    },
+    "card": {
+      "borderRadius": "20px",
+      "padding": "24px",
+      "shadow": "0 1px 3px 0 rgba(5, 150, 105, 0.08)",
+      "hoverShadow": "0 14px 28px rgba(5, 150, 105, 0.12), 0 10px 10px rgba(5, 150, 105, 0.06)",
+      "border": "1px solid rgba(5, 150, 105, 0.1)"
+    },
+    "input": {
+      "borderRadius": "16px",
+      "border": "2px solid #e7e5e4",
+      "focusBorder": "#059669",
+      "focusRing": "0 0 0 4px rgba(5, 150, 105, 0.15)",
+      "padding": "12px 16px",
+      "fontSize": "16px"
+    },
+    "badge": {
+      "borderRadius": "9999px",
+      "padding": "4px 12px",
+      "fontSize": "12px",
+      "fontWeight": 600,
+      "variants": {
+        "science": { "bg": "#d1fae5", "color": "#065f46" },
+        "technology": { "bg": "#dbeafe", "color": "#1e40af" },
+        "engineering": { "bg": "#fef3c7", "color": "#92400e" },
+        "math": { "bg": "#ede9fe", "color": "#5b21b6" },
+        "arts": { "bg": "#fce7f3", "color": "#9d174d" }
+      }
+    },
+    "progress": {
+      "height": "8px",
+      "borderRadius": "9999px",
+      "trackBg": "#e7e5e4",
+      "fillBg": "linear-gradient(135deg, #059669 0%, #0ea5e9 100%)"
+    },
+    "avatar": {
+      "sizes": { "sm": "32px", "md": "48px", "lg": "64px", "xl": "96px" },
+      "borderRadius": "9999px"
+    },
+    "navbar": {
+      "height": "72px",
+      "bg": "rgba(255, 255, 255, 0.95)",
+      "backdropFilter": "blur(12px)",
+      "shadow": "0 1px 3px 0 rgba(5, 150, 105, 0.08)"
+    }
+  },
+
+  "scenes": {
+    "laboratory": {
+      "name": "虚拟实验室",
+      "glowGreen": "0 0 30px rgba(5, 150, 105, 0.5)",
+      "glowBlue": "0 0 30px rgba(14, 165, 233, 0.5)",
+      "gridBg": "linear-gradient(rgba(5, 150, 105, 0.05) 1px, transparent 1px), linear-gradient(90deg, rgba(5, 150, 105, 0.05) 1px, transparent 1px)",
+      "gridSize": "20px"
+    },
+    "coding": {
+      "name": "编程环境",
+      "bg": "#1e293b",
+      "surface": "#0f172a",
+      "accent": "#10b981",
+      "fontFamily": "'JetBrains Mono', monospace"
+    },
+    "coursePlayer": {
+      "name": "课程播放器",
+      "controlsBg": "rgba(15, 23, 42, 0.9)",
+      "progressColor": "#059669"
+    }
+  },
+
+  "darkTheme": {
+    "enabled": true,
+    "colors": {
+      "background": "#0f172a",
+      "surface": "#1e293b",
+      "elevated": "#334155",
+      "textPrimary": "#f8fafc",
+      "textSecondary": "#94a3b8",
+      "border": "#475569"
+    }
+  },
+
+  "accessibility": {
+    "focusVisible": {
+      "ring": "0 0 0 3px rgba(5, 150, 105, 0.4)",
+      "offset": "2px"
+    },
+    "minimumTouchTarget": "44px",
+    "colorContrast": {
+      "normal": "4.5:1",
+      "large": "3:1"
+    }
+  }
+}

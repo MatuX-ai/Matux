@@ -13,17 +13,17 @@
 ### 安装SDK
 
 ```bash
-npm install @imatuproject/sdk
+npm install @matux/sdk
 ```
 
 ### 基本使用
 
 ```typescript
-import { createSDK } from '@imatuproject/sdk';
+import { createSDK } from '@matux/sdk';
 
 // 创建SDK实例
 const sdk = createSDK({
-  baseURL: 'https://api.imatuproject.com',
+  baseURL: 'https://api.matux.com',
   timeout: 10000
 });
 
@@ -54,12 +54,12 @@ console.log('当前用户:', user.data);
 
 #### NPM安装
 ```bash
-npm install @imatuproject/sdk
+npm install @matux/sdk
 ```
 
 #### Yarn安装
 ```bash
-yarn add @imatuproject/sdk
+yarn add @matux/sdk
 ```
 
 ### 配置选项
@@ -79,11 +79,11 @@ interface SDKConfig {
 ### 完整配置示例
 
 ```typescript
-import { createSDK, defaultConfig } from '@imatuproject/sdk';
+import { createSDK, defaultConfig } from '@matux/sdk';
 
 const sdk = createSDK({
   ...defaultConfig,
-  baseURL: 'https://api.imatuproject.com',
+  baseURL: 'https://api.matux.com',
   timeout: 15000,
   headers: {
     'X-API-Version': '1.0.0',
@@ -361,7 +361,7 @@ if (error.status === 401) {
 **解决方案**:
 ```typescript
 const sdk = createSDK({
-  baseURL: 'https://api.imatuproject.com',
+  baseURL: 'https://api.matux.com',
   timeout: 30000, // 增加超时时间
   retries: 3,     // 启用重试机制
   retryDelay: 2000
@@ -412,7 +412,7 @@ console.log(`请求耗时: ${endTime - startTime}ms`);
 
 如遇到问题或有改进建议，请：
 1. 查看[GitHub Issues](https://github.com/imatuproject/sdk/issues)
-2. 联系技术支持邮箱: support@imatuproject.com
+2. 联系技术支持邮箱: support@matux.com
 3. 加入开发者交流群组
 
 ---

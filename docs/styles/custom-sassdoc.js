@@ -1,6 +1,6 @@
 /**
  * 自定义 SassDoc JavaScript
- * 为 iMatuProject 设计系统文档添加交互功能
+ * 为 MatuX 设计系统文档添加交互功能
  */
 
 (function() {

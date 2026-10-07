@@ -2,7 +2,7 @@
 
 ## 📋 规范概述
 
-本文档规定了iMatuProject前端项目中TypeScript严格类型检查的开发标准和最佳实践。
+本文档规定了MatuX前端项目中TypeScript严格类型检查的开发标准和最佳实践。
 
 ## 🎯 核心原则
 

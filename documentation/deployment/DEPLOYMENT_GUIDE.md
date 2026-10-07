@@ -381,7 +381,7 @@ def slackCredentialId = 'slack-webhook'
 
 def sonarProperties = [
     'sonar.projectKey=imatuproject',
-    'sonar.projectName=iMatuProject',
+    'sonar.projectName=MatuX',
     'sonar.projectVersion=1.0',
     'sonar.sources=.',
     'sonar.exclusions=**/node_modules/**,**/dist/**,**/*.min.js,**/coverage/**',
@@ -688,9 +688,9 @@ curl http://localhost:8000/health
 
 ### 联系方式
 
-- **技术支持**: support@imatuproject.com
-- **文档**: https://docs.imatuproject.com
-- **社区**: https://community.imatuproject.com
+- **技术支持**: support@matux.com
+- **文档**: https://docs.matux.com
+- **社区**: https://community.matux.com
 
 ### 商业支持
 

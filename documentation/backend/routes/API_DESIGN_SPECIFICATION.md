@@ -2,7 +2,7 @@
 
 ## 概述
 
-本文档定义了iMatuProject项目的API设计规范，确保前后端接口的一致性和可维护性。
+本文档定义了MatuX项目的API设计规范，确保前后端接口的一致性和可维护性。
 
 ## RESTful API原则
 
@@ -178,8 +178,8 @@ X-Organization-ID: 12345
 
 ### URL版本控制
 ```
-✅ https://api.imatuproject.com/v1/users
-✅ https://api.imatuproject.com/v2/users
+✅ https://api.matux.com/v1/users
+✅ https://api.matux.com/v2/users
 ```
 
 ### Header版本控制
@@ -375,7 +375,7 @@ files: [(binary), (binary), (binary)]
 
 ### 连接
 ```websocket
-wss://api.imatuproject.com/ws
+wss://api.matux.com/ws
 Authorization: Bearer token
 ```
 
@@ -396,11 +396,11 @@ Authorization: Bearer token
 ```yaml
 openapi: 3.0.3
 info:
-  title: iMatuProject API
+  title: MatuX API
   version: 1.0.0
-  description: iMatuProject后端API文档
+  description: MatuX后端API文档
 servers:
-  - url: https://api.imatuproject.com/v1
+  - url: https://api.matux.com/v1
     description: 生产环境
 paths:
   /users:

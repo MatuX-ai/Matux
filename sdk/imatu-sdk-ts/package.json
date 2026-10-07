@@ -1,7 +1,7 @@
 {
-  "name": "@imatuproject/sdk",
+  "name": "@matux/sdk",
   "version": "1.0.0",
-  "description": "iMatuProject TypeScript SDK for API integration",
+  "description": "MatuX STEM Learning Tool - TypeScript SDK for API integration",
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
   "scripts": {
@@ -16,22 +16,23 @@
     "docs": "typedoc src/index.ts --out docs"
   },
   "keywords": [
-    "imatuproject",
+    "matux",
+    "stem",
     "sdk",
     "typescript",
     "api-client",
     "education"
   ],
-  "author": "iMatuProject Team",
+  "author": "MatuX Lab",
   "license": "MIT",
   "repository": {
     "type": "git",
-    "url": "https://github.com/imatuproject/sdk.git"
+    "url": "https://github.com/matux/sdk.git"
   },
   "bugs": {
-    "url": "https://github.com/imatuproject/sdk/issues"
+    "url": "https://github.com/matux/sdk/issues"
   },
-  "homepage": "https://imatuproject.github.io/sdk",
+  "homepage": "https://matux.github.io/sdk",
   "dependencies": {
     "axios": "^1.13.6",
     "rxjs": "^7.8.0"

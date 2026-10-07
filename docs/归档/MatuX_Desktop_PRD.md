@@ -2,7 +2,7 @@
 
 > **版本**：v1.1  
 > **文档状态**：草稿  
-> **作者**：MatuX Development Team  
+> **作者**：MatuX Lab  
 > **最后更新**：2026-05-30  
 
 ---
@@ -1551,7 +1551,7 @@ Phase 3: 打磨发布 (2-3 周)
 
 | 术语 | 说明 |
 |------|------|
-| MatuX | 面向学生的 AI 编程与 STEM 学习平台 |
+| MatuX | 面向学生的 AI 编程与 STEM 学习工具 |
 | OpenMTSciEd | 独立解耦的开放STEM教育资源平台（教程/课件/知识图谱/硬件项目） |
 | OpenMTEduInst | 独立解耦的机构管理平台（教师/机构/排课/财务） |
 | Electron | 跨平台桌面应用框架（Chromium + Node.js） |

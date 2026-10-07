@@ -1,4 +1,4 @@
-# MatuX STEM 学习平台 - 全局技术架构文档
+# MatuX STEM 学习工具 - 全局技术架构文档
 
 ## 📋 文档版本信息
 
@@ -10,7 +10,7 @@
 
 ## 🎯 项目概述
 
-MatuX 是一个面向学生的 STEM 学习平台，采用微服务架构设计，集成了AI、区块链、物联网、AR/VR等前沿技术，为学生提供沉浸式、个性化的学习体验。
+MatuX 是一个面向学生的 STEM 学习工具，采用微服务架构设计，集成了AI、区块链、物联网、AR/VR等前沿技术，为学生提供沉浸式、个性化的学习体验。
 
 > **三项目生态**: MatuX（学生学习）+ OpenMTSciEd（课件资源）+ OpenMTEduInst（机构管理）。学生账号三项目间互联互通。
 
@@ -349,5 +349,5 @@ AWS/Azure ──► Kubernetes Cluster ──► Helm部署 ──► Load Balan
 
 ---
 
-*MatuX STEM 学习平台 - 全局技术架构 v3.0*
+*MatuX STEM 学习工具 - 全局技术架构 v3.0*
 *Last Updated: 2026-05-31*

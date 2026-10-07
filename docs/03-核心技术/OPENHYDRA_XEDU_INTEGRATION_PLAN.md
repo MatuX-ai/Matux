@@ -1041,7 +1041,7 @@ docker push imato/greenhouse-ai-course:v1
 cat > courses/imato-greenhouse.json << EOF
 {
   "name": "智能温室 AI 监控系统",
-  "author": "iMato Team",
+  "author": "MatuX Lab",
   "description": "结合 AI 视觉与硬件控制的综合项目",
   "difficulty": "intermediate",
   "duration_hours": 8,
@@ -1527,7 +1527,7 @@ gantt
 
 | 版本 | 日期 | 修订人 | 修订内容 |
 |------|------|--------|----------|
-| v1.0 | 2026-03-03 | iMato Team | 初始版本创建 |
+| v1.0 | 2026-03-03 | MatuX Lab | 初始版本创建 |
 
 ---
 

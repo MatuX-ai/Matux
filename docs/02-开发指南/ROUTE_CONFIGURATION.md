@@ -271,12 +271,24 @@ curl http://localhost:8000/
 
 ## 历史清理记录
 
+### 2026-06-13 全项目代码与文档清理
+
+本次清理作为项目质量提升的重要一环，主要内容如下：
+
+- **pass 占位符清理** (Task 1): 优化了 6 处后端 `except` 子句中的静默 `pass`，替换为 `logger.debug(...)`，代码可观测性提升
+- **Electron IPC safeHandle 加固** (Task 2): 在 [`electron/src/core/ipc/handlers/index.js`](../../electron/src/core/ipc/handlers/index.js) 中新增 `safeHandle()` 包装函数，基于 `Set` 跟踪 channel 防止重复注册。历史冲突 `backend:activate-module` / `backend:restart` / `backend:get-module-status` 均已通过此机制保护
+- **文档归档** (Task 3): 根目录 10 个桌面端验收相关 MD 已迁移至 [`docs/归档/2026-06-桌面端验收/`](../../归档/2026-06-桌面端验收/)，保留 v4 最终版本于根目录
+
+详见 [`reports/CLEANUP_REPORT_20260613.md`](../../reports/CLEANUP_REPORT_20260613.md)
+
 ### 已删除的废弃组件
 
 - ❌ `dark-mode-demo` 组件 (演示性质，非生产功能)
 - ❌ `simple-dashboard` 模块 (已被 `minimal-dashboard` 替代)
 - ❌ `enhanced-admin-dashboard` 组件 (旧版本仪表板)
 - ❌ `xr_gesture_routes.py` (与 `gesture_recognition.py` 功能重复)
+- ❌ `docs/归档/T2_1_TEACHER_MANAGEMENT_COMPLETE.md` (与 `T2.1_*` 重复，2026-06-13 删除)
+- ❌ `docs/归档/PHASE5_TEST_STATUS.md` (内容已被 `PHASE5_VERIFICATION_REPORT` 覆盖，2026-06-13 删除)
 
 这些文件已从代码库中移除，如需使用可从 Git 历史记录恢复。
 

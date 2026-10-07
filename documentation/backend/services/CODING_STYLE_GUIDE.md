@@ -1,8 +1,8 @@
-# iMatuProject 代码风格指南
+# MatuX 代码风格指南
 
 ## 概述
 
-本文档定义了 iMatuProject 项目的代码风格规范和质量标准，适用于所有前端和后端开发人员。
+本文档定义了 MatuX 项目的代码风格规范和质量标准，适用于所有前端和后端开发人员。
 
 ## 前端代码规范 (Angular/TypeScript)
 

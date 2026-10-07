@@ -1,6 +1,6 @@
 # MatuX Project 样式文档中心
 
-欢迎来到 iMatuProject 设计系统的样式文档中心！这里包含了所有关于我们的 SCSS 架构、组件和设计规范的详细信息。
+欢迎来到 MatuX 设计系统的样式文档中心！这里包含了所有关于我们的 SCSS 架构、组件和设计规范的详细信息。
 
 ## 📚 文档目录
 
@@ -178,9 +178,9 @@ src/styles/
 
 - 📧 发送邮件到: team@imatuproject.com
 - 💬 加入我们的开发者群聊
-- 🐛 提交 Issue: [GitHub Issues](https://github.com/iMatuProject/design-system/issues)
-- 📚 查看完整文档: [在线文档](https://docs.imatuproject.com)
+- 🐛 提交 Issue: [GitHub Issues](https://github.com/matux/design-system/issues)
+- 📚 查看完整文档: [在线文档](https://docs.matux.com)
 
 ---
 
-*iMatuProject Design System - 让设计更简单，让开发更高效*
+*MatuX Design System - 让设计更简单，让开发更高效*

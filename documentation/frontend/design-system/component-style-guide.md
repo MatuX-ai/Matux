@@ -1,4 +1,4 @@
-# iMatuProject 组件样式指南
+# MatuX 组件样式指南
 
 本文档详细说明了如何在Flutter和Angular框架中实现组件样式的一致性和隔离性。
 

@@ -13,7 +13,7 @@
 
 ```bash
 # 从 npm 安装 (发布后)
-npm install @imatuproject/sdk
+npm install @matux/sdk
 
 # 或本地链接
 cd sdk/imatu-sdk-ts
@@ -51,7 +51,7 @@ API_BASE_URL=http://localhost:8000
 
 ```typescript
 import { Injectable } from '@angular/core';
-import { AuthService, AIServiceClient, LoginRequest } from '@imatuproject/sdk';
+import { AuthService, AIServiceClient, LoginRequest } from '@matux/sdk';
 import { environment } from '../environments/environment';
 
 @Injectable({ providedIn: 'root' })
@@ -79,7 +79,7 @@ export class MyAuthService {
 
 ```typescript
 import React, { useState } from 'react';
-import { AIAPI, CodeGenerationRequest } from '@imatuproject/sdk';
+import { AIAPI, CodeGenerationRequest } from '@matux/sdk';
 
 const CodeGenerator: React.FC = () => {
   const [code, setCode] = useState('');
@@ -118,7 +118,7 @@ import {
   createHttpClient, 
   httpGet, 
   httpPost 
-} from '@imatuproject/sdk';
+} from '@matux/sdk';
 
 // 方法 1: 使用便捷函数
 async function getUsers() {
@@ -149,10 +149,10 @@ async function postData() {
 ### 1. 自定义 HTTP客户端
 
 ```typescript
-import { FetchHttpClient } from '@imatuproject/sdk';
+import { FetchHttpClient } from '@matux/sdk';
 
 const httpClient = new FetchHttpClient({
-  baseURL: 'https://api.imatuproject.com',
+  baseURL: 'https://api.matux.com',
   timeout: 30000,
   retries: 3,
   retryDelay: 1000,
@@ -181,7 +181,7 @@ httpClient.interceptors.response.use((response) => {
 ### 2. 批量请求
 
 ```typescript
-import { AIServiceClient } from '@imatuproject/sdk';
+import { AIServiceClient } from '@matux/sdk';
 
 const aiClient = new AIServiceClient({
   baseUrl: 'http://localhost:8000',
@@ -204,7 +204,7 @@ async function batchGenerate() {
 ### 3. 错误处理
 
 ```typescript
-import { APIError } from '@imatuproject/sdk';
+import { APIError } from '@matux/sdk';
 
 async function safeAPICall() {
   try {
@@ -242,18 +242,18 @@ async function safeAPICall() {
 
 | 模块 | 路径 | 说明 |
 |------|------|------|
-| HTTP Client | `@imatuproject/sdk/http-client` | 统一的 HTTP客户端 |
-| Types | `@imatuproject/sdk/types` | 类型定义 |
-| Config | `@imatuproject/sdk/config` | 配置管理 |
+| HTTP Client | `@matux/sdk/http-client` | 统一的 HTTP客户端 |
+| Types | `@matux/sdk/types` | 类型定义 |
+| Config | `@matux/sdk/config` | 配置管理 |
 
 ### API 模块
 
 | 模块 | 路径 | 端点前缀 | 说明 |
 |------|------|----------|------|
-| Auth API | `@imatuproject/sdk/auth` | `/api/v1/auth` | 认证授权 |
-| AI API | `@imatuproject/sdk/ai` | `/api/v1/ai` | AI 服务 |
-| Users API | `@imatuproject/sdk/users` | `/api/v1/users` | 用户管理 |
-| Courses API | `@imatuproject/sdk/courses` | `/courses` | 课程管理 |
+| Auth API | `@matux/sdk/auth` | `/api/v1/auth` | 认证授权 |
+| AI API | `@matux/sdk/ai` | `/api/v1/ai` | AI 服务 |
+| Users API | `@matux/sdk/users` | `/api/v1/users` | 用户管理 |
+| Courses API | `@matux/sdk/courses` | `/courses` | 课程管理 |
 
 ---
 
@@ -330,7 +330,7 @@ npm install typescript @types/node --save-dev
 
 A: 使用 Jest mock:
 ```typescript
-jest.mock('@imatuproject/sdk', () => ({
+jest.mock('@matux/sdk', () => ({
   AuthService: jest.fn().mockImplementation(() => ({
     login: jest.fn().mockResolvedValue({ user: { id: 1 } })
   }))
@@ -354,7 +354,7 @@ jest.mock('@imatuproject/sdk', () => ({
 
 - [ ] 后端服务已启动并可以访问
 - [ ] 能够访问 http://localhost:8000/docs
-- [ ] SDK 已正确安装 (`npm list @imatuproject/sdk`)
+- [ ] SDK 已正确安装 (`npm list @matux/sdk`)
 - [ ] 环境变量已配置 (apiUrl 或 REACT_APP_API_URL)
 - [ ] TypeScript 配置正确 (tsconfig.json)
 - [ ] 能够导入 SDK 模块无错误
@@ -362,4 +362,4 @@ jest.mock('@imatuproject/sdk', () => ({
 ---
 
 *最后更新：2026-03-02*  
-*iMatuProject 开发团队*
+*MatuX Lab*

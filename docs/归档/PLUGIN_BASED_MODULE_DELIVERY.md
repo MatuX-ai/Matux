@@ -280,7 +280,7 @@ ar-vr-lab.mxp (ZIP 格式)
   "nameEn": "AR/VR Lab",
   "version": "2.1.0",
   "description": "增强现实与虚拟现实实验环境，支持手势识别、3D 建模和虚拟课堂",
-  "author": "MatuX Team",
+  "author": "MatuX Lab",
   "category": "immersive-tech",
   "size": {
     "download": "85MB",

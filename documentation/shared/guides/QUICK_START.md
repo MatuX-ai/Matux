@@ -1,4 +1,4 @@
-# iMatuProject 快速入门指南
+# MatuX 快速入门指南
 
 ## 🚀 5分钟快速开始
 

@@ -4,10 +4,10 @@ const PptxGenJS = require('pptxgenjs');
 const pptx = new PptxGenJS();
 
 // 设置演示文稿属性
-pptx.title = 'iMato多来源学习系统 - 项目规划';
-pptx.author = 'iMato Team';
-pptx.subject = 'K12教育机构开源管理系统规划';
-pptx.company = 'iMato';
+pptx.title = 'MatuX STEM 学习工具 - 项目规划';
+pptx.author = 'MatuX Lab';
+pptx.subject = 'MatuX STEM 学习工具规划';
+pptx.company = 'MatuX Lab';
 
 // 定义配色方案
 const colors = {

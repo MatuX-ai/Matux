@@ -1,6 +1,6 @@
-# iMatuProject TypeScript SDK
+# MatuX TypeScript SDK
 
-官方的iMatuProject TypeScript SDK，用于与后端API进行交互。
+官方的MatuX TypeScript SDK，用于与后端API进行交互。
 
 ## 功能特性
 
@@ -14,17 +14,17 @@
 ## 安装
 
 ```bash
-npm install @imatuproject/sdk
+npm install @matux/sdk
 ```
 
 ## 快速开始
 
 ```typescript
-import { APIClient, createConfig } from '@imatuproject/sdk';
+import { APIClient, createConfig } from '@matux/sdk';
 
 // 创建配置
 const config = createConfig({
-  baseURL: 'https://api.imatuproject.com',
+  baseURL: 'https://api.matux.com',
   accessToken: 'your-access-token'
 });
 

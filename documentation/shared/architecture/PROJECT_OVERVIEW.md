@@ -1,8 +1,8 @@
-# MatuX STEM 学习平台 - 项目概览
+# MatuX STEM 学习工具 - 项目概览
 
 ## 项目简介
 
-MatuX 是一个面向学生的 STEM 学习平台，融合人工智能、虚拟实验和游戏化激励，为学生提供沉浸式的编程与 STEM 学习体验。支持桌面端（Electron）和移动端（Flutter）。
+MatuX 是一个面向学生的 STEM 学习工具，融合人工智能、虚拟实验和游戏化激励，为学生提供沉浸式的编程与 STEM 学习体验。支持桌面端（Electron）和移动端（Flutter）。
 
 > **模块解耦说明**: 课件管理模块已解耦至 OpenMTSciEd 项目，机构管理模块已解耦至 OpenMTEduInst 项目。学生账号在三项目间互联互通。
 

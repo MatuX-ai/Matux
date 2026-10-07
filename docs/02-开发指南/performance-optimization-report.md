@@ -322,5 +322,5 @@ npx lighthouse http://localhost:4200 --view
 ---
 
 **优化完成日期**: 2026-03-13  
-**优化负责人**: iMato Team  
+**优化负责人**: MatuX Lab  
 **下次审查日期**: 2026-04-13

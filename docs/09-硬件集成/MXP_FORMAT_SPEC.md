@@ -570,9 +570,9 @@
   "version": "1.2.0",
   "description": "基于大语言模型的智能代码补全、审查和重构工具",
   "author": {
-    "name": "iMato Team",
-    "email": "plugins@imato.edu",
-    "url": "https://imato.edu",
+    "name": "MatuX Lab",
+    "email": "plugins@matux.edu",
+    "url": "https://matux.edu",
     "organization": "iMato Education"
   },
   "license": "MIT",
