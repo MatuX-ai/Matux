@@ -1,0 +1,43 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 400 300" width="400" height="300">
+  <defs>
+    <linearGradient id="bg-gradient" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#667eea;stop-opacity:0.1" />
+      <stop offset="100%" style="stop-color:#764ba2;stop-opacity:0.1" />
+    </linearGradient>
+  </defs>
+  
+  <!-- 背景 -->
+  <rect width="400" height="300" fill="url(#bg-gradient)" rx="12"/>
+  
+  <!-- 小车主体 -->
+  <rect x="120" y="120" width="160" height="80" fill="#2d3748" rx="10"/>
+  
+  <!-- 车轮 -->
+  <circle cx="150" cy="200" r="20" fill="#1a202c"/>
+  <circle cx="250" cy="200" r="20" fill="#1a202c"/>
+  <circle cx="150" cy="200" r="8" fill="#4a5568"/>
+  <circle cx="250" cy="200" r="8" fill="#4a5568"/>
+  
+  <!-- 语音模块 -->
+  <rect x="160" y="135" width="80" height="30" fill="#4a5568" rx="4"/>
+  <text x="200" y="155" font-family="Arial, sans-serif" font-size="12" fill="#48bb78" text-anchor="middle">🎤 语音控制</text>
+  
+  <!-- 超声波传感器 -->
+  <rect x="140" y="100" width="40" height="25" fill="#4a5568" rx="3"/>
+  <circle cx="150" cy="112" r="5" fill="#667eea"/>
+  <circle cx="170" cy="112" r="5" fill="#667eea"/>
+  
+  <!-- LED 灯 -->
+  <circle cx="130" cy="160" r="8" fill="#48bb78" opacity="0.8"/>
+  <circle cx="270" cy="160" r="8" fill="#f56565" opacity="0.8"/>
+  
+  <!-- 电机 -->
+  <rect x="170" y="175" width="60" height="20" fill="#4a5568" rx="3"/>
+  <text x="200" y="190" font-family="Arial, sans-serif" font-size="8" fill="#fff" text-anchor="middle">电机驱动</text>
+  
+  <!-- 标题 -->
+  <text x="200" y="50" font-family="Arial, sans-serif" font-size="18" font-weight="bold" fill="#2d3748" text-anchor="middle">语音控制小车</text>
+  
+  <!-- 标签 -->
+  <text x="200" y="270" font-family="Arial, sans-serif" font-size="12" fill="#667eea" text-anchor="middle">#机器人 #语音识别 #创客作品</text>
+</svg>

@@ -1,0 +1,44 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 400 300" width="400" height="300">
+  <defs>
+    <linearGradient id="bg-gradient" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#667eea;stop-opacity:0.1" />
+      <stop offset="100%" style="stop-color:#764ba2;stop-opacity:0.1" />
+    </linearGradient>
+  </defs>
+  
+  <!-- 背景 -->
+  <rect width="400" height="300" fill="url(#bg-gradient)" rx="12"/>
+  
+  <!-- 3D 打印机主体 -->
+  <rect x="120" y="90" width="160" height="140" fill="#2d3748" rx="8"/>
+  
+  <!-- 打印平台 -->
+  <rect x="130" y="190" width="140" height="30" fill="#4a5568" rx="4"/>
+  <rect x="140" y="195" width="120" height="20" fill="#667eea" rx="3" opacity="0.3"/>
+  
+  <!-- 喷头 -->
+  <rect x="190" y="100" width="20" height="40" fill="#1a202c" rx="3"/>
+  <polygon points="195,140 205,140 200,160" fill="#f56565"/>
+  
+  <!-- 正在打印的模型 -->
+  <rect x="150" y="160" width="30" height="25" fill="#48bb78" opacity="0.6" rx="2"/>
+  <rect x="185" y="165" width="25" height="20" fill="#48bb78" opacity="0.5" rx="2"/>
+  <rect x="220" y="170" width="20" height="15" fill="#48bb78" opacity="0.4" rx="2"/>
+  
+  <!-- 控制面板 -->
+  <rect x="130" y="100" width="50" height="60" fill="#4a5568" rx="4"/>
+  <rect x="135" y="105" width="40" height="30" fill="#1a202c" rx="2"/>
+  <text x="155" y="122" font-family="Arial, sans-serif" font-size="8" fill="#48bb78" text-anchor="middle">70%</text>
+  <rect x="135" y="140" width="40" height="15" fill="#667eea" rx="3"/>
+  <text x="155" y="150" font-family="Arial, sans-serif" font-size="7" fill="#fff" text-anchor="middle">打印中</text>
+  
+  <!-- X/Y 轴导轨 -->
+  <line x1="120" y1="95" x2="280" y2="95" stroke="#4a5568" stroke-width="3"/>
+  <line x1="120" y1="230" x2="280" y2="230" stroke="#4a5568" stroke-width="3"/>
+  
+  <!-- 标题 -->
+  <text x="200" y="50" font-family="Arial, sans-serif" font-size="18" font-weight="bold" fill="#2d3748" text-anchor="middle">3D 打印创意</text>
+  
+  <!-- 标签 -->
+  <text x="200" y="270" font-family="Arial, sans-serif" font-size="12" fill="#667eea" text-anchor="middle">#3D打印 #创意设计 #创客作品</text>
+</svg>
