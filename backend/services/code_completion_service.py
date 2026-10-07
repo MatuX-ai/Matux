@@ -268,7 +268,7 @@ class CodeCompletionService:
             model_mapping = {
                 ModelProvider.OPENAI: "gpt-4-turbo",
                 ModelProvider.LINGMA: "lingma-code-pro",
-                ModelProvider.DEEPSEEK: "deepseek-coder",
+                ModelProvider.DEEPSEEK: "deepseek-v4-flash",
             }
 
             model_name = model_mapping.get(provider, "gpt-4-turbo")

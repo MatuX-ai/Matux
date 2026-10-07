@@ -165,8 +165,119 @@ class CompletionConfig(BaseModel):
     min_prefix_length: int = Field(3, ge=1, le=10, description="最小前缀长度")
     enable_syntax_analysis: bool = Field(True, description="是否启用语法分析")
     default_provider: ModelProvider = Field(
-        ModelProvider.OPENAI, description="默认AI提供商"
+        ModelProvider.DEEPSEEK, description="默认AI提供商"
     )
     fallback_providers: List[ModelProvider] = Field(
-        [ModelProvider.LINGMA, ModelProvider.DEEPSEEK], description="备用AI提供商列表"
+        [ModelProvider.OPENAI, ModelProvider.LINGMA], description="备用AI提供商列表"
     )
+
+
+# ========== DeepSeek AI 辅导相关模型 ==========
+
+
+class DeepSeekExplainRequest(BaseModel):
+    """DeepSeek 代码解释请求"""
+
+    code: str = Field(..., min_length=1, max_length=10000, description="需要解释的代码")
+    language: Optional[ProgrammingLanguage] = Field(None, description="编程语言")
+    detail_level: str = Field("normal", description="详细程度: brief/normal/detailed")
+    provider: Optional[ModelProvider] = Field(ModelProvider.DEEPSEEK, description="AI提供商")
+    model: Optional[str] = Field(None, description="模型名称")
+    user_id: Optional[int] = Field(None, description="用户ID")
+
+
+class CodeElement(BaseModel):
+    """代码元素"""
+
+    name: str = Field(..., description="元素名称")
+    type: str = Field(..., description="元素类型: function/class/variable/import/keyword")
+    description: str = Field(..., description="元素描述")
+    line_start: int = Field(..., description="起始行号")
+    line_end: int = Field(..., description="结束行号")
+
+
+class CodeComplexity(BaseModel):
+    """代码复杂度"""
+
+    score: float = Field(..., description="复杂度分数 0-100")
+    level: str = Field(..., description="复杂度级别: low/medium/high")
+    factors: List[str] = Field(default_factory=list, description="复杂度因素")
+
+
+class DeepSeekExplainResponse(BaseModel):
+    """DeepSeek 代码解释响应"""
+
+    explanation: str = Field(..., description="代码解释")
+    code_elements: List[CodeElement] = Field(default_factory=list, description="代码元素列表")
+    complexity: CodeComplexity = Field(..., description="代码复杂度")
+    suggestions: List[str] = Field(default_factory=list, description="改进建议")
+    related_concepts: List[str] = Field(default_factory=list, description="相关概念")
+    model_used: str = Field(..., description="使用的模型")
+    processing_time: float = Field(..., description="处理时间(秒)")
+
+
+class DeepSeekOptimizeRequest(BaseModel):
+    """DeepSeek 代码优化请求"""
+
+    code: str = Field(..., min_length=1, max_length=10000, description="需要优化的代码")
+    language: Optional[ProgrammingLanguage] = Field(None, description="编程语言")
+    optimization_goals: Optional[List[str]] = Field(
+        None, description="优化目标: performance/readability/security/best-practice"
+    )
+    provider: Optional[ModelProvider] = Field(ModelProvider.DEEPSEEK, description="AI提供商")
+    model: Optional[str] = Field(None, description="模型名称")
+    user_id: Optional[int] = Field(None, description="用户ID")
+
+
+class OptimizationImprovement(BaseModel):
+    """优化改进项"""
+
+    type: str = Field(..., description="改进类型")
+    description: str = Field(..., description="改进描述")
+    original_snippet: str = Field(..., description="原始代码片段")
+    optimized_snippet: str = Field(..., description="优化后代码片段")
+    impact: str = Field(..., description="影响程度: high/medium/low")
+
+
+class DeepSeekOptimizeResponse(BaseModel):
+    """DeepSeek 代码优化响应"""
+
+    original_code: str = Field(..., description="原始代码")
+    optimized_code: str = Field(..., description="优化后代码")
+    improvements: List[OptimizationImprovement] = Field(default_factory=list, description="改进列表")
+    explanation: str = Field(..., description="优化说明")
+    warnings: List[str] = Field(default_factory=list, description="警告信息")
+    model_used: str = Field(..., description="使用的模型")
+    processing_time: float = Field(..., description="处理时间(秒)")
+
+
+class DeepSeekTutorRequest(BaseModel):
+    """DeepSeek 智能辅导请求"""
+
+    code: Optional[str] = Field(None, max_length=5000, description="相关代码片段")
+    question: str = Field(..., min_length=1, max_length=2000, description="用户问题")
+    context: Optional[List[str]] = Field(None, description="上下文代码")
+    language: Optional[ProgrammingLanguage] = Field(None, description="编程语言")
+    provider: Optional[ModelProvider] = Field(ModelProvider.DEEPSEEK, description="AI提供商")
+    model: Optional[str] = Field(None, description="模型名称")
+    user_id: Optional[int] = Field(None, description="用户ID")
+
+
+class CodeExample(BaseModel):
+    """代码示例"""
+
+    title: str = Field(..., description="示例标题")
+    code: str = Field(..., description="示例代码")
+    language: str = Field(..., description="编程语言")
+    explanation: str = Field(..., description="代码解释")
+
+
+class DeepSeekTutorResponse(BaseModel):
+    """DeepSeek 智能辅导响应"""
+
+    answer: str = Field(..., description="回答内容")
+    code_examples: List[CodeExample] = Field(default_factory=list, description="代码示例")
+    related_topics: List[str] = Field(default_factory=list, description="相关主题")
+    next_steps: List[str] = Field(default_factory=list, description="后续学习建议")
+    model_used: str = Field(..., description="使用的模型")
+    processing_time: float = Field(..., description="处理时间(秒)")

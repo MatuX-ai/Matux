@@ -61,7 +61,8 @@ class ExamUpdate(BaseModel):
 
 
 class QuestionCreate(BaseModel):
-    question_type: str = Field(..., pattern=r"^(single_choice|multiple_choice|true_false|short_answer|coding)$")
+    question_type: str = Field(
+        ..., pattern=r"^(single_choice|multiple_choice|true_false|short_answer|coding)$")
     title: str = Field(..., min_length=1)
     description: str | None = None
     options: list | None = None
@@ -132,7 +133,8 @@ async def get_exam(
     """获取测验详情（包含题目列表）"""
     exam = await exam_service.get_exam(db=db, exam_id=exam_id)
     if not exam:
-        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="测验不存在")
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND, detail="测验不存在")
 
     questions = await exam_service.get_questions(
         db=db, exam_id=exam_id, include_answers=include_answers
@@ -153,10 +155,12 @@ async def update_exam(
 ):
     """更新测验信息"""
     exam = await exam_service.update_exam(
-        db=db, exam_id=exam_id, exam_data=exam_data.model_dump(exclude_none=True)
+        db=db, exam_id=exam_id, exam_data=exam_data.model_dump(
+            exclude_none=True)
     )
     if not exam:
-        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="测验不存在")
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND, detail="测验不存在")
     return exam.to_dict()
 
 
@@ -169,7 +173,8 @@ async def delete_exam(
     """删除测验及其所有关联数据"""
     success = await exam_service.delete_exam(db=db, exam_id=exam_id)
     if not success:
-        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="测验不存在")
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND, detail="测验不存在")
     return {"message": "删除成功"}
 
 
@@ -181,10 +186,12 @@ async def publish_exam(
 ):
     """发布测验（学生可见并可开始考试）"""
     exam = await exam_service.update_exam(
-        db=db, exam_id=exam_id, exam_data={"status": ExamStatus.PUBLISHED.value}
+        db=db, exam_id=exam_id, exam_data={
+            "status": ExamStatus.PUBLISHED.value}
     )
     if not exam:
-        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="测验不存在")
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND, detail="测验不存在")
     return {"message": "发布成功", "exam": exam.to_dict()}
 
 
@@ -217,7 +224,8 @@ async def update_question(
         db=db, question_id=question_id, question_data=question_data.model_dump()
     )
     if not question:
-        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="题目不存在")
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND, detail="题目不存在")
     return question.to_dict(include_answer=True)
 
 
@@ -230,7 +238,8 @@ async def delete_question(
     """删除题目"""
     success = await exam_service.delete_question(db=db, question_id=question_id)
     if not success:
-        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="题目不存在")
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND, detail="题目不存在")
     return {"message": "删除成功"}
 
 
@@ -245,22 +254,51 @@ async def start_exam(
     db: AsyncSession = Depends(get_db),
 ):
     """开始考试，返回答题记录"""
+    import logging
+    logger = logging.getLogger(__name__)
+    
+    logger.info(f"[START_EXAM] user_id={current_user.id}, exam_id={exam_id}")
+    
     try:
-        ip_address = request.client.host if request else None if hasattr(request, 'client') else None
-    except Exception:
+        ip_address = None
+        if request and hasattr(request, 'client') and request.client:
+            ip_address = request.client.host
+            logger.info(f"[START_EXAM] IP address: {ip_address}")
+    except Exception as e:
+        logger.warning(f"[START_EXAM] Failed to get IP address: {e}")
         ip_address = None
 
-    attempt = await exam_service.start_exam(
-        db=db,
-        exam_id=exam_id,
-        user_id=current_user.id,
-        ip_address=ip_address,
-    )
+    try:
+        logger.info(f"[START_EXAM] Calling exam_service.start_exam...")
+        attempt = await exam_service.start_exam(
+            db=db,
+            exam_id=exam_id,
+            user_id=current_user.id,
+            ip_address=ip_address,
+        )
+        logger.info(f"[START_EXAM] Success: attempt_id={attempt.id if attempt else 'None'}")
+    except Exception as e:
+        logger.error(f"[START_EXAM] Service error: {type(e).__name__}: {e}", exc_info=True)
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail=f"开始考试失败：{str(e)}"
+        )
+        
     if not attempt:
-        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="测验不存在")
+        logger.warning(f"[START_EXAM] Exam not found: exam_id={exam_id}")
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND, detail="测验不存在")
 
     # 获取题目（不含答案）
-    questions = await exam_service.get_questions(db=db, exam_id=exam_id, include_answers=False)
+    try:
+        questions = await exam_service.get_questions(db=db, exam_id=exam_id, include_answers=False)
+        logger.info(f"[START_EXAM] Loaded {len(questions)} questions")
+    except Exception as e:
+        logger.error(f"[START_EXAM] Failed to load questions: {e}", exc_info=True)
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail=f"加载题目失败：{str(e)}"
+        )
 
     return {
         "attempt_id": attempt.id,
@@ -282,10 +320,12 @@ async def submit_exam(
             db=db, attempt_id=attempt_id, answers=submit_data.answers, user_id=current_user.id
         )
         if not attempt:
-            raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="答题记录不存在")
+            raise HTTPException(
+                status_code=status.HTTP_404_NOT_FOUND, detail="答题记录不存在")
         return attempt.to_dict()
     except ValueError as e:
-        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail=str(e))
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST, detail=str(e))
 
 
 @router.post("/attempts/{attempt_id}/grade", summary="人工评分")
@@ -304,7 +344,8 @@ async def grade_exam(
         notes=grade_data.notes,
     )
     if not attempt:
-        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="答题记录不存在")
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND, detail="答题记录不存在")
     return attempt.to_dict()
 
 
@@ -352,12 +393,14 @@ async def get_attempt(
     """获取答题记录详情"""
     attempt = await exam_service.get_attempt(db=db, attempt_id=attempt_id)
     if not attempt:
-        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="答题记录不存在")
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND, detail="答题记录不存在")
 
     result = attempt.to_dict()
     # 包含答案详情
     result["answers"] = attempt.answers
-    result["cheat_events"] = [e.to_dict() for e in (attempt.cheat_events or [])]
+    result["cheat_events"] = [e.to_dict()
+                              for e in (attempt.cheat_events or [])]
     return result
 
 

@@ -294,8 +294,8 @@ def get_all_module_specs() -> List[dict]:
             "routes.ai_capabilities_routes", "router"
         ),
         "dependencies": ["auth"],
-        "required_services": ["openai"],
-        "fallback_services": {"openai": "local_template"},
+        "required_services": ["deepseek"],
+        "fallback_services": {"deepseek": "local_template"},
         "model_classes": [],
     })
 
@@ -428,13 +428,31 @@ def get_all_module_specs() -> List[dict]:
         "model_classes": [],
     })
 
+    # 课件图谱闭包表
+    modules.append({
+        "name": "courseware",
+        "tier": 1,
+        "prefix": "",
+        "tags": ["课件图谱"],
+        "router_factory": _factory(
+            "routes.courseware_routes", "router"
+        ),
+        "dependencies": ["course"],
+        "required_services": [],
+        "fallback_services": {},
+        "model_classes": [
+            "models.courseware_clousure.CoursewareNode",
+            "models.courseware_clousure.CoursewareClosure",
+        ],
+    })
+
     # ==================== Tier 2: 按需激活 ====================
     # AR/VR、区块链、数字孪生 → 请求时激活，< 2 秒
 
     modules.append({
         "name": "ar_vr",
         "tier": 2,
-        "prefix": "",
+        "prefix": "/api/v1",
         "tags": ["AR/VR"],
         "router_factory": _factory("routes.ar_vr_routes", "router"),
         "dependencies": ["auth"],
@@ -460,7 +478,7 @@ def get_all_module_specs() -> List[dict]:
     modules.append({
         "name": "ar_lab",
         "tier": 2,
-        "prefix": "",
+        "prefix": "/api/v1",
         "tags": ["AR 实验室"],
         "router_factory": _factory("routes.ar_lab_routes", "router"),
         "dependencies": ["auth", "course"],
@@ -500,7 +518,7 @@ def get_all_module_specs() -> List[dict]:
     modules.append({
         "name": "digital_twin",
         "tier": 2,
-        "prefix": "",
+        "prefix": "/api/v1",
         "tags": ["数字孪生"],
         "router_factory": _factory("routes.digital_twin_routes", "router"),
         "dependencies": ["auth"],
@@ -705,8 +723,8 @@ def get_all_module_specs() -> List[dict]:
         "tags": ["创意引擎"],
         "router_factory": _factory("routes.creativity_routes", "router"),
         "dependencies": ["ai_capabilities"],
-        "required_services": ["openai"],
-        "fallback_services": {"openai": "local_template"},
+        "required_services": ["deepseek"],
+        "fallback_services": {"deepseek": "local_template"},
         "model_classes": [
             "models.creativity_models.CreativeProject",
         ],

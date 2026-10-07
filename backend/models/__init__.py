@@ -218,6 +218,10 @@ from .finance import (
     ConsumptionType,
     ConsumptionStatus,
 )
+from .courseware_clousure import (
+    CoursewareNode,
+    CoursewareClosure,
+)
 
 __all__ = [
     "User",
@@ -398,4 +402,7 @@ __all__ = [
     "Sponsorship",
     # 统一课件库模型
     "UnifiedMaterial",
+    # 课件图谱闭包表模型
+    "CoursewareNode",
+    "CoursewareClosure",
 ]

@@ -9,7 +9,6 @@
 """
 
 import asyncio
-import importlib
 import logging
 import time
 from collections import defaultdict

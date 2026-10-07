@@ -53,7 +53,8 @@ class ExamService:
             max_attempts=exam_data.get("max_attempts", 1),
             shuffle_questions=exam_data.get("shuffle_questions", True),
             shuffle_options=exam_data.get("shuffle_options", True),
-            show_result_immediately=exam_data.get("show_result_immediately", False),
+            show_result_immediately=exam_data.get(
+                "show_result_immediately", False),
             anti_cheat_enabled=exam_data.get("anti_cheat_enabled", True),
             max_screen_switches=exam_data.get("max_screen_switches", 3),
             min_answer_seconds=exam_data.get("min_answer_seconds", 3),
@@ -138,7 +139,8 @@ class ExamService:
         """添加题目"""
         # 计算排序序号
         stmt = (
-            select(func.count()).select_from(Question).filter(Question.exam_id == exam_id)
+            select(func.count()).select_from(
+                Question).filter(Question.exam_id == exam_id)
         )
         result = await db.execute(stmt)
         count = result.scalar() or 0
@@ -154,7 +156,8 @@ class ExamService:
             order_index=count,
             explanation=question_data.get("explanation"),
             tags=question_data.get("tags"),
-            difficulty=ExamDifficulty(question_data.get("difficulty", "medium")),
+            difficulty=ExamDifficulty(
+                question_data.get("difficulty", "medium")),
         )
         db.add(question)
 
@@ -218,7 +221,8 @@ class ExamService:
         exam = await self.get_exam(db, question.exam_id)
         if exam:
             exam.total_questions = max(0, (exam.total_questions or 1) - 1)
-            exam.total_score = max(0, (exam.total_score or question.score) - question.score)
+            exam.total_score = max(
+                0, (exam.total_score or question.score) - question.score)
 
         await db.delete(question)
         await db.commit()
@@ -236,21 +240,41 @@ class ExamService:
         device_fingerprint: Optional[str] = None,
     ) -> Optional[ExamAttempt]:
         """开始考试"""
-        exam = await self.get_exam(db, exam_id)
+        import logging
+        logger = logging.getLogger(__name__)
+
+        logger.info(
+            f"[ExamService.start_exam] exam_id={exam_id}, user_id={user_id}")
+
+        # 【P0修复】使用事务和行锁防止并发问题
+        from sqlalchemy import select, update
+
+        # 锁定测验记录进行原子操作
+        stmt = select(Exam).filter(Exam.id == exam_id).with_for_update()
+        result = await db.execute(stmt)
+        exam = result.scalar_one_or_none()
+
         if not exam:
+            logger.warning(
+                f"[ExamService.start_exam] Exam not found: {exam_id}")
             return None
 
+        logger.info(f"[ExamService.start_exam] Exam status: {exam.status}")
         if exam.status != ExamStatus.PUBLISHED:
+            logger.warning(
+                f"[ExamService.start_exam] Exam not published: {exam.status}")
             raise ValueError("测验未发布")
 
         # 检查时间窗口
         now = datetime.utcnow()
         if exam.start_time and now < exam.start_time.replace(tzinfo=None):
+            logger.warning(f"[ExamService.start_exam] Exam not started yet")
             raise ValueError("考试尚未开始")
         if exam.end_time and now > exam.end_time.replace(tzinfo=None):
+            logger.warning(f"[ExamService.start_exam] Exam already ended")
             raise ValueError("考试已结束")
 
-        # 检查尝试次数
+        # 【P0修复】在锁内检查尝试次数，防止并发超限
         stmt = select(func.count()).select_from(ExamAttempt).filter(
             ExamAttempt.exam_id == exam_id,
             ExamAttempt.user_id == user_id,
@@ -258,11 +282,15 @@ class ExamService:
         )
         result = await db.execute(stmt)
         attempt_count = result.scalar() or 0
+        logger.info(
+            f"[ExamService.start_exam] Current attempt count: {attempt_count}, max: {exam.max_attempts}")
 
         if attempt_count >= exam.max_attempts:
+            logger.warning(f"[ExamService.start_exam] Max attempts reached")
             raise ValueError("已达到最大尝试次数")
 
         # 创建答题记录
+        logger.info(f"[ExamService.start_exam] Creating ExamAttempt...")
         attempt = ExamAttempt(
             exam_id=exam_id,
             user_id=user_id,
@@ -273,11 +301,26 @@ class ExamService:
         )
         db.add(attempt)
 
-        # 更新测验统计
-        exam.attempt_count = (exam.attempt_count or 0) + 1
+        # 【P0修复】使用原子更新避免竞态条件
+        await db.execute(
+            update(Exam)
+            .where(Exam.id == exam_id)
+            .values(attempt_count=(Exam.attempt_count or 0) + 1)
+        )
 
+        logger.info(f"[ExamService.start_exam] Committing...")
         await db.commit()
-        await db.refresh(attempt)
+
+        logger.info(f"[ExamService.start_exam] Refreshing attempt...")
+        try:
+            await db.refresh(attempt)
+            logger.info(
+                f"[ExamService.start_exam] Success! attempt_id={attempt.id}")
+        except Exception as e:
+            logger.error(
+                f"[ExamService.start_exam] Refresh failed: {e}", exc_info=True)
+            raise
+
         return attempt
 
     async def submit_exam(
@@ -288,6 +331,10 @@ class ExamService:
         user_id: int,
     ) -> Optional[ExamAttempt]:
         """提交考试答案"""
+        # 【P1修复】添加事务保护和边界处理
+        import logging
+        logger = logging.getLogger(__name__)
+
         stmt = select(ExamAttempt).filter(
             ExamAttempt.id == attempt_id,
             ExamAttempt.user_id == user_id,
@@ -301,69 +348,99 @@ class ExamService:
         if attempt.status != AttemptStatus.IN_PROGRESS:
             raise ValueError("该答题记录已提交")
 
-        # 计算耗时
-        time_spent = int((datetime.utcnow() - attempt.started_at.replace(tzinfo=None)).total_seconds())
-        attempt.time_spent_seconds = time_spent
-        attempt.answers = answers
+        try:
+            # 计算耗时
+            time_spent = int(
+                (datetime.utcnow() - attempt.started_at.replace(tzinfo=None)).total_seconds())
+            attempt.time_spent_seconds = time_spent
 
-        # 自动评分（客观题）
-        exam = await self.get_exam(db, attempt.exam_id)
-        questions = await self.get_questions(db, attempt.exam_id, include_answers=True)
+            # 【P1修复】处理空答案字典
+            if not answers:
+                logger.warning(
+                    f"[submit_exam] Empty answers submitted for attempt {attempt_id}")
+                answers = {}
 
-        total_score = 0.0
-        earned_score = 0.0
-        graded_answers = {}
+            # 自动评分（客观题）
+            exam = await self.get_exam(db, attempt.exam_id)
+            if not exam:
+                raise ValueError("测验不存在")
 
-        for question in questions:
-            total_score += question.score
-            user_answer = answers.get(str(question.id))
+            questions = await self.get_questions(db, attempt.exam_id, include_answers=True)
 
-            if question.question_type in (
-                QuestionType.SINGLE_CHOICE,
-                QuestionType.MULTIPLE_CHOICE,
-                QuestionType.TRUE_FALSE,
-            ):
-                # 客观题自动评分
-                is_correct = self._check_answer(question, user_answer)
-                if is_correct:
-                    earned_score += question.score
-
-                graded_answers[str(question.id)] = {
-                    "user_answer": user_answer,
-                    "correct_answer": question.correct_answer,
-                    "score": question.score if is_correct else 0,
-                    "is_correct": is_correct,
-                }
+            # 【P1修复】处理无题目情况
+            if not questions:
+                logger.warning(
+                    f"[submit_exam] No questions found for exam {attempt.exam_id}")
+                attempt.answers = {}
+                attempt.total_score = 0
+                attempt.score = 0
+                attempt.percentage = 0
             else:
-                # 主观题需要人工评分
-                graded_answers[str(question.id)] = {
-                    "user_answer": user_answer,
-                    "correct_answer": question.correct_answer,
-                    "score": 0,
-                    "is_correct": None,  # 待人工评分
-                }
+                total_score = 0.0
+                earned_score = 0.0
+                graded_answers = {}
 
-        attempt.answers = graded_answers
-        attempt.total_score = total_score
-        attempt.score = earned_score
-        attempt.percentage = round((earned_score / total_score * 100), 2) if total_score > 0 else 0
-        attempt.submitted_at = func.now()
-        attempt.auto_graded = True
+                for question in questions:
+                    total_score += question.score
+                    # 【P1修复】安全获取答案，防止 KeyError
+                    user_answer = answers.get(str(question.id))
 
-        # 检查是否有主观题
-        has_subjective = any(
-            q.question_type in (QuestionType.SHORT_ANSWER, QuestionType.CODING)
-            for q in questions
-        )
+                    if question.question_type in (
+                        QuestionType.SINGLE_CHOICE,
+                        QuestionType.MULTIPLE_CHOICE,
+                        QuestionType.TRUE_FALSE,
+                    ):
+                        # 客观题自动评分
+                        is_correct = self._check_answer(question, user_answer)
+                        if is_correct:
+                            earned_score += question.score
 
-        if has_subjective:
-            attempt.status = AttemptStatus.SUBMITTED
-        else:
-            attempt.status = AttemptStatus.GRADED
+                        graded_answers[str(question.id)] = {
+                            "user_answer": user_answer,
+                            "correct_answer": question.correct_answer,
+                            "score": question.score if is_correct else 0,
+                            "is_correct": is_correct,
+                        }
+                    else:
+                        # 主观题需要人工评分
+                        graded_answers[str(question.id)] = {
+                            "user_answer": user_answer,
+                            "correct_answer": question.correct_answer,
+                            "score": 0,
+                            "is_correct": None,  # 待人工评分
+                        }
 
-        await db.commit()
-        await db.refresh(attempt)
-        return attempt
+                attempt.answers = graded_answers
+                attempt.total_score = total_score
+                attempt.score = earned_score
+                attempt.percentage = round(
+                    (earned_score / total_score * 100), 2) if total_score > 0 else 0
+
+            attempt.submitted_at = func.now()
+            attempt.auto_graded = True
+
+            # 检查是否有主观题
+            has_subjective = any(
+                q.question_type in (
+                    QuestionType.SHORT_ANSWER, QuestionType.CODING)
+                for q in questions
+            ) if questions else False
+
+            if has_subjective:
+                attempt.status = AttemptStatus.SUBMITTED
+            else:
+                attempt.status = AttemptStatus.GRADED
+
+            await db.commit()
+            await db.refresh(attempt)
+            return attempt
+
+        except Exception as e:
+            # 【P1修复】失败时回滚，保证数据一致性
+            logger.error(
+                f"[submit_exam] Failed to submit exam: {e}", exc_info=True)
+            await db.rollback()
+            raise
 
     def _check_answer(self, question: Question, user_answer) -> bool:
         """检查答案是否正确"""
@@ -476,7 +553,8 @@ class ExamService:
         """获取测验统计数据"""
         stmt = select(ExamAttempt).filter(
             ExamAttempt.exam_id == exam_id,
-            ExamAttempt.status.in_([AttemptStatus.GRADED, AttemptStatus.SUBMITTED]),
+            ExamAttempt.status.in_(
+                [AttemptStatus.GRADED, AttemptStatus.SUBMITTED]),
         )
         result = await db.execute(stmt)
         attempts = result.scalars().all()
@@ -501,7 +579,8 @@ class ExamService:
             "highest_score": max(scores),
             "lowest_score": min(scores),
             "pass_rate": round(
-                sum(1 for s in scores if s >= passing_score) / len(scores) * 100, 2
+                sum(1 for s in scores if s >= passing_score) /
+                len(scores) * 100, 2
             ),
             "average_time_spent": round(
                 sum(a.time_spent_seconds or 0 for a in attempts) / len(attempts)

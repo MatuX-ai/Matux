@@ -306,8 +306,8 @@ class LearningBehaviorService:
                     try:
                         types = json.loads(record.hardware_types_used)
                         hardware_types.update(types)
-                    except Exception:
-                        pass
+                    except Exception as je:
+                        logger.debug(f"硬件类型 JSON 解析失败(可忽略): {je}")
 
             # 计算平均连接时长
             connection_durations = [

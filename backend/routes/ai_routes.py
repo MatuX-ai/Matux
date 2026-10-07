@@ -141,7 +141,7 @@ async def get_available_models():
         ),
         ModelInfo(
             provider=ModelProvider.DEEPSEEK,
-            model_name="deepseek-coder",
+            model_name="deepseek-v4-flash",
             description="DeepSeek代码专用模型",
             max_tokens=4096,
             supported_languages=[

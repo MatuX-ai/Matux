@@ -13,7 +13,7 @@ from sqlalchemy.orm import Session
 
 from utils.database import get_sync_db
 from models.user import User
-from utils.dependencies import get_current_user_sync
+from utils.auth_utils import get_current_user_sync  # 使用已实现的版本
 from services.ai_edu_progress_service import AIEduProgressService
 
 logger = logging.getLogger(__name__)

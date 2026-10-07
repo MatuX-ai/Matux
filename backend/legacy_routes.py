@@ -22,6 +22,8 @@ def register_all_routes(app):
     from routes import (
         ai_recommend_routes,
         ai_routes,
+        ai_edu_websocket_routes,  # AI 教育 WebSocket 路由
+        ai_tutor_routes,  # AI 导师路由 (DeepSeek深度集成)
         ar_lab_routes,
         ar_rewards,
         ar_vr_mock_routes,
@@ -37,7 +39,7 @@ def register_all_routes(app):
         educational_institution_routes,
         hardware_certification_routes,
         learning_behavior_routes,
-        learning_source_routes,
+        learning_source_routes,  # 路由已有 /api/v1 前缀
         local_knowledge_graph_routes,
         material_routes,
         model_benchmark_routes,
@@ -49,7 +51,7 @@ def register_all_routes(app):
         sponsorship_routes,
         subscription_routes,
         tenant_config_routes,
-        unified_learning_record_routes,
+        unified_learning_record_routes,  # 路由已有 /api/v1 前缀
         ai_edu_progress_routes,
         ai_teacher_routes,
         vector_knowledge_routes,
@@ -100,10 +102,9 @@ def register_all_routes(app):
                        prefix="/api/v1", tags=["区块链网关"])
     app.include_router(learning_behavior_routes.router,
                        prefix="/api/v1", tags=["学习行为特征"])
-    app.include_router(learning_source_routes.router,
-                       prefix="/api/v1", tags=["学习来源管理"])
-    app.include_router(unified_learning_record_routes.router,
-                       prefix="/api/v1", tags=["统一学习记录"])
+    # 注意：learning_source_routes 和 unified_learning_record_routes 已有 /api/v1 前缀
+    app.include_router(learning_source_routes.router, tags=["学习来源管理"])
+    app.include_router(unified_learning_record_routes.router, tags=["统一学习记录"])
     app.include_router(ar_rewards.router, prefix="/api/v1", tags=["AR 奖励系统"])
     app.include_router(openhydra_routes.router, tags=["AI 实验室"])
     app.include_router(ai_capabilities_routes.router, tags=["AI 能力组件"])
@@ -118,6 +119,9 @@ def register_all_routes(app):
     app.include_router(aggregation_router)
     app.include_router(material_routes.router, tags=["统一课件库(已解耦)"])
     app.include_router(ai_edu_progress_routes.router, tags=["AI教育学习进度"])
+    app.include_router(ai_tutor_routes.router, tags=["AI编程导师"])
+    app.include_router(ai_edu_websocket_routes.router,
+                       tags=["AI 教育 WebSocket"])
     app.include_router(ai_teacher_routes.router, tags=["AI 个性化教师"])
     app.include_router(vector_knowledge_routes.router, tags=["向量知识库"])
     app.include_router(local_knowledge_graph_routes.router, tags=["本地知识图谱"])

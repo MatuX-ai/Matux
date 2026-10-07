@@ -4,7 +4,7 @@
 """
 
 __version__ = "1.0.0"
-__author__ = "iMato Team"
+__author__ = "MatuX Lab"
 
 from .engines.difficulty_engine import DifficultyEngine
 from .engines.rule_evaluation_engine import RuleEvaluationEngine

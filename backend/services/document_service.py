@@ -198,8 +198,8 @@ class DocumentProcessingService:
                             return DocumentFormat.PPTX
                         elif any(name.startswith("word/") for name in zf.namelist()):
                             return DocumentFormat.DOCX
-        except Exception:
-            pass
+        except Exception as e:
+            logger.debug(f"文档格式探测失败(可忽略): {e}")
 
         return DocumentFormat.TXT
 

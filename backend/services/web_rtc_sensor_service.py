@@ -204,8 +204,8 @@ class WebRTCManager:
         if session_id in self.data_channels:
             try:
                 self.data_channels[session_id].close()
-            except Exception:
-                pass
+            except Exception as ce:
+                logger.debug(f"关闭数据通道失败(可忽略): {ce}")
 
             del self.data_channels[session_id]
 
@@ -213,8 +213,8 @@ class WebRTCManager:
         if session_id in self.peer_connections:
             try:
                 asyncio.create_task(self.peer_connections[session_id].close())
-            except Exception:
-                pass
+            except Exception as pe:
+                logger.debug(f"关闭 PeerConnection 失败(可忽略): {pe}")
 
             del self.peer_connections[session_id]
 

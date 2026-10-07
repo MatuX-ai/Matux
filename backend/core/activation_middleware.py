@@ -5,12 +5,11 @@
 若未激活则自动触发激活流程，激活期间返回 503 状态码。
 """
 
-import json
 import logging
-from typing import Any, Callable, Dict
+from typing import Any, Dict
 
 from starlette.requests import Request
-from starlette.responses import JSONResponse, Response
+from starlette.responses import JSONResponse
 from starlette.types import ASGIApp, Receive, Scope, Send
 
 from .module_spec import ModuleState, ModuleTier

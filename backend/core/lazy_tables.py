@@ -112,7 +112,7 @@ class LazyTableManager:
 
         导入 model 类并调用其 metadata.create_all()
         """
-        from utils.database import get_engine, Base
+        from utils.database import get_engine
 
         engine = await get_engine()
         created_count = 0

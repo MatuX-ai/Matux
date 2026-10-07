@@ -194,8 +194,8 @@ class CodeSandboxService:
                 try:
                     container = self.client.containers.get(container_id)
                     container.remove(force=True)
-                except Exception:
-                    pass
+                except Exception as ce:
+                    logger.debug(f"容器清理失败(可忽略): {ce}")
 
             return ExecutionResult(
                 success=False,

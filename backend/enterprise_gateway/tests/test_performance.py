@@ -186,8 +186,8 @@ class TestDatabasePerformance:
             # 清理会话
             try:
                 next(db_generator, None)
-            except StopIteration:
-                pass
+            except StopIteration as se:
+                logger.debug(f"生成器清理结束(正常): {se}")
 
         avg_connection_time = statistics.mean(connection_times)
         print(f"\n数据库连接性能:")

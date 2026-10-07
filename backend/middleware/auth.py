@@ -6,20 +6,27 @@
 from typing import Optional
 
 from fastapi import Depends, HTTPException, status
-from sqlalchemy.orm import Session
+from fastapi.security import OAuth2PasswordBearer
+from jose import JWTError, jwt
+from sqlalchemy.ext.asyncio import AsyncSession
 
+from config.settings import settings
 from models.user import User
-from utils.auth_utils import get_current_user_sync
 from utils.database import get_db
 
 
-def get_current_user(
-    db: Session = Depends(get_db)
+oauth2_scheme = OAuth2PasswordBearer(tokenUrl="/api/v1/auth/signin")
+
+
+async def get_current_user(
+    token: str = Depends(oauth2_scheme),
+    db: AsyncSession = Depends(get_db)
 ) -> User:
     """
-    获取当前登录用户
+    获取当前登录用户（异步版本）
 
     Args:
+        token: JWT token
         db: 数据库会话
 
     Returns:
@@ -28,12 +35,36 @@ def get_current_user(
     Raises:
         HTTPException: 认证失败时抛出
     """
-    # 使用同步版本（适用于同步路由）
-    # 对于异步路由，应该使用异步版本的依赖注入
+    credentials_exception = HTTPException(
+        status_code=status.HTTP_401_UNAUTHORIZED,
+        detail="无法验证凭据",
+        headers={"WWW-Authenticate": "Bearer"},
+    )
+
     try:
-        # 这里暂时返回一个模拟用户，实际应该从 token 中解析
-        # TODO: 需要从 OAuth2 token 中解析用户信息
-        return get_current_user_sync.__annotations__.get('return', User)
+        payload = jwt.decode(
+            token, settings.SECRET_KEY, algorithms=[settings.ALGORITHM]
+        )
+        username: str = payload.get("sub")
+        if username is None:
+            raise credentials_exception
+
+    except JWTError:
+        raise credentials_exception
+
+    try:
+        # 查询用户
+        from sqlalchemy import select
+        stmt = select(User).filter(User.username ==
+                                   username, User.is_active == True)
+        result = await db.execute(stmt)
+        user = result.scalar_one_or_none()
+
+        if user is None:
+            raise credentials_exception
+
+        return user
+
     except Exception as e:
         raise HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED,
@@ -43,12 +74,12 @@ def get_current_user(
 
 
 # 为了兼容性，也提供一个简化的版本
-def get_current_user_optional() -> Optional[User]:
+async def get_current_user_optional() -> Optional[User]:
     """
     获取当前用户（可选）
     如果未认证，返回 None 而不是抛出异常
     """
     try:
-        return get_current_user()
+        return await get_current_user()
     except HTTPException:
         return None

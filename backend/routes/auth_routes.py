@@ -5,10 +5,11 @@
 from datetime import datetime, timedelta
 from typing import Dict, List, Optional
 
+import bcrypt
 from fastapi import APIRouter, Depends, HTTPException, UploadFile, status
 from fastapi.security import OAuth2PasswordBearer, OAuth2PasswordRequestForm
 from jose import JWTError, jwt
-from pydantic import BaseModel
+from pydantic import BaseModel, ConfigDict, Field, field_validator
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 
@@ -41,7 +42,26 @@ class TokenData(BaseModel):
 class UserCreate(BaseModel):
     username: str
     email: str
-    password: str
+    password: str = Field(
+        ...,
+        min_length=8,
+        max_length=72,
+        description="密码（至少8字符，包含字母和数字）",
+        # Pydantic v2 语法
+        validation_alias=None,
+    )
+
+    @field_validator('password')
+    @classmethod
+    def validate_password_strength(cls, v: str) -> str:
+        """验证密码强度：至少8字符，包含字母和数字"""
+        if len(v) < 8:
+            raise ValueError('密码至少需要8个字符')
+        if not any(c.isalpha() for c in v):
+            raise ValueError('密码必须包含字母')
+        if not any(c.isdigit() for c in v):
+            raise ValueError('密码必须包含数字')
+        return v
 
 
 class UserResponse(BaseModel):
@@ -79,8 +99,58 @@ class BulkImportResponse(BaseModel):
     imported_users: List[UserResponse]
 
 
+class LoginRequest(BaseModel):
+    """前端 JSON 登录请求（与 /token OAuth2 form 格式对应）"""
+    email: str
+    password: str
+
+
+class AuthResponse(BaseModel):
+    """前端期望的认证响应格式（camelCase，与 shared/models/auth.models.ts 对齐）"""
+    accessToken: str
+    refreshToken: str
+    user: UserResponse  # 直接引用（UserResponse 在此之前已定义）
+
+
+class RegisterRequest(BaseModel):
+    """前端注册请求（与 shared/models/auth.models.ts RegisterRequest 对齐）"""
+    email: str
+    password: str = Field(..., min_length=8, max_length=72)
+    username: Optional[str] = None
+    grade: Optional[str] = None
+    userType: Optional[str] = None
+    userTypeGroup: Optional[str] = None
+    organizationName: Optional[str] = None
+    inviteCode: Optional[str] = None
+    realName: Optional[str] = None
+    phone: Optional[str] = None
+
+    model_config = ConfigDict(extra="ignore")  # 忽略额外字段（前向兼容）
+
+    @field_validator('password')
+    @classmethod
+    def validate_password_strength(cls, v: str) -> str:
+        """验证密码强度：至少8字符，包含字母和数字"""
+        if len(v) < 8:
+            raise ValueError('密码至少需要8个字符')
+        if not any(c.isalpha() for c in v):
+            raise ValueError('密码必须包含字母')
+        if not any(c.isdigit() for c in v):
+            raise ValueError('密码必须包含数字')
+        return v
+
+
+class RefreshTokenRequest(BaseModel):
+    """Token 刷新请求"""
+    refreshToken: str
+
+
+# Token 刷新有效期（7 天）
+REFRESH_TOKEN_EXPIRE_DAYS = 7
+
+
 def create_access_token(data: dict, expires_delta: Optional[timedelta] = None):
-    """创建访问令牌"""
+    """创建访问令牌（短期，默认15分钟）"""
     to_encode = data.copy()
     if expires_delta:
         expire = datetime.utcnow() + expires_delta
@@ -91,6 +161,14 @@ def create_access_token(data: dict, expires_delta: Optional[timedelta] = None):
         to_encode, settings.SECRET_KEY, algorithm=settings.ALGORITHM
     )
     return encoded_jwt
+
+
+def create_refresh_token(data: dict) -> str:
+    """创建刷新令牌（长期，7天）"""
+    to_encode = data.copy()
+    expire = datetime.utcnow() + timedelta(days=REFRESH_TOKEN_EXPIRE_DAYS)
+    to_encode.update({"exp": expire, "type": "refresh"})
+    return jwt.encode(to_encode, settings.SECRET_KEY, algorithm=settings.ALGORITHM)
 
 
 async def get_current_user(
@@ -126,8 +204,8 @@ async def get_current_user(
             status_code=status.HTTP_401_UNAUTHORIZED, detail="Inactive user"
         )
 
-    # 预加载用户的权限信息
-    user.permissions = await permission_service.get_user_permissions(user.id, db)
+    # 预加载用户的权限信息 (使用同步方式)
+    user.permissions = permission_service.get_user_permissions(user.id, db)
 
     return user
 
@@ -137,9 +215,6 @@ async def login_for_access_token(
     form_data: OAuth2PasswordRequestForm = Depends(), db: AsyncSession = Depends(get_db)
 ):
     """用户登录获取令牌并同步Sentinel租户信息"""
-    # 验证用户凭据
-    import bcrypt
-
     # 从数据库查询用户
     stmt = select(User).filter(User.username == form_data.username)
     result = await db.execute(stmt)
@@ -154,7 +229,8 @@ async def login_for_access_token(
 
     # 使用bcrypt直接验证，限制密码最长72字节
     password_bytes = form_data.password.encode('utf-8')[:72]
-    stored_hash = user.hashed_password.encode('utf-8') if isinstance(user.hashed_password, str) else user.hashed_password
+    stored_hash = user.hashed_password.encode(
+        'utf-8') if isinstance(user.hashed_password, str) else user.hashed_password
 
     if not bcrypt.checkpw(password_bytes, stored_hash):
         raise HTTPException(
@@ -170,7 +246,8 @@ async def login_for_access_token(
         )
 
     # 创建访问令牌
-    access_token_expires = timedelta(minutes=settings.ACCESS_TOKEN_EXPIRE_MINUTES)
+    access_token_expires = timedelta(
+        minutes=settings.ACCESS_TOKEN_EXPIRE_MINUTES)
     access_token = create_access_token(
         data={"sub": user.username}, expires_delta=access_token_expires
     )
@@ -178,7 +255,8 @@ async def login_for_access_token(
     # 异步同步Sentinel租户信息
     try:
         import asyncio
-        asyncio.create_task(user_license_service.sync_user_with_sentinel(user, db))
+        asyncio.create_task(
+            user_license_service.sync_user_with_sentinel(user, db))
     except Exception as e:
         # 记录错误但不影响登录流程
         print(f"同步Sentinel租户信息失败: {e}")
@@ -188,7 +266,9 @@ async def login_for_access_token(
 
 @router.post("/register", response_model=UserResponse)
 async def register_user(user_data: UserCreate, db: AsyncSession = Depends(get_db)):
-    """用户注册"""
+    """用户注册
+    【P2修复】添加数据库唯一约束异常处理，防止并发注册绕过
+    """
     # 检查用户名是否已存在
     stmt = select(User).filter(User.username == user_data.username)
     result = await db.execute(stmt)
@@ -212,21 +292,41 @@ async def register_user(user_data: UserCreate, db: AsyncSession = Depends(get_db
         )
 
     # 创建新用户
-    import bcrypt
-
     user = User()
     user.username = user_data.username
     user.email = user_data.email
     # 使用bcrypt直接加密，限制密码最长72字节
     password_bytes = user_data.password.encode('utf-8')[:72]
-    user.hashed_password = bcrypt.hashpw(password_bytes, bcrypt.gensalt()).decode('utf-8')
+    user.hashed_password = bcrypt.hashpw(
+        password_bytes, bcrypt.gensalt()).decode('utf-8')
     user.is_active = True
     user.is_superuser = False  # 默认不是超级用户
 
     # 保存到数据库
     db.add(user)
-    await db.commit()
-    await db.refresh(user)
+    try:
+        await db.commit()
+        await db.refresh(user)
+    except Exception as e:
+        await db.rollback()
+        # 【P2修复】捕获数据库唯一约束违反异常
+        error_str = str(e).lower()
+        if "unique" in error_str or "duplicate" in error_str or "constraint" in error_str:
+            if "username" in error_str:
+                raise HTTPException(
+                    status_code=status.HTTP_400_BAD_REQUEST,
+                    detail="用户名已存在"
+                )
+            elif "email" in error_str:
+                raise HTTPException(
+                    status_code=status.HTTP_400_BAD_REQUEST,
+                    detail="邮箱已被注册"
+                )
+        # 其他异常重新抛出
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail="注册失败，请稍后重试"
+        )
 
     return UserResponse(
         id=user.id,
@@ -235,6 +335,191 @@ async def register_user(user_data: UserCreate, db: AsyncSession = Depends(get_db
         is_active=user.is_active,
         is_superuser=user.is_superuser,
     )
+
+
+# ==================== 前端兼容端点（JSON body + camelCase 响应）====================
+
+@router.post("/signin", response_model=AuthResponse)
+async def signin_json(
+    credentials: LoginRequest, db: AsyncSession = Depends(get_db)
+):
+    """前端 JSON 登录（与前端 AuthService.signIn 对齐）"""
+    # 查询用户（支持 email 或 username）
+    stmt = select(User).filter(
+        (User.email == credentials.email) | (
+            User.username == credentials.email)
+    )
+    result = await db.execute(stmt)
+    user = result.scalar_one_or_none()
+
+    if not user:
+        raise HTTPException(
+            status_code=status.HTTP_401_UNAUTHORIZED,
+            detail="邮箱或密码错误",
+            headers={"WWW-Authenticate": "Bearer"},
+        )
+
+    # 验证密码
+    password_bytes = credentials.password.encode('utf-8')[:72]
+    stored_hash = (
+        user.hashed_password.encode('utf-8')
+        if isinstance(user.hashed_password, str)
+        else user.hashed_password
+    )
+    if not bcrypt.checkpw(password_bytes, stored_hash):
+        raise HTTPException(
+            status_code=status.HTTP_401_UNAUTHORIZED,
+            detail="邮箱或密码错误",
+            headers={"WWW-Authenticate": "Bearer"},
+        )
+
+    if not user.is_active:
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail="用户账户已被禁用",
+        )
+
+    # 创建令牌
+    access_token = create_access_token(
+        data={"sub": user.username or user.email, "uid": user.id}
+    )
+    refresh_token = create_refresh_token(
+        data={"sub": user.username or user.email, "uid": user.id}
+    )
+
+    # 异步同步 Sentinel 租户信息
+    try:
+        import asyncio
+        asyncio.create_task(
+            user_license_service.sync_user_with_sentinel(user, db))
+    except Exception as e:
+        print(f"同步Sentinel租户信息失败: {e}")
+
+    return AuthResponse(
+        accessToken=access_token,
+        refreshToken=refresh_token,
+        user=UserResponse(
+            id=user.id,
+            username=user.username or "",
+            email=user.email,
+            role=None,
+            is_active=user.is_active,
+            is_superuser=user.is_superuser,
+        ),
+    )
+
+
+@router.post("/signup", response_model=AuthResponse)
+async def signup_json(
+    user_data: RegisterRequest, db: AsyncSession = Depends(get_db)
+):
+    """前端 JSON 注册（与前端 AuthService.signUp 对齐）"""
+    # 检查邮箱是否已存在
+    stmt = select(User).filter(User.email == user_data.email)
+    result = await db.execute(stmt)
+    if result.scalar_one_or_none():
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="邮箱已被注册",
+        )
+
+    # 检查用户名（如果提供）
+    if user_data.username:
+        stmt = select(User).filter(User.username == user_data.username)
+        result = await db.execute(stmt)
+        if result.scalar_one_or_none():
+            raise HTTPException(
+                status_code=status.HTTP_400_BAD_REQUEST,
+                detail="用户名已存在",
+            )
+
+    # 创建用户
+    new_user = User()
+    new_user.username = user_data.username or user_data.email.split("@")[0]
+    new_user.email = user_data.email
+    password_bytes = user_data.password.encode('utf-8')[:72]
+    new_user.hashed_password = bcrypt.hashpw(
+        password_bytes, bcrypt.gensalt()).decode('utf-8')
+    new_user.is_active = True
+    new_user.is_superuser = False
+
+    db.add(new_user)
+    await db.commit()
+    await db.refresh(new_user)
+
+    # 创建令牌
+    access_token = create_access_token(
+        data={"sub": new_user.username, "uid": new_user.id}
+    )
+    refresh_token = create_refresh_token(
+        data={"sub": new_user.username, "uid": new_user.id}
+    )
+
+    return AuthResponse(
+        accessToken=access_token,
+        refreshToken=refresh_token,
+        user=UserResponse(
+            id=new_user.id,
+            username=new_user.username,
+            email=new_user.email,
+            role=None,
+            is_active=new_user.is_active,
+            is_superuser=new_user.is_superuser,
+        ),
+    )
+
+
+@router.post("/refresh")
+async def refresh_access_token(
+    body: RefreshTokenRequest, db: AsyncSession = Depends(get_db)
+):
+    """刷新访问令牌（与前端 AuthService.refreshAccessToken 对齐）"""
+    try:
+        payload = jwt.decode(
+            body.refreshToken, settings.SECRET_KEY, algorithms=[
+                settings.ALGORITHM]
+        )
+        if payload.get("type") != "refresh":
+            raise HTTPException(
+                status_code=status.HTTP_401_UNAUTHORIZED, detail="无效的刷新令牌")
+
+        username = payload.get("sub")
+        user_id = payload.get("uid")
+        if not username:
+            raise HTTPException(
+                status_code=status.HTTP_401_UNAUTHORIZED, detail="令牌数据无效")
+
+        # 验证用户仍然存在且有效
+        stmt = select(User).filter(User.username == username)
+        result = await db.execute(stmt)
+        user = result.scalar_one_or_none()
+        if not user or not user.is_active:
+            raise HTTPException(
+                status_code=status.HTTP_401_UNAUTHORIZED, detail="用户无效")
+
+        # 生成新令牌
+        new_access_token = create_access_token(
+            data={"sub": username, "uid": user_id}
+        )
+        new_refresh_token = create_refresh_token(
+            data={"sub": username, "uid": user_id}
+        )
+
+        return {
+            "accessToken": new_access_token,
+            "refreshToken": new_refresh_token,
+            "user": UserResponse(
+                id=user.id,
+                username=user.username or "",
+                email=user.email,
+                role=None,
+                is_active=user.is_active,
+                is_superuser=user.is_superuser,
+            ),
+        }
+    except JWTError:
+        raise HTTPException(
+            status_code=status.HTTP_401_UNAUTHORIZED, detail="刷新令牌无效或已过期")
 
 
 @router.get("/me", response_model=UserResponse)
@@ -364,7 +649,8 @@ async def bulk_import_users(
         )
 
     except ValueError as e:
-        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail=str(e))
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST, detail=str(e))
 
 
 # 权限管理相关API
@@ -490,4 +776,95 @@ async def get_permission_logs(
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
             detail=f"获取权限日志失败: {str(e)}",
+        )
+
+
+# ==================== 用户资料路由 ====================
+
+
+@router.get("/user/profile", response_model=Dict, summary="获取当前用户资料")
+async def get_user_profile(
+    current_user: User = Depends(get_current_user),
+    db: AsyncSession = Depends(get_db),
+):
+    """获取当前登录用户的个人资料"""
+    try:
+        # 获取用户的组织信息
+        from models.user_organization import UserOrganization
+        org_query = select(UserOrganization).where(
+            UserOrganization.user_id == current_user.id
+        )
+        org_result = await db.execute(org_query)
+        user_org = org_result.scalar_one_or_none()
+
+        return {
+            "id": str(current_user.id),
+            "username": current_user.username,
+            "email": current_user.email,
+            "realName": getattr(current_user, 'real_name', None) or current_user.username,
+            "phone": current_user.phone or "",
+            "avatar": getattr(current_user, 'avatar_url', None) or "/assets/images/default-avatar.png",
+            "userType": "STUDENT",
+            "organization": {
+                "id": user_org.organization_id if user_org else 1,
+                "name": "默认组织",
+            } if user_org else {"id": 1, "name": "默认组织"},
+            "subscription": {"plan": "free", "status": "inactive"},
+            "createdAt": current_user.created_at.isoformat() if current_user.created_at else None,
+            "updatedAt": current_user.updated_at.isoformat() if current_user.updated_at else None,
+        }
+    except Exception as e:
+        # 如果出错，返回基本用户信息
+        return {
+            "id": str(current_user.id),
+            "username": current_user.username,
+            "email": current_user.email,
+            "realName": current_user.username,
+            "phone": current_user.phone or "",
+            "avatar": "/assets/images/default-avatar.png",
+            "userType": "STUDENT",
+            "organization": {"id": 1, "name": "默认组织"},
+            "subscription": {"plan": "free", "status": "inactive"},
+            "createdAt": current_user.created_at.isoformat() if current_user.created_at else None,
+            "updatedAt": current_user.updated_at.isoformat() if current_user.updated_at else None,
+        }
+
+
+@router.put("/user/profile", response_model=Dict, summary="更新当前用户资料")
+async def update_user_profile(
+    real_name: Optional[str] = None,
+    phone: Optional[str] = None,
+    avatar: Optional[str] = None,
+    current_user: User = Depends(get_current_user),
+    db: AsyncSession = Depends(get_db),
+):
+    """更新当前登录用户的个人资料"""
+    try:
+        if real_name and hasattr(current_user, 'real_name'):
+            current_user.real_name = real_name
+        if phone:
+            current_user.phone = phone
+        if avatar and hasattr(current_user, 'avatar_url'):
+            current_user.avatar_url = avatar
+
+        await db.commit()
+        await db.refresh(current_user)
+
+        return {
+            "success": True,
+            "message": "资料更新成功",
+            "data": {
+                "id": str(current_user.id),
+                "username": current_user.username,
+                "email": current_user.email,
+                "realName": getattr(current_user, 'real_name', None) or current_user.username,
+                "phone": current_user.phone or "",
+                "avatar": getattr(current_user, 'avatar_url', None) or "/assets/images/default-avatar.png",
+            },
+        }
+    except Exception as e:
+        await db.rollback()
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail=f"更新资料失败: {str(e)}",
         )

@@ -61,7 +61,7 @@ class Settings(BaseSettings):
 
     # DeepSeek配置
     DEEPSEEK_API_KEY: str = ""
-    DEEPSEEK_MODEL: str = "deepseek-coder"
+    DEEPSEEK_MODEL: str = "deepseek-chat"
     DEEPSEEK_TEMPERATURE: float = 0.7
     DEEPSEEK_MAX_TOKENS: int = 2000
 
@@ -76,6 +76,13 @@ class Settings(BaseSettings):
     GOOGLE_MODEL: str = "gemini-pro"
     GOOGLE_TEMPERATURE: float = 0.7
     GOOGLE_MAX_TOKENS: int = 2000
+
+    # Hermes Agent 配置 (Nous Research)
+    HERMES_HOST: str = "http://localhost:8080"
+    HERMES_API_KEY: str = ""
+    HERMES_MODEL: str = "hermes-3-llama-3.1-8b"
+    HERMES_TEMPERATURE: float = 0.7
+    HERMES_MAX_TOKENS: int = 2000
 
     # 动态课程生成配置
     DYNAMIC_COURSE_MODEL: str = "gpt-3.5-turbo"
@@ -182,6 +189,15 @@ class Settings(BaseSettings):
     QQ_APP_ID: str = ""
     QQ_APP_KEY: str = ""
 
+    # 【P3修复】OAuth 配置验证：占位符检测
+    _PLACEHOLDER_PATTERNS = [
+        "your_",
+        "placeholder",
+        "example",
+        "xxx",
+        "test_",
+    ]
+
     # OpenHydra 集成配置
     OPENHYDRA_API_URL: str = "http://localhost:8080"  # OpenHydra API 地址
     OPENHYDRA_API_KEY: str = Field(
@@ -193,8 +209,8 @@ class Settings(BaseSettings):
 
     # === 模块懒加载架构配置 ===
     # 是否启用懒加载架构（True=新模式，False=旧模式全量加载）
-    # ⚠️ 生产环境建议设为 False，确保所有路由正常注册
-    ENABLE_LAZY_LOADING: bool = False
+    # 启用后所有模块支持按需加载，ModuleActiveGuard 可正常获取模块状态
+    ENABLE_LAZY_LOADING: bool = True
     # 启动时自动预加载的 Tier 层级（0=Tier0, 1=Tier0+Tier1）
     AUTO_PRELOAD_TIER: int = 1
     # 后台预加载延迟（秒），避免与启动竞争资源
@@ -232,23 +248,41 @@ class Settings(BaseSettings):
     @field_validator("SECRET_KEY")
     @classmethod
     def validate_secret_key(cls, v: str) -> str:
+        import os
+        is_production = os.getenv(
+            "ENVIRONMENT", "development").lower() == "production"
+
         if not v:
-            # 生成一个警告但不阻止启动（向后兼容）
-            import warnings
-            warnings.warn(
-                "SECRET_KEY not set! Using auto-generated key. "
-                "This is NOT safe for production. Set SECRET_KEY in .env",
-                RuntimeWarning,
-                stacklevel=2
-            )
-            return secrets.token_urlsafe(32)
+            if is_production:
+                # 【P1修复】生产环境必须设置 SECRET_KEY
+                raise ValueError(
+                    "SECRET_KEY is required in production environment. "
+                    "Set a secure random key in .env file. "
+                    "Generate with: python -c \"import secrets; print(secrets.token_urlsafe(64))\""
+                )
+            else:
+                # 开发环境仅警告
+                import warnings
+                warnings.warn(
+                    "SECRET_KEY not set! Using auto-generated key. "
+                    "This is NOT safe for production. Set SECRET_KEY in .env",
+                    RuntimeWarning,
+                    stacklevel=2
+                )
+                return secrets.token_urlsafe(32)
         if len(v) < 32:
-            import warnings
-            warnings.warn(
-                "SECRET_KEY is too short. Use at least 32 characters.",
-                RuntimeWarning,
-                stacklevel=2
-            )
+            if is_production:
+                raise ValueError(
+                    "SECRET_KEY must be at least 32 characters for production. "
+                    f"Current length: {len(v)}"
+                )
+            else:
+                import warnings
+                warnings.warn(
+                    f"SECRET_KEY is too short ({len(v)} chars). Use at least 32 characters.",
+                    RuntimeWarning,
+                    stacklevel=2
+                )
         return v
 
     @field_validator("ALLOWED_ORIGINS", mode="after")
@@ -259,15 +293,37 @@ class Settings(BaseSettings):
         - 字符串：逗号分隔的 origins
         - 列表：直接使用
         """
+        import os
+        is_production = os.getenv(
+            "ENVIRONMENT", "development").lower() == "production"
+
         if isinstance(v, str):
             origins = [origin.strip()
                        for origin in v.split(",") if origin.strip()]
             if "*" in origins:
                 raise ValueError("Wildcard '*' not allowed in ALLOWED_ORIGINS")
+            # 【P2修复】生产环境警告 localhost 配置
+            if is_production and any("localhost" in origin for origin in origins):
+                import warnings
+                warnings.warn(
+                    "ALLOWED_ORIGINS contains localhost in production environment. "
+                    "This is insecure and should be changed to production domains.",
+                    UserWarning,
+                    stacklevel=2
+                )
             return origins
         elif isinstance(v, list):
             if "*" in v:
                 raise ValueError("Wildcard '*' not allowed in ALLOWED_ORIGINS")
+            # 【P2修复】生产环境警告 localhost 配置
+            if is_production and any("localhost" in origin for origin in v):
+                import warnings
+                warnings.warn(
+                    "ALLOWED_ORIGINS contains localhost in production environment. "
+                    "This is insecure and should be changed to production domains.",
+                    UserWarning,
+                    stacklevel=2
+                )
             return v
         return v if v else []
 
@@ -314,6 +370,26 @@ class Settings(BaseSettings):
                 RuntimeWarning,
                 stacklevel=2
             )
+        return v
+
+    @field_validator("GITHUB_CLIENT_ID", "GOOGLE_CLIENT_ID", "WECHAT_APP_ID", "QQ_APP_ID")
+    @classmethod
+    def validate_oauth_client_id(cls, v: str) -> str:
+        """【P3修复】检测 OAuth Client ID 是否为占位符"""
+        if not v:
+            return v
+        v_lower = v.lower()
+        # 检查是否匹配占位符模式
+        for pattern in Settings._PLACEHOLDER_PATTERNS:
+            if pattern in v_lower:
+                import warnings
+                warnings.warn(
+                    f"OAuth Client ID '{v[:20]}...' appears to be a placeholder. "
+                    f"Set a real Client ID from your OAuth provider.",
+                    UserWarning,
+                    stacklevel=2
+                )
+                break
         return v
 
 

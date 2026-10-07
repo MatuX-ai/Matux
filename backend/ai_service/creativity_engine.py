@@ -39,8 +39,8 @@ class CreativityEngine:
         self.default_creativity_config = {
             "temperature": 0.8,
             "max_tokens": 1500,
-            "provider": ModelProvider.OPENAI,
-            "model": "gpt-4-turbo",
+            "provider": ModelProvider.DEEPSEEK,
+            "model": "deepseek-v4-flash",
         }
 
         self.default_image_config = {
@@ -234,8 +234,8 @@ class CreativityEngine:
             # 调用AI进行商业分析
             ai_response = await self.ai_manager.generate_code(
                 prompt=evaluation_prompt,
-                provider=ModelProvider.OPENAI,
-                model="gpt-4-turbo",
+                provider=ModelProvider.DEEPSEEK,
+                model="deepseek-v4-flash",
                 temperature=0.3,  # 使用较低温度确保分析客观
                 max_tokens=2000,
                 system_prompt="你是一个经验丰富的商业分析师，请提供专业、客观的商业价值评估。",
@@ -323,8 +323,8 @@ class CreativityEngine:
         try:
             response = await self.ai_manager.generate_code(
                 prompt=prompt,
-                provider=ModelProvider.OPENAI,
-                model="gpt-3.5-turbo",
+                provider=ModelProvider.DEEPSEEK,
+                model="deepseek-v4-flash",
                 temperature=0.1,
                 max_tokens=100,
             )
@@ -359,8 +359,8 @@ class CreativityEngine:
         try:
             response = await self.ai_manager.generate_code(
                 prompt=prompt,
-                provider=ModelProvider.OPENAI,
-                model="gpt-3.5-turbo",
+                provider=ModelProvider.DEEPSEEK,
+                model="deepseek-v4-flash",
                 temperature=0.1,
                 max_tokens=100,
             )
@@ -396,8 +396,8 @@ class CreativityEngine:
         try:
             response = await self.ai_manager.generate_code(
                 prompt=prompt,
-                provider=ModelProvider.OPENAI,
-                model="gpt-3.5-turbo",
+                provider=ModelProvider.DEEPSEEK,
+                model="deepseek-v4-flash",
                 temperature=0.1,
                 max_tokens=100,
             )
@@ -436,8 +436,8 @@ class CreativityEngine:
         try:
             response = await self.ai_manager.generate_code(
                 prompt=prompt,
-                provider=ModelProvider.OPENAI,
-                model="gpt-4-turbo",
+                provider=ModelProvider.DEEPSEEK,
+                model="deepseek-v4-flash",
                 temperature=0.3,
                 max_tokens=1000,
             )
@@ -481,8 +481,8 @@ class CreativityEngine:
         try:
             response = await self.ai_manager.generate_code(
                 prompt=prompt,
-                provider=ModelProvider.OPENAI,
-                model="gpt-4-turbo",
+                provider=ModelProvider.DEEPSEEK,
+                model="deepseek-v4-flash",
                 temperature=0.4,
                 max_tokens=500,
             )

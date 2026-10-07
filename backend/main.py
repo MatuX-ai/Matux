@@ -6,6 +6,7 @@ MatuX STEM 学习平台 API 服务主入口
 本项目保留的路由存根仅用于兼容性，新功能请在对应项目中开发。
 """
 
+from middleware.rate_limit import RateLimitConfig, RateLimitMiddleware
 import asyncio
 import logging
 import os
@@ -130,8 +131,19 @@ if settings.CIRCUIT_BREAKER_ENABLED:
         CircuitBreakerMiddleware, config=circuit_config
     )
 
-# 配置权限验证中间件
+# 配置权限验证中间件（已修复：异步数据库查询、排除路径）
 app.add_middleware(PermissionMiddleware)
+
+# 【P2修复】配置速率限制中间件
+app.add_middleware(
+    RateLimitMiddleware,
+    config=RateLimitConfig(
+        requests=settings.RATE_LIMIT_REQUESTS,
+        window_seconds=settings.RATE_LIMIT_WINDOW,
+        exclude_paths=["/docs", "/redoc",
+                       "/openapi.json", "/health", "/metrics"],
+    ),
+)
 
 # 配置模块激活中间件（懒加载架构）
 if settings.ENABLE_LAZY_LOADING:

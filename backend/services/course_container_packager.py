@@ -155,7 +155,7 @@ class CourseContainerPackager:
         return f"""# XEdu 课程容器镜像 - {course_title}
 FROM python:{python_version}-slim
 
-LABEL maintainer="iMato Team <support@imato.edu>"
+LABEL maintainer="MatuX Lab <support@matux.edu>"
 LABEL description="{course_title}"
 LABEL version="1.0.0"
 

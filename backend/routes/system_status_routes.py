@@ -29,7 +29,24 @@ async def get_all_modules():
 
         loader = get_lazy_loader()
         return loader.get_status()
-    except RuntimeError as e:
+    except RuntimeError:
+        from config.settings import settings
+        if not settings.ENABLE_LAZY_LOADING:
+            # 非懒加载模式下，所有模块都是预加载的
+            return {
+                "status": "traditional_mode",
+                "message": "运行在非懒加载模式，所有模块已预加载",
+                "modules": [],
+                "summary": {
+                    "total": 0,
+                    "active": 0,
+                    "degraded": 0,
+                    "loading": 0,
+                    "failed": 0,
+                    "unloaded": 0,
+                    "disabled": 0,
+                },
+            }
         return {
             "status": "not_initialized",
             "message": "模块管理系统尚未初始化",
@@ -67,6 +84,15 @@ async def get_module_status(module_name: str):
         return spec.to_dict()
 
     except RuntimeError:
+        from config.settings import settings
+        if not settings.ENABLE_LAZY_LOADING:
+            # 非懒加载模式下，模块视为已激活
+            return {
+                "name": module_name,
+                "state": "active",
+                "tier": 1,
+                "message": f"模块 '{module_name}' 在非懒加载模式下已预加载",
+            }
         raise HTTPException(
             status_code=503,
             detail="模块管理系统尚未初始化",
@@ -78,6 +104,7 @@ async def activate_module(module_name: str):
     """手动激活指定模块"""
     try:
         from core.lazy_loader import get_lazy_loader, ModuleActivationError
+        from config.settings import settings
 
         loader = get_lazy_loader()
 
@@ -110,6 +137,16 @@ async def activate_module(module_name: str):
             },
         )
     except RuntimeError:
+        # 懒加载模式禁用时，所有模块都是预加载的，视为激活成功
+        from config.settings import settings
+        if not settings.ENABLE_LAZY_LOADING:
+            return {
+                "module": module_name,
+                "state": "active",
+                "success": True,
+                "message": f"模块 '{module_name}' 在非懒加载模式下已预加载",
+                "load_time_ms": 0,
+            }
         raise HTTPException(
             status_code=503,
             detail="模块管理系统尚未初始化",

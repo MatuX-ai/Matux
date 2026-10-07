@@ -24,8 +24,21 @@ from routes.ai_edu_quiz_routes import router as ai_edu_quiz_router
 from routes.ai_edu_progress_routes import router as ai_edu_progress_router
 from routes.ai_edu_code_execution import router as ai_edu_code_router
 from routes.achievement_routes import router as achievement_router
+# 【P1 修复 #P1-2】补充 exam_router 注册：在线测验模块
+#   main_ai_edu.py 原版未注册 exam_routes，导致 /api/v1/exams 返回 404
+#   前端 ExamListComponent 会显示“服务器错误”，UX 完整度测试中标记为 P1。
+from routes.exam_routes import router as exam_router
+# 【修复 #10】补充 auth_router 注册：main_ai_edu.py 原版未包含认证路由，
+#   导致 /api/v1/auth/signin 返回 404，前端登录失败。
+#   auth_routes 依赖为 iMato 标准库（bcrypt、jose、sqlalchemy 等），与现有后端环境兼容。
+from routes.auth_routes import router as auth_router
+# 【修复 #11】补充 system_status_router 注册：底部状态栏轮询
+#   /api/v1/system/health-detail 和 /api/v1/system/modules 依赖此 router。
+#   缺失则 404 → catchError → healthy$.next(false) → 状态栏显示"后端未启动"。
+from routes.system_status_routes import router as system_status_router
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
+import os
 import uvicorn
 
 from utils.database import Base, sync_engine
@@ -36,9 +49,25 @@ app = FastAPI(
 )
 
 # CORS 配置
+# 【P1 修复 #13】环境变量驱动 + 合理默认值
+# - 默认允许 4200 (Angular dev server) / 3000 (Webpack dev server) / 8080 (本地 UX 测试静态服务器)
+# - 生产环境可通过环境变量 CORS_ALLOWED_ORIGINS 覆盖，逗号分隔，例如：
+#   CORS_ALLOWED_ORIGINS=https://app.example.com,https://admin.example.com
+# - 开发环境允许本地任意 http://localhost:* 端口，方便不同端口调试
+_default_dev_origins = ["http://localhost:4200", "http://localhost:3000", "http://localhost:8080"]
+_env_origins = os.getenv("CORS_ALLOWED_ORIGINS")
+if _env_origins:
+    allow_origins = [o.strip() for o in _env_origins.split(",") if o.strip()]
+elif os.getenv("APP_ENV") == "production":
+    # 生产环境默认为保守白名单，需通过环境变量显式指定
+    allow_origins = ["http://localhost:4200"]
+else:
+    # 开发环境：同时覆盖常见调试端口
+    allow_origins = _default_dev_origins
+
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["http://localhost:4200", "http://localhost:3000"],
+    allow_origins=allow_origins,
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
@@ -79,6 +108,10 @@ app.include_router(
 )
 app.include_router(ai_edu_websocket_router, tags=["AI 教育 WebSocket"])
 app.include_router(achievement_router, tags=["成就系统"])
+# 【P1 修复 #P1-2】注册测验路由。路由内部已包含完整 prefix /api/v1/exams，
+#   ExamListComponent 调用 /api/v1/exams?status=published&page=1&page_size=20
+#   不需要再传 prefix。
+app.include_router(exam_router, tags=["在线测验"])
 app.include_router(recommendation_router, tags=["AI 智能推荐"])
 app.include_router(leaderboard_router, tags=["积分排行榜"])
 # 协作文档路由因编码问题暂未启用
@@ -93,6 +126,11 @@ app.include_router(llm_assistant_router, tags=["AI 学习助手"])
 
 # 创意激发引擎
 app.include_router(creativity_router, tags=["创意引擎"])
+# 【修复 #10】认证路由（signin/signup/me/token/refresh/logout 等）
+app.include_router(auth_router, prefix="/api/v1/auth", tags=["认证"])
+# 【修复 #11】系统状态路由（health-detail/modules/circuit-breakers 等）
+#   路由装饰器中已含完整路径 /api/v1/system/*，不需要再传 prefix
+app.include_router(system_status_router)
 # Token 管理
 app.include_router(token_router, tags=["Token 管理"])
 # 错误日志收集
@@ -148,16 +186,18 @@ async def get_statistics(org_id: int):
 
 
 if __name__ == "__main__":
+    # 【修复】端口可由环境变量 PORT 覆盖（Electron 启动后端时会设置）
+    backend_port = int(os.getenv("PORT", "8000"))
     print("=" * 80)
     print("AI-Edu-for-Kids Backend Starting...")
     print("=" * 80)
-    print("\n  API Docs: http://localhost:8000/docs")
+    print(f"\n  API Docs: http://localhost:{backend_port}/docs")
     print("\n  Tips:")
     print("   - Press Ctrl+C to stop")
-    print("   - Default port: 8000")
+    print(f"   - Port: {backend_port} (from PORT env var or default 8000)")
     print("=" * 80)
 
     # 启动时创建数据库表（在 __main__ 中执行，避免阻塞模块导入）
     Base.metadata.create_all(bind=sync_engine)
 
-    uvicorn.run(app, host="0.0.0.0", port=8000)
+    uvicorn.run(app, host="0.0.0.0", port=backend_port)

@@ -118,19 +118,33 @@ if __name__ == "__main__":
     success = asyncio.run(init_test_user_organization())
 
     if success:
+        # 同步调用冷启动数据填充（独立 try/except，避免种子数据失败阻断主流程）
+        try:
+            from scripts.seed_demo_data import seed_test_student_data
+            logger.info("")
+            logger.info("=" * 60)
+            logger.info("🌱 开始填充 test_student 冷启动业务数据...")
+            logger.info("=" * 60)
+            seed_ok = asyncio.run(seed_test_student_data())
+            if not seed_ok:
+                logger.warning("⚠️  test_student 冷启动数据填充部分失败（不影响账号初始化）")
+        except Exception as e:
+            logger.warning(f"⚠️  跳过冷启动数据填充：{e}")
+            import traceback
+            traceback.print_exc()
+
         logger.info("")
         logger.info("=" * 60)
         logger.info("✅ 初始化完成!")
         logger.info("=" * 60)
         logger.info("")
         logger.info("📋 测试账号信息:")
-        logger.info("   邮箱：admin@testorg.com")
-        logger.info("   密码：TestAdmin123!")
-        logger.info("   角色：机构管理员 (ORG_ADMIN)")
-        logger.info("   组织 ID: 1 (Test Organization)")
+        logger.info("   - test_admin / TestAdmin123! (ADMIN)")
+        logger.info("   - test_teacher / TestTeacher123! (TEACHER)")
+        logger.info("   - test_student / TestStudent123! (STUDENT)")
         logger.info("")
         logger.info("🔐 登录后可访问:")
-        logger.info("   http://localhost:4200/management/organization/1/dashboard")
+        logger.info("   http://localhost:4200/")
         logger.info("=" * 60)
     else:
         logger.error("")

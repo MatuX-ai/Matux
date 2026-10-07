@@ -81,10 +81,10 @@ class PermissionMiddleware(BaseHTTPMiddleware):
         except HTTPException as he:
             raise he
         except Exception as e:
-            logger.error(f"权限中间件处理异常: {e}")
+            logger.error(f"权限中间件处理异常: {type(e).__name__}: {e}", exc_info=True)
             return JSONResponse(
                 status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-                content={"detail": "权限验证内部错误"},
+                content={"detail": f"权限验证内部错误: {type(e).__name__}"},
             )
 
     def should_skip_permission_check(self, path: str) -> bool:

@@ -376,6 +376,20 @@ if __name__ == "__main__":
         print("  - 普通用户: user1 / password123 (角色: user)")
         print("  - 高级用户: user2 / password123 (角色: premium)")
 
+        # 可选步骤：填充 test_student 冷启动业务数据
+        # 独立 try/except，seed 失败不影响数据库初始化成功状态
+        print("\n" + "=" * 60)
+        print("🌱 [可选] 填充 test_student 冷启动业务数据...")
+        print("=" * 60)
+        try:
+            import asyncio as _asyncio
+            from scripts.seed_demo_data import seed_test_student_data
+            _asyncio.run(seed_test_student_data())
+        except Exception as e:
+            print(f"⚠️  跳过冷启动数据填充（不影响主流程）：{e}")
+            import traceback
+            traceback.print_exc()
+
     except Exception as e:
         print(f"❌ 数据库初始化失败: {e}")
         import traceback

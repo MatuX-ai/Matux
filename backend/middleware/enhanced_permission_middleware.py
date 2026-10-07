@@ -26,20 +26,27 @@ class EnhancedPermissionMiddleware(BaseHTTPMiddleware):
             "/docs",
             "/redoc",
             "/openapi.json",
-            "/api/v1/auth/token",
-            "/api/v1/auth/register",
+            "/api/v1/auth/",  # 所有认证相关端点
             "/health",
             "/favicon.ico",
             "/static/",
             "/api/v1/local-knowledge-graph/health",
+            "/api/v1/system/",  # 系统模块状态 API
         ]
 
     async def dispatch(self, request: Request, call_next):
         """处理请求的调度方法"""
+        import logging
+        logger = logging.getLogger(__name__)
+        
         # 检查是否需要跳过权限验证
-        if self.should_skip_permission_check(request.url.path):
+        path = request.url.path
+        should_skip = self.should_skip_permission_check(path)
+        if should_skip:
+            logger.info(f"[Permission] Skipping check for: {path}")
             return await call_next(request)
-
+        
+        logger.info(f"[Permission] Checking permissions for: {path}")
         try:
             # 获取当前用户
             current_user = (
@@ -144,11 +151,25 @@ class EnhancedPermissionMiddleware(BaseHTTPMiddleware):
                 except (ValueError, IndexError):
                     continue
 
-        # 如果没有org_id，且不是公共API，则拒绝访问
+        # 如果没有org_id，且不是公共API，则尝试使用用户的默认租户
         if org_id is None:
             public_apis = ["/api/v1/auth", "/health", "/docs", "/redoc"]
 
             if not any(request.url.path.startswith(api) for api in public_apis):
+                # 已登录用户，尝试获取用户的默认租户
+                default_org_id = await self._get_user_default_org_id(user)
+                if default_org_id:
+                    logger.info(f"[Permission] 用户 {user.id} 使用默认租户 {default_org_id}")
+                    TenantContext.set_current_tenant(default_org_id)
+                    return {"allowed": True, "reason": "使用用户默认租户"}
+                
+                # 对于学习端常见 API（如测验），允许访问（使用默认租户 1）
+                learning_apis = ["/api/v1/exams", "/api/v1/courses", "/api/v1/materials", "/api/v1/progress"]
+                if any(request.url.path.startswith(api) for api in learning_apis):
+                    logger.info(f"[Permission] 学习端 API 使用默认租户 1: {request.url.path}")
+                    TenantContext.set_current_tenant(1)
+                    return {"allowed": True, "reason": "学习端API使用默认租户"}
+                
                 return {"allowed": False, "reason": "缺少租户标识"}
 
             return {"allowed": True, "reason": "公共API无需租户验证"}
@@ -328,6 +349,9 @@ class EnhancedPermissionMiddleware(BaseHTTPMiddleware):
 
     async def get_current_user_from_request(self, request: Request) -> Optional[User]:
         """从请求中获取当前用户"""
+        import logging
+        logger = logging.getLogger(__name__)
+        
         # 实现JWT解析逻辑
         auth_header = request.headers.get("Authorization")
         if not auth_header or not auth_header.startswith("Bearer "):
@@ -348,27 +372,49 @@ class EnhancedPermissionMiddleware(BaseHTTPMiddleware):
             if not username:
                 return None
 
-            # 查询用户信息
-            db_gen = get_sync_db()
-            db = next(db_gen)
-
-            try:
-                from sqlalchemy import select
-
-                from models.user import User
-
+            # 使用异步数据库查询
+            from utils.database import AsyncSessionLocal
+            from sqlalchemy import select
+            from models.user import User
+            
+            async with AsyncSessionLocal() as db:
                 stmt = select(User).filter(
                     User.username == username, User.is_active == True
                 )
-                result = db.execute(stmt)
+                result = await db.execute(stmt)
                 user = result.scalar_one_or_none()
-
                 return user
-            finally:
-                next(db_gen, None)
 
         except Exception as e:
-            logger.error(f"JWT解析失败: {e}")
+            logger.error(f"JWT解析失败: {e}", exc_info=True)
+            return None
+
+    async def _get_user_default_org_id(self, user: User) -> Optional[int]:
+        """
+        获取用户的默认组织ID
+        
+        Args:
+            user: 用户对象
+            
+        Returns:
+            组织ID，如果找不到则返回 None
+        """
+        try:
+            from utils.database import AsyncSessionLocal
+            from sqlalchemy import select
+            from models.license import UserLicense
+            
+            async with AsyncSessionLocal() as db:
+                # 查找用户的第一个有效许可证对应的组织
+                stmt = select(UserLicense.organization_id).filter(
+                    UserLicense.user_id == user.id,
+                    UserLicense.is_active == True
+                ).limit(1)
+                result = await db.execute(stmt)
+                org_id = result.scalar_one_or_none()
+                return org_id
+        except Exception as e:
+            logger.warning(f"获取用户默认组织失败 user_id={user.id}: {e}")
             return None
 
     def should_skip_permission_check(self, path: str) -> bool:

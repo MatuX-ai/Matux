@@ -2,6 +2,7 @@
 数据库工具模块
 """
 
+from contextlib import contextmanager
 from typing import AsyncGenerator, Generator
 
 from sqlalchemy import (  # noqa: E501
@@ -86,6 +87,7 @@ async def get_async_db() -> AsyncGenerator[AsyncSession, None]:
             await session.close()
 
 
+@contextmanager
 def get_sync_db() -> Generator[TenantAwareSession, None, None]:
     """
     数据库会话依赖项（同步）
