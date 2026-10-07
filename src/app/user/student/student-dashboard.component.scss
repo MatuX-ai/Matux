@@ -1,89 +1,22 @@
-// ===== 学生仪表板样式 — 基于 MatuX 设计系统 =====
-// 重构版本：解决功能重叠和控件布局问题
-
-// =============================================
-// 统一布局变量（Task 2.1）
-// =============================================
-:root {
-  --section-gap: 32px;        // 区块间距（统一增大）
-  --card-gap: 16px;           // 卡片间距
-  --card-padding: 24px;       // 卡片内边距
-  --card-radius: 16px;        // 圆角
-}
+// ===== 学生仪表板样式（重构版） =====
+// 设计系统：STEM 探索绿
+// 4 核心卡 + 3 widget + 推荐课程 + 课件库
+// 所有游戏化颜色 token 统一从 _stem-tokens.scss 引用
 
 :host {
   --dash-max-width: 1440px;
   --dash-padding: 24px;
-  --card-radius: var(--matux-radius-card, 16px);
-  --card-shadow: var(--matux-shadow-sm, 0 2px 8px rgb(0 0 0 / 8%));
-  --card-hover-shadow: var(--matux-shadow-md, 0 8px 24px rgb(0 0 0 / 12%));
-  --stats-card-min: 260px;
-  --course-card-min: 300px;
-  --source-card-min: 280px;
-  // 使用统一布局变量
-  --section-gap: 32px;
-  --card-gap: 16px;
-  --card-padding: 20px;
+  --dash-section-gap: 24px;
+  --dash-card-gap: 16px;
+  --dash-card-padding: 20px;
+  --dash-card-radius: 20px;
 
-  // 渐变色变量（基于 MatuX 色板）
-  --gradient-blue: linear-gradient(
-    135deg,
-    var(--matux-color-primary, #3b82f6) 0%,
-    var(--matux-color-primary-dark, #1d4ed8) 100%
-  );
-  --gradient-blue-alt: linear-gradient(
-    135deg,
-    var(--matux-color-secondary, #3b82f6) 0%,
-    var(--matux-color-secondary-dark, #2563eb) 100%
-  );
-  --gradient-green: linear-gradient(135deg, var(--matux-color-success, #22c55e) 0%, #16a34a 100%);
-  --gradient-orange: linear-gradient(
-    135deg,
-    var(--matux-color-warn, #f97316) 0%,
-    var(--matux-color-warn-dark, #ea580c) 100%
-  );
-  --gradient-ai: linear-gradient(
-    135deg,
-    var(--matux-color-secondary, #3b82f6) 0%,
-    var(--matux-color-secondary-dark, #2563eb) 100%
-  );
-  --gradient-challenge: linear-gradient(135deg, var(--matux-color-warn, #f97316) 0%, #ef4444 100%);
-  --gradient-sky-blue: linear-gradient(
-    135deg,
-    var(--matux-color-secondary-light, #60a5fa) 0%,
-    var(--matux-color-secondary, #3b82f6) 100%
-  );
-  --gradient-hardware: linear-gradient(
-    135deg,
-    var(--matux-color-slate-800, #1e293b) 0%,
-    var(--matux-color-slate-900, #0f172a) 100%
-  );
+  // 顶部状态栏间距（与状态栏组件对齐）
+  --statusbar-spacing: 0 0 16px;
 }
 
 // =============================================
-// 视觉层次样式（Task 2.7）
-// =============================================
-
-// 一级内容：大标题、大间距、突出显示
-.section-primary {
-  margin-bottom: var(--section-gap);
-  padding: var(--card-padding);
-  border-radius: var(--card-radius);
-  background: var(--matux-color-surface);
-  box-shadow: var(--card-shadow);
-}
-
-// 二级内容：中等间距、标准样式
-.section-secondary {
-  margin-bottom: var(--section-gap);
-  padding: var(--card-padding);
-  border-radius: var(--card-radius);
-  background: var(--matux-color-surface);
-  border: 1px solid var(--matux-color-divider);
-}
-
-// =============================================
-// 布局容器
+// 容器与节区
 // =============================================
 .student-dashboard {
   max-width: var(--dash-max-width);
@@ -91,738 +24,101 @@
   padding: 0 var(--dash-padding);
 }
 
-.page-header {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  margin-bottom: var(--section-gap);
-}
-
-.page-title {
-  margin: 0;
-  color: var(--matux-color-text-primary);
-  font-size: var(--matux-font-size-h3, 24px);
-  font-weight: 700;
-}
-
-// =============================================
-// 欢迎区域
-// =============================================
 .welcome-section {
-  // 使用 .section-primary 样式
-  padding: var(--card-padding);
+  margin-bottom: var(--dash-section-gap);
+  padding: var(--dash-card-padding);
+  border-radius: var(--dash-card-radius);
+  background: var(--matux-color-surface, #ffffff);
+  box-shadow: var(--stem-shadow-sm, 0 1px 3px rgba(5, 150, 105, 0.08));
 }
 
 .welcome-header {
-  margin-bottom: 20px;
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: 16px;
 }
 
 .welcome-title {
-  margin: 0 0 8px;
-  color: var(--matux-color-text-primary);
-  font-size: var(--matux-font-size-h2, 32px);
+  margin: 0 0 6px;
+  color: var(--matux-color-text-primary, #1c1917);
+  font-size: 28px;
   font-weight: 700;
 }
 
 .welcome-date {
   margin: 0;
-  color: var(--matux-color-text-secondary);
-  font-size: var(--matux-font-size-body, 16px);
+  color: var(--matux-color-text-secondary, #57534e);
+  font-size: 14px;
 }
 
-// =============================================
-// 快捷入口（Task 2.3: 精简为2个）
-// =============================================
-.quick-entry-grid {
-  display: grid;
-  // 默认2列（精简后）
-  grid-template-columns: repeat(2, 1fr);
-  gap: var(--card-gap);
-}
-
-.quick-entry-card {
+.welcome-actions {
   display: flex;
-  flex-direction: column;
-  justify-content: center;
   align-items: center;
-  gap: 12px;
-  padding: 16px;
-  border-radius: var(--card-radius);
-  box-shadow: var(--card-shadow);
-  cursor: pointer;
-  transition:
-    transform 0.2s,
-    box-shadow 0.2s;
-
-  &:hover {
-    box-shadow: var(--card-hover-shadow);
-    transform: translateY(-4px);
-  }
+  flex-shrink: 0;
 }
 
-.quick-entry-icon {
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  width: 48px;
-  height: 48px;
-  border-radius: var(--matux-radius-sm, 12px);
-  box-shadow: 0 4px 12px rgb(0 0 0 / 15%);
-
-  mat-icon {
-    width: 32px;
-    height: 32px;
-    color: white;
-    font-size: 32px;
-  }
-}
-
-.quick-entry-label {
-  color: var(--matux-color-text-primary);
-  font-size: var(--matux-font-size-body, 16px);
-  font-weight: 700;
-  text-align: center;
-}
-
-// ===== 统计卡片 =====
-.stats-grid {
-  display: grid;
-  grid-template-columns: repeat(4, 1fr);
-  gap: 16px;
-  margin-bottom: var(--section-gap);
-}
-
-// ===== 通用区块 =====
-.section {
-  margin-bottom: var(--section-gap);
-}
-
-.fade-in {
-  animation: fade-in-up 0.4s ease-out; /* stylelint-disable-line scale-unlimited/declaration-strict-value */
-}
-
-@keyframes fade-in-up {
-  from {
-    opacity: 0;
-    transform: translateY(16px);
-  }
-
-  to {
-    opacity: 1;
-    transform: translateY(0);
-  }
+.dash-section {
+  margin-bottom: var(--dash-section-gap);
+  padding: var(--dash-card-padding);
+  border-radius: var(--dash-card-radius);
+  background: var(--matux-color-surface, #ffffff);
+  box-shadow: var(--stem-shadow-sm, 0 1px 3px rgba(5, 150, 105, 0.08));
 }
 
 .section-header {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  margin-bottom: 16px;
+  margin-bottom: 12px;
 }
 
 .section-title {
   display: flex;
   align-items: center;
   gap: 8px;
-  margin-bottom: 16px;
-  color: var(--matux-color-text-primary);
-  font-size: var(--matux-font-size-h4, 20px);
-  font-weight: 600;
+  margin: 0;
+  color: var(--matux-color-text-primary, #1c1917);
+  font-size: 18px;
+  font-weight: 700;
 
   mat-icon {
-    color: var(--matux-color-text-secondary);
+    color: var(--stem-primary, #059669);
   }
 }
 
-.section-header .section-title {
-  margin-bottom: 0;
-}
-
 // =============================================
-// 双栏布局（Task 2.2: 统一为2:1比例）
+// 4 核心 dashboard 卡（4 列网格）
 // =============================================
-
-// AI 推荐 + 快捷工具 / 成就与动态
-// 统一使用 2fr 1fr 比例
-.dual-section,
-.dual-column-section {
+.core-cards-grid {
   display: grid;
-  grid-template-columns: 2fr 1fr;  // 统一2:1比例
-  gap: var(--section-gap);
-  margin-bottom: var(--section-gap);
+  grid-template-columns: repeat(4, 1fr);
+  gap: var(--dash-card-gap);
+  margin-bottom: var(--dash-section-gap);
 }
 
 // =============================================
-// 课程网格（保留供其他页面使用）
+// 每日任务 + 排行榜（双列）
+// =============================================
+.tasks-leaderboard-row {
+  display: grid;
+  grid-template-columns: 3fr 2fr;
+  gap: var(--dash-card-gap);
+  margin-bottom: var(--dash-section-gap);
+}
+
+// =============================================
+// 推荐课程网格
 // =============================================
 .course-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(var(--course-card-min), 1fr));
+  grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
   gap: 16px;
 }
 
-.course-card {
-  mat-card-header {
-    margin-bottom: 12px;
-  }
-
-  mat-card-title {
-    font-size: 18px;
-    font-weight: 600;
-  }
-
-  mat-card-subtitle {
-    display: flex;
-    flex-wrap: wrap;
-    align-items: center;
-    gap: 8px;
-    color: var(--matux-color-text-secondary);
-    font-size: var(--matux-font-size-sm, 14px);
-  }
-}
-
-.source-chip {
-  min-height: 24px;
-  padding: 0 8px;
-  font-size: 11px;
-
-  mat-icon {
-    width: 14px;
-    height: 14px;
-    margin-right: 4px;
-    font-size: 14px;
-  }
-}
-
-.progress-info {
-  margin-bottom: 12px;
-
-  span {
-    display: block;
-    margin-bottom: 8px;
-    color: var(--matux-color-text-secondary);
-    font-size: var(--matux-font-size-sm, 14px);
-  }
-}
-
-.course-description {
-  margin-bottom: 12px;
-  color: var(--matux-color-text-secondary);
-  font-size: var(--matux-font-size-sm, 14px);
-  line-height: 1.6;
-}
-
-.course-meta {
-  display: flex;
-  gap: 16px;
-  color: var(--matux-color-text-disabled);
-  font-size: 13px;
-
-  span {
-    display: flex;
-    align-items: center;
-    gap: 4px;
-  }
-
-  mat-icon {
-    width: 16px;
-    height: 16px;
-    font-size: 16px;
-  }
-}
-
-// ===== 学习来源 =====
-.sources-grid {
-  display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(var(--source-card-min), 1fr));
-  gap: 16px;
-}
-
-.dual-column-section {
-  display: grid;
-  grid-template-columns: 2fr 1fr;
-  gap: 16px;
-  margin-bottom: var(--section-gap);
-}
-
-// ===== 硬件状态卡片 =====
-.hardware-section {
-  margin-bottom: var(--section-gap);
-}
-
-.hardware-card {
-  border: none !important;
-  border-radius: var(--card-radius) !important;
-  background: var(--gradient-hardware) !important;
-  box-shadow: var(--card-shadow) !important;
-  color: white;
-  transition:
-    transform 0.2s,
-    box-shadow 0.2s;
-
-  &:hover {
-    box-shadow: var(--card-hover-shadow) !important;
-    transform: translateY(-2px);
-  }
-
-  mat-card-content {
-    padding: var(--card-padding) !important;
-  }
-}
-
-.hardware-header {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  margin-bottom: 16px;
-}
-
-.hardware-device-info {
-  display: flex;
-  align-items: center;
-  gap: 10px;
-}
-
-.hardware-icon {
-  width: 24px;
-  height: 24px;
-  color: var(--matux-color-blue-400, #60a5fa);
-  font-size: 24px;
-}
-
-.hardware-name {
-  font-size: var(--matux-font-size-body, 16px);
-  font-weight: 700;
-}
-
-.hardware-status-badge {
-  display: inline-flex;
-  align-items: center;
-  gap: 4px;
-  padding: 3px 10px;
-  border-radius: 20px;
-  background: rgb(34 197 94 / 20%);
-  color: var(--matux-color-success-light, #4ade80);
-  font-size: 11px;
-  font-weight: 600;
-}
-
-.status-dot {
-  display: inline-block;
-  width: 6px;
-  height: 6px;
-  border-radius: 50%;
-  background: var(--matux-color-success-light, #4ade80);
-  animation: pulse-dot 2s infinite;
-}
-
-@keyframes pulse-dot {
-  0%,
-  100% {
-    opacity: 1;
-  }
-
-  50% {
-    opacity: 0.4;
-  }
-}
-
-.hardware-action-btn {
-  color: rgb(255 255 255 / 70%) !important;
-
-  &:hover {
-    background: rgb(255 255 255 / 10%) !important;
-    color: white !important;
-  }
-}
-
-.hardware-stats {
-  display: grid;
-  grid-template-columns: repeat(2, 1fr);
-  gap: 12px;
-}
-
-.hardware-stat-item {
-  display: flex;
-  align-items: center;
-  gap: 10px;
-  padding: 12px;
-  border-radius: var(--matux-radius-sm, 10px);
-  background: rgb(255 255 255 / 8%);
-}
-
-.stat-icon {
-  width: 22px;
-  height: 22px;
-  font-size: 22px;
-}
-
-.battery-icon {
-  color: var(--matux-color-success-light, #4ade80);
-}
-
-.wifi-icon {
-  color: var(--matux-color-blue-400, #60a5fa);
-}
-
-.stat-info {
-  display: flex;
-  flex-direction: column;
-  gap: 2px;
-}
-
-.stat-value {
-  font-size: 15px;
-  font-weight: 700;
-  line-height: 1;
-}
-
-.stat-label {
-  opacity: 0.7;
-  font-size: 11px;
-}
-
-// ===== AI 推荐 + 快捷工具 =====
-.ai-recommend-section,
-.quick-tools-section {
-  .section-title {
-    margin-bottom: 16px;
-    font-size: var(--matux-font-size-h4, 20px);
-    font-weight: 600;
-  }
-}
-
-.ai-recommend-grid {
-  display: flex;
-  flex-direction: column;
-  gap: 12px;
-}
-
-.ai-recommend-card {
-  position: relative;
-  overflow: hidden;
-  border: none !important;
-  border-radius: 14px !important;
-  box-shadow: 0 8px 20px rgb(59 130 246 / 20%) !important;
-  color: white !important;
-  cursor: pointer;
-  transition:
-    transform 0.2s,
-    box-shadow 0.2s;
-
-  &:hover {
-    box-shadow: 0 12px 30px rgb(59 130 246 / 30%) !important;
-    transform: translateY(-3px);
-  }
-
-  mat-card-content {
-    padding: 16px 18px !important;
-  }
-}
-
-.recommend-title {
-  margin: 0 0 4px;
-  font-size: 15px;
-  font-weight: 700;
-}
-
-.recommend-desc {
-  margin: 0 0 12px;
-  opacity: 0.85;
-  font-size: 12px;
-  line-height: 1.4;
-}
-
-.recommend-btn {
-  display: inline-flex;
-  align-items: center;
-  gap: 4px;
-  padding: 6px 16px !important;
-  border-color: rgb(255 255 255 / 40%) !important;
-  border-radius: var(--matux-radius-sm, 8px) !important;
-  color: white !important;
-  font-size: 13px !important;
-
-  mat-icon {
-    width: 16px;
-    height: 16px;
-    font-size: 16px;
-  }
-
-  &:hover {
-    border-color: white !important;
-    background: rgb(255 255 255 / 10%) !important;
-  }
-}
-
 // =============================================
-// 快捷工具（Task 2.4: 紧凑横排布局）
+// 空状态
 // =============================================
-.quick-tools-compact {
-  display: flex;
-  gap: 12px;
-  margin-bottom: 20px;
-  padding: 16px;
-  border-radius: 12px;
-  background: var(--matux-color-background);
-}
-
-.quick-tool-chip {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  width: 48px;
-  height: 48px;
-  border-radius: 12px;
-  cursor: pointer;
-  transition: transform 0.2s, box-shadow 0.2s;
-
-  &:hover {
-    transform: scale(1.1);
-    box-shadow: 0 4px 12px rgb(0 0 0 / 15%);
-  }
-}
-
-.quick-tool-icon-wrapper {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  width: 40px;
-  height: 40px;
-  border-radius: 10px;
-
-  mat-icon {
-    width: 24px;
-    height: 24px;
-    font-size: 24px;
-  }
-}
-
-// 快捷操作按钮列表
-.quick-actions-list {
-  display: flex;
-  flex-direction: column;
-  gap: 8px;
-}
-
-.quick-action-btn {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  justify-content: flex-start;
-  width: 100%;
-  padding: 10px 14px !important;
-  border-radius: 10px !important;
-  font-size: 13px;
-
-  mat-icon {
-    width: 18px;
-    height: 18px;
-    font-size: 18px;
-  }
-
-  &:hover {
-    background: var(--matux-color-primary-50);
-    color: var(--matux-color-primary);
-  }
-}
-
-// =============================================
-// 成就墙（Task 2.5: 横排滚动布局）
-// =============================================
-.achievements-scroll {
-  display: flex;
-  gap: 12px;
-  margin-bottom: 16px;
-  overflow-x: auto;
-  padding: 4px 0;
-
-  // 滚动条样式
-  &::-webkit-scrollbar {
-    height: 6px;
-  }
-
-  &::-webkit-scrollbar-track {
-    background: var(--matux-color-background);
-    border-radius: 3px;
-  }
-
-  &::-webkit-scrollbar-thumb {
-    background: var(--matux-color-divider);
-    border-radius: 3px;
-
-    &:hover {
-      background: var(--matux-color-text-disabled);
-    }
-  }
-}
-
-.achievement-badge {
-  flex-shrink: 0;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  gap: 4px;
-  padding: 12px 16px;
-  border: 1px solid var(--matux-color-secondary-200, #bfdbfe);
-  border-radius: 12px;
-  background: linear-gradient(
-    135deg,
-    var(--matux-color-secondary-50, #eff6ff) 0%,
-    var(--matux-color-secondary-100, #dbeafe) 100%
-  );
-  cursor: default;
-  transition:
-    transform 0.25s,
-    box-shadow 0.25s;
-
-  &:hover {
-    box-shadow: 0 8px 20px rgb(59 130 246 / 20%);
-    transform: translateY(-4px);
-  }
-
-  &.locked {
-    border-color: var(--matux-color-divider);
-    background: var(--matux-color-background);
-    opacity: 0.5;
-    filter: grayscale(0.8);
-  }
-}
-
-.badge-icon {
-  font-size: 28px;
-  line-height: 1;
-}
-
-.badge-name {
-  overflow: hidden;
-  max-width: 80px;
-  color: var(--matux-color-text-primary);
-  font-size: 11px;
-  font-weight: 600;
-  text-align: center;
-  white-space: nowrap;
-  text-overflow: ellipsis;
-}
-
-.achievements-summary {
-  display: flex;
-  flex-direction: column;
-  gap: 6px;
-  color: var(--matux-color-text-secondary);
-  font-size: 13px;
-}
-
-// =============================================
-// 成就卡片（成就与动态区块）
-// =============================================
-.section-heatmap,
-.section-achievements {
-  margin-bottom: 0;
-}
-
-.achievements-card {
-  padding: var(--card-padding);
-  border: 1px solid var(--matux-color-divider);
-  border-radius: var(--card-radius);
-  background: var(--matux-color-surface);
-  height: 100%;
-  transition:
-    box-shadow 0.2s,
-    transform 0.2s;
-
-  &:hover {
-    box-shadow: var(--card-hover-shadow);
-  }
-}
-
-// ===== 来源卡片 =====
-.source-chip-card {
-  transition:
-    transform 0.2s,
-    box-shadow 0.2s;
-
-  &:hover {
-    box-shadow: 0 4px 12px rgb(0 0 0 / 10%);
-    transform: translateY(-2px);
-  }
-
-  &.primary-source {
-    border-left: 4px solid var(--matux-color-success);
-    background: linear-gradient(135deg, #f0fdf4 0%, #fff 100%);
-  }
-
-  mat-card-content {
-    padding: 16px;
-  }
-}
-
-.source-header {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  margin-bottom: 12px;
-
-  mat-icon {
-    color: var(--matux-color-text-secondary);
-  }
-
-  .source-name {
-    flex: 1;
-    color: var(--matux-color-text-primary);
-    font-size: 16px;
-    font-weight: 600;
-  }
-}
-
-.source-meta {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  margin-bottom: 8px;
-
-  .source-type {
-    color: var(--matux-color-text-secondary);
-    font-size: 13px;
-  }
-
-  .source-status {
-    padding: 2px 8px;
-    border-radius: 10px;
-    font-size: 12px;
-
-    &.status-active {
-      background: #dcfce7;
-      color: var(--matux-color-success);
-    }
-
-    &.status-inactive {
-      background: var(--matux-color-background);
-      color: var(--matux-color-text-disabled);
-    }
-
-    &.status-completed {
-      background: var(--matux-color-selected);
-      color: var(--matux-color-accent);
-    }
-  }
-}
-
-.source-dates {
-  display: flex;
-  align-items: center;
-  gap: 4px;
-  color: var(--matux-color-text-disabled);
-  font-size: 12px;
-
-  mat-icon {
-    width: 14px;
-    height: 14px;
-    font-size: 14px;
-  }
-}
-
-// ===== 空状态 =====
 .empty-state {
   display: flex;
   flex-direction: column;
@@ -830,226 +126,183 @@
   align-items: center;
   grid-column: 1 / -1;
   padding: 40px;
-  border-radius: var(--card-radius);
-  background: var(--matux-color-surface);
-  box-shadow: var(--card-shadow);
-  color: var(--matux-color-text-secondary);
+  border-radius: var(--dash-card-radius);
+  background: var(--matux-color-surface, #ffffff);
+  color: var(--matux-color-text-secondary, #57534e);
   text-align: center;
 
   mat-icon {
     width: 64px;
     height: 64px;
     margin-bottom: 16px;
-    opacity: 0.5;
+    // 【修复 #14】移除 opacity: 0.5（会降低对比度，不符合 WCAG）。
+    // 改用 --icon-empty token（#78716c，5.74:1 对比度）作为专用空状态色。
+    color: var(--icon-empty, #78716c);
     font-size: 64px;
   }
 
   p {
     margin-bottom: 16px;
-    font-size: var(--matux-font-size-body, 16px);
+    font-size: 14px;
   }
 }
 
 // =============================================
-// 响应式：超小屏 < 480px（Task 2.6 新增）
+// 入场动画
 // =============================================
-@media (width < 480px) {
-  :host {
-    --dash-padding: 12px;
-    --section-gap: 16px;
-  }
+@keyframes fade-in-up {
+  from { opacity: 0; transform: translateY(16px); }
+  to { opacity: 1; transform: translateY(0); }
+}
 
-  .quick-entry-grid {
-    grid-template-columns: 1fr;
-  }
-
-  .stats-grid {
-    grid-template-columns: 1fr;
-  }
-
-  .dual-section,
-  .dual-column-section {
-    grid-template-columns: 1fr;
-  }
+:host > .student-dashboard > * {
+  animation: fade-in-up 0.4s ease-out;
 }
 
 // =============================================
-// 响应式：小屏 ≤768px
+// 响应式（精简为 3 个断点）
 // =============================================
-@media (width <= 768px) {
+
+// 平板及以下：≤1024px，2 列核心卡
+@media (width <= 1024px) {
   :host {
-    --dash-padding: 16px;
-    --stats-card-min: 1fr;
-    --course-card-min: 1fr;
-    --source-card-min: 1fr;
-    --section-gap: 20px;
+    --dash-padding: 20px;
+    --dash-section-gap: 20px;
   }
 
-  .page-title {
-    font-size: var(--matux-font-size-h4, 20px);
-  }
-
-  .section-title {
-    font-size: 18px;
-  }
-
-  .stats-grid {
+  .core-cards-grid {
     grid-template-columns: repeat(2, 1fr);
   }
 
-  .dual-column-section {
+  .tasks-leaderboard-row {
     grid-template-columns: 1fr;
-  }
-
-  .dual-section {
-    grid-template-columns: 1fr;
-  }
-
-  // 成就墙横排滚动保持横向滚动
-  .achievements-scroll {
-    // 保持滚动
-  }
-
-  .welcome-section {
-    padding: 16px;
   }
 
   .welcome-title {
-    font-size: var(--matux-font-size-h3, 24px);
-  }
-
-  .welcome-date {
-    font-size: var(--matux-font-size-sm, 14px);
-  }
-
-  .quick-entry-grid {
-    grid-template-columns: repeat(2, 1fr);
-    gap: 10px;
-  }
-
-  .quick-entry-card {
-    padding: 14px;
-  }
-
-  .quick-entry-icon {
-    width: 40px;
-    height: 40px;
-    border-radius: var(--matux-radius-sm, 10px);
-
-    mat-icon {
-      width: 20px;
-      height: 20px;
-      font-size: 20px;
-    }
-  }
-
-  .quick-entry-label {
-    font-size: var(--matux-font-size-sm, 14px);
+    font-size: 24px;
   }
 }
 
-// =============================================
-// 响应式：平板 769-1024px
-// =============================================
-@media (width >= 769px) and (width <= 1024px) {
+// 移动端：≤768px，1 列核心卡
+@media (width <= 768px) {
   :host {
-    --dash-padding: 20px;
-    --stats-card-min: 220px;
-    --course-card-min: 260px;
-    --source-card-min: 240px;
-    --section-gap: 24px;
+    --dash-padding: 16px;
+    --dash-section-gap: 16px;
+    --dash-card-padding: 16px;
   }
 
-  .stats-grid {
-    grid-template-columns: repeat(2, 1fr);
-  }
-
-  .dual-column-section {
-    grid-template-columns: 1fr;
-  }
-
-  .dual-section {
+  .core-cards-grid {
     grid-template-columns: 1fr;
   }
 
   .course-grid {
-    grid-template-columns: repeat(2, 1fr);
-  }
-
-  .welcome-section {
-    padding: 20px;
+    grid-template-columns: 1fr;
   }
 
   .welcome-title {
-    font-size: 26px;
+    font-size: 20px;
   }
 
-  // 快捷入口3列
-  .quick-entry-grid {
-    grid-template-columns: repeat(2, 1fr);
-    gap: 12px;
-  }
-
-  .quick-entry-card {
-    padding: 16px;
-  }
-
-  .quick-entry-icon {
-    width: 44px;
-    height: 44px;
-
-    mat-icon {
-      width: 22px;
-      height: 22px;
-      font-size: 22px;
-    }
-  }
-
-  .quick-entry-label {
-    font-size: var(--matux-font-size-sm, 14px);
+  .section-title {
+    font-size: 16px;
   }
 }
 
-// ===== 响应式：中屏 1025-1280px =====
-@media (width >= 1025px) and (width <= 1280px) {
-  :host {
-    --dash-padding: 24px;
-    --course-card-min: 280px;
-  }
-
-  .stats-grid {
-    grid-template-columns: repeat(2, 1fr);
-  }
-}
-
-// ===== 响应式：大屏 ≥1600px =====
+// 大屏：≥1600px
 @media (width >= 1600px) {
   :host {
     --dash-max-width: 1600px;
     --dash-padding: 32px;
-    --stats-card-min: 280px;
-    --course-card-min: 320px;
-    --source-card-min: 300px;
-  }
-
-  .stats-grid {
-    grid-template-columns: repeat(4, 1fr);
-  }
-
-  .course-grid {
-    grid-template-columns: repeat(3, 1fr);
   }
 }
 
-// ===== 响应式：超宽屏 ≥2000px =====
-@media (width >= 2000px) {
-  :host {
-    --stats-card-min: 300px;
-    --course-card-min: 380px;
-    --source-card-min: 340px;
-  }
+// =============================================
+// 游戏化动画对话框（全局 panel 类）
+// =============================================
 
-  .course-grid {
-    grid-template-columns: repeat(4, 1fr);
+// EXP 飞升 toast：无背景框
+.exp-gain-dialog {
+  background: transparent !important;
+  box-shadow: none !important;
+  pointer-events: none;
+}
+
+.exp-gain-dialog .mat-mdc-dialog-container {
+  background: transparent !important;
+  box-shadow: none !important;
+  padding: 0 !important;
+}
+
+// 升级对话框：透明背景
+.level-up-dialog-panel {
+  background: transparent !important;
+  box-shadow: none !important;
+  overflow: visible !important;
+}
+
+.level-up-dialog-panel .mat-mdc-dialog-container {
+  background: transparent !important;
+  box-shadow: none !important;
+  padding: 0 !important;
+  overflow: visible !important;
+}
+
+// 全局 EXP 飞升动画（用于由 service 触发的备用场景）
+@keyframes exp-fly {
+  0% {
+    opacity: 0;
+    transform: translateY(0) scale(0.8);
+  }
+  20% {
+    opacity: 1;
+    transform: translateY(-12px) scale(1.1);
+  }
+  100% {
+    opacity: 0;
+    transform: translateY(-48px) scale(1);
+  }
+}
+
+.exp-gain-toast--fly {
+  position: absolute;
+  color: var(--stem-points, #f59e0b);
+  font-size: 18px;
+  font-weight: 700;
+  pointer-events: none;
+  animation: exp-fly 1.2s ease-out forwards;
+}
+
+// 卡片入场动画
+@keyframes card-enter {
+  from {
+    opacity: 0;
+    transform: translateY(16px) scale(0.96);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+
+app-learning-center-card,
+app-achievement-center-card,
+app-creation-center-card,
+app-social-center-card {
+  animation: card-enter 400ms cubic-bezier(0.4, 0, 0.2, 1) backwards;
+}
+
+app-learning-center-card { animation-delay: 0ms; }
+app-achievement-center-card { animation-delay: 100ms; }
+app-creation-center-card { animation-delay: 200ms; }
+app-social-center-card { animation-delay: 300ms; }
+
+// 遵守 prefers-reduced-motion
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
   }
 }

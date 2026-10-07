@@ -4,7 +4,7 @@
  * 通用缓存服务，为 Repository 层提供内存缓存功能
  * 支持 TTL（Time To Live）过期策略
  *
- * @author iMatu Development Team
+ * @author MatuX Lab
  * @version 1.0.0
  */
 

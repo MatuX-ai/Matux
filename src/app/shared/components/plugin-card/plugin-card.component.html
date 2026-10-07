@@ -2,20 +2,15 @@
   <!-- 头部 -->
   <div class="card-header">
     <div class="plugin-icon">
-      <img
-        *ngIf="plugin.icon"
-        [src]="plugin.icon"
-        [alt]="plugin.name"
-        class="icon-image"
-      />
+      <img *ngIf="plugin.icon" [src]="plugin.icon" [alt]="plugin.name" class="icon-image" />
       <mat-icon *ngIf="!plugin.icon" class="icon-placeholder">extension</mat-icon>
     </div>
-    
+
     <div class="plugin-info">
       <h3 class="plugin-name">{{ plugin.name }}</h3>
       <p class="plugin-author">by {{ plugin.author }}</p>
     </div>
-    
+
     <!-- 兼容性标识 -->
     <div
       class="compatibility-badge"
@@ -27,10 +22,10 @@
       </mat-icon>
     </div>
   </div>
-  
+
   <!-- 描述 -->
   <p class="plugin-description">{{ plugin.description }}</p>
-  
+
   <!-- 分类标签 -->
   <div class="plugin-categories">
     <mat-chip-set>
@@ -39,7 +34,7 @@
       </mat-chip>
     </mat-chip-set>
   </div>
-  
+
   <!-- 安装进度 -->
   <div *ngIf="installProgress" class="install-progress">
     <mat-progress-bar
@@ -49,30 +44,22 @@
     ></mat-progress-bar>
     <p class="progress-text">{{ installProgress.message }}</p>
   </div>
-  
+
   <!-- 底部 -->
   <div class="card-footer">
     <div class="plugin-meta">
       <span class="version">v{{ plugin.version }}</span>
-      <span
-        class="state-badge"
-        [style.background]="getStateColor()"
-        *ngIf="isInstalled()"
-      >
+      <span class="state-badge" [style.background]="getStateColor()" *ngIf="isInstalled()">
         {{ getStateLabel() }}
       </span>
     </div>
-    
+
     <div class="card-actions">
       <!-- 查看详情 -->
-      <button
-        mat-icon-button
-        [routerLink]="['/plugins/detail', plugin.id]"
-        matTooltip="查看详情"
-      >
+      <button mat-icon-button [routerLink]="['/plugins/detail', plugin.id]" matTooltip="查看详情">
         <mat-icon>info</mat-icon>
       </button>
-      
+
       <!-- 安装按钮 -->
       <button
         *ngIf="!isInstalled() && isCompatible()"
@@ -86,7 +73,7 @@
         <mat-icon *ngIf="installing" class="spinning">progress_activity</mat-icon>
         {{ installing ? '安装中...' : '安装' }}
       </button>
-      
+
       <!-- 不兼容提示 -->
       <button
         *ngIf="!isInstalled() && !isCompatible()"
@@ -97,7 +84,7 @@
         <mat-icon>block</mat-icon>
         不兼容
       </button>
-      
+
       <!-- 已安装 -->
       <button
         *ngIf="isInstalled()"

@@ -6,14 +6,7 @@
  */
 
 import { CommonModule } from '@angular/common';
-import {
-  Component,
-  Input,
-  OnChanges,
-  OnDestroy,
-  OnInit,
-  SimpleChanges,
-} from '@angular/core';
+import { Component, Input, OnChanges, OnDestroy, OnInit, SimpleChanges } from '@angular/core';
 import { MatButtonModule } from '@angular/material/button';
 import { MatCardModule } from '@angular/material/card';
 import { MatIconModule } from '@angular/material/icon';
@@ -92,16 +85,19 @@ import { AchievementService } from '../../services/achievement.service';
               [class.locked]="!badge.unlocked"
               [matTooltip]="badge.description"
             >
-              <div class="badge-icon" [class.rarity-common]="badge.rarity === 'common'"
-                   [class.rarity-uncommon]="badge.rarity === 'uncommon'"
-                   [class.rarity-rare]="badge.rarity === 'rare'"
-                   [class.rarity-epic]="badge.rarity === 'epic'"
-                   [class.rarity-legendary]="badge.rarity === 'legendary'">
+              <div
+                class="badge-icon"
+                [class.rarity-common]="badge.rarity === 'common'"
+                [class.rarity-uncommon]="badge.rarity === 'uncommon'"
+                [class.rarity-rare]="badge.rarity === 'rare'"
+                [class.rarity-epic]="badge.rarity === 'epic'"
+                [class.rarity-legendary]="badge.rarity === 'legendary'"
+              >
                 <mat-icon>{{ badge.icon }}</mat-icon>
               </div>
               <div class="badge-name">{{ badge.name }}</div>
               <div class="badge-date" *ngIf="badge.unlockedDate">
-                {{ badge.unlockedDate | date:'shortDate' }}
+                {{ badge.unlockedDate | date: 'shortDate' }}
               </div>
             </div>
 
@@ -121,16 +117,19 @@ import { AchievementService } from '../../services/achievement.service';
               [class.locked]="!badge.unlocked"
               [matTooltip]="badge.description"
             >
-              <div class="badge-icon" [class.rarity-common]="badge.rarity === 'common'"
-                   [class.rarity-uncommon]="badge.rarity === 'uncommon'"
-                   [class.rarity-rare]="badge.rarity === 'rare'"
-                   [class.rarity-epic]="badge.rarity === 'epic'"
-                   [class.rarity-legendary]="badge.rarity === 'legendary'">
+              <div
+                class="badge-icon"
+                [class.rarity-common]="badge.rarity === 'common'"
+                [class.rarity-uncommon]="badge.rarity === 'uncommon'"
+                [class.rarity-rare]="badge.rarity === 'rare'"
+                [class.rarity-epic]="badge.rarity === 'epic'"
+                [class.rarity-legendary]="badge.rarity === 'legendary'"
+              >
                 <mat-icon>{{ badge.icon }}</mat-icon>
               </div>
               <div class="badge-name">{{ badge.name }}</div>
               <div class="badge-date" *ngIf="badge.unlockedDate">
-                {{ badge.unlockedDate | date:'shortDate' }}
+                {{ badge.unlockedDate | date: 'shortDate' }}
               </div>
             </div>
           </div>
@@ -202,7 +201,9 @@ import { AchievementService } from '../../services/achievement.service';
         border-radius: 12px;
         background: var(--color-surface, #fff);
         border: 1px solid var(--color-border, #e0e0e0);
-        transition: transform 0.2s, box-shadow 0.2s;
+        transition:
+          transform 0.2s,
+          box-shadow 0.2s;
         cursor: pointer;
         text-align: center;
       }
@@ -237,11 +238,26 @@ import { AchievementService } from '../../services/achievement.service';
         height: 28px;
       }
 
-      .rarity-common { background: #e0e0e0; color: #616161; }
-      .rarity-uncommon { background: #c8e6c9; color: #2e7d32; }
-      .rarity-rare { background: #bbdefb; color: #1565c0; }
-      .rarity-epic { background: #e1bee7; color: #7b1fa2; }
-      .rarity-legendary { background: #fff3e0; color: #e65100; }
+      .rarity-common {
+        background: var(--matux-color-divider, #e2e8f0);
+        color: var(--matux-color-text-secondary, #57534e);
+      }
+      .rarity-uncommon {
+        background: var(--stem-success-100, #d1fae5);
+        color: var(--stem-success-dark, #047857);
+      }
+      .rarity-rare {
+        background: var(--stem-secondary-100, #bae6fd);
+        color: var(--stem-info-dark, #0284c7);
+      }
+      .rarity-epic {
+        background: var(--matux-color-primary-light, #c4b5fd);
+        color: var(--matux-color-primary-dark, #7c3aed);
+      }
+      .rarity-legendary {
+        background: var(--stem-warning-50, #fffbeb);
+        color: var(--stem-warning-dark, #b45309);
+      }
 
       .badge-name {
         font-size: 13px;

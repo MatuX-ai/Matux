@@ -7,7 +7,7 @@
  * - 密码修改
  * - 用户偏好设置
  *
- * @author iMatu Development Team
+ * @author MatuX Lab
  * @version 1.0.0
  */
 
@@ -79,7 +79,7 @@ export interface UserPreferences {
   providedIn: 'root',
 })
 export class UserProfileService {
-  private readonly API_BASE_URL = '/api/user/profile';
+  private readonly API_BASE_URL = '/api/v1/auth/user/profile';
 
   constructor(private http: HttpClient) {}
 

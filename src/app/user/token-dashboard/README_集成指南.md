@@ -8,6 +8,7 @@
 ## 📦 交付成果
 
 ### 文件结构
+
 ```
 src/app/user/token-dashboard/
 ├── user-token-dashboard.component.ts      (95 行)
@@ -26,6 +27,7 @@ src/app/user/token-dashboard/
 ## 🎯 核心功能
 
 ### 布局设计
+
 ```
 ┌─────────────────────────────────────────┐
 │  Header: "我的 Token" + 刷新/购买按钮   │
@@ -38,6 +40,7 @@ src/app/user/token-dashboard/
 ```
 
 ### 集成的组件
+
 1. **TokenBalanceComponent** - 余额显示（带进度条）
 2. **TokenStatsChartComponent** - 消费趋势图表
 3. **TokenUsageHistoryComponent** - 使用记录表格
@@ -57,14 +60,14 @@ import { RouterModule, Routes } from '@angular/router';
 const routes: Routes = [
   {
     path: 'token',
-    loadChildren: () => import('./token-dashboard/token-dashboard.module')
-      .then(m => m.TokenDashboardModule)
-  }
+    loadChildren: () =>
+      import('./token-dashboard/token-dashboard.module').then((m) => m.TokenDashboardModule),
+  },
 ];
 
 @NgModule({
   imports: [RouterModule.forChild(routes)],
-  exports: [RouterModule]
+  exports: [RouterModule],
 })
 export class UserRoutingModule {}
 ```
@@ -82,8 +85,8 @@ import { TokenDashboardModule } from './token-dashboard/token-dashboard.module';
   imports: [
     CommonModule,
     UserRoutingModule,
-    TokenDashboardModule  // 👈 添加这里
-  ]
+    TokenDashboardModule, // 👈 添加这里
+  ],
 })
 export class UserModule {}
 ```
@@ -115,14 +118,14 @@ npm install @types/echarts --save-dev
 
 ### 功能清单
 
-| 功能 | 说明 |
-|------|------|
-| 💰 查看余额 | 实时显示可用 Token、累计充值、已消费 |
-| 📊 消费趋势 | 折线/柱状图展示消费和充值趋势 |
-| 📋 使用记录 | 最近的交易流水记录 |
-| 🛒 购买 Token | 打开购买弹窗选择套餐 |
-| 🔄 刷新数据 | 手动刷新最新数据 |
-| ⚡ 快捷操作 | 4 个快捷按钮快速访问 |
+| 功能          | 说明                                 |
+| ------------- | ------------------------------------ |
+| 💰 查看余额   | 实时显示可用 Token、累计充值、已消费 |
+| 📊 消费趋势   | 折线/柱状图展示消费和充值趋势        |
+| 📋 使用记录   | 最近的交易流水记录                   |
+| 🛒 购买 Token | 打开购买弹窗选择套餐                 |
+| 🔄 刷新数据   | 手动刷新最新数据                     |
+| ⚡ 快捷操作   | 4 个快捷按钮快速访问                 |
 
 ### 交互说明
 
@@ -175,18 +178,23 @@ npm install @types/echarts --save-dev
 ## 🐛 常见问题
 
 ### Q1: 图表不显示？
+
 **A**: 检查是否安装了 echarts:
+
 ```bash
 npm install echarts --save
 ```
 
 ### Q2: Material 样式丢失？
+
 **A**: 确保在 AppModule 中导入了 Material 模块:
+
 ```typescript
 import { MatCardModule } from '@angular/material/card';
 ```
 
 ### Q3: 数据加载失败？
+
 **A**: 检查 TokenService 是否正确注入，API 端点是否可用。
 
 ---
@@ -194,6 +202,7 @@ import { MatCardModule } from '@angular/material/card';
 ## 📊 性能优化建议
 
 ### 1. OnPush 变更检测
+
 ```typescript
 import { ChangeDetectionStrategy } from '@angular/core';
 
@@ -206,6 +215,7 @@ import { ChangeDetectionStrategy } from '@angular/core';
 ```
 
 ### 2. 数据缓存
+
 ```typescript
 private cache: Map<string, any> = new Map();
 private cacheTime: Map<string, number> = new Map();
@@ -213,17 +223,18 @@ private cacheTime: Map<string, number> = new Map();
 loadBalance(): void {
   const cached = this.cache.get('balance');
   const cacheAge = Date.now() - (this.cacheTime.get('balance') || 0);
-  
+
   if (cached && cacheAge < 60000) { // 1 分钟缓存
     this.userBalance = cached;
     return;
   }
-  
+
   // ... 正常加载逻辑
 }
 ```
 
 ### 3. 虚拟滚动（大量记录时）
+
 ```typescript
 import { ScrollingModule } from '@angular/cdk/scrolling';
 
@@ -247,12 +258,12 @@ import { ScrollingModule } from '@angular/cdk/scrolling';
 
 根据 TODO_PRICING_MODES_TASKS.md:
 
-| 要求 | 状态 | 
-|------|------|
-| 布局协调 | ✅ |
-| 数据实时更新 | ✅ |
-| 导航顺畅 | ✅ |
-| 预计工时 2 小时 | ✅ |
+| 要求            | 状态 |
+| --------------- | ---- |
+| 布局协调        | ✅   |
+| 数据实时更新    | ✅   |
+| 导航顺畅        | ✅   |
+| 预计工时 2 小时 | ✅   |
 
 **完成度**: 100% ✅
 
@@ -263,15 +274,17 @@ import { ScrollingModule } from '@angular/cdk/scrolling';
 根据任务优先级，建议继续执行：
 
 ### P1 高优先级
+
 - **任务 2.3**: 扩展支付服务支持 Token 购买
 - **任务 2.4**: 实现支付回调和 Token 发放
 
 ### P2 规划
+
 - **第三周**: Windows 安装包开发
 
 ---
 
 **任务状态**: ✅ 完成  
-**质量评级**: ⭐⭐⭐⭐⭐  
+**质量评级**: ⭐⭐⭐⭐⭐
 
 祝集成顺利！🚀

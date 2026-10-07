@@ -28,9 +28,7 @@
   <div *ngIf="error && !loading" class="error-container">
     <mat-icon color="warn">error_outline</mat-icon>
     <p>{{ error }}</p>
-    <button mat-raised-button color="primary" (click)="loadNotifications()">
-      重试
-    </button>
+    <button mat-raised-button color="primary" (click)="loadNotifications()">重试</button>
   </div>
 
   <!-- 更新列表 -->
@@ -51,7 +49,10 @@
               <span class="new-version">{{ notification.newVersion }}</span>
             </div>
           </div>
-          <div class="severity-badge" [style.background-color]="getSeverityColor(notification.severity)">
+          <div
+            class="severity-badge"
+            [style.background-color]="getSeverityColor(notification.severity)"
+          >
             <mat-icon>{{ getSeverityIcon(notification.severity) }}</mat-icon>
             <span>{{ getSeverityLabel(notification.severity) }}</span>
           </div>
@@ -68,9 +69,12 @@
         </div>
       </mat-card-content>
       <mat-card-actions>
-        <button mat-raised-button color="primary" 
-                (click)="updatePlugin(notification)"
-                [disabled]="updating.has(notification.id)">
+        <button
+          mat-raised-button
+          color="primary"
+          (click)="updatePlugin(notification)"
+          [disabled]="updating.has(notification.id)"
+        >
           <mat-icon *ngIf="!updating.has(notification.id)">system_update_alt</mat-icon>
           <mat-spinner *ngIf="updating.has(notification.id)" diameter="16"></mat-spinner>
           {{ updating.has(notification.id) ? '更新中...' : '立即更新' }}

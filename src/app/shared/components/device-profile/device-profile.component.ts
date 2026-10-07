@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/explicit-function-return-type, @typescript-eslint/explicit-module-boundary-types */
 /**
  * 设备评估报告组件
  *
@@ -10,20 +11,20 @@
  */
 
 import { CommonModule } from '@angular/common';
-import { Component, Input, OnInit, OnDestroy } from '@angular/core';
-import { MatIconModule } from '@angular/material/icon';
-import { MatTooltipModule } from '@angular/material/tooltip';
+import { Component, Input, OnDestroy, OnInit } from '@angular/core';
 import { MatButtonModule } from '@angular/material/button';
+import { MatIconModule } from '@angular/material/icon';
 import { MatProgressBarModule } from '@angular/material/progress-bar';
-import { Subject, takeUntil } from 'rxjs';
+import { MatTooltipModule } from '@angular/material/tooltip';
+import { Subject } from 'rxjs';
 
 import type {
-  DeviceProfile,
-  DeviceClass,
   DeviceAssessment,
+  DeviceClass,
+  DeviceProfile,
   HardwareProfile,
-  SoftwareProfile,
   PluginAPI,
+  SoftwareProfile,
 } from '../../../core/models/electron-api.model';
 
 /** 设备等级显示配置 */
@@ -61,7 +62,7 @@ export class DeviceProfileComponent implements OnInit, OnDestroy {
 
   // 便捷访问器
   get deviceClass(): DeviceClass {
-    return this.profile?.assessment?.deviceClass || 'basic';
+    return this.profile?.assessment?.deviceClass ?? 'basic';
   }
 
   get deviceClassConfig() {
@@ -69,19 +70,19 @@ export class DeviceProfileComponent implements OnInit, OnDestroy {
   }
 
   get score(): number {
-    return this.profile?.assessment?.score || 0;
+    return this.profile?.assessment?.score ?? 0;
   }
 
   get hardware(): HardwareProfile | null {
-    return this.profile?.hardware || null;
+    return this.profile?.hardware ?? null;
   }
 
   get software(): SoftwareProfile | null {
-    return this.profile?.software || null;
+    return this.profile?.software ?? null;
   }
 
   get assessment(): DeviceAssessment | null {
-    return this.profile?.assessment || null;
+    return this.profile?.assessment ?? null;
   }
 
   get assessedAtLabel(): string {
@@ -105,7 +106,7 @@ export class DeviceProfileComponent implements OnInit, OnDestroy {
   ngOnInit(): void {
     this.pluginAPI = window.pluginAPI;
     if (this.pluginAPI) {
-      this.loadProfile();
+      void this.loadProfile();
     } else {
       // 非 Electron 环境
       this.loading = false;
@@ -128,7 +129,7 @@ export class DeviceProfileComponent implements OnInit, OnDestroy {
       if (result.success && result.profile) {
         this.profile = result.profile;
       } else {
-        this.error = result.error || '获取设备评估报告失败';
+        this.error = result.error ?? '获取设备评估报告失败';
       }
     } catch (err) {
       this.error = `加载失败: ${(err as Error).message}`;
@@ -147,7 +148,7 @@ export class DeviceProfileComponent implements OnInit, OnDestroy {
       if (result.success && result.profile) {
         this.profile = result.profile;
       } else {
-        this.error = result.error || '重新评估失败';
+        this.error = result.error ?? '重新评估失败';
       }
     } catch (err) {
       this.error = `评估失败: ${(err as Error).message}`;
@@ -157,7 +158,7 @@ export class DeviceProfileComponent implements OnInit, OnDestroy {
   }
 
   getTierConfig(tier: string) {
-    return TIER_LABELS[tier] || { label: tier, color: '#64748b' };
+    return TIER_LABELS[tier] ?? { label: tier, color: '#64748b' };
   }
 
   getIncompatibleTiers(): string[] {

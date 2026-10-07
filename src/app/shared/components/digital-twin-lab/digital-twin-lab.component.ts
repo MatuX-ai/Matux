@@ -1,6 +1,6 @@
 import { CommonModule, DecimalPipe, NgClass } from '@angular/common';
 import { HttpClient } from '@angular/common/http';
-import { Component, ElementRef, OnDestroy, OnInit, ViewChild } from '@angular/core';
+import { ChangeDetectorRef, Component, ElementRef, OnDestroy, OnInit, ViewChild } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { MatButtonModule } from '@angular/material/button';
 import { MatCardModule } from '@angular/material/card';
@@ -9,6 +9,7 @@ import { MatIconModule } from '@angular/material/icon';
 import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
 import { MatSlideToggleModule } from '@angular/material/slide-toggle';
 import { MatSnackBar } from '@angular/material/snack-bar';
+import { MatTooltipModule } from '@angular/material/tooltip';
 import { ActivatedRoute, Router } from '@angular/router';
 import { Subject } from 'rxjs';
 
@@ -94,6 +95,7 @@ interface WindowWithUnity extends Window {
     MatSlideToggleModule,
     MatButtonModule,
     MatProgressSpinnerModule,
+    MatTooltipModule,
     FormsModule,
     CommonModule,
     DecimalPipe,
@@ -115,6 +117,18 @@ export class DigitalTwinLabComponent implements OnInit, OnDestroy {
   // 网络状态
   isConnected = false;
   participantCount = 1;
+  /**
+   * WebSocket 真实状态：‘connecting’ | ‘connected’ | ‘disconnected’ | ‘reconnecting’ | ‘failed’ | 'unsupported'
+   * - failed: 超过最大重试次数后不再重连
+   * - unsupported: 浏览器不支持 WebSocket / 脚本未生效
+   */
+  websocketState: 'connecting' | 'connected' | 'disconnected' | 'reconnecting' | 'failed' | 'unsupported' = 'connecting';
+  /** 当前重试次数 */
+  private wsReconnectAttempts = 0;
+  /** 最大重试次数（指数退避后超过该值则进入 failed） */
+  private readonly WS_MAX_RECONNECT_ATTEMPTS = 5;
+  /** 连接超时定时器 */
+  private wsConnectTimer: ReturnType<typeof setTimeout> | null = null;
 
   // 电路状态
   circuitState: CircuitState | null = null;
@@ -136,7 +150,8 @@ export class DigitalTwinLabComponent implements OnInit, OnDestroy {
     private snackBar: MatSnackBar,
     private dialog: MatDialog,
     private electronService: ElectronService,
-    private shortcutRegistrar: CircuitShortcutRegistrar
+    private shortcutRegistrar: CircuitShortcutRegistrar,
+    private cdr: ChangeDetectorRef
   ) {}
 
   ngOnInit(): void {
@@ -144,6 +159,10 @@ export class DigitalTwinLabComponent implements OnInit, OnDestroy {
     this.loadSession();
     this.initializeWebSocket();
     this.setupKeyboardShortcuts();
+
+    // 跟踪浏览器在线/离线状态
+    window.addEventListener('online', this.handleBrowserOnline);
+    window.addEventListener('offline', this.handleBrowserOffline);
   }
 
   ngOnDestroy(): void {
@@ -151,7 +170,35 @@ export class DigitalTwinLabComponent implements OnInit, OnDestroy {
     this.destroy$.complete();
     this.shortcutRegistrar.unregister();
     this.cleanupConnections();
+    window.removeEventListener('online', this.handleBrowserOnline);
+    window.removeEventListener('offline', this.handleBrowserOffline);
   }
+
+  /** 浏览器恢复在线后，重连 WebSocket */
+  private handleBrowserOnline = (): void => {
+    if (this.websocketState === 'failed' || this.websocketState === 'disconnected') {
+      this.wsReconnectAttempts = 0;
+      this.initializeWebSocket();
+    }
+  };
+
+  /** 浏览器离线后，清除计时器并标记为 failed */
+  private handleBrowserOffline = (): void => {
+    if (this.wsConnectTimer) {
+      clearTimeout(this.wsConnectTimer);
+      this.wsConnectTimer = null;
+    }
+    if (this.webSocket && this.webSocket.readyState !== WebSocket.CLOSED) {
+      try {
+        this.webSocket.close();
+      } catch {
+        // 忽略关闭错误
+      }
+    }
+    this.websocketState = 'failed';
+    this.isConnected = false;
+    this.cdr.markForCheck();
+  };
 
   loadSessionPublic(): void {
     this.loadSession();
@@ -166,11 +213,13 @@ export class DigitalTwinLabComponent implements OnInit, OnDestroy {
           this.isLoading = false;
           this.loadUnityContent();
           this.snackBar.open('数字孪生实验室已加载', '关闭', { duration: 2000 });
+          this.cdr.markForCheck();
         },
         error: (_error) => {
           this.errorMessage = '加载会话失败';
           this.isLoading = false;
           this.snackBar.open('会话加载失败', '关闭', { duration: 3000 });
+          this.cdr.markForCheck();
         },
       });
   }
@@ -291,14 +340,57 @@ export class DigitalTwinLabComponent implements OnInit, OnDestroy {
   }
 
   private initializeWebSocket(): void {
+    // 【P4-E】仅在 Demo 环境下启用 WebSocket / 后端不存在时使用 mock/脱机模式。
+    if (typeof WebSocket === 'undefined') {
+      this.websocketState = 'unsupported';
+      this.isConnected = false;
+      this.cdr.markForCheck();
+      this.snackBar.open('当前环境不支持实时同步，以离线模式启动', '关闭', { duration: 3000 });
+      return;
+    }
+
+    // 检查浏览器在线状态
+    if (typeof navigator !== 'undefined' && navigator.onLine === false) {
+      this.websocketState = 'failed';
+      this.isConnected = false;
+      this.cdr.markForCheck();
+      this.snackBar.open('网络不可用，以离线模式启动', '关闭', { duration: 3000 });
+      return;
+    }
+
+    this.websocketState = this.wsReconnectAttempts > 0 ? 'reconnecting' : 'connecting';
+
     const wsUrl = `ws://${window.location.host}/api/v1/digital-twin/ws/session/${this.sessionId}?user_id=user_${Math.random()}`;
 
     try {
       this.webSocket = new WebSocket(wsUrl);
 
-      this.webSocket.onopen = () => {
-        this.isConnected = true;
+      // 【P4-E】连接超时：10s 未打开则主动关闭触发重连逻辑
+      if (this.wsConnectTimer) {
+        clearTimeout(this.wsConnectTimer);
+      }
+      this.wsConnectTimer = setTimeout(() => {
+        if (this.webSocket && this.webSocket.readyState !== WebSocket.OPEN) {
+          try {
+            this.webSocket.close();
+          } catch {
+            // 忽略
+          }
+          if (this.websocketState !== 'failed') {
+            this.handleWebSocketFailure('连接超时（10s 未建立）');
+          }
+        }
+      }, 10_000);
 
+      this.webSocket.onopen = () => {
+        if (this.wsConnectTimer) {
+          clearTimeout(this.wsConnectTimer);
+          this.wsConnectTimer = null;
+        }
+        this.isConnected = true;
+        this.websocketState = 'connected';
+        this.wsReconnectAttempts = 0;
+        this.cdr.markForCheck();
         this.snackBar.open('实时连接已建立', '关闭', { duration: 2000 });
       };
 
@@ -307,18 +399,66 @@ export class DigitalTwinLabComponent implements OnInit, OnDestroy {
       };
 
       this.webSocket.onclose = () => {
+        if (this.wsConnectTimer) {
+          clearTimeout(this.wsConnectTimer);
+          this.wsConnectTimer = null;
+        }
         this.isConnected = false;
-
-        // 尝试重连
-        setTimeout(() => this.initializeWebSocket(), 5000);
+        this.handleWebSocketFailure('连接已断开');
       };
 
       this.webSocket.onerror = (_error) => {
-        this.snackBar.open('连接出现错误', '关闭', { duration: 3000 });
+        // 注意：onerror 总是伴随 onclose，此处仅反馈 UI，状态转移交给 onclose
+        if (this.websocketState !== 'failed') {
+          this.snackBar.open('连接出现错误，将自动重试', '关闭', { duration: 2000 });
+        }
       };
     } catch (_error) {
-      this.snackBar.open('无法建立实时连接', '关闭', { duration: 3000 });
+      this.handleWebSocketFailure('WebSocket 初始化异常');
     }
+  }
+
+  /** 【P4-E】统一的连接失败处理（重连 / 放弃） */
+  private handleWebSocketFailure(reason: string): void {
+    this.isConnected = false;
+    this.wsReconnectAttempts += 1;
+
+    if (this.wsReconnectAttempts > this.WS_MAX_RECONNECT_ATTEMPTS) {
+      // 超过最大重试次数 → 进入 'failed' 状态，不再自动重连，等待用户手动重试
+      this.websocketState = 'failed';
+      this.cdr.markForCheck();
+      this.snackBar.open(
+        `实时同步连接失败（${reason}），已超过最大重试次数。请检查网络后手动重连。`,
+        '关闭',
+        { duration: 5000 }
+      );
+      return;
+    }
+
+    // 指数退避：1s, 2s, 4s, 8s, 16s
+    const reconnectDelay = Math.min(1000 * 2 ** (this.wsReconnectAttempts - 1), 30_000);
+    this.websocketState = 'reconnecting';
+    this.cdr.markForCheck();
+    setTimeout(() => this.initializeWebSocket(), reconnectDelay);
+  }
+
+  /** 【P2-4 修复】手动重连入口（用户在 UI 上点击） */
+  retryWebSocket(): void {
+    if (this.websocketState === 'connected' || this.websocketState === 'connecting') {
+      return;
+    }
+    // 【P2-4 修复】重置重试计数让用户点击能绕过 5 次限制
+    this.wsReconnectAttempts = 0;
+    if (this.webSocket && this.webSocket.readyState !== WebSocket.CLOSED) {
+      try {
+        this.webSocket.close();
+      } catch {
+        // 忽略
+      }
+    }
+    this.websocketState = 'connecting';
+    this.cdr.markForCheck();
+    this.initializeWebSocket();
   }
 
   private handleWebSocketMessage(data: string): void {
@@ -488,6 +628,7 @@ export class DigitalTwinLabComponent implements OnInit, OnDestroy {
           this.participantCount = data.participant_count;
           // 显示详细信息对话框
           this.showSessionDialog(data);
+          this.cdr.markForCheck();
         },
         error: (_error) => {
           // 静默处理错误
@@ -668,6 +809,59 @@ export class DigitalTwinLabComponent implements OnInit, OnDestroy {
     }
   }
 
+  /** 连接状态 tooltip */
+  get wsTooltipText(): string {
+    switch (this.websocketState) {
+      case 'connecting':
+        return '正在连接...';
+      case 'connected':
+        return '实时同步已建立';
+      case 'disconnected':
+        return '连接已断开';
+      case 'reconnecting':
+        return `重新连接中（${this.wsReconnectAttempts}/${this.WS_MAX_RECONNECT_ATTEMPTS}）...`;
+      case 'failed':
+        return '连接失败：已超过最大重试次数';
+      case 'unsupported':
+        return '当前环境不支持 WebSocket（以离线模式运行）';
+      default:
+        return '';
+    }
+  }
+
+  /** 状态文本（状态条右侧文字） */
+  get wsStatusText(): string {
+    if (this.isConnected) return '已连接';
+    switch (this.websocketState) {
+      case 'connecting':
+        return '连接中...';
+      case 'reconnecting':
+        return `重连中 (${this.wsReconnectAttempts}/${this.WS_MAX_RECONNECT_ATTEMPTS})`;
+      case 'failed':
+        return '连接失败';
+      case 'disconnected':
+        return '未连接';
+      case 'unsupported':
+        return '离线模式';
+      default:
+        return '未连接';
+    }
+  }
+
+  /** 离线提示条文案 */
+  get wsBannerText(): string {
+    switch (this.websocketState) {
+      case 'unsupported':
+        return '当前环境不支持 WebSocket。所有功能仍可使用，仅不会同步到云端。';
+      case 'disconnected':
+        return '与服务器失去连接。当前操作仅在本地生效，恢复后可手动重连同步。';
+      case 'failed':
+        return '实时同步已停用（已超过自动重试上限）。请检查后端 / 网络后点击重连按钮。';
+      default:
+        return '实时连接不可用。';
+    }
+  }
+
   /** 调整 Unity 视图缩放 */
   private adjustZoom(factor: number): void {
     if (this.isUnityLoaded) {
@@ -687,6 +881,10 @@ export class DigitalTwinLabComponent implements OnInit, OnDestroy {
   }
 
   private cleanupConnections(): void {
+    if (this.wsConnectTimer) {
+      clearTimeout(this.wsConnectTimer);
+      this.wsConnectTimer = null;
+    }
     if (this.webSocket) {
       this.webSocket.close();
     }

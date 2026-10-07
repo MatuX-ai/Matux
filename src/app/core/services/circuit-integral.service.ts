@@ -4,13 +4,16 @@
  * 在用户完成电路组装操作时触发积分奖励
  * 实现游戏化激励机制
  *
- * @author iMatu Development Team
+ * @author MatuX Lab
  * @version 1.0.0
  */
 
 import { HttpClient } from '@angular/common/http';
 import { Injectable, Injector } from '@angular/core';
+import { MatDialog } from '@angular/material/dialog';
 import { lastValueFrom } from 'rxjs';
+
+import { ExpGainToastComponent } from '../../shared/components/exp-gain-toast/exp-gain-toast.component';
 
 import { AssemblyStatus, AssemblyStep, CircuitAssemblyService } from './circuit-assembly.service';
 import { VircadiaSdkService } from './vircadia-sdk.service';
@@ -320,51 +323,23 @@ export class CircuitIntegralService implements IntegralServiceInterface {
 
   /**
    * 播放奖励动画
+   * 统一使用 ExpGainToastComponent（Angular Material Dialog）
    */
   private playRewardAnimation(points: number): void {
-    // 创建临时积分动画元素
-    const toast = document.createElement('div');
-    toast.style.cssText = `
-      position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%);
-      padding: 16px 32px; background: linear-gradient(135deg, #f59e0b, #ef4444);
-      color: white; border-radius: 12px; font-size: 24px; font-weight: bold;
-      z-index: 9999; animation: rewardFloat 1.5s ease-out forwards;
-      box-shadow: 0 4px 16px rgba(0,0,0,0.3);
-    `;
-    toast.textContent = `+${points} 积分! 🎉`;
-    document.body.appendChild(toast);
-
-    // 添加动画关键帧
-    if (!document.getElementById('reward-animation-style')) {
-      const style = document.createElement('style');
-      style.id = 'reward-animation-style';
-      style.textContent = `
-        @keyframes rewardFloat {
-          0% { opacity: 1; transform: translate(-50%, -50%) scale(0.5); }
-          50% { opacity: 1; transform: translate(-50%, -80%) scale(1.2); }
-          100% { opacity: 0; transform: translate(-50%, -150%) scale(0.8); }
-        }
-      `;
-      document.head.appendChild(style);
-    }
-
-    // 1.5 秒后移除
-    setTimeout(() => {
-      toast.remove();
-    }, 1500);
-
-    // 同时通过 Vircadia 发送事件
-    this.vircadiaSdk
-      .interact({
-        objectId: 'ui_system',
-        interactionType: 'activate',
+    try {
+      const dialog = this.injector.get(MatDialog);
+      dialog.open(ExpGainToastComponent, {
         data: {
-          type: 'reward_popup',
-          points,
-          message: `+${points} 积分!`,
+          amount: points,
+          reason: '电路组装奖励',
         },
-      })
-      .catch((err) => console.error('[Integral] 发送动画事件失败:', err));
+        hasBackdrop: false,
+        panelClass: 'exp-toast-overlay',
+      });
+    } catch {
+      // Dialog 服务不可用时回退到控制台日志
+      console.log(`[Integral] +${points} 积分! 🎉`);
+    }
   }
 
   /**

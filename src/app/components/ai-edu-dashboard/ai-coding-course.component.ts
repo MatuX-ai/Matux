@@ -8,18 +8,18 @@
 
 import { CommonModule } from '@angular/common';
 import { Component, OnInit } from '@angular/core';
+import { FormsModule } from '@angular/forms';
 import { MatButtonModule } from '@angular/material/button';
 import { MatCardModule } from '@angular/material/card';
 import { MatIconModule } from '@angular/material/icon';
 import { MatTabsModule } from '@angular/material/tabs';
 import { MatToolbarModule } from '@angular/material/toolbar';
 import { MatTooltipModule } from '@angular/material/tooltip';
-import { FormsModule } from '@angular/forms';
 
+import { PublicCourse } from '../../core/services/opensciedu.service';
 import { BlocklyWorkspaceComponent } from '../../shared/components/blockly-workspace/blockly-workspace.component';
 import { OpenscieduCatalogComponent } from '../../shared/components/opensciedu-catalog/opensciedu-catalog.component';
 import { OpenscieduGraphComponent } from '../../shared/components/opensciedu-graph/opensciedu-graph.component';
-import { PublicCourse } from '../../core/services/opensciedu.service';
 
 @Component({
   selector: 'app-ai-coding-course',
@@ -54,7 +54,6 @@ import { PublicCourse } from '../../core/services/opensciedu.service';
       <!-- 主内容区域 -->
       <div class="course-content">
         <mat-tab-group animationDuration="300ms" class="course-tabs">
-          
           <!-- Tab 1: Blockly 可视化编程 -->
           <mat-tab>
             <ng-template mat-tab-label>
@@ -92,7 +91,6 @@ import { PublicCourse } from '../../core/services/opensciedu.service';
               <app-opensciedu-graph></app-opensciedu-graph>
             </div>
           </mat-tab>
-
         </mat-tab-group>
       </div>
 
@@ -114,79 +112,82 @@ import { PublicCourse } from '../../core/services/opensciedu.service';
       }
     </div>
   `,
-  styles: [`
-    .ai-coding-course {
-      display: flex;
-      flex-direction: column;
-      height: 100vh;
-      background: #f5f5f5;
-    }
+  styles: [
+    `
+      .ai-coding-course {
+        display: flex;
+        flex-direction: column;
+        height: 100vh;
+        background: var(--matux-color-background, #f1f5f9);
+      }
 
-    .course-toolbar {
-      flex-shrink: 0;
-    }
+      .course-toolbar {
+        flex-shrink: 0;
+      }
 
-    .toolbar-title {
-      display: flex;
-      align-items: center;
-      gap: 8px;
-      font-size: 18px;
-      font-weight: 500;
-    }
+      .toolbar-title {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        font-size: 18px;
+        font-weight: 500;
+      }
 
-    .toolbar-spacer {
-      flex: 1;
-    }
+      .toolbar-spacer {
+        flex: 1;
+      }
 
-    .course-content {
-      flex: 1;
-      overflow: hidden;
-      padding: 16px;
-    }
+      .course-content {
+        flex: 1;
+        overflow: hidden;
+        padding: 16px;
+      }
 
-    .course-tabs {
-      height: 100%;
-    }
+      .course-tabs {
+        height: 100%;
+      }
 
-    .tab-icon {
-      margin-right: 8px;
-    }
+      .tab-icon {
+        margin-right: 8px;
+      }
 
-    .tab-content {
-      height: calc(100vh - 120px);
-      overflow: auto;
-    }
+      .tab-content {
+        height: calc(100vh - 120px);
+        overflow: auto;
+      }
 
-    .code-panel {
-      position: fixed;
-      bottom: 20px;
-      right: 20px;
-      width: 400px;
-      max-height: 300px;
-      z-index: 1000;
-      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
-    }
+      .code-panel {
+        position: fixed;
+        bottom: 20px;
+        right: 20px;
+        width: 400px;
+        max-height: 300px;
+        z-index: 1000;
+        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+      }
 
-    .code-preview {
-      background: #1e1e1e;
-      color: #d4d4d4;
-      padding: 12px;
-      border-radius: 4px;
-      overflow: auto;
-      max-height: 200px;
-      font-family: 'JetBrains Mono', monospace;
-      font-size: 13px;
-      line-height: 1.5;
-      margin: 0;
-    }
+      .code-preview {
+        background: var(--code-editor-bg, #1e1e1e);
+        color: var(--code-editor-text, #d4d4d4);
+        padding: 12px;
+        border-radius: 4px;
+        overflow: auto;
+        max-height: 200px;
+        font-family: 'JetBrains Mono', monospace;
+        font-size: 13px;
+        line-height: 1.5;
+        margin: 0;
+      }
 
-    mat-card-header {
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-    }
-  `],
+      mat-card-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+      }
+    `,
+  ],
 })
+/* eslint-disable no-console */
 export class AICodingCourseComponent implements OnInit {
   currentCode = '';
 
@@ -223,7 +224,7 @@ export class AICodingCourseComponent implements OnInit {
    */
   copyCode(): void {
     if (this.currentCode) {
-      navigator.clipboard.writeText(this.currentCode).then(() => {
+      void navigator.clipboard.writeText(this.currentCode).then(() => {
         console.log('[AICodingCourse] 代码已复制');
       });
     }

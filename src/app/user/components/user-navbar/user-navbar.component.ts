@@ -10,7 +10,7 @@
 
 import { CommonModule } from '@angular/common';
 import { isPlatformBrowser } from '@angular/common';
-import { Component, Inject, OnDestroy, OnInit, PLATFORM_ID } from '@angular/core';
+import { ChangeDetectorRef, Component, Inject, OnDestroy, OnInit, PLATFORM_ID } from '@angular/core';
 import { MatButtonModule } from '@angular/material/button';
 import { MatDividerModule } from '@angular/material/divider';
 import { MatIconModule } from '@angular/material/icon';
@@ -137,6 +137,7 @@ export class UserNavbarComponent implements OnInit, OnDestroy {
     private authService: AuthService,
     private router: Router,
     public i18n: I18nService,
+    private cdr: ChangeDetectorRef,
     @Inject(PLATFORM_ID) private platformId: object
   ) {}
 
@@ -153,6 +154,17 @@ export class UserNavbarComponent implements OnInit, OnDestroy {
       .pipe(debounceTime(RESIZE_DEBOUNCE_MS), takeUntil(this.destroy$))
       .subscribe(() => {
         this.updateMobileState();
+      });
+
+    // 【P1 修复 #13】订阅 i18n snapshots$，让翻译包加载完后模板刷新。
+    this.i18n.snapshots$
+      .pipe(takeUntil(this.destroy$))
+      .subscribe(() => {
+        try {
+          this.cdr.markForCheck();
+        } catch {
+          /* 组件已销毁 */
+        }
       });
   }
 

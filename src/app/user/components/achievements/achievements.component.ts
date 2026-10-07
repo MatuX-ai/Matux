@@ -4,7 +4,7 @@
  * 集成成就展示、进度统计、徽章画廊等功能
  * 复用 features/achievement-integration 的成熟组件
  *
- * @author iMatu Development Team
+ * @author MatuX Lab
  * @version 1.0.0
  */
 

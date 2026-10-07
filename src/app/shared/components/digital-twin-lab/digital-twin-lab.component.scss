@@ -1,4 +1,20 @@
-s:host {
+// STEM K12 设计系统变量
+$stem-primary: #059669;
+$stem-primary-light: #10b981;
+$stem-primary-dark: #047857;
+$stem-secondary: #0ea5e9;
+$stem-accent: #06b6d4;
+$stem-success: #22c55e;
+$stem-warning: #f59e0b;
+$stem-error: #ef4444;
+$stem-radius-sm: 12px;
+$stem-radius-md: 20px;
+$stem-radius-lg: 9999px;
+$stem-shadow: 0 4px 20px rgb(5 150 105 / 15%);
+$stem-shadow-hover: 0 8px 30px rgb(5 150 105 / 20%);
+$stem-transition: 250ms cubic-bezier(0.4, 0, 0.2, 1);
+
+:host {
   --panel-width: 320px;
   --toolbar-height: 72px;
   --component-col: 2;
@@ -8,7 +24,7 @@ s:host {
   display: flex;
   flex-direction: column;
   height: 100vh;
-  background: #f5f5f5;
+  background: rgba($stem-primary, 0.03);
 }
 
 .loading-container,
@@ -27,18 +43,18 @@ s:host {
   mat-icon {
     width: 48px;
     height: 48px;
-    color: #f44336;
+    color: $stem-error;
     font-size: 48px;
   }
 
   h2 {
     margin: 0;
-    color: #333;
+    color: $stem-primary;
   }
 
   p {
     margin: 8px 0;
-    color: #666;
+    color: rgba($stem-primary, 0.7);
   }
 }
 
@@ -56,52 +72,130 @@ s:host {
   height: var(--toolbar-height);
   padding: 16px 24px;
   background: #fff;
-  box-shadow: 0 2px 4px rgb(0 0 0 / 10%);
+  box-shadow: $stem-shadow;
 
   .session-info {
     flex: 1;
 
     h1 {
       margin: 0 0 4px;
-      color: #333;
+      color: $stem-primary;
       font-size: 20px;
       font-weight: 500;
     }
 
     p {
       margin: 0;
-      color: #666;
+      color: rgba($stem-primary, 0.7);
       font-size: 14px;
     }
   }
+}
+
+// 【P4-E】全局连接状态条：可独立显示在 lab-container 外部（错误状态时仍可见）
+.global-connection-bar {
+  z-index: 11;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  padding: 12px 24px;
+  background: #fff;
+  border-bottom: 1px solid rgba($stem-primary, 0.1);
+  box-shadow: $stem-shadow;
 
   .connection-status {
     display: flex;
     align-items: center;
     gap: 8px;
-    padding: 8px 16px;
-    border-radius: 20px;
-    background: #f0f0f0;
+    align-self: flex-end;
+    padding: 6px 14px;
+    border-radius: $stem-radius-lg;
+    background: rgba($stem-primary, 0.05);
 
     mat-icon {
       &.connected {
-        color: #4caf50;
+        color: $stem-success;
       }
 
       &.disconnected {
-        color: #f44336;
+        color: $stem-error;
       }
     }
 
     span {
+      color: $stem-primary;
       font-size: 14px;
       font-weight: 500;
     }
+
+    .reconnect-btn {
+      margin-left: 4px;
+      transition: transform $stem-transition;
+
+      &:hover {
+        transform: rotate(90deg);
+      }
+    }
   }
 
-  .toolbar-controls {
+  .offline-banner {
     display: flex;
-    gap: 8px;
+    align-items: center;
+    gap: 12px;
+    width: 100%;
+    padding: 12px 24px;
+    color: #92400e;
+    font-size: 14px;
+    font-weight: 500;
+    background: linear-gradient(
+      90deg,
+      rgba($stem-warning, 0.15) 0%,
+      rgba($stem-warning, 0.08) 100%
+    );
+    border-top: 1px solid rgba($stem-warning, 0.4);
+    border-bottom: 1px solid rgba($stem-warning, 0.4);
+    animation: slideDown 280ms cubic-bezier(0.4, 0, 0.2, 1);
+
+    mat-icon {
+      width: 22px;
+      height: 22px;
+      color: $stem-warning;
+      font-size: 22px;
+    }
+
+    > span {
+      flex: 1;
+      color: #78350f;
+    }
+
+    button {
+      border-radius: $stem-radius-lg;
+    }
+  }
+
+  @keyframes slideDown {
+    from {
+      max-height: 0;
+      padding-top: 0;
+      padding-bottom: 0;
+      opacity: 0;
+    }
+    to {
+      max-height: 64px;
+      padding-top: 12px;
+      padding-bottom: 12px;
+      opacity: 1;
+    }
+  }
+}
+
+.toolbar-controls {
+  display: flex;
+  gap: 8px;
+
+  button {
+    border-radius: $stem-radius-lg;
+    transition: all $stem-transition;
   }
 }
 
@@ -157,7 +251,7 @@ s:host {
   gap: 16px;
   width: var(--panel-width);
   padding: 16px;
-  border-left: 1px solid #e0e0e0;
+  border-left: 1px solid rgba($stem-primary, 0.1);
   background: #fff;
 }
 
@@ -166,7 +260,7 @@ s:host {
 }
 
 .control-section mat-card-header mat-card-title {
-  color: #333;
+  color: $stem-primary;
   font-size: 16px;
   font-weight: 500;
 }
@@ -185,6 +279,8 @@ s:host {
 .control-group button {
   justify-content: flex-start;
   gap: 8px;
+  border-radius: $stem-radius-lg;
+  transition: all $stem-transition;
 }
 
 .status-info {
@@ -193,7 +289,7 @@ s:host {
 
 .status-info p {
   margin: 8px 0;
-  color: #666;
+  color: rgba($stem-primary, 0.7);
   font-size: 14px;
 }
 
@@ -207,7 +303,7 @@ s:host {
 
 .device-stats p {
   margin: 8px 0;
-  color: #666;
+  color: rgba($stem-primary, 0.7);
   font-size: 14px;
 }
 
@@ -222,15 +318,19 @@ s:host {
   flex-direction: column;
   gap: 8px;
   min-height: 60px;
+  border-radius: $stem-radius-md;
+  transition: all $stem-transition;
 }
 
 .component-library button mat-icon {
   width: 20px;
   height: 20px;
+  color: $stem-primary;
   font-size: 20px;
 }
 
 .component-library button span {
+  color: $stem-primary;
   font-size: 12px;
 }
 
@@ -243,9 +343,9 @@ s:host {
 
 .element-monitor {
   padding: 12px;
-  border: 1px solid #e0e0e0;
-  border-radius: 8px;
-  background: #fafafa;
+  border: 1px solid rgba($stem-primary, 0.2);
+  border-radius: $stem-radius-md;
+  background: rgba($stem-primary, 0.03);
 }
 
 .element-monitor .element-header {
@@ -255,16 +355,16 @@ s:host {
 }
 
 .element-monitor .element-header .element-id {
-  color: #333;
+  color: $stem-primary;
   font-size: 14px;
   font-weight: 500;
 }
 
 .element-monitor .element-header .element-type {
   padding: 2px 8px;
-  border-radius: 12px;
-  background: #e0e0e0;
-  color: #666;
+  border-radius: $stem-radius-lg;
+  background: rgba($stem-primary, 0.1);
+  color: $stem-primary;
   font-size: 12px;
 }
 
@@ -281,17 +381,17 @@ s:host {
 }
 
 .element-monitor .element-values .value-item .label {
-  color: #666;
+  color: rgba($stem-primary, 0.7);
 }
 
 .element-monitor .element-values .value-item .value {
-  color: #333;
+  color: $stem-primary;
   font-weight: 500;
 }
 
 .no-data {
   padding: 24px;
-  color: #999;
+  color: rgba($stem-primary, 0.4);
   text-align: center;
 }
 
@@ -317,7 +417,7 @@ s:host {
   .control-panel {
     width: 100%;
     max-height: 300px;
-    border-top: 1px solid #e0e0e0;
+    border-top: 1px solid rgba($stem-primary, 0.1);
     border-left: none;
   }
 
@@ -376,26 +476,26 @@ s:host {
 
 @media (prefers-color-scheme: dark) {
   .digital-twin-lab {
-    background: #121212;
+    background: rgba($stem-primary-dark, 0.1);
   }
 
   .toolbar,
   .control-panel {
-    background: #1e1e1e;
-    color: #fff;
+    background: rgba($stem-primary-dark, 0.2);
+    color: white;
   }
 
   .connection-status {
-    background: #333;
+    background: rgba($stem-primary, 0.3);
   }
 
   .element-monitor {
-    border-color: #444;
-    background: #2d2d2d;
+    border-color: rgba($stem-primary, 0.3);
+    background: rgba($stem-primary, 0.1);
   }
 
   .status-info p,
   .device-stats p {
-    color: #ccc;
+    color: rgb(white, 0.8);
   }
 }

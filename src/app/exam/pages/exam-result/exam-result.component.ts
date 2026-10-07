@@ -71,10 +71,10 @@ import { ExamAttempt, ExamService } from '../../services/exam.service';
         box-shadow: 0 4px 24px rgba(0, 0, 0, 0.1);
       }
       .result-card.passed {
-        border-top: 4px solid #34c759;
+        border-top: 4px solid var(--stem-success, #059669);
       }
       .result-card.failed {
-        border-top: 4px solid #ff3b30;
+        border-top: 4px solid var(--stem-error, #ef4444);
       }
       .result-icon {
         font-size: 56px;
@@ -85,10 +85,10 @@ import { ExamAttempt, ExamService } from '../../services/exam.service';
         margin-bottom: 24px;
       }
       .passed h2 {
-        color: #2e7d32;
+        color: var(--stem-success-dark, #047857);
       }
       .failed h2 {
-        color: #c62828;
+        color: var(--stem-error-dark, #dc2626);
       }
       .score-section {
         display: flex;
@@ -104,7 +104,7 @@ import { ExamAttempt, ExamService } from '../../services/exam.service';
         display: flex;
         align-items: center;
         justify-content: center;
-        background: linear-gradient(135deg, #3b82f6, #2563eb);
+        background: linear-gradient(135deg, var(--matux-color-primary, #3b82f6), #2563eb);
       }
       .score-value {
         font-size: 28px;
@@ -116,7 +116,7 @@ import { ExamAttempt, ExamService } from '../../services/exam.service';
       }
       .score-detail p {
         margin: 4px 0;
-        color: #666;
+        color: var(--matux-color-text-secondary, #57534e);
         font-size: 15px;
       }
       .stats-grid {
@@ -127,25 +127,25 @@ import { ExamAttempt, ExamService } from '../../services/exam.service';
       }
       .stat-item {
         padding: 16px;
-        background: #f8f9fa;
+        background: var(--matux-color-background, #f1f5f9);
         border-radius: 8px;
       }
       .stat-label {
         display: block;
         font-size: 12px;
-        color: #86868b;
+        color: var(--matux-color-text-secondary, #57534e);
         margin-bottom: 4px;
       }
       .stat-value {
         font-size: 16px;
         font-weight: 600;
-        color: #1d1d1f;
+        color: var(--matux-color-text-primary, #1c1917);
       }
       .cheat-warning {
         padding: 12px;
-        background: #fff3e0;
+        background: var(--matux-color-warning-bg, #fff3e0);
         border-radius: 8px;
-        color: #ef6c00;
+        color: var(--stem-warning-dark, #d97706);
         font-size: 14px;
         margin-bottom: 24px;
       }
@@ -156,22 +156,22 @@ import { ExamAttempt, ExamService } from '../../services/exam.service';
       }
       .btn-secondary {
         padding: 12px 32px;
-        border: 2px solid #3b82f6;
+        border: 2px solid var(--matux-color-primary, #3b82f6);
         background: white;
-        color: #3b82f6;
+        color: var(--matux-color-primary, #3b82f6);
         border-radius: 8px;
         font-size: 15px;
         cursor: pointer;
         transition: all 0.2s;
       }
       .btn-secondary:hover {
-        background: #f5f7ff;
+        background: var(--stem-secondary-50, #f0f9ff);
       }
       .spinner {
         width: 40px;
         height: 40px;
-        border: 3px solid #e0e0e0;
-        border-top-color: #3b82f6;
+        border: 3px solid var(--matux-color-divider, #e2e8f0);
+        border-top-color: var(--matux-color-primary, #3b82f6);
         border-radius: 50%;
         animation: spin 0.8s linear infinite;
         margin: 40px auto;
@@ -224,7 +224,6 @@ export class ExamResultComponent implements OnInit {
       .subscribe((attempt) => {
         if (attempt) {
           this.attempt = attempt;
-          // 获取测验详情确认及格分
           this.examService.getExam(attempt.exam_id).subscribe((exam) => {
             this.passed = (attempt.percentage ?? 0) >= exam.passing_score;
           });

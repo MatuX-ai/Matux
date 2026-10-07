@@ -1,7 +1,7 @@
 /**
  * React Admin管理后台主应用组件
  * @description 基于React Admin框架的企业级管理后台
- * @author iMatuProject Team
+ * @author MatuX Lab
  * @version 1.0.0
  */
 
@@ -131,7 +131,7 @@ const App = () => {
       dataProvider={mockDataProvider}
       theme={theme}
       layout={CustomLayout}
-      title="iMatuProject 管理后台"
+      title="MatuX 管理后台"
     >
       {/* 许可证管理资源 */}
       <Resource 

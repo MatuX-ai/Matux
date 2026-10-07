@@ -464,8 +464,88 @@ textarea.mat-mdc-input-element {
 
 // 图标 - Icon
 .mat-icon {
-  color: #64748b;
+  // 【修复 #14】默认色改为 currentColor，让 .mat-icon 跟随父级 color 继承。
+  // 解决原硬编码 #64748b 导致的“所有图标同色”问题：
+  //   - 在 .card-icon-wrap { color: white } 内 → 变为白色
+  //   - 在 .section-title { color: stem-primary } 内 → 变探索绿
+  //   - 在普通文本中 → 跟随父级文本色（默认深棕灰）
+  // fallback 保持 #475569（slate-600，对比度 6.30:1）以防父级未设置 color
+  color: var(--icon-default, #57534e);
+  // 【修复 #13】Material Icons 字体应用 - fontsource 包只提供 @font-face，
+  // 需显式声明 .mat-icon 使用该字体，否则 .mat-icon 元素继承父级字体，
+  // 把 'school' / 'email' / 'bug_report' 等图标名当成普通英文文本渲染
+  font-family: 'Material Icons', 'Material Icons Outlined', 'Material Icons Round', sans-serif;
+  font-weight: normal;
+  font-style: normal;
+  font-size: 24px;
+  line-height: 1;
+  letter-spacing: normal;
+  text-transform: none;
+  display: inline-block;
+  white-space: nowrap;
+  word-wrap: normal;
+  direction: ltr;
+  -webkit-font-feature-settings: 'liga';
+  -webkit-font-smoothing: antialiased;
 
+  // ===== 语义化色彩 modifier（与 _icon-color-tokens 对应）=====
+  // 4 大核心领域
+  &.mat-icon--learning {
+    color: var(--icon-learning);
+  }
+  &.mat-icon--achievement {
+    color: var(--icon-achievement);
+    font-weight: 600; // 补偿 #f59e0b 2.45:1 低对比度
+  }
+  &.mat-icon--creation {
+    color: var(--icon-creation);
+    font-weight: 600; // 补偿 #0ea5e9 2.97:1 低对比度
+  }
+  &.mat-icon--social {
+    color: var(--icon-social);
+  }
+  // 状态
+  &.mat-icon--success {
+    color: var(--icon-success);
+  }
+  &.mat-icon--warning {
+    color: var(--icon-warning);
+    font-weight: 600; // 补偿
+  }
+  &.mat-icon--error {
+    color: var(--icon-error);
+    font-weight: 600; // 补偿
+  }
+  &.mat-icon--info {
+    color: var(--icon-info);
+    font-weight: 600; // 补偿
+  }
+  // 空状态
+  &.mat-icon--empty {
+    color: var(--icon-empty);
+  }
+
+  // ===== 反白图标（用于在主题色背景上）=====
+  // 适用场景：顶部导航栏 / 底部状态栏 / FAB / 主题色按钮上的图标
+  // 与 rgb(255 255 255 / 75%) 的区别：保证 WCAG 1.4.11 非文本组件 3:1 对比度
+  &.mat-icon--on-primary {
+    color: var(--icon-on-primary);
+  }
+  &.mat-icon--on-primary-soft {
+    color: var(--icon-on-primary-soft);
+  }
+  &.mat-icon--on-success {
+    color: var(--icon-on-success);
+  }
+  &.mat-icon--on-warning {
+    color: var(--icon-on-warning);
+    font-weight: 600; // 深色字 + 琥珀背景，依然加粗以强化可读性
+  }
+  &.mat-icon--on-error {
+    color: var(--icon-on-error);
+  }
+
+  // ===== 旧 modifier（向后兼容，不推荐）=====
   &.icon-primary {
     color: $color-primary;
   }

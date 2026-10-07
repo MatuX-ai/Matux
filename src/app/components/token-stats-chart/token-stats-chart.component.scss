@@ -1,10 +1,13 @@
 @use 'src/styles/design-tokens' as *;
 
+// 本地阴影变量（如果 design-tokens 中未定义）
+$stem-shadow-card: 0 1px 3px rgb(5 150 105 / 8%), 0 1px 2px rgb(5 150 105 / 6%) !default;
+
 .token-stats-chart {
   overflow: hidden;
   border-radius: $border-radius-lg;
-  background: white;
-  box-shadow: 0 2px 4px rgb(0 0 0 / 10%);
+  background: $stem-bg-surface;
+  box-shadow: $stem-shadow-card;
 }
 
 .header {
@@ -12,11 +15,11 @@
   justify-content: space-between;
   align-items: center;
   padding: $spacing-6; // 24px
-  border-bottom: 1px solid #f0f0f0;
+  border-bottom: 1px solid $stem-divider;
 
   h3 {
     margin: 0;
-    color: #333;
+    color: $stem-text-primary;
     font-size: $font-size-h4;
     font-weight: $font-weight-bold;
   }
@@ -44,10 +47,10 @@
   gap: $spacing-sm;
   margin: $spacing-md;
   padding: $spacing-lg;
-  border-left: 4px solid #f44336;
+  border-left: 4px solid $stem-error;
   border-radius: $border-radius-sm;
-  background: #ffebee;
-  color: #f44336;
+  background: rgba($stem-error, 0.1);
+  color: $stem-error;
 
   mat-icon {
     width: 20px;
@@ -63,7 +66,7 @@
   justify-content: center;
   align-items: center;
   padding: $spacing-xxl;
-  color: #999;
+  color: $stem-text-disabled;
 
   mat-icon {
     width: 48px;

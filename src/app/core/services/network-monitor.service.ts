@@ -102,13 +102,17 @@ export class NetworkMonitorService implements OnDestroy {
    */
   private initializeNetworkMonitoring(): void {
     // 监听基础在线/离线事件
-    fromEvent(window, 'online').pipe(takeUntil(this.destroy$)).subscribe(() => {
-      this.updateNetworkStatus();
-    });
+    fromEvent(window, 'online')
+      .pipe(takeUntil(this.destroy$))
+      .subscribe(() => {
+        this.updateNetworkStatus();
+      });
 
-    fromEvent(window, 'offline').pipe(takeUntil(this.destroy$)).subscribe(() => {
-      this.updateNetworkStatus();
-    });
+    fromEvent(window, 'offline')
+      .pipe(takeUntil(this.destroy$))
+      .subscribe(() => {
+        this.updateNetworkStatus();
+      });
 
     // 监听网络信息变化（如果支持）
     if ('connection' in navigator) {
@@ -124,9 +128,11 @@ export class NetworkMonitorService implements OnDestroy {
     }
 
     // 定期检查网络状态（每30秒）
-    interval(30000).pipe(takeUntil(this.destroy$)).subscribe(() => {
-      this.updateNetworkStatus();
-    });
+    interval(30000)
+      .pipe(takeUntil(this.destroy$))
+      .subscribe(() => {
+        this.updateNetworkStatus();
+      });
   }
 
   /**

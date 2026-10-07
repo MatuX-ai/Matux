@@ -90,10 +90,30 @@ const routes: Routes = [
     data: { requiredModule: 'ar_vr' },
   },
   // OpenSciEDU Module - 公共课程（懒加载）
+  // 【P0 修复 #13】补齐 catalog / knowledge-graph 子路由，避免 404 落入 ** 兜底
   {
     path: 'opensciedu',
-    loadComponent: () =>
-      import('./opensciedu/opensciedu-page.component').then((m) => m.OpenscieduPageComponent),
+    children: [
+      {
+        path: '',
+        loadComponent: () =>
+          import('./opensciedu/opensciedu-page.component').then((m) => m.OpenscieduPageComponent),
+      },
+      {
+        path: 'catalog',
+        loadComponent: () =>
+          import('./shared/components/opensciedu-catalog/opensciedu-catalog.component').then(
+            (m) => m.OpenscieduCatalogComponent
+          ),
+      },
+      {
+        path: 'knowledge-graph',
+        loadComponent: () =>
+          import('./shared/components/opensciedu-graph/opensciedu-graph.component').then(
+            (m) => m.OpenscieduGraphComponent
+          ),
+      },
+    ],
   },
   // 【P1 修复】占位路由: 未实现的模块指向 ComingSoon,避免 404
   {

@@ -31,7 +31,8 @@
           class="score-bar"
           mode="determinate"
           [value]="score"
-          [style.--bar-color]="getScoreColor(score)">
+          [style.--bar-color]="getScoreColor(score)"
+        >
         </mat-progress-bar>
       </div>
 
@@ -45,7 +46,8 @@
           class="btn-reassess"
           [disabled]="reassessing"
           (click)="reassess()"
-          matTooltip="重新评估设备">
+          matTooltip="重新评估设备"
+        >
           <mat-icon [class.spin]="reassessing">refresh</mat-icon>
         </button>
       </div>
@@ -63,7 +65,9 @@
           <div class="metric-card">
             <mat-icon class="metric-icon">developer_board</mat-icon>
             <span class="metric-label">CPU</span>
-            <span class="metric-value" [matTooltip]="hardware?.cpu?.model">{{ hardware?.cpu?.cores }} 核</span>
+            <span class="metric-value" [matTooltip]="hardware?.cpu?.model"
+              >{{ hardware?.cpu?.cores }} 核</span
+            >
             <span class="metric-sub">{{ hardware?.cpu?.benchmarkScore }} 分</span>
           </div>
 
@@ -130,16 +134,32 @@
           <div class="metric-card">
             <mat-icon class="metric-icon">dns</mat-icon>
             <span class="metric-label">Docker</span>
-            <span class="metric-value" [class.ok]="software?.containers?.dockerRunning" [class.warn]="!software?.containers?.dockerInstalled">
-              {{ software?.containers?.dockerRunning ? '运行中' : software?.containers?.dockerInstalled ? '已安装' : '未安装' }}
+            <span
+              class="metric-value"
+              [class.ok]="software?.containers?.dockerRunning"
+              [class.warn]="!software?.containers?.dockerInstalled"
+            >
+              {{
+                software?.containers?.dockerRunning
+                  ? '运行中'
+                  : software?.containers?.dockerInstalled
+                    ? '已安装'
+                    : '未安装'
+              }}
             </span>
-            <span class="metric-sub" *ngIf="software?.containers?.dockerVersion as dockerVersion">v{{ dockerVersion }}</span>
+            <span class="metric-sub" *ngIf="software?.containers?.dockerVersion as dockerVersion"
+              >v{{ dockerVersion }}</span
+            >
           </div>
 
           <div class="metric-card">
             <mat-icon class="metric-icon">hub</mat-icon>
             <span class="metric-label">Redis</span>
-            <span class="metric-value" [class.ok]="software?.connectivity?.redisAvailable" [class.warn]="!software?.connectivity?.redisAvailable">
+            <span
+              class="metric-value"
+              [class.ok]="software?.connectivity?.redisAvailable"
+              [class.warn]="!software?.connectivity?.redisAvailable"
+            >
               {{ software?.connectivity?.redisAvailable ? '已连接' : '未连接' }}
             </span>
           </div>
@@ -156,13 +176,19 @@
         <div class="compatibility-info">
           <!-- 兼容层级 -->
           <div class="tier-badges">
-            <span class="tier-badge" *ngFor="let tier of assessment?.compatiblePluginTiers"
-                  [style.background]="getTierConfig(tier).color"
-                  matTooltip="兼容">
+            <span
+              class="tier-badge"
+              *ngFor="let tier of assessment?.compatiblePluginTiers"
+              [style.background]="getTierConfig(tier).color"
+              matTooltip="兼容"
+            >
               {{ getTierConfig(tier).label }} ✓
             </span>
-            <span class="tier-badge incompatible" *ngFor="let tier of getIncompatibleTiers()"
-                  matTooltip="不兼容">
+            <span
+              class="tier-badge incompatible"
+              *ngFor="let tier of getIncompatibleTiers()"
+              matTooltip="不兼容"
+            >
               {{ getTierConfig(tier).label }} ✗
             </span>
           </div>

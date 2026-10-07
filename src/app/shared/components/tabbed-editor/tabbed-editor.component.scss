@@ -1,25 +1,45 @@
+// STEM K12 设计系统变量
+$stem-primary: #059669;
+$stem-primary-light: #10b981;
+$stem-primary-dark: #047857;
+$stem-secondary: #0ea5e9;
+$stem-accent: #06b6d4;
+$stem-success: #22c55e;
+$stem-warning: #f59e0b;
+$stem-error: #ef4444;
+$stem-radius-sm: 12px;
+$stem-radius-md: 20px;
+$stem-radius-lg: 9999px;
+$stem-shadow: 0 4px 20px rgb(5 150 105 / 15%);
+$stem-shadow-hover: 0 8px 30px rgb(5 150 105 / 20%);
+$stem-transition: 250ms cubic-bezier(0.4, 0, 0.2, 1);
+
 /**
  * 多标签页编辑器样式
  * 参考 VS Code 标签栏设计，桌面端大屏优化
  */
 $tab-height: 36px;
 $statusbar-height: 24px;
-$bg-primary: #0f172a;
-$bg-secondary: #1e293b;
-$bg-tab: #1a2332;
-$bg-tab-active: #1e293b;
+$bg-primary: $stem-primary-dark;
+$bg-secondary: $stem-primary;
+$bg-tab: rgba($stem-primary, 0.3);
+$bg-tab-active: $stem-primary;
 $text-primary: #e2e8f0;
 $text-secondary: #94a3b8;
-$text-muted: #64748b;
-$accent: #3b82f6;
-$border-color: #334155;
-$dirty-color: #f59e0b;
-$success: #22c55e;
-$error: #ef4444;
+$text-muted: rgba($stem-primary, 0.5);
+$accent: $stem-primary;
+$border-color: rgba($stem-primary, 0.3);
+$dirty-color: $stem-warning;
+$success: $stem-success;
+$error: $stem-error;
 
 // Transition 变量
-$transition-tab-btn: opacity 0.15s, background 0.15s;
-$transition-action-btn: background 0.15s, color 0.15s;
+$transition-tab-btn:
+  opacity 0.15s,
+  background $stem-transition;
+$transition-action-btn:
+  background $stem-transition,
+  color $stem-transition;
 
 // 等宽字体变量
 $font-family-output: 'Cascadia Code', 'Fira Code', 'JetBrains Mono', 'Geist Mono', consolas, monospace;
@@ -32,9 +52,9 @@ $animation-pulse: pulse 1.5s ease-in-out infinite;
   overflow: hidden;
   flex-direction: column;
   height: 100%;
-  border-radius: 12px;
+  border-radius: $stem-radius-md;
   background: $bg-primary;
-  box-shadow: 0 4px 6px -1px rgb(0 0 0 / 20%);
+  box-shadow: $stem-shadow;
 }
 
 // ==================== 标签栏 ====================

@@ -3,7 +3,7 @@
  *
  * 通知管理服务，处理通知的增删改查和状态管理
  *
- * @author iMatu Development Team
+ * @author MatuX Lab
  * @version 1.0.0
  */
 

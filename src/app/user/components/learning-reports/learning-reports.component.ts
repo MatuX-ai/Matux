@@ -29,6 +29,7 @@ import type { StudentLearningProfile } from '../../../core/models/ai-teacher.mod
 import type { User } from '../../../core/models/auth.models';
 import { AITeacherService } from '../../../core/services/ai-teacher.service';
 import { AuthService } from '../../../core/services/auth.service';
+import { PdfPrintService } from '../../../shared/services/pdf-print.service';
 import { LearningReport, LearningReportsService } from '../../services/learning-reports.service';
 
 @Component({
@@ -66,7 +67,8 @@ export class LearningReportsComponent implements OnInit, OnDestroy {
     private aiTeacherService: AITeacherService,
     private authService: AuthService,
     private snackBar: MatSnackBar,
-    private cdr: ChangeDetectorRef
+    private cdr: ChangeDetectorRef,
+    private pdfPrintService: PdfPrintService
   ) {}
 
   ngOnInit(): void {
@@ -102,42 +104,53 @@ export class LearningReportsComponent implements OnInit, OnDestroy {
     this.selectedReport = this.reports[index] ?? null;
   }
 
+  /**
+   * 导出当前报告为 PDF：
+   * 1. 调用后端获取 Blob
+   * 2. 后端不可用时回退到浏览器打印（用户可另存为 PDF）
+   */
   exportAsPdf(): void {
     const report = this.selectedReport;
     if (!report) return;
     this.exporting = true;
+    this.cdr.markForCheck();
 
-    this.learningReportsService
-      .exportReport(report.id, 'pdf')
+    this.pdfPrintService
+      .downloadPdfBlob(this.learningReportsService.exportReport(report.id, 'pdf'), {
+        filename: `学习报告_${report.period}`,
+        fallbackToPrint: true,
+        successMessage: `✅ PDF 导出成功：学习报告_${report.period}.pdf`,
+        errorMessage: '后端 PDF 导出失败，已自动切换到浏览器打印（可“另存为 PDF”）',
+      })
       .pipe(takeUntil(this.destroy$))
       .subscribe({
-        next: (blob) => {
-          const url = window.URL.createObjectURL(blob);
-          const a = document.createElement('a');
-          a.href = url;
-          a.download = `学习报告_${report.period}.pdf`;
-          document.body.appendChild(a);
-          a.click();
-          document.body.removeChild(a);
-          window.URL.revokeObjectURL(url);
+        next: (ok) => {
           this.exporting = false;
-          this.snackBar.open('✅ PDF导出成功', '关闭', { duration: 3000 });
           this.cdr.markForCheck();
+          // ok=false 表示后端失败，服务内部已触发回退打印，这里仅记录状态
+          if (!ok) {
+            // eslint-disable-next-line no-console
+            console.warn('[P4-F] PDF 导出后端失败，已回退到打印');
+          }
         },
         error: () => {
-          // 服务端导出失败，回退到客户端打印
+          // 防御性：服务内部已处理错误
           this.exporting = false;
-          this.printReport();
           this.cdr.markForCheck();
         },
       });
   }
 
-  /** 客户端打印/保存PDF */
+  /** 打印当前报告（用户可在打印对话框中“另存为 PDF”） */
   printReport(): void {
-    if (!this.selectedReport) return;
-    this.snackBar.open('正在打开打印对话框...', '关闭', { duration: 2000 });
-    window.print();
+    if (!this.selectedReport) {
+      // 无选中报告时仍可打印当前页面（也许是“报告未加载”状态下的页面）
+      this.snackBar.open('未选择报告，将打印当前页面', '关闭', { duration: 2000 });
+    }
+    this.pdfPrintService.print({
+      preparingMessage: '正在打开打印对话框…请选择“另存为 PDF”',
+      successMessage: '打印任务已结束',
+    });
   }
 
   getScoreColor(score: number): string {

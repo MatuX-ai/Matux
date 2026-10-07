@@ -4,20 +4,10 @@
   <!-- 工具栏 -->
   <div class="workspace-toolbar">
     <div class="toolbar-left">
-      <button
-        mat-icon-button
-        matTooltip="撤销"
-        [disabled]="readOnly"
-        (click)="undo()"
-      >
+      <button mat-icon-button matTooltip="撤销" [disabled]="readOnly" (click)="undo()">
         <mat-icon>undo</mat-icon>
       </button>
-      <button
-        mat-icon-button
-        matTooltip="重做"
-        [disabled]="readOnly"
-        (click)="redo()"
-      >
+      <button mat-icon-button matTooltip="重做" [disabled]="readOnly" (click)="redo()">
         <mat-icon>redo</mat-icon>
       </button>
       <div class="toolbar-divider"></div>
@@ -41,14 +31,8 @@
     <div class="toolbar-right">
       <mat-form-field appearance="outline" class="theme-select">
         <mat-label>主题</mat-label>
-        <mat-select
-          [value]="theme"
-          (selectionChange)="onThemeChange($event.value)"
-        >
-          <mat-option
-            *ngFor="let t of themes"
-            [value]="t.value"
-          >
+        <mat-select [value]="theme" (selectionChange)="onThemeChange($event.value)">
+          <mat-option *ngFor="let t of themes; trackBy: trackByValue" [value]="t.value">
             {{ t.label }}
           </mat-option>
         </mat-select>
@@ -74,11 +58,7 @@
       </div>
 
       <!-- Blockly 容器 -->
-      <div
-        #blocklyContainer
-        class="blockly-container"
-        [class.hidden]="isLoading || error"
-      ></div>
+      <div #blocklyContainer class="blockly-container" [class.hidden]="isLoading || error"></div>
     </div>
 
     <!-- 代码预览面板 -->
@@ -92,18 +72,14 @@
               (selectionChange)="onLanguageChange($event.value)"
             >
               <mat-option
-                *ngFor="let lang of languages"
+                *ngFor="let lang of languages; trackBy: trackByValue"
                 [value]="lang.value"
               >
                 {{ lang.label }}
               </mat-option>
             </mat-select>
           </mat-form-field>
-          <button
-            mat-icon-button
-            matTooltip="复制代码"
-            (click)="copyCode()"
-          >
+          <button mat-icon-button matTooltip="复制代码" (click)="copyCode()">
             <mat-icon>content_copy</mat-icon>
           </button>
         </div>
@@ -112,11 +88,9 @@
         <pre><code>{{ currentCode }}</code></pre>
       </div>
       <div class="code-footer">
-        <span class="line-count">
-          {{ currentCode.split('\n').length }} 行
-        </span>
+        <span class="line-count"> {{ currentCode.split('\n').length }} 行 </span>
         <span class="language-label">
-          {{ languages | languageLabel: selectedLanguage }}
+          {{ selectedLanguage === 'python' ? 'Python' : 'JavaScript' }}
         </span>
       </div>
     </div>
@@ -126,7 +100,7 @@
   <div class="block-types-indicator" *ngIf="blockTypes.length > 0">
     <span class="indicator-label">使用的块:</span>
     <div class="block-tags">
-      <span *ngFor="let type of blockTypes" class="block-tag">
+      <span *ngFor="let type of blockTypes; trackBy: trackByIndex" class="block-tag">
         {{ type }}
       </span>
     </div>

@@ -1,19 +1,22 @@
 @use '@angular/material' as mat;
 @use 'src/styles/design-tokens' as *;
 
+// STEM K12 设计系统 - 使用共享主题
+@use 'src/styles/shared/stem-theme' as stem;
+
 .token-balance-card {
   position: relative;
   padding: $spacing-6; // 24px
   border-radius: $border-radius-lg;
-  background: linear-gradient(135deg, #3b82f6 0%, #2563eb 100%);
-  box-shadow: 0 4px 6px rgb(0 0 0 / 10%);
+  background: linear-gradient(135deg, stem.$stem-primary 0%, stem.$stem-primary-dark 100%);
+  box-shadow: stem.$stem-shadow;
   color: white;
   transition:
-    transform 0.3s ease,
-    box-shadow 0.3s ease;
+    transform stem.$stem-transition,
+    box-shadow stem.$stem-transition;
 
   &:hover {
-    box-shadow: 0 8px 12px rgb(0 0 0 / 15%);
+    box-shadow: stem.$stem-shadow-hover;
     transform: translateY(-2px);
   }
 }
@@ -123,10 +126,11 @@
 
   .action-btn {
     flex: 1;
+    border-radius: stem.$stem-radius-lg;
     background-color: rgb(255 255 255 / 20%);
     color: white;
     backdrop-filter: blur(10px);
-    transition: background-color 0.3s ease;
+    transition: background-color stem.$stem-transition;
 
     &:hover {
       background-color: rgb(255 255 255 / 30%);

@@ -4,7 +4,7 @@
  * HTTP 请求重试工具函数
  * 提供指数退避、延迟重试等策略
  *
- * @author iMatu Development Team
+ * @author MatuX Lab
  * @version 1.0.0
  */
 

@@ -3,7 +3,7 @@
  *
  * 使用 ECharts 展示 Token 消费趋势
  *
- * @author iMatu Development Team
+ * @author MatuX Lab
  * @version 1.0.0
  */
 
@@ -23,6 +23,13 @@ import * as echarts from 'echarts';
 
 import { TokenService } from '../../core/services/token.service';
 import { TokenTimeStats } from '../../models/token.models';
+
+// ECharts 颜色令牌: 与设计系统主色保持一致
+// 与 _stem-tokens.scss / _css-variables.scss 中令牌值同步
+const ECHARTS_PALETTE = {
+  consumed: '#ef4444',     // 消费 - 对应 --stem-error
+  purchased: '#10b981',    // 充值 - 对应 --stem-primary-light
+} as const;
 
 // ECharts 类型定义（原生库无完整类型声明）
 interface ChartInstance {
@@ -193,7 +200,7 @@ export class TokenStatsChartComponent implements OnInit, OnChanges {
           data: consumedTokens,
           smooth: true,
           itemStyle: {
-            color: '#ef4444',
+            color: ECHARTS_PALETTE.consumed,
           },
           areaStyle: {
             color: createGradient('rgba(239, 68, 68, 0.3)', 'rgba(239, 68, 68, 0.1)'),
@@ -205,7 +212,7 @@ export class TokenStatsChartComponent implements OnInit, OnChanges {
           data: purchasedTokens,
           smooth: true,
           itemStyle: {
-            color: '#10b981',
+            color: ECHARTS_PALETTE.purchased,
           },
           areaStyle: {
             color: createGradient('rgba(16, 185, 129, 0.3)', 'rgba(16, 185, 129, 0.1)'),

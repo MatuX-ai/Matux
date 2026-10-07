@@ -1,7 +1,7 @@
 /**
  * 批量生成许可证组件
  * @description 提供批量创建许可证的功能
- * @author iMatuProject Team
+ * @author MatuX Lab
  * @version 1.0.0
  */
 

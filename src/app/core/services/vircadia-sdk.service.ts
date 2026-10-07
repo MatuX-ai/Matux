@@ -4,7 +4,7 @@
  * 封装 Vircadia Web SDK，提供与元宇宙平台交互的完整功能
  * 包括用户认证、场景管理、对象交互、Avatar 系统等
  *
- * @author iMatu Development Team
+ * @author MatuX Lab
  * @version 1.0.0
  */
 /* eslint-disable @typescript-eslint/no-unsafe-assignment, @typescript-eslint/no-unsafe-argument, @typescript-eslint/no-unsafe-member-access, @typescript-eslint/no-unsafe-call */

@@ -1,7 +1,7 @@
 /**
  * Mock数据提供者
  * @description 为React Admin提供模拟数据服务，便于开发和测试
- * @author iMatuProject Team
+ * @author MatuX Lab
  * @version 1.0.0
  */
 

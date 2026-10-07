@@ -1,7 +1,7 @@
 /**
  * 许可证创建组件
  * @description 提供新建许可证的功能
- * @author iMatuProject Team
+ * @author MatuX Lab
  * @version 1.0.0
  */
 

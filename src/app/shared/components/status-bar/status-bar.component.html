@@ -15,7 +15,12 @@
 
     <!-- 中间：后端状态 + 模块 Tier 指示器 -->
     <div class="status-group">
-      <div class="status-item" [matTooltip]="isBackendRunning ? 'Python 后端运行正常' : '后端未启动'">
+      <div
+        class="status-item backend-status"
+        [matTooltip]="isBackendRunning ? 'Python 后端运行正常' : '后端未启动，点击重试'"
+        [class.clickable]="!isBackendRunning"
+        (click)="!isBackendRunning && onRefreshBackend()"
+      >
         <mat-icon [class]="getBackendStatusClass()">
           {{ isBackendRunning ? 'check_circle' : 'error' }}
         </mat-icon>

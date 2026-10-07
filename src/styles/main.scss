@@ -10,11 +10,84 @@
 // SCSS 设计令牌
 @use 'design-tokens/index' as dt;
 
+// ===== K12 STEM 探索绿设计系统 =====
+// 探索绿主题 - 针对 K12 教育场景
+@use 'design-tokens/stem-tokens' as stem;
+
+// ===== K12 STEM 图标语义化色 Token =====
+// 6 大类语义化图标色（学习/成就/创作/社交/状态/空状态）
+// 解决 mat-icon 全局默认色导致的同色化问题
+@use 'design-tokens/icon-color-tokens' as icon;
+
 // Angular Material 主题
 @use 'themes/matux-material-theme';
 
 // 暗黑主题
 @use 'themes/dark-theme';
+
+// 【P4-F】全局打印样式 - 应用于 window.print() 与浏览器“另存为 PDF”
+@use 'print';
+
+// ===== K12 STEM CSS 自定义属性 =====
+:root {
+  // STEM 探索绿主色
+  --stem-primary: #{stem.$stem-primary};
+  --stem-primary-light: #{stem.$stem-primary-light};
+  --stem-primary-dark: #{stem.$stem-primary-dark};
+  --stem-primary-50: #{stem.$stem-primary-50};
+  --stem-primary-100: #{stem.$stem-primary-100};
+  --stem-primary-200: #{stem.$stem-primary-200};
+  --stem-primary-300: #{stem.$stem-primary-300};
+
+  // STEM 科技蓝辅助色
+  --stem-secondary: #{stem.$stem-secondary};
+  --stem-secondary-light: #{stem.$stem-secondary-light};
+  --stem-secondary-dark: #{stem.$stem-secondary-dark};
+
+  // 学科主题色
+  --stem-subject-science: #{stem.$stem-subject-science};
+  --stem-subject-technology: #{stem.$stem-subject-technology};
+  --stem-subject-engineering: #{stem.$stem-subject-engineering};
+  --stem-subject-math: #{stem.$stem-subject-math};
+  --stem-subject-arts: #{stem.$stem-subject-arts};
+
+  // 功能色
+  --stem-success: #{stem.$stem-success};
+  --stem-warning: #{stem.$stem-warning};
+  --stem-error: #{stem.$stem-error};
+  --stem-info: #{stem.$stem-info};
+
+  // 学习状态色
+  --stem-progress: #{stem.$stem-progress};
+  --stem-complete: #{stem.$stem-complete};
+  --stem-locked: #{stem.$stem-locked};
+  --stem-mastered: #{stem.$stem-mastered};
+
+  // 中性色
+  --stem-bg-page: #{stem.$stem-bg-page};
+  --stem-bg-surface: #{stem.$stem-bg-surface};
+  --stem-text-primary: #{stem.$stem-text-primary};
+  --stem-text-secondary: #{stem.$stem-text-secondary};
+
+  // 圆角
+  --stem-radius-sm: #{stem.$stem-radius-sm};
+  --stem-radius-md: #{stem.$stem-radius-md};
+  --stem-radius-lg: #{stem.$stem-radius-lg};
+  --stem-radius-xl: #{stem.$stem-radius-xl};
+  --stem-radius-full: #{stem.$stem-radius-full};
+
+  // 阴影
+  --stem-shadow-sm: #{stem.$stem-shadow-sm};
+  --stem-shadow-md: #{stem.$stem-shadow-md};
+  --stem-shadow-lg: #{stem.$stem-shadow-lg};
+  --stem-shadow-card-hover: #{stem.$stem-shadow-card-hover};
+  --stem-shadow-glow: #{stem.$stem-shadow-glow};
+
+  // 动画
+  --stem-transition-fast: #{stem.$stem-transition-fast};
+  --stem-transition-normal: #{stem.$stem-transition-normal};
+  --stem-transition-bounce: #{stem.$stem-transition-bounce};
+}
 
 // ===== PRD v1.1 动效规范 =====
 .mat-mdc-card {
@@ -67,5 +140,17 @@
 
   .mat-mdc-button.mat-mdc-snack-bar-action {
     color: #fff;
+  }
+}
+
+// ===== 游戏化动画无障碍支持 (WCAG 2.1 SC 2.3.3) =====
+@media (prefers-reduced-motion: reduce) {
+  .badge-mini,
+  .level-badge,
+  .task-item .rarity-bar,
+  .exp-toast,
+  .level-up-dialog {
+    animation: none !important;
+    transition: none !important;
   }
 }

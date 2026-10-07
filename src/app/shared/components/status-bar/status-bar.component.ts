@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/explicit-function-return-type */
 /**
  * 底部状态栏组件
  *
@@ -17,10 +18,7 @@ import { MatTooltipModule } from '@angular/material/tooltip';
 import { Subject, takeUntil } from 'rxjs';
 
 import { AuthService } from '../../../core/services/auth.service';
-import {
-  ModuleStatusService,
-  TierGroupStatus,
-} from '../../../core/services/module-status.service';
+import { ModuleStatusService, TierGroupStatus } from '../../../core/services/module-status.service';
 
 /** 用户信息接口 */
 interface AppUser {
@@ -68,18 +66,14 @@ export class StatusBarComponent implements OnInit, OnDestroy {
     });
 
     // 订阅模块状态
-    this.moduleStatusService.healthy$
-      .pipe(takeUntil(this.destroy$))
-      .subscribe((healthy) => {
-        this.isBackendRunning = healthy;
-      });
+    this.moduleStatusService.healthy$.pipe(takeUntil(this.destroy$)).subscribe((healthy) => {
+      this.isBackendRunning = healthy;
+    });
 
-    this.moduleStatusService.tierGroups$
-      .pipe(takeUntil(this.destroy$))
-      .subscribe((groups) => {
-        this.tierGroups = groups;
-        this.updateSummaryText();
-      });
+    this.moduleStatusService.tierGroups$.pipe(takeUntil(this.destroy$)).subscribe((groups) => {
+      this.tierGroups = groups;
+      this.updateSummaryText();
+    });
   }
 
   ngOnDestroy(): void {
@@ -153,5 +147,14 @@ export class StatusBarComponent implements OnInit, OnDestroy {
    */
   getBackendStatusClass(): string {
     return this.isBackendRunning ? 'status-running' : 'status-stopped';
+  }
+
+  /**
+   * 【P3-4 修复】手动重新检查后端连接 — 用户点击“后端未启动”区域时调用
+   * 原逻辑仅靠 ModuleStatusService 的 30s 间隔轮询，路由切换时会引入状态闪烁。
+   * 这里提供手动重试入口，让 UI 能立即重新触发 fetchHealth。
+   */
+  onRefreshBackend(): void {
+    this.moduleStatusService.fetchHealth();
   }
 }

@@ -15,8 +15,8 @@
 
 import { CommonModule } from '@angular/common';
 import { Component, EventEmitter, Input, Output } from '@angular/core';
-import { MatIconModule } from '@angular/material/icon';
 import { MatButtonModule } from '@angular/material/button';
+import { MatIconModule } from '@angular/material/icon';
 
 @Component({
   selector: 'app-module-degraded-banner',
@@ -26,11 +26,9 @@ import { MatButtonModule } from '@angular/material/button';
     <div class="degraded-banner" *ngIf="visible && !dismissed" @slideIn>
       <div class="banner-content">
         <mat-icon class="banner-icon">info</mat-icon>
-        
+
         <div class="banner-text">
-          <h4 class="banner-title">
-            {{ moduleName }} 降级运行中
-          </h4>
+          <h4 class="banner-title">{{ moduleName }} 降级运行中</h4>
           <p class="banner-message">
             <span *ngIf="reason">{{ reason }}，</span>
             当前模式: <strong>{{ fallbackMode }}</strong>
@@ -48,124 +46,121 @@ import { MatButtonModule } from '@angular/material/button';
           >
             查看详情
           </button>
-          
-          <button
-            mat-icon-button
-            class="btn-dismiss"
-            (click)="dismiss()"
-            aria-label="关闭提示"
-          >
+
+          <button mat-icon-button class="btn-dismiss" (click)="dismiss()" aria-label="关闭提示">
             <mat-icon>close</mat-icon>
           </button>
         </div>
       </div>
     </div>
   `,
-  styles: [`
-    .degraded-banner {
-      position: fixed;
-      top: 0;
-      left: 0;
-      right: 0;
-      z-index: 1000;
-      background: linear-gradient(135deg, #fff3cd 0%, #ffeaa7 100%);
-      border-bottom: 2px solid #f39c12;
-      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
-      animation: slideIn 0.3s ease-out;
-    }
-
-    .banner-content {
-      display: flex;
-      align-items: center;
-      padding: 12px 24px;
-      gap: 16px;
-      max-width: 1400px;
-      margin: 0 auto;
-    }
-
-    .banner-icon {
-      font-size: 24px;
-      width: 24px;
-      height: 24px;
-      color: #f39c12;
-      flex-shrink: 0;
-    }
-
-    .banner-text {
-      flex: 1;
-      min-width: 0;
-    }
-
-    .banner-title {
-      margin: 0 0 4px 0;
-      font-size: 14px;
-      font-weight: 600;
-      color: #856404;
-    }
-
-    .banner-message {
-      margin: 0;
-      font-size: 13px;
-      color: #856404;
-      line-height: 1.4;
-      
-      strong {
-        color: #664d03;
+  styles: [
+    `
+      .degraded-banner {
+        position: fixed;
+        top: 0;
+        left: 0;
+        right: 0;
+        z-index: 1000;
+        background: linear-gradient(135deg, #fff3cd 0%, #ffeaa7 100%);
+        border-bottom: 2px solid #f39c12;
+        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+        animation: slideIn 0.3s ease-out;
       }
-    }
 
-    .banner-actions {
-      display: flex;
-      align-items: center;
-      gap: 8px;
-      flex-shrink: 0;
-    }
-
-    .btn-details {
-      font-size: 13px;
-      padding: 4px 12px;
-    }
-
-    .btn-dismiss {
-      width: 32px;
-      height: 32px;
-      line-height: 32px;
-      
-      mat-icon {
-        font-size: 20px;
-        width: 20px;
-        height: 20px;
-      }
-    }
-
-    @keyframes slideIn {
-      from {
-        transform: translateY(-100%);
-        opacity: 0;
-      }
-      to {
-        transform: translateY(0);
-        opacity: 1;
-      }
-    }
-
-    /* 响应式设计 */
-    @media (max-width: 768px) {
       .banner-content {
-        flex-wrap: wrap;
-        padding: 10px 16px;
+        display: flex;
+        align-items: center;
+        padding: 12px 24px;
+        gap: 16px;
+        max-width: 1400px;
+        margin: 0 auto;
+      }
+
+      .banner-icon {
+        font-size: 24px;
+        width: 24px;
+        height: 24px;
+        color: #f39c12;
+        flex-shrink: 0;
       }
 
       .banner-text {
-        flex: 1 1 calc(100% - 60px);
+        flex: 1;
+        min-width: 0;
+      }
+
+      .banner-title {
+        margin: 0 0 4px 0;
+        font-size: 14px;
+        font-weight: 600;
+        color: #856404;
+      }
+
+      .banner-message {
+        margin: 0;
+        font-size: 13px;
+        color: #856404;
+        line-height: 1.4;
+
+        strong {
+          color: #664d03;
+        }
       }
 
       .banner-actions {
-        flex: 1 1 auto;
-        justify-content: flex-end;
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        flex-shrink: 0;
       }
-    }
-  `],
+
+      .btn-details {
+        font-size: 13px;
+        padding: 4px 12px;
+      }
+
+      .btn-dismiss {
+        width: 32px;
+        height: 32px;
+        line-height: 32px;
+
+        mat-icon {
+          font-size: 20px;
+          width: 20px;
+          height: 20px;
+        }
+      }
+
+      @keyframes slideIn {
+        from {
+          transform: translateY(-100%);
+          opacity: 0;
+        }
+        to {
+          transform: translateY(0);
+          opacity: 1;
+        }
+      }
+
+      /* 响应式设计 */
+      @media (max-width: 768px) {
+        .banner-content {
+          flex-wrap: wrap;
+          padding: 10px 16px;
+        }
+
+        .banner-text {
+          flex: 1 1 calc(100% - 60px);
+        }
+
+        .banner-actions {
+          flex: 1 1 auto;
+          justify-content: flex-end;
+        }
+      }
+    `,
+  ],
 })
 export class ModuleDegradedBannerComponent {
   /** 模块名称 */

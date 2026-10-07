@@ -3,7 +3,7 @@
  *
  * 增强的 Toast 通知服务，支持多种类型和实时通知集成
  *
- * @author iMatu Development Team
+ * @author MatuX Lab
  * @version 1.0.0
  */
 

@@ -4,7 +4,7 @@
  * 为 3D 模型添加刚体物理属性和碰撞检测功能
  * 基于 Vircadia 内置物理引擎实现
  *
- * @author iMatu Development Team
+ * @author MatuX Lab
  * @version 1.0.0
  */
 

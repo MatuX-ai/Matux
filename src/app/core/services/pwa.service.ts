@@ -1,7 +1,17 @@
 import { Injectable, OnDestroy } from '@angular/core';
 import { MatSnackBar } from '@angular/material/snack-bar';
 import { SwUpdate, VersionReadyEvent } from '@angular/service-worker';
-import { filter, fromEvent, interval, map, Observable, startWith, Subject, switchMap, takeUntil } from 'rxjs';
+import {
+  filter,
+  fromEvent,
+  interval,
+  map,
+  Observable,
+  startWith,
+  Subject,
+  switchMap,
+  takeUntil,
+} from 'rxjs';
 
 import { AppStateService } from './app-state.service';
 

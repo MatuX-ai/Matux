@@ -171,15 +171,83 @@ export class DiagnosisService {
     // 趋势分析
     const trends = this.analyzeTrends(growth as unknown as GrowthTrajectory);
 
+    // 【P3-3 修复】后端无数据时补充初始诊断建议，避免页面“什么都看不到”
+    const finalSuggestions = suggestions.length > 0 ? suggestions : this.buildInitialSuggestions(dimensionScores);
+
     return {
       userId,
       timestamp: new Date().toISOString(),
       overallHealth,
       dimensionScores,
-      suggestions,
+      suggestions: finalSuggestions,
       criticalIssues,
       trends,
     };
+  }
+
+  /**
+   * 构造初始诊断建议（后端未返回时使用）
+   */
+  private buildInitialSuggestions(scores: Record<DiagnosisDimension, number>): TeachingSuggestion[] {
+    const now = new Date().toISOString();
+    const items: TeachingSuggestion[] = [];
+    if (scores.knowledge < 60) {
+      items.push({
+        id: 'init-knowledge-' + Date.now(),
+        diagnosisType: 'prerequisite_missing',
+        severity: 'warning',
+        title: '强化基础知识',
+        description: '系统梳理未掌握知识点，建议从核心概念开始复习',
+        suggestedAction: '进入“基础课程”模块，完成 3 个入门课程',
+        relatedKnowledgePoints: ['基础概念', '核心原理'],
+        recommendedCourses: ['foundation-course-01'],
+        createdAt: now,
+        isRead: false,
+      });
+    }
+    if (scores.engagement < 60) {
+      items.push({
+        id: 'init-engagement-' + Date.now(),
+        diagnosisType: 'attention_decline',
+        severity: 'info',
+        title: '提升专注度',
+        description: '尝试使用番茄钟，将单次学习控制在 25-30 分钟内',
+        suggestedAction: '开启“专注模式”，减少页面切换',
+        relatedKnowledgePoints: ['专注力', '学习习惯'],
+        recommendedCourses: ['focus-training-01'],
+        createdAt: now,
+        isRead: false,
+      });
+    }
+    if (scores.efficiency < 60) {
+      items.push({
+        id: 'init-efficiency-' + Date.now(),
+        diagnosisType: 'learning_plateau',
+        severity: 'info',
+        title: '优化学习节奏',
+        description: '完成课程后做 5 道相关练习题可以巩固所学',
+        suggestedAction: '尝试“先学后练”的节奏，每个模块搭配小测',
+        relatedKnowledgePoints: ['练习巩固'],
+        recommendedCourses: ['practice-pack-01'],
+        createdAt: now,
+        isRead: false,
+      });
+    }
+    if (items.length === 0) {
+      items.push({
+        id: 'init-positive-' + Date.now(),
+        diagnosisType: 'concept_confusion',
+        severity: 'info',
+        title: '保持当前节奏',
+        description: '当前学习状况良好，建议继续坚持',
+        suggestedAction: '可探索进阶模块，挑战更高难度内容',
+        relatedKnowledgePoints: ['进阶学习'],
+        recommendedCourses: ['advanced-track-01'],
+        createdAt: now,
+        isRead: false,
+      });
+    }
+    return items;
   }
 
   private scoreKnowledgeDimension(state: KnowledgeStateItem[]): number {

@@ -1,6 +1,6 @@
 import { CommonModule } from '@angular/common';
 import { HttpClient } from '@angular/common/http';
-import { Component, ElementRef, HostListener, OnDestroy, OnInit, ViewChild } from '@angular/core';
+import { ChangeDetectorRef, Component, ElementRef, HostListener, NgZone, OnDestroy, OnInit, ViewChild } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { MatButtonModule } from '@angular/material/button';
 import { MatCardModule } from '@angular/material/card';
@@ -83,6 +83,12 @@ export class ARLabComponent implements OnInit, OnDestroy {
   isLoading = true;
   errorMessage = '';
 
+  // 【P4-C】Unity WebGL 构建状态检测。CLI 环境下无法直接跑 Unity Editor，
+  //   在缺失构建时给出明确提示 + 构建命令文档 + CSS 3D 占位动画。
+  //   angular.json 把 src/assets 映射到 /assets/，所以前端路径是 /assets/ar-lab/build/...
+  unityBuildAvailable: boolean | null = null; // null=检测中, true=有构建, false=缺失
+  readonly unityBuildPath = '/assets/ar-lab/build/ARLabMain.json';
+
   // AR状态控制
   isARSupported = false;
   isTracking = false;
@@ -113,14 +119,67 @@ export class ARLabComponent implements OnInit, OnDestroy {
 
   constructor(
     private http: HttpClient,
-    private snackBar: MatSnackBar
+    private snackBar: MatSnackBar,
+    private cdr: ChangeDetectorRef,
+    private zone: NgZone
   ) {}
 
   ngOnInit(): void {
     this.checkARSupport();
-    this.loadUnityApplication();
+    this.detectUnityBuild();
     this.startSensorDataPolling();
     this.setupFullscreenListener();
+  }
+
+  /**
+   * 【P4-C】检测 Unity WebGL 构建是否已部署到 /ar-lab/build/。
+   *   不能靠加载 UnityLoader 后报错才知道——以体验不佳。
+   *   提前 HEAD 探深如果缺失则进入占位模式，让用户看到明确提示。
+   *   公开以供“重新检测”按钮调用。
+   *
+   *   为何不用 Angular HttpClient.head()：Angular 的 XHR backend 对 HEAD 返回的
+   *   无 body 响应会记为 ERR_FAILED，即使服务器正确返回 404。所以这里用原生 fetch，
+   *   仅检查 status 码。fetch() 同样支持 CORS，默认不发 preflight。
+   *
+   *   另外：原生 fetch 在 NgZone 外解决，变更后须 cdr.markForCheck() 触发 CD。
+   */
+  detectUnityBuild(): void {
+    this.unityBuildAvailable = null;
+    this.isLoading = true;
+    this.errorMessage = '';
+    this.cdr.markForCheck();
+    // 加超时，30s 还没返回则视为缺失
+    const controller = new AbortController();
+    const timeoutId = window.setTimeout(() => controller.abort(), 30_000);
+    // 在 zone 外 fetch — Promise 完成后须走 zone.run 触发 Angular CD
+    this.zone.runOutsideAngular(() => {
+      fetch(this.unityBuildPath, { method: 'HEAD', mode: 'cors', signal: controller.signal })
+        .then((r) => {
+          window.clearTimeout(timeoutId);
+          this.zone.run(() => {
+            if (r.ok) {
+              this.unityBuildAvailable = true;
+              this.isLoading = true;
+              this.loadUnityApplication();
+            } else {
+              this.unityBuildAvailable = false;
+              this.isLoading = false;
+              this.errorMessage = `未检测到 Unity WebGL 构建 (${this.unityBuildPath})。HTTP ${r.status}。请在 Unity Editor 中 Build 后把产物拷贝到 src/assets/ar-lab/build/ 并重新 ng build。`;
+            }
+            this.cdr.markForCheck();
+          });
+        })
+        .catch((err) => {
+          window.clearTimeout(timeoutId);
+          this.zone.run(() => {
+            this.unityBuildAvailable = false;
+            this.isLoading = false;
+            const aborted = err?.name === 'AbortError';
+            this.errorMessage = `检测 Unity WebGL 构建失败 (${this.unityBuildPath})。${aborted ? '请求超时' : (err?.message ?? err)}。请确认后端 / SPA 服务器可达。`;
+            this.cdr.markForCheck();
+          });
+        });
+    });
   }
 
   ngOnDestroy(): void {
@@ -204,14 +263,11 @@ export class ARLabComponent implements OnInit, OnDestroy {
         return;
       }
 
-      // Unity 构建文件路径
-      const buildUrl = '/ar-lab/build/ARLabMain.json';
-
       // 创建Unity实例
       // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment, @typescript-eslint/no-unsafe-call, @typescript-eslint/no-unsafe-member-access
       this.unityInstance = UnityLoader.instantiate(
         this.unityContainer.nativeElement as HTMLElement,
-        buildUrl,
+        this.unityBuildPath,
         {
           // eslint-disable-next-line @typescript-eslint/no-explicit-any
           onProgress: (_instance: any, progress: number) => {

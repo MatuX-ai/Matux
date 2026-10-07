@@ -1,10 +1,13 @@
 @use 'src/styles/design-tokens' as *;
 
+// 本地阴影变量（如果 design-tokens 中未定义）
+$stem-shadow-card: 0 1px 3px rgb(5 150 105 / 8%), 0 1px 2px rgb(5 150 105 / 6%) !default;
+
 .token-usage-history {
   overflow: hidden;
   border-radius: $border-radius-lg;
-  background: white;
-  box-shadow: 0 2px 4px rgb(0 0 0 / 10%);
+  background: $stem-bg-surface;
+  box-shadow: $stem-shadow-card;
 }
 
 .header {
@@ -12,11 +15,11 @@
   justify-content: space-between;
   align-items: center;
   padding: $spacing-6; // 24px
-  border-bottom: 1px solid #f0f0f0;
+  border-bottom: 1px solid $stem-divider;
 
   h3 {
     margin: 0;
-    color: #333;
+    color: $stem-text-primary;
     font-size: $font-size-h4;
     font-weight: $font-weight-bold;
   }
@@ -28,10 +31,10 @@
   gap: $spacing-3; // 12px
   margin: $spacing-4; // 16px
   padding: $spacing-6; // 24px
-  border-left: 4px solid #f44336;
+  border-left: 4px solid $stem-error;
   border-radius: $border-radius-sm;
-  background: #ffebee;
-  color: #f44336;
+  background: rgba($stem-error, 0.1);
+  color: $stem-error;
 
   mat-icon {
     width: 20px;
@@ -47,7 +50,7 @@
   justify-content: center;
   align-items: center;
   padding: $spacing-xxl;
-  color: #999;
+  color: $stem-text-disabled;
 
   mat-icon {
     width: 48px;
@@ -71,21 +74,21 @@ table {
 }
 
 th {
-  background: #fafafa;
-  color: #666;
+  background: $stem-gray-100;
+  color: $stem-text-secondary;
   font-weight: $font-weight-bold;
 }
 
 td {
-  color: #333;
+  color: $stem-text-primary;
 }
 
 .record-id {
   padding: 2px $spacing-xs;
   border-radius: $border-radius-sm;
-  background: rgb(59 130 246 / 10%);
-  color: #3b82f6;
-  font-family: 'Courier New', monospace; /* stylelint-disable-line scale-unlimited/declaration-strict-value */
+  background: rgba($stem-primary, 0.1);
+  color: $stem-primary;
+  font-family: 'Courier New', monospace;
   font-size: $font-size-sm;
 }
 
@@ -93,38 +96,38 @@ td {
   font-weight: $font-weight-bold;
 
   &.positive {
-    color: #10b981;
+    color: $stem-success;
   }
 
   &.negative {
-    color: #f44336;
+    color: $stem-error;
   }
 }
 
 .balance {
-  color: #3b82f6;
+  color: $stem-secondary;
   font-weight: $font-weight-medium;
 }
 
 .source {
-  color: #666;
+  color: $stem-text-secondary;
 }
 
 .description {
   overflow: hidden;
   max-width: 300px;
-  color: #999;
+  color: $stem-text-disabled;
   white-space: nowrap;
   text-overflow: ellipsis;
 }
 
 .time {
-  color: #999;
+  color: $stem-text-disabled;
   font-size: $font-size-sm;
 }
 
 mat-paginator {
-  border-top: 1px solid #f0f0f0;
+  border-top: 1px solid $stem-divider;
 }
 
 // 响应式设计

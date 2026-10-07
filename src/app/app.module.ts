@@ -18,6 +18,7 @@ import { BrowserModule } from '@angular/platform-browser';
 import { BrowserAnimationsModule } from '@angular/platform-browser/animations';
 import { ServiceWorkerModule } from '@angular/service-worker';
 import { MonacoEditorModule } from 'ngx-monaco-editor-v2';
+import { NgxEchartsModule } from 'ngx-echarts';
 
 import { environment } from '../environments/environment';
 
@@ -59,6 +60,12 @@ import { AppRoutingModule } from './app-routing.module';
       registrationStrategy: 'registerWhenStable:30000',
     }),
     MonacoEditorModule.forRoot(),
+    // 【P1-BUG01 修复】GrowthTrajectoryComponent 使用 NgxEchartsModule 渲染雷达图，
+    // 必须在 AppModule 根模块注册 NGX_ECHARTS_CONFIG provider,否则组件构造期
+    // 会触发 NG0201 NullInjectorError,导致 6s setTimeout 兑底不生效。
+    NgxEchartsModule.forRoot({
+      echarts: () => import('echarts'),
+    }),
   ],
   providers: [
     {

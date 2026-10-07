@@ -159,7 +159,8 @@ $font-family-sensor: 'Courier New', monospace;
   box-shadow: 0 4px 12px rgb(0 0 0 / 30%);
 
   .loading-overlay,
-  .error-overlay {
+  .error-overlay,
+  .placeholder-overlay {
     position: absolute;
     inset: 0;
     z-index: 10;
@@ -167,6 +168,7 @@ $font-family-sensor: 'Courier New', monospace;
     flex-direction: column;
     justify-content: center;
     align-items: center;
+    padding: 24px;
     background-color: rgb(0 0 0 / 80%);
     color: white;
 
@@ -182,6 +184,145 @@ $font-family-sensor: 'Courier New', monospace;
     h2 {
       margin: 16px 0 8px;
       color: #ff6b6b;
+    }
+  }
+
+  // 【P4-C】Unity 构建缺失占位 UI
+  .placeholder-overlay {
+    text-align: center;
+
+    h2 {
+      color: #ffc107;
+      margin-top: 24px;
+    }
+
+    .placeholder-lead {
+      color: #ddd;
+      max-width: 480px;
+    }
+
+    .placeholder-detail {
+      color: #aaa;
+      font-family: $font-family-sensor;
+      font-size: 14px;
+
+      code {
+        padding: 2px 6px;
+        border-radius: 4px;
+        background-color: rgb(255 255 255 / 10%);
+        color: #80d8ff;
+      }
+    }
+
+    .placeholder-foot {
+      margin-top: 16px;
+      color: #8bc34a;
+      font-size: 13px;
+      font-style: italic;
+    }
+
+    .placeholder-actions {
+      display: flex;
+      gap: 12px;
+      margin-top: 16px;
+    }
+
+    .build-steps {
+      max-width: 540px;
+      margin-top: 16px;
+      padding: 12px 16px;
+      border-radius: 8px;
+      background-color: rgb(255 255 255 / 5%);
+      text-align: left;
+
+      h4 {
+        margin: 0 0 8px;
+        color: #80d8ff;
+        font-size: 14px;
+        font-weight: 500;
+      }
+
+      ol {
+        margin: 0;
+        padding-left: 20px;
+      }
+
+      li {
+        margin: 4px 0;
+        color: #ccc;
+        font-size: 13px;
+        line-height: 1.6;
+      }
+
+      code {
+        padding: 1px 4px;
+        border-radius: 3px;
+        background-color: rgb(255 255 255 / 10%);
+        color: #80d8ff;
+        font-family: $font-family-sensor;
+        font-size: 12px;
+      }
+    }
+
+    code {
+      padding: 1px 4px;
+      border-radius: 3px;
+      background-color: rgb(255 255 255 / 10%);
+      color: #80d8ff;
+      font-family: $font-family-sensor;
+      font-size: 13px;
+    }
+  }
+
+  // 【P4-C】CSS 3D 旋转立方体（不依赖 Three.js）
+  .cube-scene {
+    width: 120px;
+    height: 120px;
+    perspective: 600px;
+  }
+
+  .cube {
+    position: relative;
+    width: 100%;
+    height: 100%;
+    transform-style: preserve-3d;
+    animation: cube-rotate 12s infinite linear;
+
+    .face {
+      position: absolute;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      width: 120px;
+      height: 120px;
+      border: 2px solid #80d8ff;
+      border-radius: 8px;
+      background-color: rgb(128 216 255 / 15%);
+      color: #80d8ff;
+      box-shadow: 0 0 20px rgb(128 216 255 / 40%);
+
+      mat-icon {
+        width: 48px;
+        height: 48px;
+        font-size: 48px;
+        line-height: 48px;
+      }
+    }
+
+    .face-front  { transform: translateZ(60px); }
+    .face-back   { transform: rotateY(180deg) translateZ(60px); }
+    .face-right  { transform: rotateY(90deg) translateZ(60px); }
+    .face-left   { transform: rotateY(-90deg) translateZ(60px); }
+    .face-top    { transform: rotateX(90deg) translateZ(60px); }
+    .face-bottom { transform: rotateX(-90deg) translateZ(60px); }
+  }
+
+  @keyframes cube-rotate {
+    from {
+      transform: rotateX(0deg) rotateY(0deg);
+    }
+    to {
+      transform: rotateX(360deg) rotateY(360deg);
     }
   }
 

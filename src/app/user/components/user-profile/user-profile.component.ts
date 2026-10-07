@@ -8,7 +8,7 @@
  */
 
 import { CommonModule } from '@angular/common';
-import { Component, OnDestroy, OnInit } from '@angular/core';
+import { ChangeDetectorRef, Component, OnDestroy, OnInit } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { MatButtonModule } from '@angular/material/button';
 import { MatButtonToggleModule } from '@angular/material/button-toggle';
@@ -112,7 +112,8 @@ export class UserProfileComponent implements OnInit, OnDestroy {
     private snackBar: MatSnackBar,
     private router: Router,
     private dialog: MatDialog,
-    private themeService: ThemeService
+    private themeService: ThemeService,
+    private cdr: ChangeDetectorRef
   ) {}
 
   ngOnInit(): void {
@@ -167,13 +168,28 @@ export class UserProfileComponent implements OnInit, OnDestroy {
             avatar: profile.avatar,
           };
           this.loading = false;
+          this.cdr.markForCheck();
         },
         error: (error) => {
           this.error = (error as Error).message || '加载用户资料失败';
           this.loading = false;
+          this.cdr.markForCheck();
           console.error('加载用户资料失败:', error);
         },
       });
+
+    // 【P4-D 兜底】加一个硬超时守门，万—上游 Observable / timeout / change detection
+    //   任何一个环节坏了，15s 后强改 loading=false 并以错误状态提示用户。
+    //   这种 "纯业务兜底 + 三重保险" 在 mock/真实环境切换 / 生产 build optimizer
+    //   误树摇时是必要的最后一道防线。
+    setTimeout(() => {
+      if (this.loading) {
+        console.warn('[P4-D] loading 超过 15s 未结束，强制进入错误状态');
+        this.error = this.error || '加载超时（兑底）——请检查后端 API 是否可用';
+        this.loading = false;
+        this.cdr.markForCheck();
+      }
+    }, 15_000);
   }
 
   /**
@@ -202,6 +218,7 @@ export class UserProfileComponent implements OnInit, OnDestroy {
           this.pushNotify = preferences.notifications?.push ?? true;
           this.showEmail = preferences.privacy?.showEmail ?? false;
           this.showPhone = preferences.privacy?.showPhone ?? false;
+          this.cdr.markForCheck();
         },
         error: (error) => {
           console.error('加载用户偏好设置失败:', error);
@@ -224,6 +241,7 @@ export class UserProfileComponent implements OnInit, OnDestroy {
           this.pushNotify = true;
           this.showEmail = false;
           this.showPhone = false;
+          this.cdr.markForCheck();
         },
       });
   }
@@ -267,10 +285,12 @@ export class UserProfileComponent implements OnInit, OnDestroy {
           this.isEditing = false;
           this.saving = false;
           this.snackBar.open('个人资料保存成功', '关闭', { duration: 3000 });
+          this.cdr.markForCheck();
         },
         error: (error) => {
           this.error = (error as Error).message;
           this.saving = false;
+          this.cdr.markForCheck();
           console.error('保存个人资料失败:', error);
         },
       });
@@ -333,6 +353,7 @@ export class UserProfileComponent implements OnInit, OnDestroy {
           // 上传裁剪后的图片
           this.saving = true;
           this.error = null;
+          this.cdr.markForCheck();
 
           this.userProfileService
             .uploadAvatarWithCrop(result.croppedImageFile)
@@ -341,7 +362,7 @@ export class UserProfileComponent implements OnInit, OnDestroy {
               next: (response) => {
                 this.formData.avatar = response.avatarUrl;
 
-                // 同时更新用户资料
+                // 同时更新用户个人头像
                 return this.userProfileService
                   .updateUserProfile({ avatar: response.avatarUrl })
                   .pipe(takeUntil(this.destroy$));
@@ -352,10 +373,12 @@ export class UserProfileComponent implements OnInit, OnDestroy {
                 }
                 this.saving = false;
                 this.snackBar.open('头像更新成功', '关闭', { duration: 3000 });
+                this.cdr.markForCheck();
               },
               error: (error: unknown) => {
                 this.error = (error as Error).message || '上传失败';
                 this.saving = false;
+                this.cdr.markForCheck();
                 console.error('上传头像失败:', error);
               },
             });
@@ -394,10 +417,12 @@ export class UserProfileComponent implements OnInit, OnDestroy {
         next: () => {
           this.saving = false;
           this.snackBar.open('偏好设置保存成功', '关闭', { duration: 3000 });
+          this.cdr.markForCheck();
         },
         error: (error) => {
           this.error = (error as Error).message;
           this.saving = false;
+          this.cdr.markForCheck();
           console.error('保存偏好设置失败:', error);
         },
       });

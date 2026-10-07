@@ -9,17 +9,19 @@
 **文件位置**: `token-balance/`
 
 **功能特性**:
+
 - 显示用户当前 Token 余额信息
 - 进度条可视化使用程度
 - 智能状态提示（充足/不足/耗尽）
 - 快捷操作按钮（购买、记录）
 
 **使用方法**:
+
 ```typescript
 import { TokenBalanceComponent } from '../components/token-balance/token-balance.component';
 
 // 在模板中使用
-<app-token-balance 
+<app-token-balance
   [balance]="userBalance"
   [showDetails]="true"
   [color]="'primary'">
@@ -27,6 +29,7 @@ import { TokenBalanceComponent } from '../components/token-balance/token-balance
 ```
 
 **输入属性**:
+
 - `balance: UserTokenBalance | null` - 用户 Token 余额数据
 - `showDetails: boolean` - 是否显示详细统计（默认 true）
 - `color: 'primary' | 'warn' | 'accent'` - 进度条颜色（默认 primary）
@@ -38,12 +41,14 @@ import { TokenBalanceComponent } from '../components/token-balance/token-balance
 **文件位置**: `token-purchase/`
 
 **功能特性**:
+
 - Token 套餐卡片展示
 - 热门/推荐标签
 - 支付方式选择（支付宝/微信/信用卡）
 - 订单创建和跳转
 
 **使用方法**:
+
 ```typescript
 import { MatDialog } from '@angular/material/dialog';
 import { TokenPurchaseComponent } from '../components/token-purchase/token-purchase.component';
@@ -51,10 +56,10 @@ import { TokenPurchaseComponent } from '../components/token-purchase/token-purch
 // 打开购买弹窗
 const dialogRef = this.dialog.open(TokenPurchaseComponent, {
   width: '800px',
-  data: { selectedPackageId: 'package_123' }
+  data: { selectedPackageId: 'package_123' },
 });
 
-dialogRef.afterClosed().subscribe(result => {
+dialogRef.afterClosed().subscribe((result) => {
   if (result?.success) {
     console.log('购买成功，订单 ID:', result.orderId);
   }
@@ -62,6 +67,7 @@ dialogRef.afterClosed().subscribe(result => {
 ```
 
 **输出数据**:
+
 ```typescript
 interface PurchaseResult {
   success: boolean;
@@ -76,12 +82,14 @@ interface PurchaseResult {
 **文件位置**: `token-usage-history/`
 
 **功能特性**:
+
 - 交易记录表格展示
 - 支持分页和排序
 - 交易类型标签（收入/支出/冻结/解冻）
 - 金额变化高亮显示
 
 **使用方法**:
+
 ```typescript
 import { TokenUsageHistoryComponent } from '../components/token-usage-history/token-usage-history.component';
 
@@ -90,6 +98,7 @@ import { TokenUsageHistoryComponent } from '../components/token-usage-history/to
 ```
 
 **依赖服务**:
+
 - `TokenService.getTransactions()` - 获取交易记录
 
 ---
@@ -99,17 +108,19 @@ import { TokenUsageHistoryComponent } from '../components/token-usage-history/to
 **文件位置**: `token-stats-chart/`
 
 **功能特性**:
+
 - ECharts 折线/柱状图切换
 - 消费和充值趋势对比
 - 响应式图表自适应
 - 日期范围筛选
 
 **使用方法**:
+
 ```typescript
 import { TokenStatsChartComponent } from '../components/token-stats-chart/token-stats-chart.component';
 
 // 在模板中使用
-<app-token-stats-chart 
+<app-token-stats-chart
   [startDate]="'2026-03-01'"
   [endDate]="'2026-03-14'"
   [chartType]="'line'">
@@ -117,11 +128,13 @@ import { TokenStatsChartComponent } from '../components/token-stats-chart/token-
 ```
 
 **输入属性**:
+
 - `startDate?: string` - 开始日期（ISO 格式）
 - `endDate?: string` - 结束日期（ISO 格式）
 - `chartType: 'line' | 'bar'` - 图表类型（默认 line）
 
 **依赖库**:
+
 - `echarts` - 图表库
 
 ---
@@ -138,7 +151,7 @@ import { UserTokenBalance } from '../../models/token.models';
 
 @Component({
   selector: 'app-dashboard',
-  templateUrl: './dashboard.component.html'
+  templateUrl: './dashboard.component.html',
 })
 export class DashboardComponent implements OnInit {
   userBalance: UserTokenBalance | null = null;
@@ -146,7 +159,7 @@ export class DashboardComponent implements OnInit {
   constructor(private tokenService: TokenService) {}
 
   ngOnInit(): void {
-    this.tokenService.getBalance().subscribe(balance => {
+    this.tokenService.getBalance().subscribe((balance) => {
       this.userBalance = balance;
     });
   }

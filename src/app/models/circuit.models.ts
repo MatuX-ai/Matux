@@ -4,7 +4,7 @@
  * 定义轻量级电路描述协议，用于在虚拟实验室中描述电路结构、
  * 元件连接关系和电气参数
  *
- * @author iMatu Development Team
+ * @author MatuX Lab
  * @version 1.0.0
  */
 

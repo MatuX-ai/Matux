@@ -4,7 +4,7 @@
  * 提供图像上传、裁剪、旋转、缩放功能
  * 支持实时预览和裁剪结果输出
  *
- * @author iMatu Development Team
+ * @author MatuX Lab
  * @version 1.0.0
  */
 

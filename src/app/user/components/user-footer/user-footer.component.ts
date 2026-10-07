@@ -5,11 +5,12 @@
  */
 
 import { CommonModule } from '@angular/common';
-import { Component } from '@angular/core';
+import { ChangeDetectorRef, Component, OnDestroy } from '@angular/core';
 import { MatButtonModule } from '@angular/material/button';
 import { MatIconModule } from '@angular/material/icon';
 import { MatToolbarModule } from '@angular/material/toolbar';
 import { RouterModule } from '@angular/router';
+import { Subscription } from 'rxjs';
 
 import { I18nService } from '../../../core/services/i18n.service';
 import { ROUTES } from '../../../routes.const';
@@ -167,12 +168,27 @@ import { ROUTES } from '../../../routes.const';
     `,
   ],
 })
-export class UserFooterComponent {
+export class UserFooterComponent implements OnDestroy {
   currentYear = new Date().getFullYear();
 
   // 路由常量供模板使用
   readonly ROUTES = ROUTES;
 
+  // 【P1 修复 #13】订阅 i18n snapshots$ 让翻译变化能刷新视图
+  private i18nSub: Subscription;
+
   // 【P2】i18n 服务供模板调用
-  constructor(public i18n: I18nService) {}
+  constructor(public i18n: I18nService, private cdr: ChangeDetectorRef) {
+    this.i18nSub = this.i18n.snapshots$.subscribe(() => {
+      try {
+        this.cdr.markForCheck();
+      } catch {
+        /* 组件已销毁 */
+      }
+    });
+  }
+
+  ngOnDestroy(): void {
+    this.i18nSub?.unsubscribe();
+  }
 }

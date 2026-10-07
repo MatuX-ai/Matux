@@ -1,7 +1,7 @@
 /**
  * 许可证列表组件
  * @description 展示许可证列表，支持筛选、排序和批量操作
- * @author iMatuProject Team
+ * @author MatuX Lab
  * @version 1.0.0
  */
 

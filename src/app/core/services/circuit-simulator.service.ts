@@ -5,7 +5,7 @@
  * 实现基础电路状态模拟，用于虚拟实验室中的电路行为仿真
  * 支持 LED 亮灭、开关控制等简单逻辑
  *
- * @author iMatu Development Team
+ * @author MatuX Lab
  * @version 1.0.0
  */
 

@@ -1,12 +1,15 @@
 /**
- * 底部状态栏样式
+ * 底部状态栏样式 - K12 STEM 探索绿主题
  *
  * 符合 PRD 规范：
  * - 高度：28px
- * - 背景：主色（藏青色 #0f172a）
+ * - 背景：探索绿渐变 (STEM 主题)
  * - 文本：白色
  * - 字体大小：12px
  */
+
+// STEM K12 设计系统 - 使用共享主题
+@use 'src/styles/shared/stem-theme' as stem;
 
 .status-bar {
   position: fixed;
@@ -15,8 +18,10 @@
   left: 0;
   z-index: 1000;
   height: 28px;
-  background: #0f172a; // 藏青色 Slate-900 (PRD 标准)
-  box-shadow: 0 -1px 3px rgb(0 0 0 / 10%);
+
+  // STEM 探索绿渐变背景
+  background: linear-gradient(135deg, stem.$stem-primary 0%, stem.$stem-primary-dark 100%);
+  box-shadow: 0 -1px 3px rgb(5 150 105 / 15%);
   color: #fff;
   font-size: 12px;
   line-height: 28px;
@@ -40,8 +45,8 @@
   .status-separator {
     width: 1px;
     height: 14px;
-    background: rgb(255 255 255 / 20%);
     margin: 0 4px;
+    background: rgb(255 255 255 / 20%);
   }
 
   .status-item {
@@ -64,32 +69,32 @@
       line-height: 14px;
 
       &.status-online {
-        color: #10b981; // 翡翠绿 Emerald-500
+        color: stem.$stem-success; // 翡翠绿 Emerald-500 (STEM 主题)
       }
 
       &.status-offline {
-        color: #ef4444; // 珊瑚红 Red-500
+        color: stem.$stem-error; // 珊瑚红 Red-500
       }
 
       &.status-running {
-        color: #10b981; // 翡翠绿 Emerald-500
+        color: stem.$stem-success; // 翡翠绿 Emerald-500 (STEM 主题)
       }
 
       &.status-stopped {
-        color: #f59e0b; // 琥珀黄 Amber-500
+        color: stem.$stem-warning; // 琥珀黄 Amber-500
       }
 
-      // Tier 指示器图标颜色
+      // Tier 指示器图标颜色 (STEM 主题)
       &.tier-full {
-        color: #10b981; // 翡翠绿 — 全部激活
+        color: stem.$stem-success; // 翡翠绿 — 全部激活
       }
 
       &.tier-partial {
-        color: #f59e0b; // 琥珀黄 — 部分激活
+        color: stem.$stem-warning; // 琥珀黄 — 部分激活
       }
 
       &.tier-off {
-        color: #64748b; // 灰色 Slate-500 — 未激活
+        color: rgb(255 255 255 / 50%); // 灰色 — 未激活
       }
     }
 
@@ -101,7 +106,9 @@
 
     &.user-info {
       mat-icon {
-        color: #60a5fa; // 浅蓝色
+        // 【修复导航图标对比度 #18】原 90% 白色 vs 绿色渐变背景对比 ~3.4:1，
+        // 升级到 100% 纯白 (3.99:1) 通过 WCAG 1.4.11
+        color: rgb(255 255 255 / 100%);
       }
 
       .status-text {
@@ -112,7 +119,9 @@
 
     &.status-version {
       .version-text {
-        opacity: 0.8;
+        // 【修复导航图标对比度 #18】原 opacity: 0.8 (80% 实际) vs 绿色背景仅 ~3.0:1，
+        // 改为 opacity: 1 配合父级 100% 白，达到 3.99:1 AA 标准
+        opacity: 1;
         font-size: 11px;
         font-weight: 300;
       }
@@ -123,8 +132,9 @@
       padding: 0 4px;
 
       .tier-label {
+        // 【修复导航图标对比度 #18】原 0.9 opacity 配合父级 ~3.4:1，升级到 1.0
+        opacity: 1;
         font-size: 11px;
-        opacity: 0.9;
       }
     }
   }

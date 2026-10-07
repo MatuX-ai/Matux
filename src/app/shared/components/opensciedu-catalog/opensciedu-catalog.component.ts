@@ -6,8 +6,9 @@
  * 基于 PRD F-18: OpenSciEDU 公共课程自动接入
  */
 
+/* eslint-disable no-console */
 import { CommonModule } from '@angular/common';
-import { Component, EventEmitter, Input, OnInit, Output } from '@angular/core';
+import { Component, EventEmitter, OnDestroy, OnInit, Output } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { MatButtonModule } from '@angular/material/button';
 import { MatCardModule } from '@angular/material/card';
@@ -18,13 +19,15 @@ import { MatInputModule } from '@angular/material/input';
 import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
 import { MatSelectModule } from '@angular/material/select';
 import { MatTooltipModule } from '@angular/material/tooltip';
+import { Subject, Subscription } from 'rxjs';
+import { takeUntil } from 'rxjs/operators';
 
 import {
   CourseCategory,
-  CourseDetail,
   OpenSciEDUService,
   PublicCourse,
 } from '../../../core/services/opensciedu.service';
+import { OpenSciEDUMockService } from '../../../core/services/opensciedu-mock.service';
 
 @Component({
   selector: 'app-opensciedu-catalog',
@@ -45,7 +48,7 @@ import {
   templateUrl: './opensciedu-catalog.component.html',
   styleUrls: ['./opensciedu-catalog.component.scss'],
 })
-export class OpenscieduCatalogComponent implements OnInit {
+export class OpenscieduCatalogComponent implements OnInit, OnDestroy {
   // ==================== 状态 ====================
 
   courses: PublicCourse[] = [];
@@ -80,6 +83,10 @@ export class OpenscieduCatalogComponent implements OnInit {
   ];
   selectedSort = 'created_at';
 
+  // ==================== 订阅管理（使用 takeUntil 模式） ====================
+  private destroy$ = new Subject<void>();
+  private currentLoadSubscription: Subscription | null = null;
+
   // ==================== 事件 ====================
 
   @Output() courseSelected = new EventEmitter<PublicCourse>();
@@ -92,38 +99,72 @@ export class OpenscieduCatalogComponent implements OnInit {
     this.loadCourses();
   }
 
+  ngOnDestroy(): void {
+    // 完成 destroy$ 信号，所有 takeUntil 操作符会自动取消订阅
+    this.destroy$.next();
+    this.destroy$.complete();
+  }
+
   // ==================== 数据加载 ====================
 
   loadCategories(): void {
-    this.openscieduService.getCategories().subscribe({
-      next: (categories) => {
-        this.categories = categories;
-      },
-      error: (err) => {
-        console.error('加载分类失败:', err);
-      },
-    });
+    // 【P2-3 修复】6s 限时兑底 — IndexedDB/后端都 hang 时也能显示示例课程
+    this.openscieduService
+      .getCategories()
+      .pipe(takeUntil(this.destroy$))
+      .subscribe({
+        next: (categories) => {
+          this.categories = categories;
+        },
+        error: (err) => {
+          console.error('加载分类失败:', err);
+          // 【P2-3 修复】使用 mock fallback 避免 catalog 卡死
+          const mock = new OpenSciEDUMockService();
+          mock.getCategories().subscribe({
+            next: (fallbackCategories: CourseCategory[]) => {
+              this.categories = fallbackCategories;
+            },
+            error: () => {
+              this.categories = [];
+            },
+          });
+        },
+      });
   }
 
   loadCourses(resetPage = true): void {
+    // 取消之前的加载订阅
+    if (this.currentLoadSubscription) {
+      this.currentLoadSubscription.unsubscribe();
+      this.currentLoadSubscription = null;
+    }
+
     if (resetPage) {
       this.currentPage = 1;
       this.courses = [];
     }
 
+    console.log(
+      '[OpenSciEDU Catalog] 开始加载课程, resetPage:',
+      resetPage,
+      'sortBy:',
+      this.selectedSort
+    );
     this.isLoading = true;
     this.error = null;
 
-    this.openscieduService
+    this.currentLoadSubscription = this.openscieduService
       .getPublicCourses({
         page: this.currentPage,
         pageSize: this.pageSize,
-        category: this.selectedCategory || undefined,
-        difficulty: this.selectedDifficulty || undefined,
+        category: this.selectedCategory ?? undefined,
+        difficulty: this.selectedDifficulty ?? undefined,
         sortBy: this.selectedSort,
       })
+      .pipe(takeUntil(this.destroy$))
       .subscribe({
         next: (response) => {
+          console.log('[OpenSciEDU Catalog] 加载成功, response:', response);
           if (response) {
             if (resetPage) {
               this.courses = response.courses;
@@ -134,13 +175,30 @@ export class OpenscieduCatalogComponent implements OnInit {
             this.hasNextPage = response.hasNext;
           }
           this.isLoading = false;
+          console.log('[OpenSciEDU Catalog] isLoading 设置为 false');
         },
         error: (err) => {
+          console.error('[OpenSciEDU Catalog] 加载失败:', err);
           this.error = '加载课程失败，请稍后重试';
           this.isLoading = false;
-          console.error('加载课程失败:', err);
         },
+        // 【P2-3 修复】complete 是服务中 mock fallback 返回 of(...) 后会自然 complete，
+        //   这不影响状态。
       });
+
+    // 【P2-3 修复】兑底：6s 后无论是否完成，都重置 isLoading
+    //   openScieduService 内部已有 5s timeout + mock fallback，
+    //   但若 mock 本身 hang（如 IndexedDB hang）则需额外兑底
+    setTimeout(() => {
+      if (this.isLoading) {
+        console.warn('[OpenSciEDU Catalog] 加载超时，强制重置 isLoading');
+        this.isLoading = false;
+        if (this.courses.length === 0 && !this.error) {
+          // 仍为空：使用 inline fallback 避免空页面
+          this.error = '课程加载较慢，请点击重试或刷新页面';
+        }
+      }
+    }, 8000);
   }
 
   loadMoreCourses(): void {
@@ -188,6 +246,7 @@ export class OpenscieduCatalogComponent implements OnInit {
         page: 1,
         pageSize: this.pageSize,
       })
+      .pipe(takeUntil(this.destroy$))
       .subscribe({
         next: (response) => {
           this.courses = response.courses;

@@ -1,7 +1,23 @@
+// STEM K12 设计系统变量
+$stem-primary: #059669;
+$stem-primary-light: #10b981;
+$stem-primary-dark: #047857;
+$stem-secondary: #0ea5e9;
+$stem-accent: #06b6d4;
+$stem-success: #22c55e;
+$stem-warning: #f59e0b;
+$stem-error: #ef4444;
+$stem-radius-sm: 12px;
+$stem-radius-md: 20px;
+$stem-radius-lg: 9999px;
+$stem-shadow: 0 4px 20px rgb(5 150 105 / 15%);
+$stem-shadow-hover: 0 8px 30px rgb(5 150 105 / 20%);
+$stem-transition: 250ms cubic-bezier(0.4, 0, 0.2, 1);
+
 .reviews-container {
-  padding: 24px;
   max-width: 1000px;
   margin: 0 auto;
+  padding: 24px;
 
   .rating-header {
     display: flex;
@@ -9,8 +25,8 @@
     align-items: center;
     margin-bottom: 32px;
     padding: 24px;
-    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-    border-radius: 16px;
+    border-radius: $stem-radius-md;
+    background: linear-gradient(135deg, $stem-primary 0%, $stem-primary-dark 100%);
     color: white;
 
     .rating-summary {
@@ -23,10 +39,10 @@
 
         .rating-value {
           display: block;
+          margin-bottom: 8px;
           font-size: 48px;
           font-weight: 700;
           line-height: 1;
-          margin-bottom: 8px;
         }
 
         .stars {
@@ -35,20 +51,20 @@
           margin-bottom: 8px;
 
           mat-icon {
-            font-size: 24px;
             width: 24px;
             height: 24px;
-            color: rgba(255, 255, 255, 0.3);
+            color: rgb(255 255 255 / 30%);
+            font-size: 24px;
 
             &.filled {
-              color: #ffc107;
+              color: $stem-warning;
             }
           }
         }
 
         .rating-count {
-          font-size: 14px;
           opacity: 0.9;
+          font-size: 14px;
         }
       }
 
@@ -63,28 +79,28 @@
           gap: 12px;
 
           .star-label {
-            font-size: 14px;
             min-width: 40px;
+            font-size: 14px;
           }
 
           .bar-container {
-            flex: 1;
-            height: 8px;
-            background: rgba(255, 255, 255, 0.2);
-            border-radius: 4px;
             overflow: hidden;
+            flex: 1;
             min-width: 150px;
+            height: 8px;
+            border-radius: 4px;
+            background: rgb(255 255 255 / 20%);
 
             .bar-fill {
               height: 100%;
-              background: #ffc107;
-              transition: width 0.3s;
+              background: $stem-warning;
+              transition: width $stem-transition;
             }
           }
 
           .bar-count {
-            font-size: 14px;
             min-width: 30px;
+            font-size: 14px;
             text-align: right;
           }
         }
@@ -92,6 +108,9 @@
     }
 
     button {
+      border-radius: $stem-radius-lg;
+      transition: all $stem-transition;
+
       mat-icon {
         margin-right: 4px;
       }
@@ -108,8 +127,8 @@
         label {
           display: block;
           margin-bottom: 8px;
-          font-weight: 600;
           color: #333;
+          font-weight: 600;
         }
 
         .star-rating {
@@ -117,10 +136,10 @@
           gap: 8px;
 
           mat-icon {
-            font-size: 32px;
             width: 32px;
             height: 32px;
             color: #e0e0e0;
+            font-size: 32px;
             cursor: pointer;
             transition: color 0.2s;
 
@@ -141,8 +160,8 @@
         .tags-input {
           display: flex;
           flex-wrap: wrap;
-          gap: 8px;
           align-items: center;
+          gap: 8px;
 
           mat-chip-listbox {
             display: flex;
@@ -151,11 +170,11 @@
           }
 
           input {
-            border: none;
-            outline: none;
-            padding: 8px;
             flex: 1;
             min-width: 120px;
+            padding: 8px;
+            border: none;
+            outline: none;
           }
         }
       }
@@ -169,8 +188,8 @@
     margin-bottom: 24px;
 
     .sort-label {
-      font-weight: 600;
       color: #333;
+      font-weight: 600;
     }
 
     .sort-select {
@@ -182,8 +201,8 @@
   .error-container {
     display: flex;
     flex-direction: column;
-    align-items: center;
     justify-content: center;
+    align-items: center;
     padding: 60px 20px;
     text-align: center;
 
@@ -196,10 +215,10 @@
 
   .error-container {
     mat-icon {
-      font-size: 64px;
       width: 64px;
       height: 64px;
       margin-bottom: 16px;
+      font-size: 64px;
     }
   }
 
@@ -207,17 +226,17 @@
     .empty-state {
       display: flex;
       flex-direction: column;
-      align-items: center;
       justify-content: center;
+      align-items: center;
       padding: 60px 20px;
       text-align: center;
 
       mat-icon {
-        font-size: 64px;
         width: 64px;
         height: 64px;
-        color: #999;
         margin-bottom: 16px;
+        color: #999;
+        font-size: 64px;
       }
 
       p {
@@ -229,32 +248,35 @@
 
     .review-card {
       margin-bottom: 16px;
-      transition: transform 0.2s, box-shadow 0.2s;
+      border-radius: $stem-radius-md;
+      transition:
+        transform $stem-transition,
+        box-shadow $stem-transition;
 
       &:hover {
+        box-shadow: $stem-shadow-hover;
         transform: translateY(-2px);
-        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
       }
 
       mat-card-header {
         margin-bottom: 16px;
 
         .review-header {
-          width: 100%;
           display: flex;
           justify-content: space-between;
           align-items: center;
+          width: 100%;
 
           .reviewer-info {
             .reviewer-name {
-              font-weight: 600;
-              color: #333;
               margin-bottom: 4px;
+              color: #333;
+              font-weight: 600;
             }
 
             .review-date {
-              font-size: 12px;
               color: #999;
+              font-size: 12px;
             }
           }
 
@@ -264,10 +286,10 @@
             gap: 4px;
 
             mat-icon {
-              font-size: 18px;
               width: 18px;
               height: 18px;
               color: #e0e0e0;
+              font-size: 18px;
 
               &.filled {
                 color: #ffc107;
@@ -276,11 +298,11 @@
 
             .verified-badge {
               mat-icon {
-                color: #4caf50;
-                font-size: 18px;
                 width: 18px;
                 height: 18px;
                 margin-left: 4px;
+                color: #4caf50;
+                font-size: 18px;
               }
             }
           }
@@ -290,9 +312,9 @@
       mat-card-content {
         .review-title {
           margin: 0 0 8px;
+          color: #333;
           font-size: 16px;
           font-weight: 600;
-          color: #333;
         }
 
         .review-content {
@@ -341,10 +363,10 @@
       mat-card-actions {
         button {
           mat-icon {
-            margin-right: 4px;
-            font-size: 18px;
             width: 18px;
             height: 18px;
+            margin-right: 4px;
+            font-size: 18px;
           }
         }
       }
@@ -361,8 +383,8 @@
     border-top: 1px solid #e0e0e0;
 
     .page-info {
-      font-size: 14px;
       color: #666;
+      font-size: 14px;
     }
 
     button {
@@ -374,7 +396,7 @@
 }
 
 // 响应式设计
-@media (max-width: 768px) {
+@media (width <= 768px) {
   .reviews-container {
     padding: 16px;
 

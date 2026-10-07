@@ -32,6 +32,7 @@ import type { User } from '../../../core/models/auth.models';
 import { AuthService } from '../../../core/services/auth.service';
 import { CourseEnrollmentService } from '../../../core/services/course-enrollment.service';
 import { UnifiedCourseService } from '../../../core/services/unified-course.service';
+import { RetryCardComponent } from '../../../shared/components/retry-card/retry-card.component';
 import { ROUTES } from '../../../routes.const';
 
 interface EnrolledCourse {
@@ -52,6 +53,7 @@ interface EnrolledCourse {
     MatTabsModule,
     MatTooltipModule,
     MatSnackBarModule,
+    RetryCardComponent,
   ],
   changeDetection: ChangeDetectionStrategy.OnPush,
   templateUrl: './my-courses.component.html',
@@ -66,6 +68,10 @@ export class MyCoursesComponent implements OnInit, OnDestroy {
   loading = true;
   loadingSources = false;
   loadingRecommendations = false;
+
+  // 【P3 修复 #13】AP 加载错误状态，用于渲染错误重试卡片
+  loadError: string | null = null;
+  loadErrorDetail: string | null = null;
 
   // 学习来源数据
   learningSources: Array<{
@@ -111,6 +117,17 @@ export class MyCoursesComponent implements OnInit, OnDestroy {
       this.currentUser = user;
       if (user?.id) {
         const userId = Number(user.id);
+        // 【P4-A】修复 NaN 边界。授权中用户有时候有名字 (test-user) 但没有有效数字 id，
+        //   之前 Number("test-user") === NaN 传入 CourseEnrollmentService 后兑底返回 [],
+        //   表面看起来 "加载完成" 但用户看不到任何提示。明确拒绝无效 id，进入错误态、
+        //   重试卡片可以随时重试加载。
+        if (!Number.isFinite(userId) || userId <= 0) {
+          this.loading = false;
+          this.loadError = '无法识别当前用户';
+          this.loadErrorDetail = `当前会话中 user.id = "${user?.id}" 不能解析为有效用户编号。`;
+          this.cdr.markForCheck();
+          return;
+        }
         this.loadCourses(userId);
         this.loadLearningSources(userId);
         this.loadRecommendations(userId);
@@ -280,6 +297,9 @@ export class MyCoursesComponent implements OnInit, OnDestroy {
                 this.enrolledCourses = [];
                 this.applyFilter();
                 this.loading = false;
+                // 【P3 修复 #13】记录错误详情用于重试卡片
+                this.loadError = '加载课程详情失败';
+                this.loadErrorDetail = err?.message || err?.statusText || String(err);
                 this.cdr.markForCheck();
               },
             });
@@ -289,9 +309,22 @@ export class MyCoursesComponent implements OnInit, OnDestroy {
           this.enrolledCourses = [];
           this.applyFilter();
           this.loading = false;
+          // 【P3 修复 #13】记录错误详情用于重试卡片
+          this.loadError = '加载选课记录失败';
+          this.loadErrorDetail = err?.message || err?.statusText || String(err);
           this.cdr.markForCheck();
         },
       });
+  }
+
+  // 【P3 修复 #13】重试加载课程
+  retryLoadCourses(): void {
+    if (!this.currentUser?.id) {
+      return;
+    }
+    this.loadError = null;
+    this.loadErrorDetail = null;
+    this.loadCourses(Number(this.currentUser.id));
   }
 
   onTabChange(_index: number): void {

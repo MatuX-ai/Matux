@@ -1,6 +1,6 @@
 /**
  * 插件商店主页面组件
- * 
+ *
  * 功能:
  * 1. 插件列表展示
  * 2. 搜索和过滤
@@ -25,7 +25,11 @@ import { MatSnackBar, MatSnackBarModule } from '@angular/material/snack-bar';
 import { Subject } from 'rxjs';
 import { debounceTime, distinctUntilChanged, takeUntil } from 'rxjs/operators';
 
-import { PluginStoreService, PluginListItem, PluginStats } from '../../core/services/plugin-store.service';
+import {
+  PluginStoreService,
+  PluginListItem,
+  PluginStats,
+} from '../../core/services/plugin-store.service';
 import { PluginCardComponent } from '../../shared/components/plugin-card/plugin-card.component';
 
 // Phase 5 新组件
@@ -69,20 +73,20 @@ export class PluginStoreComponent implements OnInit, OnDestroy {
   stats: PluginStats | null = null;
   loading = true;
   error: string | null = null;
-  
+
   // 搜索和过滤
   searchQuery = '';
   selectedCategory: string | null = null;
   compatibleOnly = false;
   selectedTab = 'all'; // all, installed, compatible
-  
+
   // Phase 5: 首次运行引导
   showFirstRunGuide = false;
-  
+
   // Phase 5: 选中的插件（用于显示评论和统计）
   selectedPluginId: string | null = null;
   showPluginDetails = false;
-  
+
   // 分类列表
   categories = [
     { id: 'ai-assistant', name: 'AI 助手', icon: 'smart_toy' },
@@ -96,47 +100,47 @@ export class PluginStoreComponent implements OnInit, OnDestroy {
     { id: 'visualization', name: '可视化', icon: 'bar_chart' },
     { id: 'productivity', name: '效率工具', icon: 'bolt' },
   ];
-  
+
   private searchSubject = new Subject<string>();
   private destroy$ = new Subject<void>();
-  
+
   constructor(
     private pluginService: PluginStoreService,
-    private snackBar: MatSnackBar,
+    private snackBar: MatSnackBar
   ) {}
-  
+
   ngOnInit(): void {
     this.loadPlugins();
     this.loadStats();
     this.setupSearch();
     this.checkFirstRun(); // Phase 5: 检查首次运行
   }
-  
+
   ngOnDestroy(): void {
     this.destroy$.next();
     this.destroy$.complete();
   }
-  
+
   /**
    * 加载插件列表
    */
   async loadPlugins(): Promise<void> {
     this.loading = true;
     this.error = null;
-    
+
     try {
       const options: any = {};
-      
+
       if (this.selectedTab === 'installed') {
         options.state = 'enabled';
       } else if (this.selectedTab === 'compatible') {
         options.compatibleOnly = true;
       }
-      
+
       if (this.selectedCategory) {
         options.category = this.selectedCategory;
       }
-      
+
       this.plugins = (await this.pluginService.getPlugins(options).toPromise()) ?? [];
       this.applyFilters();
     } catch (err) {
@@ -146,7 +150,7 @@ export class PluginStoreComponent implements OnInit, OnDestroy {
       this.loading = false;
     }
   }
-  
+
   /**
    * 加载统计信息
    */
@@ -157,59 +161,56 @@ export class PluginStoreComponent implements OnInit, OnDestroy {
       console.warn('加载统计信息失败:', err);
     }
   }
-  
+
   /**
    * 设置搜索
    */
   setupSearch(): void {
-    this.searchSubject.pipe(
-      debounceTime(300),
-      distinctUntilChanged(),
-      takeUntil(this.destroy$),
-    ).subscribe(query => {
-      this.searchQuery = query;
-      this.applyFilters();
-    });
+    this.searchSubject
+      .pipe(debounceTime(300), distinctUntilChanged(), takeUntil(this.destroy$))
+      .subscribe((query) => {
+        this.searchQuery = query;
+        this.applyFilters();
+      });
   }
-  
+
   /**
    * 搜索输入
    */
   onSearchInput(value: string): void {
     this.searchSubject.next(value);
   }
-  
+
   /**
    * 应用过滤
    */
   applyFilters(): void {
     let result = [...this.plugins];
-    
+
     // 搜索过滤
     if (this.searchQuery.trim()) {
       const query = this.searchQuery.toLowerCase();
-      result = result.filter(plugin =>
-        plugin.name.toLowerCase().includes(query) ||
-        plugin.description.toLowerCase().includes(query) ||
-        plugin.author.toLowerCase().includes(query)
+      result = result.filter(
+        (plugin) =>
+          plugin.name.toLowerCase().includes(query) ||
+          plugin.description.toLowerCase().includes(query) ||
+          plugin.author.toLowerCase().includes(query)
       );
     }
-    
+
     // 分类过滤
     if (this.selectedCategory) {
-      result = result.filter(plugin =>
-        plugin.categories.includes(this.selectedCategory!)
-      );
+      result = result.filter((plugin) => plugin.categories.includes(this.selectedCategory!));
     }
-    
+
     // 兼容性过滤
     if (this.compatibleOnly) {
-      result = result.filter(plugin => plugin.compatible === true);
+      result = result.filter((plugin) => plugin.compatible === true);
     }
-    
+
     this.filteredPlugins = result;
   }
-  
+
   /**
    * 切换分类
    */
@@ -217,7 +218,7 @@ export class PluginStoreComponent implements OnInit, OnDestroy {
     this.selectedCategory = categoryId;
     this.loadPlugins();
   }
-  
+
   /**
    * 切换标签页
    */
@@ -226,7 +227,7 @@ export class PluginStoreComponent implements OnInit, OnDestroy {
     this.selectedTab = tabs[event.index] || 'all';
     this.loadPlugins();
   }
-  
+
   /**
    * 切换兼容性过滤
    */
@@ -234,7 +235,7 @@ export class PluginStoreComponent implements OnInit, OnDestroy {
     this.compatibleOnly = !this.compatibleOnly;
     this.loadPlugins();
   }
-  
+
   /**
    * 清除搜索
    */
@@ -242,7 +243,7 @@ export class PluginStoreComponent implements OnInit, OnDestroy {
     this.searchQuery = '';
     this.applyFilters();
   }
-  
+
   /**
    * 刷新列表
    */
@@ -251,30 +252,30 @@ export class PluginStoreComponent implements OnInit, OnDestroy {
     await this.loadStats();
     this.snackBar.open('插件列表已刷新', '关闭', { duration: 2000 });
   }
-  
+
   /**
    * 获取插件数量
    */
   getPluginCount(): number {
     return this.filteredPlugins.length;
   }
-  
+
   /**
    * 获取已安装数量
    */
   getInstalledCount(): number {
     return this.stats?.total_installed || 0;
   }
-  
+
   /**
    * 获取已启用数量
    */
   getEnabledCount(): number {
     return this.stats?.total_enabled || 0;
   }
-  
+
   // ==================== Phase 5 方法 ====================
-  
+
   /**
    * 检查是否首次运行
    */
@@ -284,7 +285,7 @@ export class PluginStoreComponent implements OnInit, OnDestroy {
         console.warn('Plugin API 不可用');
         return;
       }
-      
+
       const result = await (window.pluginAPI as any).isFirstRunCompleted();
       if (result.success && !result.data) {
         this.showFirstRunGuide = true;
@@ -293,7 +294,7 @@ export class PluginStoreComponent implements OnInit, OnDestroy {
       console.error('检查首次运行失败:', err);
     }
   }
-  
+
   /**
    * 首次引导完成
    */
@@ -304,7 +305,7 @@ export class PluginStoreComponent implements OnInit, OnDestroy {
     this.loadPlugins();
     this.loadStats();
   }
-  
+
   /**
    * 选中插件（显示详情）
    */
@@ -312,7 +313,7 @@ export class PluginStoreComponent implements OnInit, OnDestroy {
     this.selectedPluginId = pluginId;
     this.showPluginDetails = true;
   }
-  
+
   /**
    * 关闭插件详情
    */

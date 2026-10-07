@@ -13,8 +13,8 @@
 import { Injectable, OnDestroy } from '@angular/core';
 import { Meta, Title } from '@angular/platform-browser';
 import { Router } from '@angular/router';
-import { filter, Subject, takeUntil } from 'rxjs';
 import { NavigationEnd } from '@angular/router';
+import { filter, Subject, takeUntil } from 'rxjs';
 
 interface SEOConfig {
   title: string;
@@ -193,7 +193,7 @@ export class SEOService implements OnDestroy {
         filter((event): event is NavigationEnd => event instanceof NavigationEnd),
         takeUntil(this.destroy$)
       )
-      .subscribe((event) => {
+      .subscribe((_event) => {
         const url = this.router.url;
         const pageKey = url.split('?')[0]; // 移除查询参数
 

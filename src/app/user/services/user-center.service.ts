@@ -7,9 +7,9 @@
 import { Injectable } from '@angular/core';
 import { BehaviorSubject } from 'rxjs';
 
-import { ROUTES } from '../../routes.const';
 import { User } from '../../core/models/auth.models';
 import { AuthService } from '../../core/services/auth.service';
+import { ROUTES } from '../../routes.const';
 
 export interface UserCenterMenuItem {
   icon: string;

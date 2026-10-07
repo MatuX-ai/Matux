@@ -68,22 +68,63 @@ export interface UnifiedCourseCardConfig {
   `,
   styles: [
     `
+      /* K12 STEM 探索绿主题 */
+      :host {
+        --stem-primary: #059669;
+        --stem-primary-light: #10b981;
+        --stem-secondary: #0ea5e9;
+        --stem-text-primary: #1c1917;
+        --stem-text-secondary: #57534e;
+        --stem-radius-lg: 20px;
+        --stem-radius-md: 12px;
+        --stem-shadow-sm: 0 1px 3px rgba(5, 150, 105, 0.08);
+        --stem-shadow-card-hover: 0 14px 28px rgba(5, 150, 105, 0.12);
+        --stem-gradient-explore: linear-gradient(135deg, #059669 0%, #0ea5e9 100%);
+      }
+
       .course-card {
         margin-bottom: 16px;
+        // STEM 20px 圆角
+        border-radius: var(--stem-radius-lg, 20px);
+        // STEM 阴影
+        box-shadow: var(--stem-shadow-sm);
+        // STEM 悬浮效果
+        transition:
+          box-shadow 250ms cubic-bezier(0.4, 0, 0.2, 1),
+          transform 250ms ease;
+
+        &:hover {
+          box-shadow: var(--stem-shadow-card-hover);
+          transform: translateY(-2px);
+        }
+
+        // STEM 主题按钮颜色
+        ::ng-deep .mat-mdc-raised-button.mat-primary {
+          background: var(--stem-gradient-explore);
+          border-radius: 9999px;
+        }
       }
+
       .course-card.compact {
         max-width: 320px;
       }
+
       .description {
-        color: #666;
+        // STEM 主题文本色
+        color: var(--stem-text-secondary, #57534e);
         font-size: 14px;
-        line-height: 1.5;
+        line-height: 1.6;
       }
+
       .meta {
         margin: 12px 0;
       }
+
       mat-progress-bar {
         margin-top: 8px;
+        // STEM 进度条样式
+        --mdc-linear-progress-active-indicator-color: var(--stem-primary, #059669);
+        --mdc-linear-progress-track-color: var(--stem-primary-100, #d1fae5);
       }
     `,
   ],

@@ -6,8 +6,8 @@
 
 import { Injectable, OnDestroy } from '@angular/core';
 import { Router } from '@angular/router';
-import { filter, Subject, takeUntil } from 'rxjs';
 import { NavigationEnd, NavigationStart } from '@angular/router';
+import { filter, Subject, takeUntil } from 'rxjs';
 
 // Core Web Vitals 指标
 /**
@@ -126,10 +126,13 @@ export class PerformanceMonitorService implements OnDestroy {
     // 监听 NavigationStart
     this.router.events
       .pipe(
-        filter((event): event is NavigationStart => event instanceof NavigationEnd === false && event.constructor.name === 'NavigationStart'),
+        filter(
+          (event): event is NavigationStart =>
+            event instanceof NavigationEnd === false && event.constructor.name === 'NavigationStart'
+        ),
         takeUntil(this.destroy$)
       )
-      .subscribe((event) => {
+      .subscribe((_event) => {
         this.routeStartTime = performance.now();
       });
 

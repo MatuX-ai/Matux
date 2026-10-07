@@ -1,7 +1,7 @@
 /**
  * 许可证吊销组件
  * @description 提供许可证吊销功能
- * @author iMatuProject Team
+ * @author MatuX Lab
  * @version 1.0.0
  */
 

@@ -1,10 +1,18 @@
 import { HttpClient } from '@angular/common/http';
-import { Injectable } from '@angular/core';
-import { BehaviorSubject, of } from 'rxjs';
-import { catchError } from 'rxjs/operators';
+import { ApplicationRef, Injectable } from '@angular/core';
+import { BehaviorSubject, Observable, of } from 'rxjs';
+import { catchError, distinctUntilChanged, map } from 'rxjs/operators';
 
 export interface I18nTranslations {
   [key: string]: unknown;
+}
+
+/**
+ * 当前语言与该语言下的翻译包合并的快照，组件可以订阅它们实现自动变更检测。
+ */
+export interface I18nSnapshot {
+  lang: 'zh-CN' | 'en-US';
+  translations: I18nTranslations;
 }
 
 @Injectable({
@@ -12,12 +20,26 @@ export interface I18nTranslations {
 })
 export class I18nService {
   private currentLang = new BehaviorSubject<'zh-CN' | 'en-US'>('zh-CN');
-  private translations: I18nTranslations = {};
+  // 【P1 修复 #13】原版使用普通对象 + HTTP subscribe 静默赋值，导致首次访问页面时
+  //   translations 仍为空 → i18n.translate() 返回原始 key 字符串 → Angular 未收到变更
+  //   检测 → 翻译永远不生效（需手动刷新页面才被错误地修复）。
+  //   修复：将 translations 包装为 BehaviorSubject，HTTP 加载完成后 emit。
+  //   translate() 保持同步 API（取值来自 snapshot），同时提供 translationsReady$ observable
+  //   让组件可以用 async pipe 或 markForCheck() 实现自动刷新。
+  private translations = new BehaviorSubject<I18nTranslations>({});
 
   currentLang$ = this.currentLang.asObservable();
+  /** 当前语言 + 翻译包快照， HTTP 加载完成后会 emit。 */
+  readonly snapshots$: Observable<I18nSnapshot> = this.translations.pipe(
+    map((t) => ({ lang: this.currentLang.value, translations: t })),
+    distinctUntilChanged((a, b) => a.lang === b.lang && a.translations === b.translations)
+  );
   supportedLangs = ['zh-CN', 'en-US'];
 
-  constructor(private http: HttpClient) {
+  constructor(
+    private http: HttpClient,
+    private appRef: ApplicationRef
+  ) {
     this.loadSavedLanguage();
   }
 
@@ -51,8 +73,23 @@ export class I18nService {
           return of({} as I18nTranslations);
         })
       )
-      .subscribe((translations) => {
-        this.translations[lang] = translations;
+      .subscribe((loaded) => {
+        // 【P1 修复 #13】通过 BehaviorSubject emit，触发快照订阅链更新。
+        //   同时调一次 ApplicationRef.tick()，让所有组件（包括未订阅 snapshots$
+        //   的组件，例如 UserNav、UserFooter、LoginComponent）重新走变更检测，
+        //   重新调用 i18n.translate() 取到新翻译。
+        if (this.translations.value !== loaded) {
+          this.translations.next(loaded);
+          // 使用 setTimeout 推迟到下一个宏任务，避免在 HTTP subscribe 回调中
+          // 触发额外的变更检测与正在运行的检测冲突。
+          setTimeout(() => {
+            try {
+              this.appRef.tick();
+            } catch {
+              // 静默处理：tick 在初始化阶段可能被调度器放弃。
+            }
+          }, 0);
+        }
       });
   }
 
@@ -94,8 +131,7 @@ export class I18nService {
    * 获取翻译文本
    */
   translate(key: string): string {
-    const lang = this.currentLang.value;
-    const translations = this.translations[lang] as Record<string, unknown> | undefined;
+    const translations = this.translations.value as Record<string, unknown>;
 
     const keys = key.split('.');
     let value: unknown = translations;
@@ -108,7 +144,10 @@ export class I18nService {
       ) {
         value = (value as Record<string, unknown>)[k];
       } else {
-        console.warn(`Translation key not found: ${key}`);
+        // 【P1 修复 #13】首次渲染时 translations 仍为空，避免堆版出现多个重复 warn。
+        if (translations && Object.keys(translations).length > 0) {
+          console.warn(`Translation key not found: ${key}`);
+        }
         return key;
       }
     }
@@ -124,7 +163,7 @@ export class I18nService {
    * 获取所有翻译
    */
   getTranslations(): I18nTranslations {
-    return this.translations[this.currentLang.value] as I18nTranslations;
+    return this.translations.value as I18nTranslations;
   }
 
   /**

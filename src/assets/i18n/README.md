@@ -6,10 +6,10 @@ iMato项目使用Angular框架内置的国际化支持，结合自定义的i18n�
 
 ## 支持的語言
 
-| 语言代码 | 语言名称 | 本地名称 | 状态 |
-|----------|----------|----------|------|
-| `zh-CN` | 简体中文 | 中文 | ✅ 已实现 |
-| `en-US` | 英语(美国) | English | ✅ 已实现 |
+| 语言代码 | 语言名称   | 本地名称 | 状态      |
+| -------- | ---------- | -------- | --------- |
+| `zh-CN`  | 简体中文   | 中文     | ✅ 已实现 |
+| `en-US`  | 英语(美国) | English  | ✅ 已实现 |
 
 ## 文件结构
 
@@ -35,15 +35,15 @@ import { I18nService } from '../../core/services/i18n.service';
   template: `
     <h1>{{ title }}</h1>
     <p>{{ description }}</p>
-  `
+  `,
 })
 export class ExampleComponent {
   constructor(private i18nService: I18nService) {}
-  
+
   get title(): string {
     return this.i18nService.translate('home.title');
   }
-  
+
   get description(): string {
     return this.i18nService.translate('home.subtitle');
   }
@@ -61,6 +61,7 @@ export class ExampleComponent {
 ### 3. 添加新的翻译键
 
 1. 在 `zh-CN.json` 中添加中文翻译：
+
 ```json
 {
   "newSection": {
@@ -71,6 +72,7 @@ export class ExampleComponent {
 ```
 
 2. 在 `en-US.json` 中添加对应的英文翻译：
+
 ```json
 {
   "newSection": {
@@ -81,6 +83,7 @@ export class ExampleComponent {
 ```
 
 3. 在组件中使用：
+
 ```typescript
 this.i18nService.translate('newSection.title');
 ```
@@ -96,6 +99,7 @@ this.i18nService.translate('newSection.title');
 ```
 
 使用方式：
+
 ```typescript
 const name = '张三';
 const translation = this.i18nService.translate('welcome');
@@ -128,6 +132,7 @@ const formatted = translation.replace('{{name}}', name);
 
 1. 创建新的翻译文件，例如 `fr-FR.json`
 2. 在 `index.ts` 中添加语言元数据：
+
 ```typescript
 {
   code: 'fr-FR',
@@ -152,11 +157,13 @@ const formatted = translation.replace('{{name}}', name);
 ## 故障排除
 
 ### 翻译键未找到
+
 - 检查翻译键是否在所有语言文件中都存在
 - 检查键路径是否正确
 - 确保翻译文件已正确加载
 
 ### 语言切换后页面不更新
+
 - 检查是否调用了 `window.location.reload()`
 - 确认翻译文件路径是否正确
 - 检查浏览器缓存

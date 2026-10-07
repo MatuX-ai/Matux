@@ -7,15 +7,9 @@
     <div class="filter-group">
       <mat-form-field appearance="outline" class="category-select">
         <mat-label>课程分类</mat-label>
-        <mat-select
-          [value]="selectedCategory"
-          (selectionChange)="onCategoryChange($event.value)"
-        >
+        <mat-select [value]="selectedCategory" (selectionChange)="onCategoryChange($event.value)">
           <mat-option [value]="null">全部分类</mat-option>
-          <mat-option
-            *ngFor="let category of categories"
-            [value]="category.id"
-          >
+          <mat-option *ngFor="let category of categories" [value]="category.id">
             {{ category.name }}
           </mat-option>
         </mat-select>
@@ -27,10 +21,7 @@
           [value]="selectedDifficulty"
           (selectionChange)="onDifficultyChange($event.value)"
         >
-          <mat-option
-            *ngFor="let diff of difficulties"
-            [value]="diff.value"
-          >
+          <mat-option *ngFor="let diff of difficulties" [value]="diff.value">
             {{ diff.label }}
           </mat-option>
         </mat-select>
@@ -38,14 +29,8 @@
 
       <mat-form-field appearance="outline" class="sort-select">
         <mat-label>排序</mat-label>
-        <mat-select
-          [value]="selectedSort"
-          (selectionChange)="onSortChange($event.value)"
-        >
-          <mat-option
-            *ngFor="let sort of sortOptions"
-            [value]="sort.value"
-          >
+        <mat-select [value]="selectedSort" (selectionChange)="onSortChange($event.value)">
+          <mat-option *ngFor="let sort of sortOptions" [value]="sort.value">
             {{ sort.label }}
           </mat-option>
         </mat-select>
@@ -86,22 +71,11 @@
   </div>
 
   <!-- 课程列表 -->
-  <div
-    *ngIf="!isLoading && !error && courses.length > 0"
-    class="course-grid"
-  >
-    <mat-card
-      *ngFor="let course of courses"
-      class="course-card"
-      (click)="selectCourse(course)"
-    >
+  <div *ngIf="!isLoading && !error && courses.length > 0" class="course-grid">
+    <mat-card *ngFor="let course of courses" class="course-card" (click)="selectCourse(course)">
       <!-- 课程封面 -->
       <div class="course-cover">
-        <img
-          *ngIf="course.coverImage"
-          [src]="course.coverImage"
-          [alt]="course.title"
-        />
+        <img *ngIf="course.coverImage" [src]="course.coverImage" [alt]="course.title" />
         <div *ngIf="!course.coverImage" class="course-cover-placeholder">
           <mat-icon>school</mat-icon>
         </div>
@@ -151,10 +125,7 @@
         <!-- 标签 -->
         <div class="course-tags">
           <mat-chip-listbox>
-            <mat-chip
-              *ngFor="let tag of course.tags.slice(0, 3)"
-              class="tag-chip"
-            >
+            <mat-chip *ngFor="let tag of course.tags.slice(0, 3)" class="tag-chip">
               {{ tag }}
             </mat-chip>
           </mat-chip-listbox>
@@ -164,28 +135,14 @@
   </div>
 
   <!-- 空状态 -->
-  <div
-    *ngIf="!isLoading && !error && courses.length === 0"
-    class="empty-state"
-  >
+  <div *ngIf="!isLoading && !error && courses.length === 0" class="empty-state">
     <mat-icon>search_off</mat-icon>
     <p>未找到相关课程</p>
-    <button mat-stroked-button (click)="loadCourses()">
-      查看全部课程
-    </button>
+    <button mat-stroked-button (click)="loadCourses()">查看全部课程</button>
   </div>
 
   <!-- 加载更多 -->
-  <div
-    *ngIf="!isLoading && !error && hasNextPage && courses.length > 0"
-    class="load-more"
-  >
-    <button
-      mat-stroked-button
-      color="primary"
-      (click)="loadMoreCourses()"
-    >
-      加载更多
-    </button>
+  <div *ngIf="!isLoading && !error && hasNextPage && courses.length > 0" class="load-more">
+    <button mat-stroked-button color="primary" (click)="loadMoreCourses()">加载更多</button>
   </div>
 </div>

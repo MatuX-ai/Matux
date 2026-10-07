@@ -31,7 +31,7 @@ import { MatCardModule } from '@angular/material/card';
 import { MatIconModule } from '@angular/material/icon';
 import { MatProgressBarModule } from '@angular/material/progress-bar';
 import { MatTooltipModule } from '@angular/material/tooltip';
-import { NgxEchartsModule } from 'ngx-echarts';
+import { NgxEchartsModule, NGX_ECHARTS_CONFIG } from 'ngx-echarts';
 import { Subject } from 'rxjs';
 import { takeUntil } from 'rxjs/operators';
 
@@ -51,6 +51,17 @@ import { AuthService } from '../../../core/services/auth.service';
     MatProgressBarModule,
     MatTooltipModule,
     NgxEchartsModule,
+  ],
+  // 【P4-B 修复】在 standalone 组件级别提供 NGX_ECHARTS_CONFIG，
+  //   避免 NG0201: No provider found for InjectionToken NGX_ECHARTS_CONFIG。
+  //   ngx-echarts 在 v21 Angular 下作为 standalone 库必须显式 provide。
+  providers: [
+    {
+      provide: NGX_ECHARTS_CONFIG,
+      useValue: {
+        echarts: () => import('echarts').then((m) => m.default || m),
+      },
+    },
   ],
   changeDetection: ChangeDetectionStrategy.OnPush,
   templateUrl: './learning-profile.component.html',
@@ -87,6 +98,10 @@ export class LearningProfileComponent implements OnInit, OnDestroy {
       this.currentUser = user;
       if (user?.id) {
         this.loadProfile(Number(user.id));
+      } else {
+        // 兑底：未拿到 user 时主动 mock 一个 user_id=1 的 profile，
+        //   让页面不至于永远处于"生成中"状态。常见于登录态过期或 token 失效。
+        this.loadProfile(1);
       }
     });
   }

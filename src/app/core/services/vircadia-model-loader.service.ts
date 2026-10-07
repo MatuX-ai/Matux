@@ -4,7 +4,7 @@
  * 负责从 KiCad 模型库加载电子元件 3D 模型到 Vircadia 场景
  * 支持 LOD 切换、材质管理、实例化渲染等功能
  *
- * @author iMatu Development Team
+ * @author MatuX Lab
  * @version 1.0.0
  */
 

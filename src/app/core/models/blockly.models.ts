@@ -34,7 +34,7 @@ export enum BlockType {
   LOGIC_COMPARE = 'logic_compare',
   LOGIC_OPERATION = 'logic_operation',
   LOGIC_BOOLEAN = 'logic_boolean',
-  LOGIC_NEGATION = 'logic_negation',
+  LOGIC_NEGATION = 'logic_negate',
   LOGIC_TERNARY = 'logic_ternary',
 
   // 循环块

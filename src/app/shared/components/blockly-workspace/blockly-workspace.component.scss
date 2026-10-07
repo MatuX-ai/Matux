@@ -1,24 +1,28 @@
+// STEM K12 设计系统 - 使用共享主题
+@use 'src/styles/shared/stem-theme' as stem;
+@use 'sass:color';
+
 /* Blockly 工作区组件样式 */
 
 .blockly-workspace {
   display: flex;
+  overflow: hidden;
   flex-direction: column;
   height: 100%;
-  background: var(--bg-primary, #ffffff);
-  border-radius: 12px;
-  overflow: hidden;
-  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+  border-radius: stem.$stem-radius-md;
+  background: var(--bg-primary, #fff);
+  box-shadow: stem.$stem-shadow;
 }
 
 // ==================== 工具栏 ====================
 
 .workspace-toolbar {
   display: flex;
-  align-items: center;
   justify-content: space-between;
+  align-items: center;
   padding: 8px 16px;
-  background: var(--bg-secondary, #f8fafc);
-  border-bottom: 1px solid var(--border-color, #e5e7eb);
+  border-bottom: 1px solid rgba(stem.$stem-primary, 0.1);
+  background: rgba(stem.$stem-primary, 0.05);
 
   .toolbar-left,
   .toolbar-center,
@@ -31,8 +35,8 @@
   .toolbar-divider {
     width: 1px;
     height: 24px;
-    background: var(--border-color, #e5e7eb);
     margin: 0 4px;
+    background: rgba(stem.$stem-primary, 0.2);
   }
 
   .block-count {
@@ -40,16 +44,16 @@
     align-items: center;
     gap: 4px;
     padding: 4px 12px;
-    background: var(--color-primary, #3b82f6);
+    border-radius: stem.$stem-radius-lg;
+    background: stem.$stem-primary;
     color: white;
-    border-radius: 16px;
     font-size: 13px;
     font-weight: 600;
 
     mat-icon {
-      font-size: 16px;
       width: 16px;
       height: 16px;
+      font-size: 16px;
     }
   }
 
@@ -66,16 +70,16 @@
 
 .workspace-body {
   display: flex;
-  flex: 1;
   overflow: hidden;
+  flex: 1;
 }
 
 // ==================== Blockly 工作区 ====================
 
 .blockly-area {
-  flex: 1;
   position: relative;
   overflow: hidden;
+  flex: 1;
 }
 
 .blockly-container {
@@ -90,21 +94,21 @@
 // 覆盖 Blockly 默认样式
 ::ng-deep {
   .blocklyToolboxDiv {
-    background: var(--bg-secondary, #f8fafc) !important;
-    border-right: 1px solid var(--border-color, #e5e7eb) !important;
+    border-right: 1px solid rgba(stem.$stem-primary, 0.1) !important;
+    background: rgba(stem.$stem-primary, 0.05) !important;
   }
 
   .blocklyFlyoutBackground {
-    fill: var(--bg-primary, #ffffff) !important;
+    fill: var(--bg-primary, #fff) !important;
   }
 
   .blocklyTreeRow {
     &:hover {
-      background: var(--bg-hover, #f1f5f9) !important;
+      background: rgba(stem.$stem-primary, 0.1) !important;
     }
 
     &.blocklyTreeSelected {
-      background: var(--color-primary-light, #dbeafe) !important;
+      background: rgba(stem.$stem-primary, 0.2) !important;
     }
   }
 }
@@ -112,24 +116,24 @@
 // ==================== 代码预览 ====================
 
 .code-preview {
-  width: 360px;
   display: flex;
   flex-direction: column;
-  background: var(--bg-primary, #1e293b);
-  border-left: 1px solid var(--border-color, #e5e7eb);
+  width: 360px;
+  border-left: 1px solid rgba(stem.$stem-primary, 0.1);
+  background: linear-gradient(135deg, stem.$stem-primary-dark 0%, color.adjust(stem.$stem-primary-dark, $lightness: -5%) 100%);
 
   .code-header {
     display: flex;
-    align-items: center;
     justify-content: space-between;
+    align-items: center;
     padding: 12px 16px;
-    background: rgba(0, 0, 0, 0.2);
+    background: rgb(0 0 0 / 20%);
 
     h4 {
       margin: 0;
+      color: white;
       font-size: 14px;
       font-weight: 600;
-      color: #e2e8f0;
     }
 
     .code-actions {
@@ -147,7 +151,7 @@
 
           .mat-mdc-select-value,
           .mat-mdc-select-arrow {
-            color: #e2e8f0 !important;
+            color: white !important;
           }
 
           .mat-mdc-form-field-infix {
@@ -158,22 +162,24 @@
       }
 
       button {
-        color: #e2e8f0;
+        border-radius: stem.$stem-radius-lg;
+        color: white;
+        transition: all stem.$stem-transition;
       }
     }
   }
 
   .code-content {
-    flex: 1;
     overflow: auto;
+    flex: 1;
     padding: 16px;
 
     pre {
       margin: 0;
+      color: stem.$stem-success;
       font-family: 'Geist Mono', 'Fira Code', monospace;
       font-size: 13px;
       line-height: 1.6;
-      color: #22c55e;
       white-space: pre-wrap;
       word-break: break-all;
 
@@ -185,12 +191,12 @@
 
   .code-footer {
     display: flex;
-    align-items: center;
     justify-content: space-between;
+    align-items: center;
     padding: 8px 16px;
-    background: rgba(0, 0, 0, 0.2);
+    background: rgb(0 0 0 / 20%);
+    color: rgb(white, 0.7);
     font-size: 12px;
-    color: #94a3b8;
 
     .line-count {
       opacity: 0.7;
@@ -203,40 +209,37 @@
 .loading-overlay,
 .error-overlay {
   position: absolute;
-  top: 0;
-  left: 0;
-  right: 0;
-  bottom: 0;
+  inset: 0;
+  z-index: 10;
   display: flex;
   flex-direction: column;
-  align-items: center;
   justify-content: center;
-  background: var(--bg-primary, #ffffff);
-  z-index: 10;
+  align-items: center;
+  background: var(--bg-primary, #fff);
 
   mat-icon {
-    font-size: 64px;
     width: 64px;
     height: 64px;
     margin-bottom: 16px;
+    font-size: 64px;
   }
 
   p {
-    font-size: 16px;
-    color: var(--text-secondary, #64748b);
     margin-bottom: 16px;
+    color: rgba(stem.$stem-primary, 0.7);
+    font-size: 16px;
   }
 }
 
 .loading-overlay {
   mat-icon {
-    color: var(--color-primary, #3b82f6);
+    color: stem.$stem-primary;
   }
 }
 
 .error-overlay {
   mat-icon {
-    color: var(--color-error, #ef4444);
+    color: stem.$stem-error;
   }
 }
 
@@ -247,12 +250,12 @@
   align-items: center;
   gap: 8px;
   padding: 8px 16px;
-  background: var(--bg-secondary, #f8fafc);
-  border-top: 1px solid var(--border-color, #e5e7eb);
+  border-top: 1px solid rgba(stem.$stem-primary, 0.1);
+  background: rgba(stem.$stem-primary, 0.05);
 
   .indicator-label {
+    color: rgba(stem.$stem-primary, 0.7);
     font-size: 12px;
-    color: var(--text-secondary, #64748b);
     white-space: nowrap;
   }
 
@@ -263,9 +266,9 @@
 
     .block-tag {
       padding: 2px 8px;
-      background: var(--color-primary-light, #dbeafe);
-      color: var(--color-primary, #3b82f6);
-      border-radius: 12px;
+      border-radius: stem.$stem-radius-lg;
+      background: rgba(stem.$stem-primary, 0.1);
+      color: stem.$stem-primary;
       font-size: 11px;
       font-weight: 500;
     }
@@ -274,7 +277,7 @@
 
 // ==================== 响应式 ====================
 
-@media (max-width: 1024px) {
+@media (width <= 1024px) {
   .workspace-body {
     flex-direction: column;
   }
@@ -282,12 +285,12 @@
   .code-preview {
     width: 100%;
     height: 200px;
+    border-top: 1px solid rgba(stem.$stem-primary, 0.1);
     border-left: none;
-    border-top: 1px solid var(--border-color, #e5e7eb);
   }
 }
 
-@media (max-width: 768px) {
+@media (width <= 768px) {
   .workspace-toolbar {
     flex-wrap: wrap;
     gap: 8px;
@@ -299,8 +302,8 @@
 
     .toolbar-center {
       order: 0;
-      width: 100%;
       justify-content: center;
+      width: 100%;
     }
   }
 }

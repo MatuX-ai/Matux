@@ -69,6 +69,7 @@ export interface LearningMilestone {
   title: string;
   description: string;
   achievedAt: string;
+  reward?: string;
   metadata?: Record<string, unknown>;
 }
 

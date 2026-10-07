@@ -19,10 +19,7 @@ import { MatSnackBarModule } from '@angular/material/snack-bar';
 import { Subject } from 'rxjs';
 import { takeUntil } from 'rxjs/operators';
 
-import {
-  AchievementReview,
-  AchievementStatus,
-} from '../../models/achievement.model';
+import { AchievementReview, AchievementStatus } from '../../models/achievement.model';
 import { AchievementService } from '../../services/achievement.service';
 
 @Component({
@@ -66,7 +63,7 @@ import { AchievementService } from '../../services/achievement.service';
                 >
                   {{ getStatusLabel(review.status) }}
                 </mat-chip>
-                <span class="submitted-date">{{ review.submittedAt | date:'shortDate' }}</span>
+                <span class="submitted-date">{{ review.submittedAt | date: 'shortDate' }}</span>
               </div>
             </div>
 
@@ -97,18 +94,11 @@ import { AchievementService } from '../../services/achievement.service';
                     <mat-icon>check_circle</mat-icon>
                     批准
                   </button>
-                  <button
-                    mat-raised-button
-                    color="warn"
-                    (click)="submitReview(review, 'rejected')"
-                  >
+                  <button mat-raised-button color="warn" (click)="submitReview(review, 'rejected')">
                     <mat-icon>cancel</mat-icon>
                     拒绝
                   </button>
-                  <button
-                    mat-stroked-button
-                    (click)="submitReview(review, 'revision')"
-                  >
+                  <button mat-stroked-button (click)="submitReview(review, 'revision')">
                     <mat-icon>refresh</mat-icon>
                     退回修改
                   </button>
@@ -118,8 +108,7 @@ import { AchievementService } from '../../services/achievement.service';
               <div class="review-result" *ngIf="review.status !== 'pending' && review.reviewerName">
                 <label>审核结果</label>
                 <p>
-                  由 {{ review.reviewerName }}
-                  于 {{ review.reviewedAt | date:'shortDate' }} 审核
+                  由 {{ review.reviewerName }} 于 {{ review.reviewedAt | date: 'shortDate' }} 审核
                 </p>
               </div>
             </div>
@@ -199,23 +188,23 @@ import { AchievementService } from '../../services/achievement.service';
       }
 
       .status-pending {
-        background: #fff3e0;
-        color: #e65100;
+        background: var(--stem-warning-50, #fffbeb);
+        color: var(--stem-warning-dark, #b45309);
       }
 
       .status-approved {
-        background: #e8f5e9;
-        color: #2e7d32;
+        background: var(--stem-success-50, #d1fae5);
+        color: var(--stem-success-dark, #047857);
       }
 
       .status-rejected {
-        background: #ffebee;
-        color: #c62828;
+        background: var(--stem-error-50, #fef2f2);
+        color: var(--stem-error-dark, #b91c1c);
       }
 
       .status-revision {
-        background: #e3f2fd;
-        color: #1565c0;
+        background: var(--stem-secondary-50, #f0f9ff);
+        color: var(--stem-info-dark, #0284c7);
       }
 
       .submitted-date {
@@ -346,18 +335,14 @@ export class AchievementReviewComponent implements OnInit, OnDestroy {
    * 切换展开/折叠审核详情
    */
   toggleReview(reviewId: string): void {
-    this.selectedReviewId =
-      this.selectedReviewId === reviewId ? null : reviewId;
+    this.selectedReviewId = this.selectedReviewId === reviewId ? null : reviewId;
     this.reviewComment = '';
   }
 
   /**
    * 提交审核
    */
-  submitReview(
-    review: AchievementReview,
-    status: 'approved' | 'rejected' | 'revision'
-  ): void {
+  submitReview(review: AchievementReview, status: 'approved' | 'rejected' | 'revision'): void {
     this.achievementService
       .reviewAchievement(review.id, status, this.reviewComment, this.userId)
       .pipe(takeUntil(this.destroy$))

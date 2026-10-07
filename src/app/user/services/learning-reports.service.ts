@@ -7,7 +7,7 @@
  * - 获取学习统计数据
  * - 导出报告
  *
- * @author iMatu Development Team
+ * @author MatuX Lab
  * @version 1.0.0
  */
 

@@ -1,4 +1,21 @@
 @use 'src/styles/design-tokens' as *;
+@use 'sass:color';
+
+// STEM K12 设计系统变量
+$stem-primary: #059669;
+$stem-primary-light: #10b981;
+$stem-primary-dark: #047857;
+$stem-secondary: #0ea5e9;
+$stem-accent: #06b6d4;
+$stem-success: #22c55e;
+$stem-warning: #f59e0b;
+$stem-error: #ef4444;
+$stem-radius-sm: 12px;
+$stem-radius-md: 20px;
+$stem-radius-lg: 9999px;
+$stem-shadow: 0 4px 20px rgb(5 150 105 / 15%);
+$stem-shadow-hover: 0 8px 30px rgb(5 150 105 / 20%);
+$stem-transition: 250ms cubic-bezier(0.4, 0, 0.2, 1);
 
 .token-purchase-dialog {
   min-width: 600px;
@@ -15,26 +32,30 @@
 .package-card {
   position: relative;
   padding: $spacing-6; // 24px
-  border: 2px solid #e0e0e0;
-  border-radius: $border-radius-lg;
+  border: 2px solid rgba($stem-primary, 0.2);
+  border-radius: $stem-radius-md;
   background: white;
   cursor: pointer;
-  transition: all 0.3s ease;
+  transition: all $stem-transition;
 
   &:hover {
-    border-color: #3b82f6;
-    box-shadow: 0 4px 8px rgb(59 130 246 / 20%);
+    border-color: $stem-primary;
+    box-shadow: $stem-shadow-hover;
     transform: translateY(-2px);
   }
 
   &.selected {
-    border-color: #3b82f6;
-    background: linear-gradient(135deg, rgb(59 130 246 / 5%) 0%, rgb(37 99 235 / 5%) 100%);
-    box-shadow: 0 6px 12px rgb(59 130 246 / 30%);
+    border-color: $stem-primary;
+    background: linear-gradient(
+      135deg,
+      rgba($stem-primary, 0.05) 0%,
+      rgba($stem-primary-dark, 0.05) 100%
+    );
+    box-shadow: $stem-shadow;
   }
 
   &.popular {
-    border-color: #ff6b6b;
+    border-color: $stem-error;
 
     .popular-badge {
       position: absolute;
@@ -44,9 +65,9 @@
       align-items: center;
       gap: 4px;
       padding: $spacing-xs $spacing-sm;
-      border-radius: $border-radius-full;
-      background: linear-gradient(135deg, #ff6b6b 0%, #ff8e53 100%);
-      box-shadow: 0 2px 4px rgb(255 107 107 / 30%);
+      border-radius: $stem-radius-lg;
+      background: linear-gradient(135deg, $stem-error 0%, color.adjust($stem-error, $lightness: -10%) 100%);
+      box-shadow: 0 2px 4px rgba($stem-error, 0.3);
       color: white;
       font-size: $font-size-xs;
       font-weight: $font-weight-bold;
@@ -67,9 +88,9 @@
     align-items: center;
     gap: 4px;
     padding: $spacing-xs $spacing-sm;
-    border-radius: $border-radius-full;
-    background: linear-gradient(135deg, #10b981 0%, #34d399 100%);
-    box-shadow: 0 2px 4px rgb(76 175 80 / 30%);
+    border-radius: $stem-radius-lg;
+    background: linear-gradient(135deg, $stem-primary 0%, $stem-primary-light 100%);
+    box-shadow: 0 2px 4px rgba($stem-success, 0.3);
     color: white;
     font-size: $font-size-xs;
     font-weight: $font-weight-bold;
@@ -90,7 +111,7 @@
 
 .package-name {
   margin: 0 0 $spacing-sm;
-  color: #333;
+  color: $stem-primary;
   font-size: $font-size-h4;
   font-weight: $font-weight-bold;
 }
@@ -101,22 +122,22 @@
   gap: $spacing-sm;
 
   .price-current {
-    color: #3b82f6;
+    color: $stem-primary;
     font-size: $font-size-h3;
     font-weight: $font-weight-bold;
   }
 
   .price-original {
-    color: #999;
+    color: rgba($stem-primary, 0.5);
     font-size: $font-size-sm;
     text-decoration: line-through;
   }
 
   .discount-tag {
     padding: 2px $spacing-xs;
-    border-radius: $border-radius-sm;
-    background: #ffebee;
-    color: #f44336;
+    border-radius: $stem-radius-sm;
+    background: rgba($stem-error, 0.1);
+    color: $stem-error;
     font-size: $font-size-xs;
     font-weight: $font-weight-bold;
   }
@@ -132,18 +153,18 @@
   gap: $spacing-sm;
   margin-bottom: $spacing-md;
   padding: $spacing-sm;
-  border-radius: $border-radius-md;
-  background: linear-gradient(135deg, rgb(102 126 234 / 10%) 0%, rgb(118 75 162 / 10%) 100%);
+  border-radius: $stem-radius-md;
+  background: linear-gradient(135deg, rgba($stem-primary, 0.1) 0%, rgba($stem-secondary, 0.1) 100%);
 
   mat-icon {
     width: 20px;
     height: 20px;
-    color: #3b82f6;
+    color: $stem-primary;
     font-size: 20px;
   }
 
   .amount {
-    color: #3b82f6;
+    color: $stem-primary;
     font-size: $font-size-h4;
     font-weight: $font-weight-bold;
   }
@@ -159,14 +180,14 @@
     align-items: flex-start;
     gap: $spacing-xs;
     margin-bottom: $spacing-sm;
-    color: #666;
+    color: rgba($stem-primary, 0.8);
     font-size: $font-size-sm;
 
     mat-icon {
       flex-shrink: 0;
       width: 16px;
       height: 16px;
-      color: #10b981;
+      color: $stem-success;
       font-size: 16px;
     }
   }
@@ -180,7 +201,7 @@
 .payment-method-section {
   h4 {
     margin-bottom: $spacing-md;
-    color: #333;
+    color: $stem-primary;
     font-size: $font-size-base;
     font-weight: $font-weight-bold;
   }
@@ -197,20 +218,20 @@
     align-items: center;
     gap: $spacing-xs;
     padding: $spacing-md;
-    border: 2px solid #e0e0e0;
-    border-radius: $border-radius-md;
+    border: 2px solid rgba($stem-primary, 0.2);
+    border-radius: $stem-radius-md;
     background: white;
-    transition: all 0.3s ease;
+    transition: all $stem-transition;
 
     &:hover {
-      border-color: #3b82f6;
-      background: rgb(59 130 246 / 5%);
+      border-color: $stem-primary;
+      background: rgba($stem-primary, 0.05);
     }
 
     &.selected {
-      border-color: #3b82f6;
-      background: rgb(59 130 246 / 10%);
-      color: #3b82f6;
+      border-color: $stem-primary;
+      background: rgba($stem-primary, 0.1);
+      color: $stem-primary;
     }
 
     img,
@@ -227,12 +248,13 @@
   justify-content: center;
   align-items: center;
   padding: $spacing-xxl;
-  color: #999;
+  color: rgba($stem-primary, 0.5);
 
   mat-icon {
     width: 48px;
     height: 48px;
     margin-bottom: $spacing-md;
+    color: $stem-primary;
     font-size: 48px;
   }
 

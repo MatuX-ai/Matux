@@ -143,22 +143,69 @@
     <!-- 中央Unity容器 -->
     <div class="unity-wrapper">
       <div class="unity-container" #unityContainer>
-        <!-- 加载状态 -->
-        <div *ngIf="isLoading" class="loading-overlay">
+        <!-- 加载状态：检测 Unity WebGL 构建产物 -->
+        <div *ngIf="unityBuildAvailable === null" class="loading-overlay">
           <mat-spinner></mat-spinner>
-          <p>正在加载AR实验室...</p>
+          <p>正在检测 Unity WebGL 构建产物...</p>
+          <small>检查 {{ unityBuildPath }}</small>
         </div>
 
-        <!-- 错误状态 -->
-        <div *ngIf="errorMessage && !isLoading" class="error-overlay">
+        <!-- 【P4-C】Unity 构建缺失：展示占位 UI，让用户明白状态 -->
+        <div *ngIf="unityBuildAvailable === false" class="placeholder-overlay">
+          <div class="cube-scene">
+            <div class="cube">
+              <div class="face face-front"><mat-icon>view_in_ar</mat-icon></div>
+              <div class="face face-back"><mat-icon>memory</mat-icon></div>
+              <div class="face face-right"><mat-icon>developer_board</mat-icon></div>
+              <div class="face face-left"><mat-icon>cable</mat-icon></div>
+              <div class="face face-top"><mat-icon>3d_rotation</mat-icon></div>
+              <div class="face face-bottom"><mat-icon>science</mat-icon></div>
+            </div>
+          </div>
+
+          <h2>Unity WebGL 构建待部署</h2>
+          <p class="placeholder-lead">
+            当前仓库仅包含 Unity 工程源码（<code>unity/ImatuARLab/</code>），尚未导出 WebGL 构建产物。
+          </p>
+          <p class="placeholder-detail">
+            期望文件路径：<code>{{ unityBuildPath }}</code>
+          </p>
+
+          <div class="build-steps">
+            <h4>构建步骤</h4>
+            <ol>
+              <li>用 Unity 2021.3 LTS 打开 <code>unity/ImatuARLab</code></li>
+              <li>File → Build Settings → 选中 WebGL → Build</li>
+              <li>把 Build 目录下的全部产物复制到 <code>src/assets/ar-lab/build/</code></li>
+              <li>重新运行 <code>ng build</code> 让 Angular 把它拷贝到 <code>dist/.../assets/ar-lab/build/</code></li>
+              <li>刷新页面，HEAD 探测成功后会自动加载 UnityLoader</li>
+            </ol>
+          </div>
+
+          <div class="placeholder-actions">
+            <button mat-raised-button color="primary" (click)="detectUnityBuild()">
+              <mat-icon>refresh</mat-icon>
+              重新检测
+            </button>
+            <button mat-stroked-button (click)="loadUnityApplication()">
+              <mat-icon>play_arrow</mat-icon>
+              强制尝试加载
+            </button>
+          </div>
+
+          <p class="placeholder-foot">硬件控制 / 传感器数据 / 模拟实验功能可正常使用</p>
+        </div>
+
+        <!-- Unity 错误状态（构建存在但运行时报错） -->
+        <div *ngIf="unityBuildAvailable === true && errorMessage" class="error-overlay">
           <mat-icon color="warn">error</mat-icon>
           <h2>加载失败</h2>
           <p>{{ errorMessage }}</p>
           <button mat-raised-button color="primary" (click)="loadUnityApplication()">重试</button>
         </div>
 
-        <!-- Unity内容区域 -->
-        <div *ngIf="!isLoading && !errorMessage" class="unity-content">
+        <!-- Unity内容区域（构建可用且无错误） -->
+        <div *ngIf="unityBuildAvailable === true && !errorMessage" class="unity-content">
           <!-- Unity WebGL将在这里渲染 -->
         </div>
       </div>

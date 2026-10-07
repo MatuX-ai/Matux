@@ -1,0 +1,311 @@
+// K12 STEM 探索绿主题 - Angular Material Theme
+// 基于 design-system.json 的统一设计系统
+
+@use 'sass:map';
+
+// 引入设计令牌
+@use 'stem-tokens' as stem;
+
+// =============================================================================
+// K12 STEM Material 主题配置
+// =============================================================================
+
+// 主色板 - 探索绿
+$stem-primary-palette: (
+  50: stem.$stem-primary-50,
+  100: stem.$stem-primary-100,
+  200: stem.$stem-primary-200,
+  300: stem.$stem-primary-300,
+  400: stem.$stem-primary-400,
+  500: stem.$stem-primary-500,
+  600: stem.$stem-primary-600,
+  700: stem.$stem-primary-700,
+  800: stem.$stem-primary-800,
+  900: stem.$stem-primary-900,
+  a100: stem.$stem-primary-200,
+  a200: stem.$stem-primary-400,
+  a400: stem.$stem-primary-600,
+  a700: stem.$stem-primary-800,
+  contrast: (
+    50: stem.$stem-text-primary,
+    100: stem.$stem-text-primary,
+    200: stem.$stem-text-primary,
+    300: stem.$stem-text-primary,
+    400: stem.$stem-text-primary,
+    500: #fff,
+    600: #fff,
+    700: #fff,
+    800: #fff,
+    900: #fff,
+    a100: stem.$stem-text-primary,
+    a200: #fff,
+    a400: #fff,
+    a700: #fff,
+  ),
+);
+
+// 辅助色板 - 科技蓝
+$stem-accent-palette: (
+  50: stem.$stem-secondary-50,
+  100: stem.$stem-secondary-100,
+  200: stem.$stem-secondary-200,
+  300: stem.$stem-secondary-300,
+  400: stem.$stem-secondary-400,
+  500: stem.$stem-secondary-500,
+  600: stem.$stem-secondary-600,
+  700: stem.$stem-secondary-700,
+  800: stem.$stem-secondary-800,
+  900: stem.$stem-secondary-900,
+  a100: stem.$stem-secondary-200,
+  a200: stem.$stem-secondary-400,
+  a400: stem.$stem-secondary-600,
+  a700: stem.$stem-secondary-800,
+  contrast: (
+    50: stem.$stem-text-primary,
+    100: stem.$stem-text-primary,
+    200: stem.$stem-text-primary,
+    300: stem.$stem-text-primary,
+    400: stem.$stem-text-primary,
+    500: #fff,
+    600: #fff,
+    700: #fff,
+    800: #fff,
+    900: #fff,
+    a100: stem.$stem-text-primary,
+    a200: #fff,
+    a400: #fff,
+    a700: #fff,
+  ),
+);
+
+// 警告色板
+$stem-warn-palette: (
+  50: #fef2f2,
+  100: #fee2e2,
+  200: #fecaca,
+  300: #fca5a5,
+  400: #f87171,
+  500: #ef4444,
+  600: #dc2626,
+  700: #b91c1c,
+  800: #991b1b,
+  900: #7f1d1d,
+  a100: #fee2e2,
+  a200: #fca5a5,
+  a400: #ef4444,
+  a700: #b91c1c,
+  contrast: (
+    50: stem.$stem-text-primary,
+    100: stem.$stem-text-primary,
+    200: stem.$stem-text-primary,
+    300: stem.$stem-text-primary,
+    400: stem.$stem-text-primary,
+    500: #fff,
+    600: #fff,
+    700: #fff,
+    800: #fff,
+    900: #fff,
+    a100: stem.$stem-text-primary,
+    a200: stem.$stem-text-primary,
+    a400: #fff,
+    a700: #fff,
+  ),
+);
+
+// =============================================================================
+// K12 STEM 主题色值
+// =============================================================================
+
+// 主题配置
+$stem-theme-primary: mat.define-palette($stem-primary-palette, 600, 400, 800);
+$stem-theme-accent: mat.define-palette($stem-accent-palette, 500, 300, 700);
+$stem-theme-warn: mat.define-palette($stem-warn-palette, 500, 300, 700);
+
+// 调色板
+$stem-theme-primary-light: mat.define-palette($stem-primary-palette, 400);
+$stem-theme-primary-dark: mat.define-palette($stem-primary-palette, 800);
+
+// 学科主题调色板
+$stem-subject-palettes: (
+  'science': mat.define-palette($stem-primary-palette, 600),
+  'technology': mat.define-palette($stem-accent-palette, 600),
+  'engineering': mat.define-palette(mat.$orange-palette, 500),
+  'math': mat.define-palette(mat.$purple-palette, 500),
+  'arts': mat.define-palette(mat.$pink-palette, 500),
+);
+
+// =============================================================================
+// K12 STEM 排版配置
+// =============================================================================
+
+// 字体配置
+$stem-typography: mat.define-typography-config(
+  $font-family: stem.$stem-font-family-sans,
+  $headline-1: mat.typography-level(36px, 1.2, 700, stem.$stem-line-height-tight),
+  $headline-2: mat.typography-level(30px, 1.25, 700, stem.$stem-line-height-tight),
+  $headline-3: mat.typography-level(24px, 1.25, 700, stem.$stem-line-height-tight),
+  $headline-4: mat.typography-level(20px, 1.3, 600, stem.$stem-line-height-normal),
+  $headline-5: mat.typography-level(18px, 1.4, 600, stem.$stem-line-height-normal),
+  $headline-6: mat.typography-level(16px, 1.5, 600, stem.$stem-line-height-normal),
+  $subtitle-1: mat.typography-level(16px, 1.5, 500, stem.$stem-line-height-normal),
+  $subtitle-2: mat.typography-level(14px, 1.5, 500, stem.$stem-line-height-normal),
+  $body-1: mat.typography-level(16px, 1.6, 400, stem.$stem-line-height-normal),
+  $body-2: mat.typography-level(14px, 1.5, 400, stem.$stem-line-height-normal),
+  $caption: mat.typography-level(12px, 1.5, 400, stem.$stem-line-height-normal),
+  $button: mat.typography-level(16px, 1, 600, stem.$stem-line-height-normal),
+);
+
+// =============================================================================
+// K12 STEM 组件主题配置
+// =============================================================================
+
+// 按钮配置
+$stem-button-config: (
+  height: stem.$stem-btn-height-md,
+  border-radius: stem.$stem-btn-radius,
+  typography: mat.typography-level(16px, 1, 600),
+);
+
+// 卡片配置
+$stem-card-config: (
+  border-radius: stem.$stem-card-radius,
+  padding: stem.$stem-card-padding,
+  shadow: stem.$stem-card-shadow,
+);
+
+// 输入框配置
+$stem-input-config: (
+  border-radius: stem.$stem-input-radius,
+  border: stem.$stem-input-border,
+  focus-ring: stem.$stem-input-focus-ring,
+  padding: stem.$stem-input-padding,
+);
+
+// =============================================================================
+// K12 STEM 主题密度
+// =============================================================================
+
+$stem-density-config: (
+  granularity: 0,
+  base-size: 0,
+  scale: 'comfortable',
+);
+
+// =============================================================================
+// K12 STEM 特殊样式
+// =============================================================================
+
+// 学科标签样式
+@mixin stem-subject-badge($subject) {
+  @if $subject == 'science' {
+    background-color: stem.$stem-primary-100;
+    color: stem.$stem-primary-800;
+  } @else if $subject == 'technology' {
+    background-color: stem.$stem-secondary-100;
+    color: stem.$stem-secondary-800;
+  } @else if $subject == 'engineering' {
+    background-color: #fef3c7;
+    color: #92400e;
+  } @else if $subject == 'math' {
+    background-color: #ede9fe;
+    color: #5b21b6;
+  } @else if $subject == 'arts' {
+    background-color: #fce7f3;
+    color: #9d174d;
+  }
+}
+
+// 学习进度条样式
+@mixin stem-progress-bar {
+  height: stem.$stem-progress-height;
+  border-radius: stem.$stem-progress-radius;
+  background-color: stem.$stem-progress-bg;
+
+  .mdc-linear-progress__buffer-bar {
+    background-color: stem.$stem-gray-200;
+  }
+
+  .mdc-linear-progress__primary-bar {
+    background: stem.$stem-gradient-explore;
+  }
+}
+
+// 虚拟实验室效果
+@mixin stem-lab-effect($type: 'green') {
+  @if $type == 'green' {
+    background-image: stem.$stem-lab-grid;
+    background-size: 20px 20px;
+    box-shadow: stem.$stem-lab-glow-green;
+  } @else if $type == 'blue' {
+    background-image: stem.$stem-lab-grid;
+    background-size: 20px 20px;
+    box-shadow: stem.$stem-lab-glow-blue;
+  }
+}
+
+// 成就徽章动画
+@mixin stem-badge-glow {
+  box-shadow: stem.$stem-shadow-glow;
+  animation: pulse-glow 2s ease-in-out infinite;
+}
+
+// K12 按钮悬浮效果
+@mixin stem-button-hover {
+  box-shadow: stem.$stem-btn-shadow-hover;
+  transition: all stem.$stem-transition-normal;
+  transform: translateY(-2px);
+}
+
+// =============================================================================
+// 导出 K12 STEM 主题 Mixin
+// =============================================================================
+
+// 创建完整主题
+@mixin create-stem-theme() {
+  @include mat.core();
+  @include mat.all-component-themes($stem-theme-primary);
+
+  // 应用自定义字体
+  @include mat.typography-hierarchy($stem-typography);
+
+  // 应用自定义密度
+  @include mat.all-component-densities(0);
+}
+
+// 应用组件级别样式
+@mixin apply-component-styles {
+  // 按钮样式
+  .stem-button {
+    @include stem-button-hover;
+  }
+
+  // 卡片样式
+  .stem-card {
+    border-radius: stem.$stem-card-radius;
+    box-shadow: stem.$stem-card-shadow;
+    transition: box-shadow stem.$stem-transition-normal;
+
+    &:hover {
+      box-shadow: stem.$stem-card-shadow-hover;
+    }
+  }
+
+  // 输入框样式
+  .stem-input {
+    padding: stem.$stem-input-padding;
+    border: stem.$stem-input-border;
+    border-radius: stem.$stem-input-radius;
+    font-size: stem.$stem-input-font-size;
+    transition: border-color stem.$stem-transition-fast;
+
+    &:focus {
+      border-color: stem.$stem-primary;
+      box-shadow: stem.$stem-input-focus-ring;
+    }
+  }
+
+  // 进度条样式
+  .stem-progress {
+    @include stem-progress-bar;
+  }
+}

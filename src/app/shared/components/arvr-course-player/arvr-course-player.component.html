@@ -23,8 +23,7 @@
       <div #threeContainer class="three-container"></div>
 
       <div class="scene-controls">
-        <button mat-mini-fab (click)="toggleAutoRotate()"
-                matTooltip="自动旋转">
+        <button mat-mini-fab (click)="toggleAutoRotate()" matTooltip="自动旋转">
           <mat-icon>rotate_right</mat-icon>
         </button>
         <button mat-mini-fab (click)="resetView()" matTooltip="重置视角">
@@ -46,15 +45,17 @@
       <mat-card *ngIf="courseData?.course_materials?.length" class="materials-card">
         <mat-card-content>
           <div class="material-navigation">
-            <button mat-icon-button (click)="prevMaterial()"
-                    [disabled]="currentMaterialIndex === 0">
+            <button
+              mat-icon-button
+              (click)="prevMaterial()"
+              [disabled]="currentMaterialIndex === 0"
+            >
               <mat-icon>chevron_left</mat-icon>
             </button>
             <span class="material-counter">
               {{ currentMaterialIndex + 1 }} / {{ courseData?.course_materials?.length }}
             </span>
-            <button mat-icon-button (click)="nextMaterial()"
-                    [disabled]="isLastMaterial()">
+            <button mat-icon-button (click)="nextMaterial()" [disabled]="isLastMaterial()">
               <mat-icon>chevron_right</mat-icon>
             </button>
           </div>

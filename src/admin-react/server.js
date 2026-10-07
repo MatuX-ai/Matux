@@ -1,7 +1,7 @@
 /**
  * React Admin管理后台启动脚本
  * @description 快速启动和测试React Admin应用
- * @author iMatuProject Team
+ * @author MatuX Lab
  * @version 1.0.0
  */
 

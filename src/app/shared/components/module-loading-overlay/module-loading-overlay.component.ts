@@ -40,138 +40,142 @@ import { MatIconModule } from '@angular/material/icon';
           <h3>{{ moduleName }} 加载时间较长</h3>
           <p>请检查后端服务是否正常运行</p>
           <div class="actions">
-            <button class="btn-retry" (click)="retry.emit()">
-              重试
-            </button>
-            <button class="btn-cancel" (click)="cancel.emit()">
-              取消
-            </button>
+            <button class="btn-retry" (click)="retry.emit()">重试</button>
+            <button class="btn-cancel" (click)="cancel.emit()">取消</button>
           </div>
         </div>
       </div>
     </div>
   `,
-  styles: [`
-    .overlay {
-      position: fixed;
-      top: 0;
-      left: 0;
-      right: 0;
-      bottom: 0;
-      background: rgba(0, 0, 0, 0.5);
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      z-index: 9999;
-      backdrop-filter: blur(4px);
-    }
+  styles: [
+    `
+      .overlay {
+        position: fixed;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        background: rgba(0, 0, 0, 0.5);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        z-index: 9999;
+        backdrop-filter: blur(4px);
+      }
 
-    .overlay-content {
-      background: #fff;
-      border-radius: 16px;
-      padding: 40px;
-      text-align: center;
-      max-width: 400px;
-      box-shadow: 0 8px 32px rgba(0, 0, 0, 0.2);
-    }
+      .overlay-content {
+        background: #fff;
+        border-radius: 16px;
+        padding: 40px;
+        text-align: center;
+        max-width: 400px;
+        box-shadow: 0 8px 32px rgba(0, 0, 0, 0.2);
+      }
 
-    .spinner-container {
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-    }
+      .spinner-container {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+      }
 
-    .spinner {
-      width: 48px;
-      height: 48px;
-      border: 4px solid #e0e0e0;
-      border-top: 4px solid #1976d2;
-      border-radius: 50%;
-      animation: spin 1s linear infinite;
-      margin-bottom: 16px;
-    }
+      .spinner {
+        width: 48px;
+        height: 48px;
+        border: 4px solid #e0e0e0;
+        border-top: 4px solid #1976d2;
+        border-radius: 50%;
+        animation: spin 1s linear infinite;
+        margin-bottom: 16px;
+      }
 
-    @keyframes spin {
-      to { transform: rotate(360deg); }
-    }
+      @keyframes spin {
+        to {
+          transform: rotate(360deg);
+        }
+      }
 
-    .module-name {
-      margin: 0 0 8px;
-      font-size: 18px;
-      color: #333;
-    }
+      .module-name {
+        margin: 0 0 8px;
+        font-size: 18px;
+        color: #333;
+      }
 
-    .hint {
-      color: #666;
-      font-size: 14px;
-      margin: 0 0 16px;
-    }
+      .hint {
+        color: #666;
+        font-size: 14px;
+        margin: 0 0 16px;
+      }
 
-    .progress-bar {
-      width: 100%;
-      height: 4px;
-      background: #e0e0e0;
-      border-radius: 2px;
-      overflow: hidden;
-    }
+      .progress-bar {
+        width: 100%;
+        height: 4px;
+        background: #e0e0e0;
+        border-radius: 2px;
+        overflow: hidden;
+      }
 
-    .progress-fill {
-      height: 100%;
-      background: #1976d2;
-      transition: width 0.3s ease;
-      border-radius: 2px;
-    }
+      .progress-fill {
+        height: 100%;
+        background: #1976d2;
+        transition: width 0.3s ease;
+        border-radius: 2px;
+      }
 
-    .timeout-container {
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-    }
+      .timeout-container {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+      }
 
-    .timeout-icon {
-      font-size: 48px;
-      color: #ff9800;
-      margin-bottom: 16px;
-    }
+      .timeout-icon {
+        font-size: 48px;
+        color: #ff9800;
+        margin-bottom: 16px;
+      }
 
-    .timeout-container h3 {
-      margin: 0 0 8px;
-      color: #333;
-    }
+      .timeout-container h3 {
+        margin: 0 0 8px;
+        color: #333;
+      }
 
-    .timeout-container p {
-      color: #666;
-      margin: 0 0 24px;
-    }
+      .timeout-container p {
+        color: #666;
+        margin: 0 0 24px;
+      }
 
-    .actions {
-      display: flex;
-      gap: 12px;
-    }
+      .actions {
+        display: flex;
+        gap: 12px;
+      }
 
-    .btn-retry {
-      padding: 10px 24px;
-      background: #1976d2;
-      color: #fff;
-      border: none;
-      border-radius: 8px;
-      cursor: pointer;
-      font-size: 14px;
-    }
+      .btn-retry {
+        padding: 10px 24px;
+        background: #1976d2;
+        color: #fff;
+        border: none;
+        border-radius: 8px;
+        cursor: pointer;
+        font-size: 14px;
+      }
 
-    .btn-cancel {
-      padding: 10px 24px;
-      background: transparent;
-      color: #666;
-      border: 1px solid #ccc;
-      border-radius: 8px;
-      cursor: pointer;
-      font-size: 14px;
-    }
+      .btn-cancel {
+        padding: 10px 24px;
+        background: transparent;
+        color: #666;
+        border: 1px solid #ccc;
+        border-radius: 8px;
+        cursor: pointer;
+        font-size: 14px;
+      }
 
-    .btn-retry:hover { background: #1565c0; }
-    .btn-cancel:hover { background: #f5f5f5; }
-  `],
+      .btn-retry:hover {
+        background: #1565c0;
+      }
+      .btn-cancel:hover {
+        background: #f5f5f5;
+      }
+    `,
+  ],
 })
 export class ModuleLoadingOverlayComponent implements OnChanges, OnDestroy {
   @Input() visible = false;

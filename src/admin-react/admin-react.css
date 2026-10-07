@@ -1,7 +1,7 @@
 /**
  * React Admin管理后台基础样式
  * @description 继承项目Design Token系统，确保视觉一致性
- * @author iMatuProject Team
+ * @author MatuX Lab
  * @version 1.0.0
  */
 
@@ -13,11 +13,11 @@
 }
 
 body {
-  font-family: "Roboto", "Helvetica", "Arial", sans-serif;
+  background-color: #f5f5f5;
+  color: #333;
+  font-family: Roboto, Helvetica, Arial, sans-serif;
   font-size: 16px;
   line-height: 1.5;
-  color: #333;
-  background-color: #f5f5f5;
 }
 
 /* 管理后台布局样式 */
@@ -28,11 +28,11 @@ body {
 
 /* 自定义组件容器样式 */
 .custom-action-container {
-  padding: 20px;
-  background: white;
-  border-radius: 8px;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
   margin: 20px;
+  padding: 20px;
+  border-radius: 8px;
+  background: white;
+  box-shadow: 0 2px 8px rgb(0 0 0 / 10%);
 }
 
 /* 批量操作表单样式 */
@@ -89,9 +89,9 @@ body {
 /* 操作按钮组样式 */
 .action-buttons {
   display: flex;
+  flex-wrap: wrap;
   gap: 12px;
   margin-top: 20px;
-  flex-wrap: wrap;
 }
 
 .action-button {
@@ -99,7 +99,7 @@ body {
 }
 
 /* 响应式设计 */
-@media (max-width: 768px) {
+@media (width <= 768px) {
   .custom-action-container {
     margin: 10px;
     padding: 15px;
@@ -117,10 +117,10 @@ body {
 /* 加载状态样式 */
 .loading-container {
   display: flex;
+  flex-direction: column;
   justify-content: center;
   align-items: center;
   min-height: 200px;
-  flex-direction: column;
 }
 
 .loading-text {
@@ -131,17 +131,17 @@ body {
 
 /* 错误状态样式 */
 .error-container {
+  margin: 20px;
   padding: 20px;
-  background-color: #ffebee;
   border: 1px solid #ffcdd2;
   border-radius: 8px;
+  background-color: #ffebee;
   color: #c62828;
-  margin: 20px;
 }
 
 .error-title {
-  font-weight: 500;
   margin-bottom: 8px;
+  font-weight: 500;
 }
 
 .error-message {
@@ -150,19 +150,20 @@ body {
 
 /* 成功状态样式 */
 .success-container {
+  margin: 20px;
   padding: 20px;
-  background-color: #e8f5e8;
   border: 1px solid #c8e6c9;
   border-radius: 8px;
+  background-color: #e8f5e8;
   color: #2e7d32;
-  margin: 20px;
 }
 
 /* 表格增强样式 */
 .ra-datagrid {
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
-  border-radius: 8px;
   overflow: hidden;
+  border-radius: 8px;
+  background-color: #2196F3;
+  box-shadow: 0 2px 8px rgb(0 0 0 / 10%);
 }
 
 .ra-datagrid thead {
@@ -171,8 +172,8 @@ body {
 }
 
 .ra-datagrid th {
-  font-weight: 500;
   padding: 16px;
+  font-weight: 500;
 }
 
 .ra-datagrid td {
@@ -181,13 +182,15 @@ body {
 
 /* 卡片样式增强 */
 .ra-card {
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
   border-radius: 8px;
+  background-color: #2196F3;
+  box-shadow: 0 2px 8px rgb(0 0 0 / 10%);
 }
 
 /* 按钮样式增强 */
 .MuiButton-containedPrimary {
   background-color: #2196F3;
+
   &:hover {
     background-color: #1976D2;
   }
@@ -195,6 +198,7 @@ body {
 
 .MuiButton-containedSecondary {
   background-color: #4CAF50;
+
   &:hover {
     background-color: #388E3C;
   }
@@ -214,6 +218,6 @@ body {
 }
 
 .MuiOutlinedInput-root.Mui-focused .MuiOutlinedInput-notchedOutline {
-  border-color: #2196F3;
   border-width: 2px;
+  border-color: #2196F3;
 }

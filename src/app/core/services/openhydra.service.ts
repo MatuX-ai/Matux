@@ -179,13 +179,12 @@ export class OpenHydraService {
   }> {
     const url = `${this.apiUrl}/org/${this.getOrgId()}/ai-lab/container/extend?hours=${hours}`;
 
-    return this.http
-      .post<{
-        success: boolean;
-        message: string;
-        new_expiry: string;
-        container_id: string;
-      }>(url, { hours });
+    return this.http.post<{
+      success: boolean;
+      message: string;
+      new_expiry: string;
+      container_id: string;
+    }>(url, { hours });
   }
 
   /**

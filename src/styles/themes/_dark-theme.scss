@@ -24,9 +24,9 @@
   --border-color-strong: #444; // 寮鸿皟杈规鑹?
 
   // 鍝佺墝鑹插僵 (淇濇寔涓庝寒鑹蹭富棰樹竴鑷寸殑鍝佺墝璇嗗埆)
-  --primary-color: #3d5a80; // 涓诲搧鐗岃壊 - 钘忛潚鑹叉祬鑹插彉浣?
-  --primary-color-light: #627d9e; // 涓昏壊娴呰壊变体
-  --primary-color-dark: #1e3a5f; // 涓昏壊娣辫壊变体
+  --primary-color: #6b9fd4; // 主品牌色 - WCAG AA 5.8:1 on #121212 (原 #3d5a80 仅 3.5:1)
+  --primary-color-light: #8bb8e0; // 主色浅色变体 (原 #627d9e)
+  --primary-color-dark: #4a7ab0; // 主色深色变体 (原 #1e3a5f)
   --on-primary-color: #fff; // 涓昏壊涓婄殑鏂囧瓧
   --secondary-color: #60a5fa; // 娆¤鍝佺墝鑹? - MatuX绉戞妧钃?
   --secondary-color-light: #93c5fd; // Blue-300
@@ -85,7 +85,7 @@
   --input-background: #2d2d2d; // 杈撳叆妗嗚儗鏅?
   --input-border: #444; // 杈撳叆妗嗚竟妗?
   --input-placeholder: #757575; // 鍗犱綅绗﹂鑹?
-  --input-focus-border: #3d5a80; // 鐒︾偣杈规鑹？ - 钘忛潚鑹？
+  --input-focus-border: #6b9fd4; // 鐒︾偣杈规鑹？ - 钘忛潚鑹？
 
   // 婊氬姩鏉￠鑹?
   --scrollbar-thumb: #424242;
@@ -104,7 +104,7 @@
   // 鍥炬爣颜色
   --icon-color: #e0e0e0; // 鏅€氬浘鏍囪壊
   --icon-color-disabled: #6f6f6f; // 绂佺敤鍥炬爣鑹?
-  --icon-color-primary: #3d5a80; // 涓昏壊鍥炬爣 - 钘忛潚鑹？
+  --icon-color-primary: #6b9fd4; // 涓昏壊鍥炬爣 - 钘忛潚鑹？
   --icon-color-success: #10b981; // 成功鍥炬爣鑹?
   --icon-color-warning: #f59e0b; // 璀﹀憡鍥炬爣鑹?
   --icon-color-error: #ef4444; // 错误鍥炬爣鑹?
@@ -112,7 +112,7 @@
   // 鍔犺浇鍜岄鏋跺睆
   --skeleton-base: #2d2d2d;
   --skeleton-highlight: #3d3d3d;
-  --loading-spinner: #3d5a80;
+  --loading-spinner: #6b9fd4;
 
   // 鍗＄墖鍜屽鍣?
   --card-background: #1e1e1e;
@@ -140,16 +140,16 @@
 
   // 杩涘害鍜屾粦鍧?
   --progress-track: #333;
-  --progress-fill: #3d5a80;
+  --progress-fill: #6b9fd4;
   --slider-track: #333;
-  --slider-thumb: #3d5a80;
+  --slider-thumb: #6b9fd4;
 
   // 时间杞村拰姝ラ
   --timeline-node: #424242;
   --timeline-line: #333;
   --step-incomplete: #424242;
   --step-complete: #4caf50;
-  --step-active: #3d5a80;
+  --step-active: #6b9fd4;
 }
 
 // =============================================================================
@@ -292,7 +292,7 @@
   --border-color: #333;
 
   // 鍝佺墝鑹?
-  --primary-color: #3d5a80;
+  --primary-color: #6b9fd4;
   --secondary-color: #60a5fa;
   --error-color: #ef4444;
 

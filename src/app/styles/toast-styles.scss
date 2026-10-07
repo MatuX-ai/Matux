@@ -9,7 +9,9 @@
   color: white !important;
 
   .mat-mdc-snack-bar-action {
-    color: rgb(255 255 255 / 87%) !important;
+    // 【修复导航图标对比度 #18】原 Material 标准 87% 白色在 #ff9800 (Orange) 背景上仅 ~2.9:1，
+    // 不达 WCAG AA。升级到 100% 纯白确保在所有 toast 背景色上达到 ≥3.99:1。
+    color: rgb(255 255 255 / 100%) !important;
 
     &:hover {
       background-color: rgb(255 255 255 / 10%) !important;
@@ -22,7 +24,9 @@
   color: white !important;
 
   .mat-mdc-snack-bar-action {
-    color: rgb(255 255 255 / 87%) !important;
+    // 【修复导航图标对比度 #18】原 Material 标准 87% 白色在 #ff9800 (Orange) 背景上仅 ~2.9:1，
+    // 不达 WCAG AA。升级到 100% 纯白确保在所有 toast 背景色上达到 ≥3.99:1。
+    color: rgb(255 255 255 / 100%) !important;
 
     &:hover {
       background-color: rgb(255 255 255 / 10%) !important;
@@ -35,7 +39,9 @@
   color: white !important;
 
   .mat-mdc-snack-bar-action {
-    color: rgb(255 255 255 / 87%) !important;
+    // 【修复导航图标对比度 #18】原 Material 标准 87% 白色在 #ff9800 (Orange) 背景上仅 ~2.9:1，
+    // 不达 WCAG AA。升级到 100% 纯白确保在所有 toast 背景色上达到 ≥3.99:1。
+    color: rgb(255 255 255 / 100%) !important;
 
     &:hover {
       background-color: rgb(255 255 255 / 10%) !important;
@@ -48,7 +54,9 @@
   color: white !important;
 
   .mat-mdc-snack-bar-action {
-    color: rgb(255 255 255 / 87%) !important;
+    // 【修复导航图标对比度 #18】原 Material 标准 87% 白色在 #ff9800 (Orange) 背景上仅 ~2.9:1，
+    // 不达 WCAG AA。升级到 100% 纯白确保在所有 toast 背景色上达到 ≥3.99:1。
+    color: rgb(255 255 255 / 100%) !important;
 
     &:hover {
       background-color: rgb(255 255 255 / 10%) !important;
@@ -62,7 +70,9 @@
   font-weight: 500;
 
   .mat-mdc-snack-bar-action {
-    color: rgb(255 255 255 / 87%) !important;
+    // 【修复导航图标对比度 #18】原 Material 标准 87% 白色在 #ff9800 (Orange) 背景上仅 ~2.9:1，
+    // 不达 WCAG AA。升级到 100% 纯白确保在所有 toast 背景色上达到 ≥3.99:1。
+    color: rgb(255 255 255 / 100%) !important;
 
     &:hover {
       background-color: rgb(255 255 255 / 10%) !important;

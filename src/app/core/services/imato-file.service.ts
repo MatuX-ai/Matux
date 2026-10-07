@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/prefer-optional-chain */
 /**
  * .imato 文件关联服务
  *
@@ -13,16 +14,24 @@
 import { Injectable } from '@angular/core';
 import { BehaviorSubject } from 'rxjs';
 
-/** .imato 课程包数据结构 */
+/** .imato 课程包数据结构（与 file-parser.js createProjectFile 输出对齐） */
 export interface ImatoCoursePackage {
   /** 课程包格式版本 */
   version: string;
+  /** 课程包类型 */
+  type: string;
+  /** 课程包内容数据 */
+  data: {
+    title: string;
+    description?: string;
+    modules: ImatoModule[];
+    [key: string]: unknown;
+  };
   /** 课程包元数据 */
   metadata: {
-    title: string;
-    description: string;
-    author: string;
     createdAt: string;
+    updatedAt?: string;
+    author?: string;
     /** 预计学习时长（分钟） */
     estimatedDuration?: number;
     /** 适用年级 */
@@ -30,8 +39,6 @@ export interface ImatoCoursePackage {
     /** 标签 */
     tags?: string[];
   };
-  /** 课程内容模块 */
-  modules: ImatoModule[];
 }
 
 /** .imato 课程模块 */
@@ -75,38 +82,56 @@ export class ImatoFileService {
     // 仅在 Electron 环境下运行
     const win = window as unknown as {
       electronAPI?: {
-        on: (event: string, handler: (data: { filePath: string; content: string }) => void) => void;
+        on: (
+          event: string,
+          handler: (data: {
+            filePath: string;
+            content: string | Record<string, unknown>;
+            fileType?: string;
+          }) => void
+        ) => void;
       };
     };
     if (typeof window !== 'undefined' && win.electronAPI?.on) {
-      win.electronAPI.on('open-file', (data: { filePath: string; content: string }) => {
+      win.electronAPI.on('open-file', (data) => {
         this.handleOpenFile(data.filePath, data.content);
       });
     }
   }
 
   /** 解析并处理打开的 .imato 文件 */
-  private handleOpenFile(filePath: string, rawContent: string): void {
+  private handleOpenFile(filePath: string, content: string | Record<string, unknown>): void {
     try {
-      const parsed = JSON.parse(rawContent) as ImatoCoursePackage;
+      // 主进程可能发送已解析的 JSON 对象或原始字符串
+      const parsed: ImatoCoursePackage =
+        typeof content === 'string'
+          ? (JSON.parse(content) as ImatoCoursePackage)
+          : (content as unknown as ImatoCoursePackage);
+
       if (!this.validatePackage(parsed)) {
+        console.warn('[ImatoFileService] 课程包验证失败:', filePath);
         return;
       }
       this.currentPackageSubject.next(parsed);
-      this.addToRecentFiles(filePath, parsed.metadata.title);
-    } catch {
-      // 解析失败忽略
+      this.addToRecentFiles(filePath, parsed.data.title);
+    } catch (err) {
+      console.error('[ImatoFileService] 解析文件失败:', filePath, err);
     }
   }
 
-  /** 校验课程包格式 */
+  /** 校验课程包格式（与 file-parser.js validateFileContent 对齐） */
   private validatePackage(pkg: ImatoCoursePackage): boolean {
     return !!(
       pkg.version &&
-      pkg.metadata?.title &&
-      Array.isArray(pkg.modules) &&
-      pkg.modules.length > 0 &&
-      pkg.modules.every((m) => m.id && m.title && m.content)
+      pkg.type &&
+      pkg.data &&
+      typeof pkg.data === 'object' &&
+      pkg.data.title &&
+      Array.isArray(pkg.data.modules) &&
+      pkg.data.modules.length > 0 &&
+      pkg.data.modules.every((m) => m.id && m.title && m.content) &&
+      pkg.metadata &&
+      pkg.metadata.createdAt
     );
   }
 

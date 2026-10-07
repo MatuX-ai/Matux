@@ -3,7 +3,7 @@
  *
  * 提供数据访问层的抽象接口，支持 CRUD 操作和高级查询
  *
- * @author iMatu Development Team
+ * @author MatuX Lab
  * @version 1.0.0
  */
 

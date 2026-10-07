@@ -1,85 +1,280 @@
-// Login 组件样式 — STEM 探索绿设计系统
-@use 'src/styles/shared/stem-theme' as stem;
+// =====================================================
+// Login 组件 — 游戏化设计（对标 electron/splash.html 启动动画）
+// 设计语言: 蓝紫科技、玻璃拟态、打字机终端、XP 飞升、礼花庆祝
+// =====================================================
 
+// 颜色变量（与 splash 完全对齐）
+$color-bg-deep:     #0a0e1a;
+$color-bg-mid:      #0f172a;
+$color-accent:      #3b82f6;   // 蓝
+$color-accent-dk:   #2563eb;
+$color-accent-lt:   #60a5fa;
+$color-cyan:        #22d3ee;
+$color-text:        #e2e8f0;
+$color-text-dim:    #94a3b8;
+$color-text-mute:   #64748b;
+$color-error:       #ef4444;
+$color-success:     #22c55e;
+$color-warn:        #f59e0b;
+$color-legendary:   #fde047;
+
+@keyframes logoPulse {
+  0%, 100% { box-shadow: 0 8px 32px rgba(59, 130, 246, 0.35); }
+  50%      { box-shadow: 0 12px 48px rgba(59, 130, 246, 0.55); transform: scale(1.05); }
+}
+@keyframes logoRing {
+  0%, 100% { transform: scale(1); opacity: 0.5; }
+  50%      { transform: scale(1.15); opacity: 0; }
+}
+@keyframes glowPulse {
+  0%, 100% { opacity: 0.6; transform: translate(-50%, -50%) scale(1); }
+  50%      { opacity: 1; transform: translate(-50%, -50%) scale(1.15); }
+}
+@keyframes particleFlow {
+  0%   { opacity: 0; transform: translateX(-50px) translateY(0); }
+  8%   { opacity: 0.9; }
+  92%  { opacity: 0.9; }
+  100% { opacity: 0; transform: translateX(calc(100vw + 50px)) translateY(-30px); }
+}
+@keyframes shimmer {
+  0%   { background-position: 200% 0; }
+  100% { background-position: -200% 0; }
+}
+@keyframes blink {
+  0%, 50% { opacity: 1; }
+  51%, 100% { opacity: 0; }
+}
+@keyframes milestoneGlow {
+  0%, 100% { box-shadow: 0 0 12px rgba(59, 130, 246, 0.6); }
+  50%      { box-shadow: 0 0 30px rgba(245, 158, 11, 0.9), 0 0 60px rgba(245, 158, 11, 0.4); }
+}
+@keyframes milestoneCelebrate {
+  0%   { transform: scale(1); color: #94a3b8; }
+  30%  { transform: scale(1.5); color: #fbbf24; text-shadow: 0 0 16px #f59e0b; }
+  60%  { transform: scale(0.92); color: #fbbf24; }
+  100% { transform: scale(1); color: #94a3b8; }
+}
+@keyframes xpFly {
+  0%   { opacity: 0; transform: translate(-50%, 0) scale(0.5); }
+  15%  { opacity: 1; transform: translate(-50%, -10px) scale(1.15); }
+  70%  { opacity: 1; transform: translate(-50%, -50px) scale(1); }
+  100% { opacity: 0; transform: translate(-50%, -90px) scale(0.9); }
+}
+@keyframes sweepAcross {
+  from { transform: translateX(-100%); }
+  to   { transform: translateX(100%); }
+}
+@keyframes badgePop {
+  0%   { transform: translate(-50%, -50%) scale(0) rotate(-180deg); opacity: 0; }
+  60%  { transform: translate(-50%, -50%) scale(1.15) rotate(10deg); opacity: 1; }
+  100% { transform: translate(-50%, -50%) scale(1) rotate(0); opacity: 1; }
+}
+@keyframes confettiFly {
+  0%   { opacity: 1; transform: translate(-50%, -50%) rotate(0); }
+  100% { opacity: 0; transform: translate(calc(-50% + var(--dx)), calc(-50% + var(--dy))) rotate(var(--rot)); }
+}
+@keyframes streakIn {
+  from { opacity: 0; transform: translateX(20px); }
+  to   { opacity: 1; transform: translateX(0); }
+}
+@keyframes fadeUp {
+  from { opacity: 0; transform: translateY(20px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+@keyframes typeLine {
+  from { opacity: 0; transform: translateX(-8px); }
+  to   { opacity: 1; transform: translateX(0); }
+}
+@keyframes btnShine {
+  0%   { left: -100%; }
+  100% { left: 200%; }
+}
+@keyframes focusGlow {
+  from { box-shadow: 0 0 0 0 rgba(59, 130, 246, 0); }
+  to   { box-shadow: 0 0 0 4px rgba(59, 130, 246, 0.25); }
+}
+
+// =================== 主容器 ===================
 .login-container {
+  position: relative;
   display: flex;
   justify-content: center;
   align-items: center;
   min-height: 100vh;
   padding: 16px;
-  background: linear-gradient(
-    135deg,
-    var(--matux-color-slate-900, #0f172a) 0%,
-    var(--matux-color-slate-800, #1e293b) 50%,
-    var(--matux-color-slate-900, #0f172a) 100%
-  );
+  background-color: $color-bg-deep;
+  overflow: hidden;
+  opacity: 0;
+  transition: opacity 0.5s ease-out;
+}
+.login-container.login-loaded {
+  opacity: 1;
 }
 
+// =================== 背景层 ===================
+.bg-grid {
+  position: fixed;
+  inset: 0;
+  background-image:
+    linear-gradient(rgba(59, 130, 246, 0.04) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(59, 130, 246, 0.04) 1px, transparent 1px);
+  background-size: 40px 40px;
+  pointer-events: none;
+  z-index: 0;
+}
+
+.bg-glow {
+  position: fixed;
+  top: 50%;
+  left: 50%;
+  width: 700px;
+  height: 700px;
+  transform: translate(-50%, -50%);
+  background: radial-gradient(circle, rgba(59, 130, 246, 0.12) 0%, transparent 70%);
+  pointer-events: none;
+  z-index: 0;
+  animation: glowPulse 4s ease-in-out infinite;
+}
+
+.bg-particles {
+  position: fixed;
+  inset: 0;
+  pointer-events: none;
+  overflow: hidden;
+  z-index: 0;
+}
+
+.particle {
+  position: absolute;
+  width: 2px;
+  height: 2px;
+  border-radius: 50%;
+  left: -50px;
+  animation: particleFlow linear infinite;
+}
+
+// =================== 登录卡片 ===================
 .login-card {
+  position: relative;
+  z-index: 1;
   width: 100%;
-  max-width: 440px;
-  padding: 32px;
-  border-radius: stem.$stem-radius-xl;
+  max-width: 460px;
+  padding: 36px 32px !important;
+  border-radius: 20px !important;
+  border: 1px solid rgba(59, 130, 246, 0.18);
+  background: rgba(15, 23, 42, 0.72) !important;
+  backdrop-filter: blur(14px);
+  -webkit-backdrop-filter: blur(14px);
+  box-shadow:
+    0 24px 64px rgba(0, 0, 0, 0.5),
+    0 0 0 1px rgba(59, 130, 246, 0.08) inset,
+    0 0 80px rgba(59, 130, 246, 0.06) !important;
+  color: $color-text;
+  animation: fadeUp 0.6s cubic-bezier(0.34, 1.56, 0.64, 1);
 }
 
 .login-header {
   display: flex;
   flex-direction: column;
   align-items: center;
-  margin-bottom: 24px;
-  padding: 0;
+  margin-bottom: 24px !important;
+  padding: 0 !important;
   text-align: center;
 }
 
+// Logo（与 splash 一致）
 .logo-icon {
+  position: relative;
   display: flex;
   justify-content: center;
   align-items: center;
-  width: 56px;
-  height: 56px;
+  width: 80px;
+  height: 80px;
   margin-bottom: 16px;
-  border-radius: stem.$stem-radius-md;
-  background: linear-gradient(
-    135deg,
-    stem.$stem-primary 0%,
-    stem.$stem-primary-dark 100%
-  );
-  box-shadow: 0 8px 24px rgba(stem.$stem-primary, 0.3);
+  border-radius: 20px;
+  background: linear-gradient(135deg, $color-accent 0%, $color-accent-dk 100%);
+  box-shadow: 0 8px 32px rgba(59, 130, 246, 0.35);
+  animation: logoPulse 2s ease-in-out infinite;
 }
 
-.logo-mat-icon {
-  width: 28px;
-  height: 28px;
-  color: white;
-  font-size: 28px;
+.logo-icon::after {
+  content: '';
+  position: absolute;
+  inset: -4px;
+  border-radius: 24px;
+  border: 1px solid rgba(59, 130, 246, 0.3);
+  animation: logoRing 3s ease-in-out infinite;
+}
+
+.logo-emoji {
+  display: inline-block;
+  font-size: 42px;
+  line-height: 1;
+  user-select: none;
+  filter: drop-shadow(0 2px 4px rgba(0, 0, 0, 0.2));
 }
 
 .login-title {
-  margin-bottom: 4px;
-  color: var(--color-text-primary);
-  font-size: var(--matux-font-size-h3, 24px);
-  font-weight: 700;
+  margin-bottom: 6px !important;
+  font-size: 28px !important;
+  font-weight: 700 !important;
+}
+
+.brand-name {
+  background: linear-gradient(135deg, $color-accent 0%, $color-accent-lt 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+  letter-spacing: 1px;
 }
 
 .login-subtitle {
-  color: var(--color-text-secondary);
-  font-size: var(--matux-font-size-sm, 14px);
+  color: $color-text-mute !important;
+  font-size: 14px !important;
+  letter-spacing: 0.5px;
 }
 
+// =================== 表单 ===================
 .login-form {
   display: flex;
   flex-direction: column;
-  gap: 16px;
+  gap: 14px;
 }
 
 .full-width {
   width: 100%;
 }
 
+// 覆盖 Material 表单字段为深色主题
+::ng-deep .login-card .mat-mdc-form-field {
+  --mdc-outlined-text-field-outline-color: rgba(59, 130, 246, 0.25);
+  --mdc-outlined-text-field-hover-outline-color: rgba(59, 130, 246, 0.45);
+  --mdc-outlined-text-field-focus-outline-color: $color-accent;
+  --mdc-outlined-text-field-label-text-color: $color-text-mute;
+  --mdc-outlined-text-field-input-text-color: #ffffff;
+  --mdc-outlined-text-field-caret-color: $color-accent;
+  --mdc-outlined-text-field-focus-label-text-color: $color-accent-lt;
+}
+
+::ng-deep .login-card .mat-mdc-form-field-subscript-wrapper {
+  color: $color-error;
+}
+
 .form-options {
   display: flex;
-  justify-content: flex-start;
-  margin: 4px 0;
+  justify-content: space-between;
+  align-items: center;
+  margin: 0;
+  color: $color-text-dim;
+}
+
+.remember-text {
+  font-size: 13px;
+  color: $color-text-dim;
+}
+
+::ng-deep .login-card .mat-mdc-checkbox .mdc-checkbox__background {
+  border-color: rgba(59, 130, 246, 0.5) !important;
 }
 
 .error-alert {
@@ -87,17 +282,61 @@
   align-items: center;
   gap: 8px;
   padding: 12px 16px;
-  border: 1px solid var(--color-error-border);
-  border-radius: stem.$stem-radius-sm;
-  background: var(--color-error-bg);
-  color: var(--color-error);
-  font-size: var(--matux-font-size-sm, 14px);
+  border: 1px solid rgba(239, 68, 68, 0.35);
+  border-radius: 10px;
+  background: rgba(239, 68, 68, 0.08);
+  color: #fca5a5;
+  font-size: 13px;
 }
 
+// =================== 登录按钮（带流光）====================
 .login-button {
-  height: 48px;
-  border-radius: stem.$stem-radius-full;
-  font-size: var(--matux-font-size-body, 16px);
+  position: relative;
+  height: 50px !important;
+  border-radius: 14px !important;
+  overflow: hidden;
+  background: linear-gradient(135deg, $color-accent 0%, $color-accent-dk 100%) !important;
+  box-shadow: 0 6px 20px rgba(59, 130, 246, 0.4) !important;
+  font-size: 16px !important;
+  font-weight: 600 !important;
+  letter-spacing: 0.5px;
+  transition: transform 0.15s, box-shadow 0.2s !important;
+
+  &:hover:not(:disabled) {
+    transform: translateY(-1px);
+    box-shadow: 0 10px 28px rgba(59, 130, 246, 0.55) !important;
+  }
+  &:active:not(:disabled) {
+    transform: translateY(1px);
+  }
+  &:disabled {
+    opacity: 0.55;
+  }
+}
+
+.btn-label {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  z-index: 1;
+}
+
+.btn-text {
+  position: relative;
+  z-index: 2;
+}
+
+.btn-shine {
+  position: absolute;
+  top: 0;
+  left: -100%;
+  width: 60%;
+  height: 100%;
+  background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.35), transparent);
+  pointer-events: none;
+  animation: btnShine 2.6s ease-in-out infinite;
 }
 
 .btn-spinner {
@@ -105,104 +344,407 @@
   margin: 0 auto;
 }
 
-.login-footer {
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  padding: 16px 0 0;
-  color: var(--color-text-disabled);
-  font-size: var(--matux-font-size-sm, 14px);
+// =================== 测试账号按钮（游戏风格）====================
+.test-login-button {
+  height: 42px !important;
+  border-radius: 12px !important;
+  border-color: rgba(245, 158, 11, 0.45) !important;
+  background: rgba(245, 158, 11, 0.06) !important;
+  color: #fbbf24 !important;
+  font-size: 13px !important;
+  transition: all 0.2s !important;
+
+  &:hover:not(:disabled) {
+    background: rgba(245, 158, 11, 0.12) !important;
+    box-shadow: 0 4px 14px rgba(245, 158, 11, 0.25) !important;
+    transform: translateY(-1px);
+  }
+  mat-icon {
+    color: #fbbf24;
+  }
 }
 
-// OAuth 分隔线
+// =================== 终端区（登录阶段）====================
+.terminal-section {
+  margin-top: 18px;
+  padding: 14px 16px;
+  border: 1px solid rgba(59, 130, 246, 0.18);
+  border-radius: 12px;
+  background: rgba(10, 14, 26, 0.65);
+  backdrop-filter: blur(8px);
+  animation: fadeUp 0.4s ease-out;
+}
+
+.terminal-header {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  margin-bottom: 10px;
+  padding-bottom: 8px;
+  border-bottom: 1px solid rgba(59, 130, 246, 0.1);
+}
+
+.terminal-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+}
+.terminal-dot.red    { background: $color-error; }
+.terminal-dot.yellow { background: $color-warn; }
+.terminal-dot.green  { background: $color-success; }
+
+.terminal-title {
+  margin-left: 8px;
+  font-family: 'Courier New', 'Consolas', monospace;
+  font-size: 11px;
+  color: #475569;
+}
+
+.terminal-body {
+  font-family: 'Courier New', 'Consolas', monospace;
+  font-size: 12px;
+  line-height: 1.7;
+  max-height: 120px;
+  overflow-y: auto;
+  color: $color-text-dim;
+  scrollbar-width: none;
+  &::-webkit-scrollbar { display: none; }
+}
+
+.log-line {
+  display: block;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  animation: typeLine 0.3s ease-out;
+
+  .prefix {
+    color: $color-accent;
+    margin-right: 6px;
+  }
+  .text.success { color: $color-success; }
+  .text.warn    { color: $color-warn; }
+  .text.error   { color: $color-error; }
+
+  &.typing .text::after {
+    content: '';
+    display: inline-block;
+    width: 6px;
+    height: 11px;
+    margin-left: 2px;
+    vertical-align: text-bottom;
+    background: $color-accent;
+    animation: blink 0.8s step-end infinite;
+  }
+  &.complete .text::after { content: none; }
+}
+
+.cursor-blink {
+  display: inline-block;
+  width: 6px;
+  height: 13px;
+  background: $color-accent;
+  animation: blink 1s step-end infinite;
+  vertical-align: middle;
+  margin-left: 4px;
+}
+
+// =================== 进度条（对标 splash）====================
+.progress-section {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-top: 10px;
+}
+
+.progress-bar-container {
+  flex: 1;
+  height: 6px;
+  border-radius: 3px;
+  background: rgba(148, 163, 184, 0.1);
+  overflow: hidden;
+  box-shadow: inset 0 1px 2px rgba(0, 0, 0, 0.4);
+  position: relative;
+}
+
+.progress-bar-fill {
+  height: 100%;
+  border-radius: 3px;
+  background: linear-gradient(90deg, $color-accent 0%, $color-accent-lt 50%, $color-cyan 100%);
+  background-size: 200% 100%;
+  box-shadow: 0 0 12px rgba(59, 130, 246, 0.6), inset 0 1px 0 rgba(255, 255, 255, 0.4);
+  animation: shimmer 2s ease-in-out infinite;
+  transition: width 0.4s ease-out;
+}
+
+.progress-bar-fill.milestone {
+  animation: shimmer 2s ease-in-out infinite, milestoneGlow 1.2s ease-out;
+}
+
+.progress-text {
+  font-family: 'Courier New', monospace;
+  font-size: 12px;
+  color: $color-text-dim;
+  min-width: 36px;
+  text-align: right;
+  transition: color 0.3s;
+}
+
+.progress-text.milestone {
+  animation: milestoneCelebrate 1.2s cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+
+// =================== OAuth 分隔线 ===================
 .oauth-divider {
   display: flex;
   align-items: center;
   gap: 12px;
-  margin: 24px 0;
+  margin: 22px 0 14px;
 }
 
 .divider-line {
   flex: 1;
   height: 1px;
-  background: var(--color-divider);
+  background: rgba(59, 130, 246, 0.15);
 }
 
 .divider-text {
-  color: var(--color-text-disabled);
-  font-size: 13px;
+  color: $color-text-mute;
+  font-size: 12px;
   white-space: nowrap;
+  letter-spacing: 0.5px;
 }
 
-// OAuth 按钮
 .oauth-buttons {
   display: flex;
   justify-content: space-around;
   align-items: center;
-  gap: 12px;
-  margin-bottom: 8px;
+  gap: 8px;
+  margin-bottom: 4px;
 }
 
 .oauth-icon-btn {
   flex: 0 0 auto;
-  width: 48px;
-  height: 48px;
+  width: 44px;
+  height: 44px;
   padding: 0;
-  border: none;
+  border: 1px solid rgba(59, 130, 246, 0.15);
   border-radius: 50%;
-  background: transparent;
+  background: rgba(15, 23, 42, 0.4);
   opacity: 0.85;
-  transition:
-    transform 0.15s,
-    opacity 0.2s;
+  transition: transform 0.15s, opacity 0.2s, border-color 0.2s, background 0.2s;
 
-  &:hover {
+  &:hover:not(:disabled) {
     opacity: 1;
     transform: translateY(-2px);
+    border-color: rgba(59, 130, 246, 0.4);
+    background: rgba(15, 23, 42, 0.7);
   }
-
-  mat-icon {
-    width: 32px;
-    height: 32px;
-    font-size: 32px;
+  &:disabled {
+    opacity: 0.4;
+    cursor: not-allowed;
   }
 }
 
-// QQ 蓝
-.oauth-qq {
-  color: #12b7f5;
-}
+.oauth-qq      { color: #12b7f5; }
+.oauth-wechat  { color: #07c160; }
+.oauth-github  { color: #cbd5e1; }
 
-// 微信绿
-.oauth-wechat {
-  color: #07c160;
-}
-
-// Google 多色
 .oauth-google {
-  .google-g {
-    fill: #4285f4;
-  }
-
-  .google-y {
-    fill: #fbbc05;
-  }
-
-  .google-r {
-    fill: #ea4335;
-  }
-
-  .google-e {
-    fill: #34a853;
-  }
-}
-
-// GitHub 黑
-.oauth-github {
-  color: #181717;
+  .google-g { fill: #4285f4; }
+  .google-y { fill: #fbbc05; }
+  .google-r { fill: #ea4335; }
+  .google-e { fill: #34a853; }
 }
 
 .oauth-icon {
-  width: 32px;
-  height: 32px;
+  width: 28px;
+  height: 28px;
+}
+
+// =================== Footer ===================
+.login-footer {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  padding: 18px 0 0 !important;
+  color: $color-text-mute !important;
+  font-size: 13px;
+
+  a {
+    color: $color-accent-lt !important;
+  }
+}
+
+// =================== XP 飞升 Toast（对标 splash）====================
+.xp-toast {
+  position: fixed;
+  z-index: 50;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 8px 18px;
+  border-radius: 14px;
+  background: linear-gradient(135deg, #94a3b8 0%, #cbd5e1 100%);
+  color: white;
+  font-weight: 700;
+  box-shadow: 0 6px 18px rgba(148, 163, 184, 0.5);
+  pointer-events: none;
+  animation: xpFly 1.4s cubic-bezier(0.34, 1.56, 0.64, 1) forwards;
+  transform: translate(-50%, 0);
+}
+.xp-toast.rarity-rare {
+  background: linear-gradient(135deg, $color-accent 0%, $color-accent-lt 100%);
+  box-shadow: 0 6px 18px rgba(59, 130, 246, 0.5);
+}
+.xp-toast.rarity-epic {
+  background: linear-gradient(135deg, #a855f7 0%, #c084fc 100%);
+  box-shadow: 0 8px 24px rgba(168, 85, 247, 0.6);
+}
+.xp-toast.rarity-legendary {
+  background: linear-gradient(135deg, $color-warn 0%, $color-legendary 100%);
+  box-shadow: 0 10px 32px rgba(245, 158, 11, 0.7), 0 0 24px rgba(253, 224, 71, 0.4);
+}
+
+.xp-amount {
+  font-size: 20px;
+  line-height: 1;
+}
+
+.xp-reason {
+  font-size: 10px;
+  font-weight: 500;
+  letter-spacing: 0.5px;
+  opacity: 0.92;
+  margin-top: 2px;
+}
+
+// =================== 连续登录徽章 ===================
+.streak-badge {
+  position: fixed;
+  top: 20px;
+  right: 20px;
+  z-index: 5;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 6px 14px;
+  border-radius: 999px;
+  background: rgba(15, 23, 42, 0.6);
+  border: 1px solid rgba(245, 158, 11, 0.3);
+  backdrop-filter: blur(8px);
+  color: #fbbf24;
+  font-size: 12px;
+  font-weight: 600;
+  animation: streakIn 0.6s ease-out;
+}
+
+// =================== 庆祝遮罩 ===================
+.ready-sweep {
+  position: fixed;
+  inset: 0;
+  background: linear-gradient(100deg, transparent 30%, rgba(245, 158, 11, 0.35) 50%, transparent 70%);
+  animation: sweepAcross 1.2s ease-out forwards;
+  z-index: 20;
+  pointer-events: none;
+}
+
+.ready-badge {
+  position: fixed;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%) scale(0);
+  text-align: center;
+  z-index: 21;
+  animation: badgePop 0.8s cubic-bezier(0.34, 1.56, 0.64, 1) forwards;
+  pointer-events: none;
+}
+
+.ready-badge-icon {
+  width: 96px;
+  height: 96px;
+  margin: 0 auto 14px;
+  border-radius: 24px;
+  background: linear-gradient(135deg, $color-warn 0%, $color-legendary 100%);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 48px;
+  box-shadow: 0 12px 48px rgba(245, 158, 11, 0.6), 0 0 24px rgba(253, 224, 71, 0.4);
+}
+
+.ready-badge-text {
+  font-size: 24px;
+  font-weight: 700;
+  background: linear-gradient(135deg, $color-legendary, $color-warn);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+  margin-bottom: 6px;
+}
+
+.ready-badge-sub {
+  font-size: 13px;
+  color: $color-text-dim;
+}
+
+.ready-badge-streak {
+  display: inline-block;
+  margin-top: 12px;
+  padding: 6px 14px;
+  border-radius: 999px;
+  background: rgba(245, 158, 11, 0.15);
+  border: 1px solid rgba(245, 158, 11, 0.4);
+  color: #fbbf24;
+  font-size: 12px;
+  font-weight: 600;
+}
+
+.confetti {
+  position: fixed;
+  top: 50%;
+  left: 50%;
+  width: 8px;
+  height: 8px;
+  pointer-events: none;
+  z-index: 19;
+  animation: confettiFly 1.5s cubic-bezier(0.25, 0.46, 0.45, 0.94) forwards;
+}
+
+// =================== 无障碍降级 ===================
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
+  .ready-sweep,
+  .ready-badge,
+  .confetti,
+  .xp-toast {
+    animation-duration: 0.3s !important;
+  }
+  .login-card {
+    animation: none;
+  }
+}
+
+// 响应式（移动端）
+@media (max-width: 480px) {
+  .login-card {
+    padding: 28px 20px !important;
+  }
+  .logo-icon {
+    width: 64px;
+    height: 64px;
+    .logo-emoji { font-size: 34px; }
+  }
+  .login-title {
+    font-size: 22px !important;
+  }
+  .terminal-section {
+    padding: 10px 12px;
+  }
 }

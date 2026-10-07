@@ -15,14 +15,14 @@ import { MatTabsModule } from '@angular/material/tabs';
 import { MatToolbarModule } from '@angular/material/toolbar';
 import { MatTooltipModule } from '@angular/material/tooltip';
 
-import { OpenscieduCatalogComponent } from '../shared/components/opensciedu-catalog/opensciedu-catalog.component';
-import { OpenscieduGraphComponent } from '../shared/components/opensciedu-graph/opensciedu-graph.component';
 import {
   CourseDetail,
   KnowledgeNode,
   OpenSciEDUService,
   PublicCourse,
 } from '../core/services/opensciedu.service';
+import { OpenscieduCatalogComponent } from '../shared/components/opensciedu-catalog/opensciedu-catalog.component';
+import { OpenscieduGraphComponent } from '../shared/components/opensciedu-graph/opensciedu-graph.component';
 
 @Component({
   selector: 'app-opensciedu-page',
@@ -50,11 +50,7 @@ import {
             </p>
           </div>
           <div class="header-actions">
-            <button
-              mat-stroked-button
-              routerLink="/user/courses"
-              class="back-btn"
-            >
+            <button mat-stroked-button routerLink="/user/courses" class="back-btn">
               <mat-icon>arrow_back</mat-icon>
               返回我的课程
             </button>
@@ -117,11 +113,18 @@ import {
                 </div>
                 <div class="meta-item">
                   <mat-icon>schedule</mat-icon>
-                  <span>{{ openscieduService.formatDuration(selectedCourse.durationMinutes) }}</span>
+                  <span>{{
+                    openscieduService.formatDuration(selectedCourse.durationMinutes)
+                  }}</span>
                 </div>
                 <div class="meta-item">
                   <mat-icon>people</mat-icon>
-                  <span>{{ openscieduService.formatStudentCount(selectedCourse.studentCount) }} 人学习</span>
+                  <span
+                    >{{
+                      openscieduService.formatStudentCount(selectedCourse.studentCount)
+                    }}
+                    人学习</span
+                  >
                 </div>
                 <div class="meta-item">
                   <mat-icon>star</mat-icon>
@@ -145,7 +148,10 @@ import {
                 </div>
               </div>
 
-              <div class="detail-outcomes" *ngIf="courseDetail && courseDetail.learningOutcomes.length">
+              <div
+                class="detail-outcomes"
+                *ngIf="courseDetail && courseDetail.learningOutcomes.length"
+              >
                 <h4>学习收获</h4>
                 <ul class="outcome-list">
                   <li *ngFor="let outcome of courseDetail.learningOutcomes">
@@ -158,9 +164,7 @@ import {
               <button mat-raised-button color="primary" *ngIf="selectedCourse.isFree">
                 开始学习
               </button>
-              <button mat-stroked-button *ngIf="!selectedCourse.isFree">
-                购买课程
-              </button>
+              <button mat-stroked-button *ngIf="!selectedCourse.isFree">购买课程</button>
             </mat-card-actions>
           </mat-card>
         </div>
@@ -204,7 +208,7 @@ import {
       }
 
       .page-header {
-        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        background: linear-gradient(135deg, #0f172a 0%, #1e293b 100%);
         color: white;
         padding: 32px 24px;
       }

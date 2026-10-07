@@ -1,6 +1,6 @@
 /**
  * 插件评分和评论组件
- * 
+ *
  * 功能:
  * 1. 显示平均评分和评分分布
  * 2. 评论列表展示（排序、分页）
@@ -8,20 +8,20 @@
  * 4. 标记评论为有帮助
  */
 
-import { Component, Input, OnInit, OnDestroy } from '@angular/core';
+/* eslint-disable @typescript-eslint/no-unsafe-member-access, @typescript-eslint/no-unsafe-assignment, @typescript-eslint/no-explicit-any, @typescript-eslint/no-floating-promises */
 import { CommonModule } from '@angular/common';
+import { Component, Input, OnDestroy, OnInit } from '@angular/core';
 import { FormsModule } from '@angular/forms';
-import { MatIconModule } from '@angular/material/icon';
 import { MatButtonModule } from '@angular/material/button';
 import { MatCardModule } from '@angular/material/card';
-import { MatFormFieldModule } from '@angular/material/form-field';
-import { MatInputModule } from '@angular/material/input';
-import { MatSelectModule } from '@angular/material/select';
-import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
-import { MatSnackBar, MatSnackBarModule } from '@angular/material/snack-bar';
 import { MatChipsModule } from '@angular/material/chips';
+import { MatFormFieldModule } from '@angular/material/form-field';
+import { MatIconModule } from '@angular/material/icon';
+import { MatInputModule } from '@angular/material/input';
+import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
+import { MatSelectModule } from '@angular/material/select';
+import { MatSnackBar, MatSnackBarModule } from '@angular/material/snack-bar';
 import { Subject } from 'rxjs';
-import { takeUntil } from 'rxjs/operators';
 
 interface Review {
   id: string;
@@ -68,19 +68,19 @@ export class PluginReviewsComponent implements OnInit, OnDestroy {
 
   // 暴露 Math 给模板用（strictTemplates 下模板不能直接引用全局）
   protected readonly Math = Math;
-  
+
   // 数据
   reviews: Review[] = [];
   ratingStats: RatingStats | null = null;
   loading = true;
   error: string | null = null;
-  
+
   // 排序和分页
   sortBy = 'createdAt';
   sortOrder: 'asc' | 'desc' = 'desc';
   currentPage = 0;
   pageSize = 10;
-  
+
   // 添加评论
   showAddForm = false;
   newRating = 5;
@@ -90,42 +90,42 @@ export class PluginReviewsComponent implements OnInit, OnDestroy {
   newCons: string[] = [];
   newProInput = '';
   newConInput = '';
-  
+
   private destroy$ = new Subject<void>();
-  
+
   constructor(private snackBar: MatSnackBar) {}
-  
+
   ngOnInit(): void {
     if (this.pluginId) {
-      this.loadReviews();
-      this.loadRatingStats();
+      void this.loadReviews();
+      void this.loadRatingStats();
     }
   }
-  
+
   ngOnDestroy(): void {
     this.destroy$.next();
     this.destroy$.complete();
   }
-  
+
   /**
    * 加载评论列表
    */
   async loadReviews(): Promise<void> {
     this.loading = true;
     this.error = null;
-    
+
     try {
       if (!window.pluginAPI) {
         throw new Error('Plugin API 不可用');
       }
-      
+
       const result = (await window.pluginAPI.getPluginReviews(this.pluginId, {
         sortBy: this.sortBy,
         sortOrder: this.sortOrder,
         limit: this.pageSize,
         offset: this.currentPage * this.pageSize,
       })) as { success: boolean; data: any[] };
-      
+
       if (result.success && result.data) {
         this.reviews = result.data;
       }
@@ -136,7 +136,7 @@ export class PluginReviewsComponent implements OnInit, OnDestroy {
       this.loading = false;
     }
   }
-  
+
   /**
    * 加载评分统计
    */
@@ -145,8 +145,11 @@ export class PluginReviewsComponent implements OnInit, OnDestroy {
       if (!window.pluginAPI) {
         throw new Error('Plugin API 不可用');
       }
-      
-      const result = (await window.pluginAPI.getPluginAverageRating(this.pluginId)) as { success: boolean; data: any };
+
+      const result = (await window.pluginAPI.getPluginAverageRating(this.pluginId)) as {
+        success: boolean;
+        data: any;
+      };
       if (result.success && result.data) {
         this.ratingStats = result.data;
       }
@@ -154,7 +157,7 @@ export class PluginReviewsComponent implements OnInit, OnDestroy {
       console.error('加载评分统计失败:', err);
     }
   }
-  
+
   /**
    * 提交新评论
    */
@@ -163,12 +166,12 @@ export class PluginReviewsComponent implements OnInit, OnDestroy {
       if (!window.pluginAPI) {
         throw new Error('Plugin API 不可用');
       }
-      
+
       if (!this.newTitle.trim() || !this.newContent.trim()) {
         this.snackBar.open('请填写标题和内容', '关闭', { duration: 2000 });
         return;
       }
-      
+
       const result = (await window.pluginAPI.addPluginReview({
         pluginId: this.pluginId,
         userId: 'current_user', // 从认证服务获取
@@ -179,7 +182,7 @@ export class PluginReviewsComponent implements OnInit, OnDestroy {
         pros: this.newPros,
         cons: this.newCons,
       })) as { success: boolean };
-      
+
       if (result.success) {
         this.snackBar.open('评论已提交', '关闭', { duration: 2000 });
         this.closeAddForm();
@@ -192,7 +195,7 @@ export class PluginReviewsComponent implements OnInit, OnDestroy {
       });
     }
   }
-  
+
   /**
    * 标记评论为有帮助
    */
@@ -201,11 +204,13 @@ export class PluginReviewsComponent implements OnInit, OnDestroy {
       if (!window.pluginAPI) {
         throw new Error('Plugin API 不可用');
       }
-      
-      const result = (await window.pluginAPI.markReviewHelpful(reviewId, this.pluginId)) as { success: boolean };
+
+      const result = (await window.pluginAPI.markReviewHelpful(reviewId, this.pluginId)) as {
+        success: boolean;
+      };
       if (result.success) {
         // 更新本地数据
-        const review = this.reviews.find(r => r.id === reviewId);
+        const review = this.reviews.find((r) => r.id === reviewId);
         if (review) {
           review.helpfulCount++;
         }
@@ -217,35 +222,35 @@ export class PluginReviewsComponent implements OnInit, OnDestroy {
       });
     }
   }
-  
+
   /**
    * 排序变化
    */
   onSortChange(): void {
     this.currentPage = 0;
-    this.loadReviews();
+    void this.loadReviews();
   }
-  
+
   /**
-   * 上一页
+   * 下一页
    */
   prevPage(): void {
     if (this.currentPage > 0) {
       this.currentPage--;
-      this.loadReviews();
+      void this.loadReviews();
     }
   }
-  
+
   /**
    * 下一页
    */
   nextPage(): void {
     if (this.reviews.length === this.pageSize) {
       this.currentPage++;
-      this.loadReviews();
+      void this.loadReviews();
     }
   }
-  
+
   /**
    * 显示添加表单
    */
@@ -257,7 +262,7 @@ export class PluginReviewsComponent implements OnInit, OnDestroy {
     this.newPros = [];
     this.newCons = [];
   }
-  
+
   /**
    * 关闭添加表单
    */
@@ -271,7 +276,7 @@ export class PluginReviewsComponent implements OnInit, OnDestroy {
     this.newProInput = '';
     this.newConInput = '';
   }
-  
+
   /**
    * 添加优点
    */
@@ -281,7 +286,7 @@ export class PluginReviewsComponent implements OnInit, OnDestroy {
       this.newProInput = '';
     }
   }
-  
+
   /**
    * 添加缺点
    */
@@ -291,29 +296,29 @@ export class PluginReviewsComponent implements OnInit, OnDestroy {
       this.newConInput = '';
     }
   }
-  
+
   /**
    * 移除优点
    */
   removePro(index: number): void {
     this.newPros.splice(index, 1);
   }
-  
+
   /**
    * 移除缺点
    */
   removeCon(index: number): void {
     this.newCons.splice(index, 1);
   }
-  
+
   /**
    * 获取评分百分比
    */
   getRatingPercentage(star: number): number {
     if (!this.ratingStats || this.ratingStats.count === 0) return 0;
-    return (this.ratingStats.distribution[star] || 0) / this.ratingStats.count * 100;
+    return ((this.ratingStats.distribution[star] || 0) / this.ratingStats.count) * 100;
   }
-  
+
   /**
    * 获取星级图标
    */
@@ -322,7 +327,7 @@ export class PluginReviewsComponent implements OnInit, OnDestroy {
     if (rating >= 3.5) return 'star_half';
     return 'star_border';
   }
-  
+
   /**
    * 格式化日期
    */
@@ -331,7 +336,7 @@ export class PluginReviewsComponent implements OnInit, OnDestroy {
     const now = new Date();
     const diff = now.getTime() - date.getTime();
     const days = Math.floor(diff / (1000 * 60 * 60 * 24));
-    
+
     if (days === 0) return '今天';
     if (days === 1) return '昨天';
     if (days < 7) return `${days} 天前`;

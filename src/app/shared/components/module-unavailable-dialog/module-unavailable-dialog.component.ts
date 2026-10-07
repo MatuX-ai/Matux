@@ -15,9 +15,9 @@
 
 import { CommonModule } from '@angular/common';
 import { Component, EventEmitter, Input, Output } from '@angular/core';
-import { MatIconModule } from '@angular/material/icon';
 import { MatButtonModule } from '@angular/material/button';
 import { MatCardModule } from '@angular/material/card';
+import { MatIconModule } from '@angular/material/icon';
 
 /** 依赖服务状态 */
 interface DependencyStatus {
@@ -57,10 +57,7 @@ interface DependencyStatus {
             </mat-card-header>
             <mat-card-content>
               <div class="dependency-list">
-                <div
-                  class="dependency-item"
-                  *ngFor="let dep of dependencyStatus"
-                >
+                <div class="dependency-item" *ngFor="let dep of dependencyStatus">
                   <mat-icon
                     class="status-icon"
                     [class.available]="dep.available"
@@ -68,10 +65,13 @@ interface DependencyStatus {
                   >
                     {{ dep.available ? 'check_circle' : 'cancel' }}
                   </mat-icon>
-                  
+
                   <div class="dependency-info">
                     <span class="dependency-name">{{ dep.name }}</span>
-                    <span class="dependency-status" [class]="dep.available ? 'status-available' : 'status-unavailable'">
+                    <span
+                      class="dependency-status"
+                      [class]="dep.available ? 'status-available' : 'status-unavailable'"
+                    >
                       {{ dep.available ? '可用' : '不可用' }}
                     </span>
                     <span class="dependency-fallback" *ngIf="!dep.available && dep.fallback">
@@ -96,19 +96,8 @@ interface DependencyStatus {
 
         <!-- 底部操作区 -->
         <div class="dialog-actions">
-          <button
-            mat-button
-            class="btn-secondary"
-            (click)="close.emit()"
-          >
-            关闭
-          </button>
-          <button
-            mat-flat-button
-            color="primary"
-            class="btn-primary"
-            (click)="retry.emit()"
-          >
+          <button mat-button class="btn-secondary" (click)="close.emit()">关闭</button>
+          <button mat-flat-button color="primary" class="btn-primary" (click)="retry.emit()">
             <mat-icon>refresh</mat-icon>
             重试
           </button>
@@ -116,261 +105,263 @@ interface DependencyStatus {
       </div>
     </div>
   `,
-  styles: [`
-    .dialog-backdrop {
-      position: fixed;
-      top: 0;
-      left: 0;
-      right: 0;
-      bottom: 0;
-      background: rgba(0, 0, 0, 0.5);
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      z-index: 2000;
-      animation: fadeIn 0.2s ease-out;
-    }
-
-    .dialog-container {
-      background: white;
-      border-radius: 12px;
-      box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
-      max-width: 560px;
-      width: 90%;
-      max-height: 80vh;
-      overflow: hidden;
-      display: flex;
-      flex-direction: column;
-      animation: slideUp 0.3s ease-out;
-    }
-
-    .dialog-header {
-      display: flex;
-      align-items: center;
-      gap: 12px;
-      padding: 20px 24px;
-      background: linear-gradient(135deg, #fee 0%, #fdd 100%);
-      border-bottom: 1px solid #eee;
-      position: relative;
-    }
-
-    .header-icon {
-      font-size: 28px;
-      width: 28px;
-      height: 28px;
-      color: #e74c3c;
-    }
-
-    .dialog-title {
-      margin: 0;
-      font-size: 18px;
-      font-weight: 600;
-      color: #c0392b;
-      flex: 1;
-    }
-
-    .btn-close {
-      width: 32px;
-      height: 32px;
-      line-height: 32px;
-      
-      mat-icon {
-        font-size: 20px;
-        width: 20px;
-        height: 20px;
-      }
-    }
-
-    .dialog-content {
-      padding: 24px;
-      overflow-y: auto;
-      flex: 1;
-    }
-
-    .module-info {
-      margin-bottom: 20px;
-    }
-
-    .module-name {
-      margin: 0 0 8px 0;
-      font-size: 16px;
-      font-weight: 600;
-      color: #2c3e50;
-    }
-
-    .module-reason {
-      margin: 0;
-      font-size: 14px;
-      color: #7f8c8d;
-      line-height: 1.5;
-    }
-
-    .dependency-card {
-      margin-bottom: 20px;
-      background: #f8f9fa;
-      
-      mat-card-header {
-        margin-bottom: 12px;
+  styles: [
+    `
+      .dialog-backdrop {
+        position: fixed;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        background: rgba(0, 0, 0, 0.5);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        z-index: 2000;
+        animation: fadeIn 0.2s ease-out;
       }
 
-      mat-card-title {
-        font-size: 14px;
-        font-weight: 600;
-        color: #34495e;
-      }
-    }
-
-    .dependency-list {
-      display: flex;
-      flex-direction: column;
-      gap: 12px;
-    }
-
-    .dependency-item {
-      display: flex;
-      align-items: flex-start;
-      gap: 12px;
-      padding: 12px;
-      background: white;
-      border-radius: 8px;
-      border: 1px solid #e0e0e0;
-    }
-
-    .status-icon {
-      font-size: 20px;
-      width: 20px;
-      height: 20px;
-      flex-shrink: 0;
-      margin-top: 2px;
-      
-      &.available {
-        color: #27ae60;
-      }
-      
-      &.unavailable {
-        color: #e74c3c;
-      }
-    }
-
-    .dependency-info {
-      flex: 1;
-      display: flex;
-      flex-direction: column;
-      gap: 4px;
-    }
-
-    .dependency-name {
-      font-size: 14px;
-      font-weight: 500;
-      color: #2c3e50;
-    }
-
-    .dependency-status {
-      font-size: 12px;
-      
-      &.status-available {
-        color: #27ae60;
-      }
-      
-      &.status-unavailable {
-        color: #e74c3c;
-      }
-    }
-
-    .dependency-fallback {
-      font-size: 12px;
-      color: #7f8c8d;
-    }
-
-    .suggestions {
-      h4 {
-        margin: 0 0 12px 0;
-        font-size: 14px;
-        font-weight: 600;
-        color: #34495e;
-      }
-
-      ul {
-        margin: 0;
-        padding-left: 20px;
-        
-        li {
-          font-size: 13px;
-          color: #7f8c8d;
-          line-height: 1.8;
-        }
-      }
-    }
-
-    .dialog-actions {
-      display: flex;
-      justify-content: flex-end;
-      gap: 12px;
-      padding: 16px 24px;
-      background: #f8f9fa;
-      border-top: 1px solid #e0e0e0;
-    }
-
-    .btn-secondary {
-      font-size: 14px;
-    }
-
-    .btn-primary {
-      font-size: 14px;
-      
-      mat-icon {
-        font-size: 18px;
-        width: 18px;
-        height: 18px;
-        margin-right: 4px;
-      }
-    }
-
-    @keyframes fadeIn {
-      from {
-        opacity: 0;
-      }
-      to {
-        opacity: 1;
-      }
-    }
-
-    @keyframes slideUp {
-      from {
-        transform: translateY(20px);
-        opacity: 0;
-      }
-      to {
-        transform: translateY(0);
-        opacity: 1;
-      }
-    }
-
-    /* 响应式设计 */
-    @media (max-width: 768px) {
       .dialog-container {
-        width: 95%;
-        max-height: 90vh;
+        background: white;
+        border-radius: 12px;
+        box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
+        max-width: 560px;
+        width: 90%;
+        max-height: 80vh;
+        overflow: hidden;
+        display: flex;
+        flex-direction: column;
+        animation: slideUp 0.3s ease-out;
       }
 
       .dialog-header {
-        padding: 16px 20px;
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        padding: 20px 24px;
+        background: linear-gradient(135deg, #fee 0%, #fdd 100%);
+        border-bottom: 1px solid #eee;
+        position: relative;
+      }
+
+      .header-icon {
+        font-size: 28px;
+        width: 28px;
+        height: 28px;
+        color: #e74c3c;
+      }
+
+      .dialog-title {
+        margin: 0;
+        font-size: 18px;
+        font-weight: 600;
+        color: #c0392b;
+        flex: 1;
+      }
+
+      .btn-close {
+        width: 32px;
+        height: 32px;
+        line-height: 32px;
+
+        mat-icon {
+          font-size: 20px;
+          width: 20px;
+          height: 20px;
+        }
       }
 
       .dialog-content {
-        padding: 20px;
+        padding: 24px;
+        overflow-y: auto;
+        flex: 1;
+      }
+
+      .module-info {
+        margin-bottom: 20px;
+      }
+
+      .module-name {
+        margin: 0 0 8px 0;
+        font-size: 16px;
+        font-weight: 600;
+        color: #2c3e50;
+      }
+
+      .module-reason {
+        margin: 0;
+        font-size: 14px;
+        color: #7f8c8d;
+        line-height: 1.5;
+      }
+
+      .dependency-card {
+        margin-bottom: 20px;
+        background: #f8f9fa;
+
+        mat-card-header {
+          margin-bottom: 12px;
+        }
+
+        mat-card-title {
+          font-size: 14px;
+          font-weight: 600;
+          color: #34495e;
+        }
+      }
+
+      .dependency-list {
+        display: flex;
+        flex-direction: column;
+        gap: 12px;
+      }
+
+      .dependency-item {
+        display: flex;
+        align-items: flex-start;
+        gap: 12px;
+        padding: 12px;
+        background: white;
+        border-radius: 8px;
+        border: 1px solid #e0e0e0;
+      }
+
+      .status-icon {
+        font-size: 20px;
+        width: 20px;
+        height: 20px;
+        flex-shrink: 0;
+        margin-top: 2px;
+
+        &.available {
+          color: #27ae60;
+        }
+
+        &.unavailable {
+          color: #e74c3c;
+        }
+      }
+
+      .dependency-info {
+        flex: 1;
+        display: flex;
+        flex-direction: column;
+        gap: 4px;
+      }
+
+      .dependency-name {
+        font-size: 14px;
+        font-weight: 500;
+        color: #2c3e50;
+      }
+
+      .dependency-status {
+        font-size: 12px;
+
+        &.status-available {
+          color: #27ae60;
+        }
+
+        &.status-unavailable {
+          color: #e74c3c;
+        }
+      }
+
+      .dependency-fallback {
+        font-size: 12px;
+        color: #7f8c8d;
+      }
+
+      .suggestions {
+        h4 {
+          margin: 0 0 12px 0;
+          font-size: 14px;
+          font-weight: 600;
+          color: #34495e;
+        }
+
+        ul {
+          margin: 0;
+          padding-left: 20px;
+
+          li {
+            font-size: 13px;
+            color: #7f8c8d;
+            line-height: 1.8;
+          }
+        }
       }
 
       .dialog-actions {
-        padding: 12px 20px;
-        flex-direction: column-reverse;
-        
-        button {
-          width: 100%;
+        display: flex;
+        justify-content: flex-end;
+        gap: 12px;
+        padding: 16px 24px;
+        background: #f8f9fa;
+        border-top: 1px solid #e0e0e0;
+      }
+
+      .btn-secondary {
+        font-size: 14px;
+      }
+
+      .btn-primary {
+        font-size: 14px;
+
+        mat-icon {
+          font-size: 18px;
+          width: 18px;
+          height: 18px;
+          margin-right: 4px;
         }
       }
-    }
-  `],
+
+      @keyframes fadeIn {
+        from {
+          opacity: 0;
+        }
+        to {
+          opacity: 1;
+        }
+      }
+
+      @keyframes slideUp {
+        from {
+          transform: translateY(20px);
+          opacity: 0;
+        }
+        to {
+          transform: translateY(0);
+          opacity: 1;
+        }
+      }
+
+      /* 响应式设计 */
+      @media (max-width: 768px) {
+        .dialog-container {
+          width: 95%;
+          max-height: 90vh;
+        }
+
+        .dialog-header {
+          padding: 16px 20px;
+        }
+
+        .dialog-content {
+          padding: 20px;
+        }
+
+        .dialog-actions {
+          padding: 12px 20px;
+          flex-direction: column-reverse;
+
+          button {
+            width: 100%;
+          }
+        }
+      }
+    `,
+  ],
 })
 export class ModuleUnavailableDialogComponent {
   /** 模块名称 */
@@ -393,11 +384,11 @@ export class ModuleUnavailableDialogComponent {
 
   /** 是否有不可用的依赖 */
   get hasUnavailableDependencies(): boolean {
-    return this.dependencyStatus.some(dep => !dep.available);
+    return this.dependencyStatus.some((dep) => !dep.available);
   }
 
   /** 点击背景关闭 */
-  onBackdropClick(event: MouseEvent): void {
+  onBackdropClick(_event: MouseEvent): void {
     this.close.emit();
   }
 }

@@ -12,21 +12,13 @@ import { MatProgressBarModule } from '@angular/material/progress-bar';
 import { Subject } from 'rxjs';
 import { takeUntil } from 'rxjs/operators';
 
-import {
-  AchievementProgress,
-  ProgressMilestone,
-} from '../../models/achievement.model';
+import { AchievementProgress, ProgressMilestone } from '../../models/achievement.model';
 import { AchievementService } from '../../services/achievement.service';
 
 @Component({
   selector: 'app-achievement-progress',
   standalone: true,
-  imports: [
-    CommonModule,
-    MatCardModule,
-    MatIconModule,
-    MatProgressBarModule,
-  ],
+  imports: [CommonModule, MatCardModule, MatIconModule, MatProgressBarModule],
   template: `
     <div class="progress-container">
       <!-- 统计概览卡片 -->

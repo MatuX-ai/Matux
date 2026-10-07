@@ -5,18 +5,18 @@
         <mat-icon class="title-icon">rocket_launch</mat-icon>
         首次设置向导
       </mat-card-title>
-      <mat-card-subtitle>
-        步骤 {{ currentStep + 1 }} / {{ steps.length }}
-      </mat-card-subtitle>
+      <mat-card-subtitle> 步骤 {{ currentStep + 1 }} / {{ steps.length }} </mat-card-subtitle>
     </mat-card-header>
 
     <mat-card-content>
       <!-- 步骤指示器 -->
       <div class="step-indicator">
-        <div *ngFor="let step of steps; let i = index" 
-             class="step-dot" 
-             [class.active]="i === currentStep"
-             [class.completed]="i < currentStep">
+        <div
+          *ngFor="let step of steps; let i = index"
+          class="step-dot"
+          [class.active]="i === currentStep"
+          [class.completed]="i < currentStep"
+        >
           <mat-icon *ngIf="i < currentStep">check</mat-icon>
           <span *ngIf="i >= currentStep">{{ i + 1 }}</span>
         </div>
@@ -53,7 +53,7 @@
             <mat-icon class="section-icon">memory</mat-icon>
             <h3>设备能力评估</h3>
             <p>检测您的硬件配置以推荐合适的插件</p>
-            
+
             <div *ngIf="deviceAssessing" class="assessing-state">
               <mat-spinner diameter="40"></mat-spinner>
               <p>正在检测设备配置...</p>
@@ -76,9 +76,12 @@
               </mat-card>
             </div>
 
-            <button mat-raised-button color="primary" 
-                    (click)="assessDevice()" 
-                    [disabled]="deviceAssessing">
+            <button
+              mat-raised-button
+              color="primary"
+              (click)="assessDevice()"
+              [disabled]="deviceAssessing"
+            >
               <mat-icon>memory</mat-icon>
               {{ deviceAssessing ? '评估中...' : '开始评估' }}
             </button>
@@ -99,9 +102,10 @@
 
             <div *ngIf="!modulesLoading" class="modules-list">
               <div *ngFor="let module of availableModules" class="module-item">
-                <mat-checkbox 
+                <mat-checkbox
                   [checked]="selectedModules.has(module.id)"
-                  (change)="toggleModule(module.id)">
+                  (change)="toggleModule(module.id)"
+                >
                   <div class="module-info">
                     <div class="module-name">
                       {{ module.name }}
@@ -140,9 +144,10 @@
 
             <div *ngIf="!bundlesLoading && bundles.length > 0" class="bundles-list">
               <div *ngFor="let bundle of bundles" class="bundle-item">
-                <mat-checkbox 
+                <mat-checkbox
                   [checked]="selectedBundles.has(bundle.id)"
-                  (change)="toggleBundle(bundle.id)">
+                  (change)="toggleBundle(bundle.id)"
+                >
                   <div class="bundle-info">
                     <div class="bundle-header">
                       <span class="bundle-name">{{ bundle.name }}</span>
@@ -154,9 +159,7 @@
                 </mat-checkbox>
               </div>
 
-              <div class="selection-summary">
-                已选择 {{ selectedBundles.size }} 个捆绑包
-              </div>
+              <div class="selection-summary">已选择 {{ selectedBundles.size }} 个捆绑包</div>
             </div>
           </div>
         </ng-container>
@@ -195,7 +198,10 @@
                 <div class="progress-bar">
                   <div class="progress-fill" [style.width.%]="installProgress"></div>
                 </div>
-                <p class="progress-text">{{ installProgress | number:'1.0-0' }}% ({{ installCurrent }} / {{ installTotal }})</p>
+                <p class="progress-text">
+                  {{ installProgress | number: '1.0-0' }}% ({{ installCurrent }} /
+                  {{ installTotal }})
+                </p>
               </div>
             </div>
           </div>
@@ -217,26 +223,22 @@
     </mat-card-content>
 
     <mat-card-actions class="guide-actions">
-      <button mat-button 
-              (click)="prevStep()" 
-              [disabled]="currentStep === 0 || installing">
+      <button mat-button (click)="prevStep()" [disabled]="currentStep === 0 || installing">
         <mat-icon>arrow_back</mat-icon>
         上一步
       </button>
 
       <span class="spacer"></span>
 
-      <button *ngIf="steps[currentStep]?.optional" 
-              mat-button 
-              (click)="skipStep()">
-        跳过
-      </button>
+      <button *ngIf="steps[currentStep]?.optional" mat-button (click)="skipStep()">跳过</button>
 
-      <button *ngIf="steps[currentStep]?.id !== 'complete'"
-              mat-raised-button 
-              color="primary" 
-              (click)="nextStep()"
-              [disabled]="installing">
+      <button
+        *ngIf="steps[currentStep]?.id !== 'complete'"
+        mat-raised-button
+        color="primary"
+        (click)="nextStep()"
+        [disabled]="installing"
+      >
         下一步
         <mat-icon>arrow_forward</mat-icon>
       </button>

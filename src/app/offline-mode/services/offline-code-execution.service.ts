@@ -147,7 +147,7 @@ export class OfflineCodeExecutionService {
   /**
    * 浏览器端 JavaScript 执行（降级方案）
    * 使用 Sandboxed iframe 隔离执行，确保代码无法访问父窗口
-   * 
+   *
    * @deprecated 降级方案，后端执行是首选方案。此方法仅在无法连接后端时使用。
    *             浏览器端 JavaScript 执行存在安全风险，仅支持基础功能。
    */
@@ -223,7 +223,11 @@ export class OfflineCodeExecutionService {
       `;
 
       // 执行代码
-      const result = (iframeWindow as { eval: (code: string) => { success: boolean; logs: string[]; error: string | null } }).eval(wrappedCode);
+      const result = (
+        iframeWindow as {
+          eval: (code: string) => { success: boolean; logs: string[]; error: string | null };
+        }
+      ).eval(wrappedCode);
 
       // 清理 iframe
       document.body.removeChild(iframe);

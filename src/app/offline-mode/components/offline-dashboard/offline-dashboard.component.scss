@@ -1,18 +1,19 @@
 @use '../../../../styles/design-tokens' as dt;
 @use '../../../../styles/shared/mixins' as *;
+@use '../../../../styles/shared/stem-theme' as stem;
 
 .offline-dashboard {
   max-width: 1200px;
   margin: 0 auto;
   padding: dt.$spacing-xl;
-  
+
   .dashboard-header {
     margin-bottom: dt.$spacing-xxl;
     text-align: center;
 
     h1 {
       margin: 0 0 dt.$spacing-sm;
-      color: #3b82f6;
+      color: stem.$stem-primary;
       font-size: 2rem;
       font-weight: 300;
 
@@ -100,16 +101,14 @@
               font-size: 1.2rem;
               font-weight: 600;
 
-              // stylelint-disable-next-line max-nesting-depth
               &.badge {
                 padding: dt.$spacing-xs dt.$spacing-md;
-                border-radius: dt.$border-radius-xl;
-                background: #e0e0e0;
+                border-radius: stem.$stem-radius-full;
+                background: var(--color-gray-200);
                 font-size: 0.9rem;
 
-                /* stylelint-disable-next-line max-nesting-depth, selector-max-specificity */
                 &.warning {
-                  background: #fff3e0;
+                  background: var(--color-warning-bg);
                   color: dt.$color-warning;
                 }
               }
@@ -135,7 +134,7 @@
             }
 
             .item-count {
-              color: #3b82f6;
+              color: stem.$stem-primary;
               font-weight: 600;
             }
           }
@@ -163,19 +162,16 @@
               color: dt.$color-text-primary;
               font-weight: 500;
 
-              // stylelint-disable-next-line max-nesting-depth
               &.success {
-                color: #2e7d32;
+                color: dt.$color-success;
               }
 
-              // stylelint-disable-next-line max-nesting-depth
               &.warning {
-                color: #ef6c00;
+                color: dt.$color-warning;
               }
 
-              // stylelint-disable-next-line max-nesting-depth
               &.conflict {
-                color: #c62828;
+                color: dt.$color-error;
                 font-weight: 600;
               }
             }
@@ -201,7 +197,7 @@
             font-weight: 500;
 
             &.syncing {
-              color: #2196f3;
+              color: stem.$stem-primary;
             }
           }
         }
@@ -218,7 +214,7 @@
 
           .progress-text {
             min-width: 40px;
-            color: #2196f3;
+            color: stem.$stem-primary;
             font-size: 0.85rem;
             font-weight: 500;
             text-align: right;
@@ -238,7 +234,7 @@
 
       .action-icon {
         margin-bottom: dt.$spacing-lg;
-        color: #3b82f6;
+        color: stem.$stem-primary;
         font-size: 3rem;
       }
 

@@ -10,7 +10,7 @@
     </div>
     <div class="header-right">
       <div class="confidence-badge" [style.background-color]="getConfidenceColor(confidence)">
-        <span class="confidence-value">{{ confidence * 100 | number:'1.0-0' }}%</span>
+        <span class="confidence-value">{{ confidence * 100 | number: '1.0-0' }}%</span>
         <span class="confidence-label">{{ getConfidenceLabel(confidence) }}</span>
       </div>
       <button mat-icon-button (click)="refresh()" [disabled]="loading" matTooltip="刷新推荐">
@@ -29,9 +29,7 @@
   <div *ngIf="error && !loading" class="error-container">
     <mat-icon color="warn">error_outline</mat-icon>
     <p>{{ error }}</p>
-    <button mat-raised-button color="primary" (click)="loadRecommendations()">
-      重试
-    </button>
+    <button mat-raised-button color="primary" (click)="loadRecommendations()">重试</button>
   </div>
 
   <!-- 推荐捆绑包 -->
@@ -75,7 +73,7 @@
       <mat-icon class="section-icon">star</mat-icon>
       推荐插件 ({{ recommendations.length }})
     </h3>
-    
+
     <div *ngIf="recommendations.length === 0" class="empty-state">
       <mat-icon>check_circle</mat-icon>
       <p>所有推荐插件已安装完成</p>
@@ -90,13 +88,16 @@
               <p class="rec-reason">{{ rec.reason }}</p>
             </div>
             <div class="rec-score">
-              <span class="score-value">{{ rec.score * 100 | number:'1.0-0' }}%</span>
+              <span class="score-value">{{ rec.score * 100 | number: '1.0-0' }}%</span>
               <span class="score-label">匹配度</span>
             </div>
           </div>
           <div class="rec-sources">
             <mat-chip-listbox>
-              <mat-chip *ngFor="let source of rec.sources" [color]="source === 'device' ? 'primary' : 'accent'">
+              <mat-chip
+                *ngFor="let source of rec.sources"
+                [color]="source === 'device' ? 'primary' : 'accent'"
+              >
                 {{ source === 'device' ? '设备推荐' : '使用推荐' }}
               </mat-chip>
             </mat-chip-listbox>

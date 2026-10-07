@@ -1,25 +1,28 @@
+// STEM K12 设计系统 - 使用共享主题
+@use 'src/styles/shared/stem-theme' as stem;
+
 /* OpenSciEDU 课程目录组件样式 */
 
 .opensciedu-catalog {
-  padding: 24px;
   max-width: 1400px;
   margin: 0 auto;
+  padding: 24px;
 }
 
 // ==================== 工具栏 ====================
 
 .catalog-toolbar {
   display: flex;
+  flex-wrap: wrap;
   justify-content: space-between;
   align-items: center;
   gap: 16px;
   margin-bottom: 24px;
-  flex-wrap: wrap;
 
   .filter-group {
     display: flex;
-    gap: 12px;
     flex-wrap: wrap;
+    gap: 12px;
 
     .category-select,
     .difficulty-select,
@@ -41,7 +44,7 @@
   margin-bottom: 16px;
 
   .stats-text {
-    color: var(--text-secondary);
+    color: rgba(stem.$stem-primary, 0.7);
     font-size: 14px;
   }
 }
@@ -57,23 +60,25 @@
 // ==================== 课程卡片 ====================
 
 .course-card {
-  cursor: pointer;
-  transition: transform 0.2s ease, box-shadow 0.2s ease;
-  border-radius: 16px;
   overflow: hidden;
+  border-radius: stem.$stem-radius-md;
+  cursor: pointer;
+  transition:
+    transform stem.$stem-transition,
+    box-shadow stem.$stem-transition;
 
   &:hover {
+    box-shadow: stem.$stem-shadow-hover;
     transform: translateY(-4px);
-    box-shadow: 0 12px 24px rgba(0, 0, 0, 0.15);
   }
 
   // 课程封面
   .course-cover {
     position: relative;
+    overflow: hidden;
     width: 100%;
     height: 180px;
-    overflow: hidden;
-    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    background: linear-gradient(135deg, stem.$stem-primary 0%, stem.$stem-primary-dark 100%);
 
     img {
       width: 100%;
@@ -83,17 +88,17 @@
 
     .course-cover-placeholder {
       display: flex;
-      align-items: center;
       justify-content: center;
+      align-items: center;
       width: 100%;
       height: 100%;
       color: white;
       opacity: 0.6;
 
       mat-icon {
-        font-size: 64px;
         width: 64px;
         height: 64px;
+        font-size: 64px;
       }
     }
 
@@ -102,7 +107,7 @@
       top: 12px;
       left: 12px;
       padding: 4px 12px;
-      border-radius: 20px;
+      border-radius: stem.$stem-radius-lg;
       color: white;
       font-size: 12px;
       font-weight: 600;
@@ -113,8 +118,8 @@
       top: 12px;
       right: 12px;
       padding: 4px 12px;
-      border-radius: 20px;
-      background: var(--color-success, #22c55e);
+      border-radius: stem.$stem-radius-lg;
+      background: stem.$stem-success;
       color: white;
       font-size: 12px;
       font-weight: 600;
@@ -126,24 +131,26 @@
     padding: 16px;
 
     .course-title {
+      display: -webkit-box;
+      overflow: hidden;
+      margin: 0 0 8px;
+      color: stem.$stem-primary;
       font-size: 18px;
       font-weight: 600;
-      margin: 0 0 8px;
-      color: var(--text-primary);
-      display: -webkit-box;
-      -webkit-line-clamp: 2;
       -webkit-box-orient: vertical;
-      overflow: hidden;
+      -webkit-line-clamp: 2;
+      line-clamp: 2;
     }
 
     .course-description {
-      font-size: 14px;
-      color: var(--text-secondary);
-      margin: 0 0 12px;
       display: -webkit-box;
-      -webkit-line-clamp: 2;
-      -webkit-box-orient: vertical;
       overflow: hidden;
+      margin: 0 0 12px;
+      color: rgba(stem.$stem-primary, 0.7);
+      font-size: 14px;
+      -webkit-box-orient: vertical;
+      -webkit-line-clamp: 2;
+      line-clamp: 2;
     }
   }
 
@@ -162,25 +169,25 @@
     }
 
     .instructor-avatar-placeholder {
+      display: flex;
+      justify-content: center;
+      align-items: center;
       width: 32px;
       height: 32px;
       border-radius: 50%;
-      background: var(--bg-secondary);
-      display: flex;
-      align-items: center;
-      justify-content: center;
+      background: rgba(stem.$stem-primary, 0.1);
 
       mat-icon {
-        font-size: 18px;
         width: 18px;
         height: 18px;
-        color: var(--text-secondary);
+        color: stem.$stem-primary;
+        font-size: 18px;
       }
     }
 
     .instructor-name {
+      color: rgba(stem.$stem-primary, 0.7);
       font-size: 14px;
-      color: var(--text-secondary);
     }
   }
 
@@ -194,13 +201,13 @@
       display: flex;
       align-items: center;
       gap: 4px;
+      color: rgba(stem.$stem-primary, 0.7);
       font-size: 13px;
-      color: var(--text-secondary);
 
       mat-icon {
-        font-size: 16px;
         width: 16px;
         height: 16px;
+        font-size: 16px;
       }
     }
   }
@@ -208,8 +215,9 @@
   // 标签
   .course-tags {
     .tag-chip {
-      font-size: 12px;
       height: 24px;
+      border-radius: stem.$stem-radius-lg;
+      font-size: 12px;
     }
   }
 }
@@ -221,29 +229,29 @@
 .empty-state {
   display: flex;
   flex-direction: column;
-  align-items: center;
   justify-content: center;
+  align-items: center;
   padding: 64px 24px;
   text-align: center;
 
   mat-icon {
-    font-size: 64px;
     width: 64px;
     height: 64px;
-    color: var(--text-secondary);
     margin-bottom: 16px;
+    color: stem.$stem-primary;
+    font-size: 64px;
   }
 
   p {
-    font-size: 16px;
-    color: var(--text-secondary);
     margin-bottom: 16px;
+    color: rgba(stem.$stem-primary, 0.7);
+    font-size: 16px;
   }
 }
 
 .error-state {
   mat-icon {
-    color: var(--color-error, #ef4444);
+    color: stem.$stem-error;
   }
 }
 
@@ -253,11 +261,16 @@
   display: flex;
   justify-content: center;
   padding: 24px;
+
+  button {
+    border-radius: stem.$stem-radius-lg;
+    transition: all stem.$stem-transition;
+  }
 }
 
 // ==================== 响应式 ====================
 
-@media (max-width: 768px) {
+@media (width <= 768px) {
   .catalog-toolbar {
     flex-direction: column;
     align-items: stretch;

@@ -5,6 +5,39 @@
     <p>正在加载数字孪生实验室...</p>
   </div>
 
+  <!-- 【P4-E】全局连接状态条：不论加载/错误状态，始终可见 -->
+  <div *ngIf="!isLoading" class="global-connection-bar">
+    <div class="connection-status">
+      <mat-icon
+        [ngClass]="{ connected: isConnected, disconnected: !isConnected }"
+        [matTooltip]="wsTooltipText"
+      >
+        {{ isConnected ? 'link' : 'link_off' }}
+      </mat-icon>
+      <span>{{ wsStatusText }}</span>
+      <button
+        *ngIf="websocketState === 'failed' || websocketState === 'disconnected' || websocketState === 'unsupported' || websocketState === 'reconnecting'"
+        mat-icon-button
+        color="primary"
+        (click)="retryWebSocket()"
+        matTooltip="重试连接"
+        class="reconnect-btn"
+      >
+        <mat-icon>refresh</mat-icon>
+      </button>
+    </div>
+
+    <!-- 【P2-4 修复】离线/连接失败提示条：含 reconnecting 状态 -->
+    <div
+      *ngIf="websocketState === 'failed' || websocketState === 'disconnected' || websocketState === 'unsupported' || websocketState === 'reconnecting'"
+      class="offline-banner"
+    >
+      <mat-icon>cloud_off</mat-icon>
+      <span>{{ wsBannerText }}</span>
+      <button mat-button color="primary" (click)="retryWebSocket()">重新连接</button>
+    </div>
+  </div>
+
   <!-- 错误状态 -->
   <div *ngIf="errorMessage && !isLoading" class="error-container">
     <mat-icon>error</mat-icon>
@@ -25,13 +58,6 @@
         <h1>数字孪生实验室</h1>
         <p>会话ID: {{ sessionId }}</p>
         <p>参与者: {{ participantCount }} 人</p>
-      </div>
-
-      <div class="connection-status">
-        <mat-icon [ngClass]="{ connected: isConnected, disconnected: !isConnected }">
-          {{ isConnected ? 'link' : 'link_off' }}
-        </mat-icon>
-        <span>{{ isConnected ? '已连接' : '未连接' }}</span>
       </div>
 
       <div class="toolbar-controls">

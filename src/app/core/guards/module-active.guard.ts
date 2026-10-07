@@ -14,15 +14,10 @@
  */
 
 import { Injectable } from '@angular/core';
-import {
-  ActivatedRouteSnapshot,
-  CanActivate,
-  RouterStateSnapshot,
-  UrlTree,
-} from '@angular/router';
 import { MatSnackBar } from '@angular/material/snack-bar';
+import { ActivatedRouteSnapshot, CanActivate, RouterStateSnapshot, UrlTree } from '@angular/router';
 import { Observable, of } from 'rxjs';
-import { catchError, map, tap } from 'rxjs/operators';
+import { catchError, tap } from 'rxjs/operators';
 
 import { ModuleStatusService } from '../services/module-status.service';
 
@@ -61,17 +56,28 @@ const MODULE_LABELS: Record<string, string> = {
 export class ModuleActiveGuard implements CanActivate {
   constructor(
     private moduleStatus: ModuleStatusService,
-    private snackBar: MatSnackBar,
+    private snackBar: MatSnackBar
   ) {}
 
   canActivate(
     route: ActivatedRouteSnapshot,
-    _state: RouterStateSnapshot,
+    _state: RouterStateSnapshot
   ): Observable<boolean | UrlTree> {
     const moduleName = route.data['requiredModule'] as string | undefined;
 
     if (!moduleName) {
       // 未配置 requiredModule，直接放行
+      return of(true);
+    }
+
+    // 修复：竞态条件处理
+    // 当模块列表为空时，先触发健康检查然后等待结果
+    const modules = this.moduleStatus.modules$.value;
+    if (!modules || modules.length === 0) {
+      // 模块状态未初始化，先获取状态
+      this.moduleStatus.fetchHealth();
+      // 返回 true 放行，让组件自己处理降级
+      // 这样可以避免路由被阻止
       return of(true);
     }
 
@@ -92,8 +98,10 @@ export class ModuleActiveGuard implements CanActivate {
     }
 
     if (entry?.state === 'failed') {
+      // 【P1-BUG03 修复】后端 health-detail 返回 'failed' 时不应拦截用户访问。
+      // 改为记录提示信息并放行,让组件内部处理降级逻辑,避免整个路由不可达。
       this.showFailedMessage(moduleName, entry.error_message);
-      return of(false);
+      return of(true);
     }
 
     // 触发激活
@@ -106,18 +114,17 @@ export class ModuleActiveGuard implements CanActivate {
         if (success) {
           const updatedEntry = this.moduleStatus.getModule(moduleName);
           if (updatedEntry?.state === 'degraded') {
-            this.showDegradedBanner(
-              moduleName,
-              updatedEntry.error_message,
-            );
+            this.showDegradedBanner(moduleName, updatedEntry.error_message);
           }
         }
       }),
       catchError(() => {
         this.snackBar.dismiss();
-        this.showFailedMessage(moduleName, '激活超时');
-        return of(false);
-      }),
+        // 【P1-BUG03 修复】激活失败时改为放行 + 提示降级运行,而不是返回 false
+        // 拦截用户访问。后端不可达不应该完全阻塞路由。
+        this.showFailedMessage(moduleName, '后端不可达，以降级模式访问');
+        return of(true);
+      })
     );
   }
 
@@ -130,14 +137,9 @@ export class ModuleActiveGuard implements CanActivate {
     });
   }
 
-  private showDegradedBanner(
-    moduleName: string,
-    reason: string | null,
-  ): void {
+  private showDegradedBanner(moduleName: string, reason: string | null): void {
     const label = MODULE_LABELS[moduleName] || moduleName;
-    const msg = reason
-      ? `${label} 降级运行中: ${reason}`
-      : `${label} 降级运行中，部分功能受限`;
+    const msg = reason ? `${label} 降级运行中: ${reason}` : `${label} 降级运行中，部分功能受限`;
     this.snackBar.open(msg, '关闭', {
       duration: 8000,
       panelClass: ['module-degraded-snackbar'],
@@ -148,36 +150,28 @@ export class ModuleActiveGuard implements CanActivate {
 
   private showDisabledMessage(moduleName: string): void {
     const label = MODULE_LABELS[moduleName] || moduleName;
-    this.snackBar.open(
-      `${label} 功能已被管理员禁用`,
-      '关闭',
-      {
-        duration: 5000,
-        panelClass: ['module-unavailable-snackbar'],
-        horizontalPosition: 'center',
-        verticalPosition: 'top',
-      },
-    );
+    this.snackBar.open(`${label} 功能已被管理员禁用`, '关闭', {
+      duration: 5000,
+      panelClass: ['module-unavailable-snackbar'],
+      horizontalPosition: 'center',
+      verticalPosition: 'top',
+    });
   }
 
-  private showFailedMessage(
-    moduleName: string,
-    error: string | null,
-  ): void {
+  private showFailedMessage(moduleName: string, error: string | null): void {
     const label = MODULE_LABELS[moduleName] || moduleName;
     const detail = error ? `: ${error}` : '';
-    this.snackBar.open(
-      `${label} 功能暂时不可用${detail}`,
-      '重试',
-      {
+    this.snackBar
+      .open(`${label} 功能暂时不可用${detail}`, '重试', {
         duration: 8000,
         panelClass: ['module-unavailable-snackbar'],
         horizontalPosition: 'center',
         verticalPosition: 'top',
-      },
-    ).onAction().subscribe(() => {
-      // 重试
-      this.moduleStatus.ensureModuleActive(moduleName).subscribe();
-    });
+      })
+      .onAction()
+      .subscribe(() => {
+        // 重试
+        this.moduleStatus.ensureModuleActive(moduleName).subscribe();
+      });
   }
 }

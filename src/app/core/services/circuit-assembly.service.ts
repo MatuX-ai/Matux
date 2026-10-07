@@ -4,7 +4,7 @@
  * 实现"拖放 - 吸附"的虚拟焊接/插装功能
  * 检测元件与焊盘的接近度，实现自动对齐吸附
  *
- * @author iMatu Development Team
+ * @author MatuX Lab
  * @version 1.0.0
  */
 

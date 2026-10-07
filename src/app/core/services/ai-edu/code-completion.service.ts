@@ -5,6 +5,10 @@ import { shareReplay, switchMap } from 'rxjs/operators';
 import { environment } from '../../../../environments/environment';
 import { unifiedHttpClient } from '../unified-http-client';
 
+// DeepSeek模型标识
+export const DEEPSEEK_PROVIDER = 'deepseek';
+export const DEEPSEEK_MODEL = 'deepseek-chat';
+
 // 数据模型接口
 export interface CompletionSuggestion {
   text: string;
@@ -38,6 +42,118 @@ export interface CompletionRequest {
   userId?: number;
 }
 
+// ========== DeepSeek 增强功能 ==========
+
+/**
+ * DeepSeek 代码解释请求
+ */
+export interface DeepSeekExplainRequest {
+  code: string;
+  language?: string;
+  detailLevel?: 'brief' | 'normal' | 'detailed';
+  userId?: number;
+}
+
+/**
+ * DeepSeek 代码解释响应
+ */
+export interface DeepSeekExplainResponse {
+  explanation: string;
+  codeElements: CodeElement[];
+  complexity: CodeComplexity;
+  suggestions: string[];
+  relatedConcepts: string[];
+  modelUsed: string;
+  processingTime: number;
+}
+
+/**
+ * 代码元素
+ */
+export interface CodeElement {
+  name: string;
+  type: 'function' | 'class' | 'variable' | 'import' | 'keyword';
+  description: string;
+  lineStart: number;
+  lineEnd: number;
+}
+
+/**
+ * 代码复杂度
+ */
+export interface CodeComplexity {
+  score: number;
+  level: 'low' | 'medium' | 'high';
+  factors: string[];
+}
+
+/**
+ * DeepSeek 代码优化请求
+ */
+export interface DeepSeekOptimizeRequest {
+  code: string;
+  language?: string;
+  optimizationGoals?: ('performance' | 'readability' | 'security' | 'best-practice')[];
+  userId?: number;
+}
+
+/**
+ * DeepSeek 代码优化响应
+ */
+export interface DeepSeekOptimizeResponse {
+  originalCode: string;
+  optimizedCode: string;
+  improvements: OptimizationImprovement[];
+  explanation: string;
+  warnings: string[];
+  modelUsed: string;
+  processingTime: number;
+}
+
+/**
+ * 优化改进项
+ */
+export interface OptimizationImprovement {
+  type: 'performance' | 'readability' | 'security' | 'best-practice';
+  description: string;
+  originalSnippet: string;
+  optimizedSnippet: string;
+  impact: 'high' | 'medium' | 'low';
+}
+
+/**
+ * DeepSeek 智能辅导请求
+ */
+export interface DeepSeekTutorRequest {
+  code?: string;
+  question: string;
+  context?: string[];
+  language?: string;
+  userId?: number;
+}
+
+/**
+ * DeepSeek 智能辅导响应
+ */
+export interface DeepSeekTutorResponse {
+  answer: string;
+  codeExamples: CodeExample[];
+  relatedTopics: string[];
+  nextSteps: string[];
+  modelUsed: string;
+  processingTime: number;
+}
+
+/**
+ * 代码示例
+ */
+export interface CodeExample {
+  title: string;
+  code: string;
+  language: string;
+  explanation: string;
+}
+
 export interface ContextAnalysisResult {
   scopeLevel: string;
   syntaxContext: string;
@@ -59,8 +175,17 @@ export interface UserPattern {
 })
 export class CodeCompletionService {
   private readonly API_BASE_URL = `${environment.apiUrl}/api/v1/completion`;
+  private readonly AI_TUTOR_BASE_URL = `${environment.apiUrl}/api/v1/ai-tutor`;
   private cache = new Map<string, CachedResponse>();
   private cacheTimeout = 300000; // 5分钟缓存
+
+  // DeepSeek 配置
+  private readonly DEEPSEEK_CONFIG = {
+    provider: DEEPSEEK_PROVIDER,
+    model: DEEPSEEK_MODEL,
+    temperature: 0.7,
+    maxTokens: 2000,
+  };
 
   // WebSocket连接相关
   private websocket: WebSocket | null = null;
@@ -484,6 +609,172 @@ export class CodeCompletionService {
    */
   private getAuthToken(): string {
     return localStorage.getItem('access_token') ?? '';
+  }
+
+  // ========== DeepSeek 增强功能实现 ==========
+
+  /**
+   * 使用 DeepSeek 解释代码
+   * 提供代码的详细解释、元素分析、复杂度评估
+   */
+  explainCodeWithDeepSeek(request: DeepSeekExplainRequest): Observable<DeepSeekExplainResponse> {
+    return of(null).pipe(
+      switchMap(async () => {
+        try {
+          const response = await unifiedHttpClient.post<DeepSeekExplainResponse>(
+            `${this.AI_TUTOR_BASE_URL}/explain`,
+            {
+              ...request,
+              provider: DEEPSEEK_PROVIDER,
+              model: DEEPSEEK_MODEL,
+            }
+          );
+          return response.data;
+        } catch (error) {
+          console.error('DeepSeek代码解释失败:', error);
+          return this.getDefaultExplainResponse();
+        }
+      }),
+      shareReplay(1)
+    );
+  }
+
+  /**
+   * 使用 DeepSeek 优化代码
+   * 提供性能、可读性、安全性等方面的优化建议
+   */
+  optimizeCodeWithDeepSeek(request: DeepSeekOptimizeRequest): Observable<DeepSeekOptimizeResponse> {
+    return of(null).pipe(
+      switchMap(async () => {
+        try {
+          const response = await unifiedHttpClient.post<DeepSeekOptimizeResponse>(
+            `${this.AI_TUTOR_BASE_URL}/optimize`,
+            {
+              ...request,
+              provider: DEEPSEEK_PROVIDER,
+              model: DEEPSEEK_MODEL,
+            }
+          );
+          return response.data;
+        } catch (error) {
+          console.error('DeepSeek代码优化失败:', error);
+          return this.getDefaultOptimizeResponse(request.code);
+        }
+      }),
+      shareReplay(1)
+    );
+  }
+
+  /**
+   * 使用 DeepSeek 进行智能编程辅导
+   * 回答编程问题，提供代码示例和解释
+   */
+  askDeepSeekTutor(request: DeepSeekTutorRequest): Observable<DeepSeekTutorResponse> {
+    return of(null).pipe(
+      switchMap(async () => {
+        try {
+          const response = await unifiedHttpClient.post<DeepSeekTutorResponse>(
+            `${this.AI_TUTOR_BASE_URL}/tutor`,
+            {
+              ...request,
+              provider: DEEPSEEK_PROVIDER,
+              model: DEEPSEEK_MODEL,
+            }
+          );
+          return response.data;
+        } catch (error) {
+          console.error('DeepSeek智能辅导失败:', error);
+          return this.getDefaultTutorResponse(request.question);
+        }
+      }),
+      shareReplay(1)
+    );
+  }
+
+  /**
+   * 使用 DeepSeek 进行实时代码补全（流式）
+   * 支持流式输出，提供更快的反馈
+   */
+  streamCompletionWithDeepSeek(
+    prefix: string,
+    context: string[],
+    language: string = 'python'
+  ): Observable<string> {
+    return new Observable((observer) => {
+      const request: CompletionRequest = {
+        prefix,
+        context,
+        language,
+        provider: DEEPSEEK_PROVIDER,
+        maxSuggestions: 3,
+        temperature: this.DEEPSEEK_CONFIG.temperature,
+      };
+
+      this.getSuggestions(request).subscribe({
+        next: (response) => {
+          if (response.suggestions.length > 0) {
+            observer.next(response.suggestions[0].text);
+          }
+          observer.complete();
+        },
+        error: (error) => observer.error(error),
+      });
+    });
+  }
+
+  /**
+   * 设置 DeepSeek 为默认补全提供商
+   */
+  setDeepSeekAsDefaultProvider(): void {
+    // 更新请求默认provider
+    this.DEEPSEEK_CONFIG.provider = DEEPSEEK_PROVIDER;
+  }
+
+  /**
+   * 获取 DeepSeek 配置信息
+   */
+  getDeepSeekConfig(): { provider: string; model: string } {
+    return {
+      provider: this.DEEPSEEK_CONFIG.provider,
+      model: this.DEEPSEEK_CONFIG.model,
+    };
+  }
+
+  // ========== 默认响应 ==========
+
+  private getDefaultExplainResponse(): DeepSeekExplainResponse {
+    return {
+      explanation: '抱歉，无法获取代码解释。请确保后端服务正常运行。',
+      codeElements: [],
+      complexity: { score: 0, level: 'low', factors: [] },
+      suggestions: [],
+      relatedConcepts: [],
+      modelUsed: 'error',
+      processingTime: 0,
+    };
+  }
+
+  private getDefaultOptimizeResponse(code: string): DeepSeekOptimizeResponse {
+    return {
+      originalCode: code,
+      optimizedCode: code,
+      improvements: [],
+      explanation: '抱歉，无法获取代码优化建议。请确保后端服务正常运行。',
+      warnings: [],
+      modelUsed: 'error',
+      processingTime: 0,
+    };
+  }
+
+  private getDefaultTutorResponse(question: string): DeepSeekTutorResponse {
+    return {
+      answer: '抱歉，无法获取智能辅导。请确保后端服务正常运行。',
+      codeExamples: [],
+      relatedTopics: [],
+      nextSteps: [],
+      modelUsed: 'error',
+      processingTime: 0,
+    };
   }
 }
 

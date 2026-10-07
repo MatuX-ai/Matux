@@ -1,7 +1,8 @@
+/* eslint-disable no-console, @typescript-eslint/no-unsafe-member-access, @typescript-eslint/no-unsafe-assignment */
 import { CommonModule } from '@angular/common';
-import { Component, OnInit } from '@angular/core';
+import { ChangeDetectorRef, Component, OnInit } from '@angular/core';
 import { Router, RouterModule } from '@angular/router';
-import { catchError, finalize, of } from 'rxjs';
+import { catchError, of } from 'rxjs';
 
 import { Exam, ExamService } from '../../services/exam.service';
 
@@ -40,7 +41,7 @@ import { Exam, ExamService } from '../../services/exam.service';
             <span>⏱ {{ exam.duration_minutes }} 分钟</span>
             <span>📊 {{ exam.passing_score }} 分及格</span>
           </div>
-          <div *ngIf="exam.attempt_count > 0" class="attempt-info">
+          <div *ngIf="exam.attempt_count" class="attempt-info">
             已有 {{ exam.attempt_count }} 人参加
           </div>
           <button class="start-button">
@@ -195,7 +196,8 @@ export class ExamListComponent implements OnInit {
 
   constructor(
     private examService: ExamService,
-    private router: Router
+    private router: Router,
+    private cdr: ChangeDetectorRef
   ) {}
 
   ngOnInit(): void {
@@ -209,14 +211,32 @@ export class ExamListComponent implements OnInit {
       .getExams('published')
       .pipe(
         catchError((err: Error) => {
+          console.error('[ExamList] 加载测验失败:', err);
           this.error = true;
-          this.errorMessage = err.message || '加载失败';
+          this.errorMessage = err?.message || '加载失败';
+          this.loading = false;
           return of({ exams: [], total: 0, page: 1, page_size: 20 });
-        }),
-        finalize(() => (this.loading = false))
+        })
       )
-      .subscribe((response) => {
-        this.exams = response.exams;
+      .subscribe({
+        next: (response) => {
+          console.log('[ExamList] 收到响应:', response);
+          this.exams = response.exams;
+          this.loading = false;
+          this.cdr.detectChanges();
+        },
+        error: (err) => {
+          console.error('[ExamList] 订阅错误:', err);
+          this.error = true;
+          this.errorMessage = err?.message || '加载失败';
+          this.loading = false;
+          this.cdr.detectChanges();
+        },
+        complete: () => {
+          console.log('[ExamList] 订阅完成');
+          this.loading = false;
+          this.cdr.detectChanges();
+        },
       });
   }
 

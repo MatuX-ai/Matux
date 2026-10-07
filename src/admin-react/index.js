@@ -1,7 +1,7 @@
 /**
  * React Admin管理后台入口文件
  * @description 应用程序的根入口点
- * @author iMatuProject Team
+ * @author MatuX Lab
  * @version 1.0.0
  */
 

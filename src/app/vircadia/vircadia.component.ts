@@ -1,13 +1,13 @@
 import { Component } from '@angular/core';
+import { MatButtonModule } from '@angular/material/button';
 import { MatIconModule } from '@angular/material/icon';
-import { MatTabsModule } from '@angular/material/tabs';
 import { MatToolbarModule } from '@angular/material/toolbar';
 import { RouterModule } from '@angular/router';
 
 @Component({
   selector: 'app-vircadia',
   standalone: true,
-  imports: [RouterModule, MatTabsModule, MatIconModule, MatToolbarModule],
+  imports: [RouterModule, MatButtonModule, MatIconModule, MatToolbarModule],
   template: `
     <div class="vircadia-container">
       <mat-toolbar class="vircadia-toolbar">
@@ -16,14 +16,17 @@ import { RouterModule } from '@angular/router';
           Vircadia 元宇宙
         </span>
         <nav class="toolbar-nav">
-          <a mat-tab-link routerLink="classroom" routerLinkActive="active-link">
-            <mat-icon>school</mat-icon> 虚拟教室
+          <a mat-button routerLink="classroom" routerLinkActive="active-link">
+            <mat-icon>school</mat-icon>
+            <span class="nav-label">虚拟教室</span>
           </a>
-          <a mat-tab-link routerLink="lab" routerLinkActive="active-link">
-            <mat-icon>science</mat-icon> 虚拟实验室
+          <a mat-button routerLink="lab" routerLinkActive="active-link">
+            <mat-icon>science</mat-icon>
+            <span class="nav-label">虚拟实验室</span>
           </a>
-          <a mat-tab-link routerLink="avatar" routerLinkActive="active-link">
-            <mat-icon>face</mat-icon> Avatar 换装
+          <a mat-button routerLink="avatar" routerLinkActive="active-link">
+            <mat-icon>face</mat-icon>
+            <span class="nav-label">Avatar 换装</span>
           </a>
         </nav>
       </mat-toolbar>
@@ -45,6 +48,7 @@ import { RouterModule } from '@angular/router';
         gap: 16px;
         background: #1a1a2e;
         color: white;
+        min-height: 56px;
       }
       .toolbar-title {
         display: flex;
@@ -62,21 +66,13 @@ import { RouterModule } from '@angular/router';
       .toolbar-nav a {
         color: rgba(255, 255, 255, 0.7);
         text-decoration: none;
-        padding: 8px 16px;
-        display: flex;
-        align-items: center;
-        gap: 6px;
-        border-radius: 8px;
-        transition: all 0.2s;
-        font-size: 14px;
-      }
-      .toolbar-nav a:hover {
-        color: white;
-        background: rgba(255, 255, 255, 0.1);
       }
       .toolbar-nav a.active-link {
         color: white;
         background: rgba(255, 255, 255, 0.15);
+      }
+      .nav-label {
+        margin-left: 4px;
       }
       .vircadia-content {
         flex: 1;

@@ -65,15 +65,37 @@ export interface StatsCardConfig {
   `,
   styles: [
     `
+      /* K12 STEM 探索绿主题 */
+      :host {
+        --stem-primary: #059669;
+        --stem-primary-light: #10b981;
+        --stem-secondary: #0ea5e9;
+        --stem-success: #059669;
+        --stem-warning: #f59e0b;
+        --stem-error: #ef4444;
+        --stem-text-primary: #1c1917;
+        --stem-text-secondary: #57534e;
+        --stem-bg-surface: #ffffff;
+        --stem-radius-lg: 20px;
+        --stem-radius-md: 12px;
+        --stem-shadow-sm: 0 1px 3px rgba(5, 150, 105, 0.08);
+        --stem-shadow-card-hover: 0 14px 28px rgba(5, 150, 105, 0.12);
+        --stem-gradient-explore: linear-gradient(135deg, #059669 0%, #0ea5e9 100%);
+      }
+
       :host {
         display: block;
       }
 
       .stats-card {
         height: 100%;
+        // STEM 圆角和阴影
+        border-radius: var(--stem-radius-lg, 20px);
+        box-shadow: var(--stem-shadow-sm);
+        background: var(--stem-bg-surface, #ffffff);
         transition:
-          transform 0.2s ease,
-          box-shadow 0.2s ease;
+          transform 0.25s cubic-bezier(0.4, 0, 0.2, 1),
+          box-shadow 0.25s cubic-bezier(0.4, 0, 0.2, 1);
 
         mat-card-content {
           display: flex;
@@ -85,8 +107,8 @@ export interface StatsCardConfig {
 
         &:hover {
           &.clickable {
-            transform: translateY(-2px);
-            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+            transform: translateY(-4px);
+            box-shadow: var(--stem-shadow-card-hover);
             cursor: pointer;
           }
         }
@@ -99,7 +121,7 @@ export interface StatsCardConfig {
         justify-content: center;
         width: 48px;
         height: 48px;
-        border-radius: 12px;
+        border-radius: var(--stem-radius-md, 12px);
 
         mat-icon {
           font-size: 24px;
@@ -108,24 +130,33 @@ export interface StatsCardConfig {
           color: white;
         }
 
+        // STEM 探索绿主题色
         &.color-primary {
-          background-color: #0f172a;
+          background: var(--stem-gradient-explore);
         }
 
         &.color-accent {
-          background-color: #3b82f6;
+          background: linear-gradient(
+            135deg,
+            var(--stem-secondary, #0ea5e9) 0%,
+            var(--stem-secondary-light, #38bdf8) 100%
+          );
         }
 
         &.color-warn {
-          background-color: #ef4444;
+          background: linear-gradient(135deg, var(--stem-warning, #f59e0b) 0%, #fbbf24 100%);
         }
 
         &.color-success {
-          background-color: #10b981;
+          background: linear-gradient(
+            135deg,
+            var(--stem-success, #059669) 0%,
+            var(--stem-primary-light, #10b981) 100%
+          );
         }
 
         &.color-default {
-          background-color: #757575;
+          background: #757575;
         }
       }
 
@@ -137,21 +168,22 @@ export interface StatsCardConfig {
           margin: 0 0 4px 0;
           font-size: 32px;
           font-weight: 700;
-          color: #333;
+          // STEM 主题文本色
+          color: var(--stem-text-primary, #1c1917);
           line-height: 1.2;
         }
 
         .label {
           margin: 0;
           font-size: 14px;
-          color: #666;
+          color: var(--stem-text-secondary, #57534e);
           line-height: 1.4;
         }
 
         .subtitle {
           margin: 4px 0 0 0;
           font-size: 12px;
-          color: #999;
+          color: #78716c;
           line-height: 1.4;
         }
       }
@@ -175,11 +207,11 @@ export interface StatsCardConfig {
         }
 
         .positive {
-          color: #10b981;
+          color: var(--stem-success, #059669);
         }
 
         .negative {
-          color: #ef4444;
+          color: var(--stem-error, #ef4444);
         }
       }
 

@@ -1,7 +1,7 @@
 /**
  * 许可证编辑组件
  * @description 提供许可证信息的编辑功能
- * @author iMatuProject Team
+ * @author MatuX Lab
  * @version 1.0.0
  */
 

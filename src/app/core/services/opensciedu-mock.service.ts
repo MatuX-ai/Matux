@@ -1,3 +1,4 @@
+/* eslint-disable no-console */
 /**
  * OpenSciEDU 模拟数据服务
  *
@@ -19,21 +20,19 @@
  */
 
 import { Injectable } from '@angular/core';
-import { Observable, of, delay } from 'rxjs';
+import { delay, Observable, of } from 'rxjs';
+
 import {
   CourseCategory,
-  CourseInstructor,
   CourseChapter,
-  CourseLesson,
-  PublicCourse,
-  CourseListResponse,
   CourseDetail,
-  KnowledgeNode,
-  KnowledgeEdge,
+  CourseInstructor,
+  CourseLesson,
+  CourseListResponse,
   KnowledgeGraphData,
+  PublicCourse,
   SearchResult,
 } from './opensciedu.service';
-
 
 /**
  * 内置模拟课程数据
@@ -47,9 +46,24 @@ const MOCK_CATEGORIES: CourseCategory[] = [
 ];
 
 const MOCK_INSTRUCTORS: CourseInstructor[] = [
-  { id: 't1', name: '李老师', avatar: 'https://api.dicebear.com/7.x/avataaars/svg?seed=t1', title: '资深编程讲师' },
-  { id: 't2', name: '王博士', avatar: 'https://api.dicebear.com/7.x/avataaars/svg?seed=t2', title: 'AI 算法专家' },
-  { id: 't3', name: '张工程师', avatar: 'https://api.dicebear.com/7.x/avataaars/svg?seed=t3', title: '全栈开发工程师' },
+  {
+    id: 't1',
+    name: '李老师',
+    avatar: 'https://api.dicebear.com/7.x/avataaars/svg?seed=t1',
+    title: '资深编程讲师',
+  },
+  {
+    id: 't2',
+    name: '王博士',
+    avatar: 'https://api.dicebear.com/7.x/avataaars/svg?seed=t2',
+    title: 'AI 算法专家',
+  },
+  {
+    id: 't3',
+    name: '张工程师',
+    avatar: 'https://api.dicebear.com/7.x/avataaars/svg?seed=t3',
+    title: '全栈开发工程师',
+  },
 ];
 
 const MOCK_COURSES: PublicCourse[] = [
@@ -201,16 +215,106 @@ const MOCK_COURSES: PublicCourse[] = [
 
 const MOCK_KNOWLEDGE_GRAPH: KnowledgeGraphData = {
   nodes: [
-    { id: 'k001', name: '编程基础', category: 'programming', level: 0, description: '编程入门知识', courseCount: 5, positionX: 400, positionY: 100 },
-    { id: 'k002', name: '变量与数据类型', category: 'programming', level: 1, description: '基本数据概念', courseCount: 4, positionX: 250, positionY: 200 },
-    { id: 'k003', name: '控制流程', category: 'programming', level: 1, description: '条件与循环', courseCount: 4, positionX: 400, positionY: 200 },
-    { id: 'k004', name: '函数', category: 'programming', level: 1, description: '代码复用', courseCount: 3, positionX: 550, positionY: 200 },
-    { id: 'k005', name: '算法思维', category: 'algorithm', level: 1, description: '问题解决能力', courseCount: 3, positionX: 400, positionY: 300 },
-    { id: 'k006', name: '排序算法', category: 'algorithm', level: 2, description: '经典排序', courseCount: 2, positionX: 250, positionY: 380 },
-    { id: 'k007', name: '搜索算法', category: 'algorithm', level: 2, description: '查找技术', courseCount: 2, positionX: 400, positionY: 380 },
-    { id: 'k008', name: '数据结构', category: 'algorithm', level: 2, description: '数据组织', courseCount: 2, positionX: 550, positionY: 380 },
-    { id: 'k009', name: 'Web 开发', category: 'web', level: 1, description: '网页技术', courseCount: 3, positionX: 700, positionY: 300 },
-    { id: 'k010', name: '人工智能', category: 'ai', level: 2, description: 'AI 与 ML', courseCount: 2, positionX: 700, positionY: 200 },
+    {
+      id: 'k001',
+      name: '编程基础',
+      category: 'programming',
+      level: 0,
+      description: '编程入门知识',
+      courseCount: 5,
+      positionX: 400,
+      positionY: 100,
+    },
+    {
+      id: 'k002',
+      name: '变量与数据类型',
+      category: 'programming',
+      level: 1,
+      description: '基本数据概念',
+      courseCount: 4,
+      positionX: 250,
+      positionY: 200,
+    },
+    {
+      id: 'k003',
+      name: '控制流程',
+      category: 'programming',
+      level: 1,
+      description: '条件与循环',
+      courseCount: 4,
+      positionX: 400,
+      positionY: 200,
+    },
+    {
+      id: 'k004',
+      name: '函数',
+      category: 'programming',
+      level: 1,
+      description: '代码复用',
+      courseCount: 3,
+      positionX: 550,
+      positionY: 200,
+    },
+    {
+      id: 'k005',
+      name: '算法思维',
+      category: 'algorithm',
+      level: 1,
+      description: '问题解决能力',
+      courseCount: 3,
+      positionX: 400,
+      positionY: 300,
+    },
+    {
+      id: 'k006',
+      name: '排序算法',
+      category: 'algorithm',
+      level: 2,
+      description: '经典排序',
+      courseCount: 2,
+      positionX: 250,
+      positionY: 380,
+    },
+    {
+      id: 'k007',
+      name: '搜索算法',
+      category: 'algorithm',
+      level: 2,
+      description: '查找技术',
+      courseCount: 2,
+      positionX: 400,
+      positionY: 380,
+    },
+    {
+      id: 'k008',
+      name: '数据结构',
+      category: 'algorithm',
+      level: 2,
+      description: '数据组织',
+      courseCount: 2,
+      positionX: 550,
+      positionY: 380,
+    },
+    {
+      id: 'k009',
+      name: 'Web 开发',
+      category: 'web',
+      level: 1,
+      description: '网页技术',
+      courseCount: 3,
+      positionX: 700,
+      positionY: 300,
+    },
+    {
+      id: 'k010',
+      name: '人工智能',
+      category: 'ai',
+      level: 2,
+      description: 'AI 与 ML',
+      courseCount: 2,
+      positionX: 700,
+      positionY: 200,
+    },
   ],
   edges: [
     { source: 'k001', target: 'k002', relationType: 'prerequisite' },
@@ -227,7 +331,6 @@ const MOCK_KNOWLEDGE_GRAPH: KnowledgeGraphData = {
   categories: ['programming', 'algorithm', 'web', 'ai', 'science'],
 };
 
-
 /**
  * OpenSciEDU 模拟数据服务
  *
@@ -235,7 +338,7 @@ const MOCK_KNOWLEDGE_GRAPH: KnowledgeGraphData = {
  * 用于 Neo4j 不可用时的开发测试
  */
 @Injectable({
-  providedIn: 'root'
+  providedIn: 'root',
 })
 export class OpenSciEDUMockService {
   /**
@@ -258,12 +361,12 @@ export class OpenSciEDUMockService {
 
     // 按分类筛选
     if (category) {
-      filtered = filtered.filter(c => c.category?.id === category);
+      filtered = filtered.filter((c) => c.category?.id === category);
     }
 
     // 按难度筛选
     if (difficulty) {
-      filtered = filtered.filter(c => c.difficulty === difficulty);
+      filtered = filtered.filter((c) => c.difficulty === difficulty);
     }
 
     // 分页
@@ -287,7 +390,7 @@ export class OpenSciEDUMockService {
    * 获取课程详情
    */
   getCourseDetail(courseId: string): Observable<CourseDetail | null> {
-    const course = MOCK_COURSES.find(c => c.id === courseId);
+    const course = MOCK_COURSES.find((c) => c.id === courseId);
 
     if (!course) {
       return of(null).pipe(delay(this.getDelay()));
@@ -296,15 +399,8 @@ export class OpenSciEDUMockService {
     const detail: CourseDetail = {
       ...course,
       chapters: this.generateMockChapters(course),
-      learningOutcomes: [
-        '掌握基本编程概念',
-        '能够独立编写简单程序',
-        '培养逻辑思维能力',
-      ],
-      prerequisites: [
-        '会使用电脑',
-        '对编程有好奇心',
-      ],
+      learningOutcomes: ['掌握基本编程概念', '能够独立编写简单程序', '培养逻辑思维能力'],
+      prerequisites: ['会使用电脑', '对编程有好奇心'],
     };
 
     console.log('[OpenSciEDU Mock] 获取课程详情:', courseId);
@@ -357,12 +453,17 @@ export class OpenSciEDUMockService {
   /**
    * 搜索课程
    */
-  searchCourses(keyword: string, page: number = 1, pageSize: number = 20): Observable<SearchResult> {
+  searchCourses(
+    keyword: string,
+    page: number = 1,
+    pageSize: number = 20
+  ): Observable<SearchResult> {
     const lowerKeyword = keyword.toLowerCase();
-    const results = MOCK_COURSES.filter(c =>
-      c.title.toLowerCase().includes(lowerKeyword) ||
-      c.description.toLowerCase().includes(lowerKeyword) ||
-      c.tags.some(t => t.toLowerCase().includes(lowerKeyword))
+    const results = MOCK_COURSES.filter(
+      (c) =>
+        c.title.toLowerCase().includes(lowerKeyword) ||
+        c.description.toLowerCase().includes(lowerKeyword) ||
+        c.tags.some((t) => t.toLowerCase().includes(lowerKeyword))
     );
 
     const start = (page - 1) * pageSize;

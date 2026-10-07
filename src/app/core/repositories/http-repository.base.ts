@@ -4,7 +4,7 @@
  * 实现 IRepository 接口的通用 HTTP 客户端逻辑
  * 提供统一的 CRUD 操作和查询功能
  *
- * @author iMatu Development Team
+ * @author MatuX Lab
  * @version 1.0.0
  */
 

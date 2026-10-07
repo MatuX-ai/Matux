@@ -15,15 +15,13 @@
  *  - 参考: g:\OpenMTSciEd\backend-next\lib\neo4j.ts
  */
 
-import { Injectable } from '@angular/core';
+/* eslint-disable no-console, max-lines-per-function, @typescript-eslint/no-non-null-assertion */
 import { HttpClient, HttpParams } from '@angular/common/http';
-import { Observable, of, forkJoin } from 'rxjs';
-import { catchError, map, tap, finalize } from 'rxjs/operators';
+import { Injectable } from '@angular/core';
+import { Observable, of, timeout } from 'rxjs';
+import { catchError, map, switchMap, tap } from 'rxjs/operators';
 
-import { environment } from '../../../environments/environment';
-
-// 延迟导入模拟服务（避免循环依赖）
-let OpenSciEDUMockService: any = null;
+import { OpenSciEDUMockService } from './opensciedu-mock.service';
 
 /**
  * 课程分类
@@ -187,72 +185,115 @@ export class OpenSciEDUService {
 
   // API 可用性状态
   private apiAvailable: boolean | null = null;
-  private healthCheckInProgress = false;
 
-  constructor(private http: HttpClient) {}
+  // IndexedDB 配置
+  private static readonly DB_NAME = 'OpenSciEDUCache';
+  private static readonly DB_VERSION = 1;
+  private static readonly STORE_NAME = 'cache';
+  private static readonly CACHE_TTL_MS = 24 * 60 * 60 * 1000; // 24 小时
 
-  /**
-   * 懒加载模拟服务
-   */
-  private getMockService(): any {
-    if (!OpenSciEDUMockService) {
-      // 动态导入避免循环依赖
-      import('./opensciedu-mock.service').then(module => {
-        OpenSciEDUMockService = module.OpenSciEDUMockService;
-      });
+  private db: IDBDatabase | null = null;
+
+  constructor(private http: HttpClient) {
+    this.initIndexedDB();
+  }
+
+  // ==================== IndexedDB 缓存层 ====================
+
+  private initIndexedDB(): void {
+    if (typeof indexedDB === 'undefined') return;
+    try {
+      const request = indexedDB.open(OpenSciEDUService.DB_NAME, OpenSciEDUService.DB_VERSION);
+      request.onupgradeneeded = () => {
+        const db = request.result;
+        if (!db.objectStoreNames.contains(OpenSciEDUService.STORE_NAME)) {
+          db.createObjectStore(OpenSciEDUService.STORE_NAME);
+        }
+      };
+      request.onsuccess = () => {
+        this.db = request.result;
+      };
+      request.onerror = () => {
+        console.warn('[OpenSciEDU] IndexedDB 初始化失败');
+      };
+    } catch {
+      console.warn('[OpenSciEDU] IndexedDB 不可用');
     }
-    return OpenSciEDUMockService;
+  }
+
+  private cacheSet(key: string, value: unknown): void {
+    if (!this.db) return;
+    try {
+      const tx = this.db.transaction(OpenSciEDUService.STORE_NAME, 'readwrite');
+      const store = tx.objectStore(OpenSciEDUService.STORE_NAME);
+      store.put({ data: value, timestamp: Date.now() }, key);
+    } catch (err) {
+      console.warn('[OpenSciEDU] 缓存写入失败:', err);
+    }
+  }
+
+  private cacheGet(key: string): Observable<unknown> {
+    if (!this.db) return of(null);
+    return new Observable<unknown>((subscriber) => {
+      try {
+        const tx = this.db!.transaction(OpenSciEDUService.STORE_NAME, 'readonly');
+        const store = tx.objectStore(OpenSciEDUService.STORE_NAME);
+        const request = store.get(key);
+        request.onsuccess = () => {
+          const result = request.result as { timestamp?: number; data?: unknown } | undefined;
+          if (result && Date.now() - (result.timestamp ?? 0) < OpenSciEDUService.CACHE_TTL_MS) {
+            subscriber.next(result.data);
+          } else {
+            subscriber.next(null);
+          }
+          subscriber.complete();
+        };
+        request.onerror = () => {
+          subscriber.next(null);
+          subscriber.complete();
+        };
+      } catch {
+        subscriber.next(null);
+        subscriber.complete();
+      }
+    });
   }
 
   /**
-   * 检查 API 可用性
+   * 清除本地 IndexedDB 缓存
    */
-  private checkApiAvailability(): Observable<boolean> {
-    if (this.apiAvailable === false) {
-      return of(false);
-    }
-
-    if (this.healthCheckInProgress) {
-      return of(true);
-    }
-
-    this.healthCheckInProgress = true;
-
-    return this.http.get<{ status: string }>(`${this.API_BASE}/health`).pipe(
-      map(() => {
-        this.apiAvailable = true;
-        this.healthCheckInProgress = false;
-        console.log('[OpenSciEDU] API 可用');
-        return true;
-      }),
-      catchError(() => {
-        this.apiAvailable = false;
-        this.healthCheckInProgress = false;
-        console.warn('[OpenSciEDU] API 不可用，启用模拟数据模式');
-        return of(false);
-      })
-    );
+  clearLocalCache(): Observable<boolean> {
+    if (!this.db) return of(false);
+    return new Observable<boolean>((subscriber) => {
+      try {
+        const tx = this.db!.transaction(OpenSciEDUService.STORE_NAME, 'readwrite');
+        tx.objectStore(OpenSciEDUService.STORE_NAME).clear();
+        tx.oncomplete = () => {
+          subscriber.next(true);
+          subscriber.complete();
+        };
+        tx.onerror = () => {
+          subscriber.next(false);
+          subscriber.complete();
+        };
+      } catch {
+        subscriber.next(false);
+        subscriber.complete();
+      }
+    });
   }
 
   /**
    * 获取模拟服务实例（创建新实例避免状态问题）
    */
-  private createMockServiceInstance(): any {
-    const mockServiceClass = this.getMockService();
-    if (mockServiceClass) {
-      return new mockServiceClass();
-    }
-    return null;
+  private createMockServiceInstance(): OpenSciEDUMockService {
+    return new OpenSciEDUMockService();
   }
 
   /**
    * 获取公共课程列表
    *
-   * @param page 页码（从 1 开始）
-   * @param pageSize 每页数量
-   * @param category 分类筛选
-   * @param difficulty 难度筛选
-   * @param sortBy 排序字段
+   * 降级策略: API → IndexedDB 缓存 → Mock 数据
    */
   getPublicCourses(params: {
     page?: number;
@@ -261,17 +302,22 @@ export class OpenSciEDUService {
     difficulty?: string;
     sortBy?: string;
   }): Observable<CourseListResponse> {
-    // 如果 API 已知不可用，直接使用模拟数据
+    // 构建缓存键（包含 sortBy）
+    const cacheKey = `courses_${params.page}_${params.pageSize}_${params.category ?? ''}_${params.difficulty ?? ''}_${params.sortBy ?? ''}`;
+
+    // 如果 API 已知不可用，先尝试缓存再使用模拟数据
     if (this.apiAvailable === false) {
-      const mockService = this.createMockServiceInstance();
-      if (mockService) {
-        return mockService.getPublicCourses(
-          params.page ?? 1,
-          params.pageSize ?? 20,
-          params.category,
-          params.difficulty
-        );
-      }
+      return this.cacheGet(cacheKey).pipe(
+        switchMap((cached) => {
+          if (cached) return of(cached as CourseListResponse);
+          return this.createMockServiceInstance().getPublicCourses(
+            params.page ?? 1,
+            params.pageSize ?? 20,
+            params.category,
+            params.difficulty
+          );
+        })
+      );
     }
 
     let httpParams = new HttpParams()
@@ -293,6 +339,8 @@ export class OpenSciEDUService {
         params: httpParams,
       })
       .pipe(
+        // 【P2-3 修复】5 秒超时兑底，避免 stuck loading
+        timeout({ each: 5000 }),
         tap(() => {
           this.apiAvailable = true;
         }),
@@ -303,28 +351,25 @@ export class OpenSciEDUService {
           pageSize: response.page_size,
           hasNext: response.has_next,
         })),
+        tap((result) => this.cacheSet(cacheKey, result)),
         catchError((error) => {
           this.apiAvailable = false;
-          console.warn('[OpenSciEDU] API 请求失败，使用模拟数据:', error.message);
+          const errorObj = error as { message?: string };
+          console.warn('[OpenSciEDU] API 请求失败，尝试缓存或模拟数据:', errorObj.message);
 
-          // 降级到模拟数据
-          const mockService = this.createMockServiceInstance();
-          if (mockService) {
-            return mockService.getPublicCourses(
-              params.page ?? 1,
-              params.pageSize ?? 20,
-              params.category,
-              params.difficulty
-            ) as Observable<CourseListResponse>;
-          }
-
-          return of({
-            courses: [],
-            total: 0,
-            page: params.page ?? 1,
-            pageSize: params.pageSize ?? 20,
-            hasNext: false,
-          });
+          // 尝试 IndexedDB 缓存
+          return this.cacheGet(cacheKey).pipe(
+            switchMap((cached) => {
+              if (cached) return of(cached as CourseListResponse);
+              // 降级到模拟数据
+              return this.createMockServiceInstance().getPublicCourses(
+                params.page ?? 1,
+                params.pageSize ?? 20,
+                params.category,
+                params.difficulty
+              );
+            })
+          );
         })
       );
   }
@@ -332,59 +377,127 @@ export class OpenSciEDUService {
   /**
    * 获取课程详情
    *
-   * @param courseId 课程 ID
+   * 降级策略: API → IndexedDB 缓存 → Mock 数据
    */
   getCourseDetail(courseId: string): Observable<CourseDetail | null> {
-    return this.http
-      .get<CourseDetail>(`${this.API_BASE}/courses/${courseId}`)
-      .pipe(catchError(() => of(null as CourseDetail | null)));
+    if (this.apiAvailable === false) {
+      // 先尝试 IndexedDB 缓存，再降级到 Mock
+      return this.cacheGet(`course_detail_${courseId}`).pipe(
+        switchMap((cached) => {
+          if (cached) return of(cached as CourseDetail);
+          return this.createMockServiceInstance().getCourseDetail(courseId);
+        })
+      );
+    }
+
+    return this.http.get<CourseDetail>(`${this.API_BASE}/courses/${courseId}`).pipe(
+      tap((detail) => this.cacheSet(`course_detail_${courseId}`, detail)),
+      catchError(() => {
+        this.apiAvailable = false;
+        // 尝试 IndexedDB 缓存
+        return this.cacheGet(`course_detail_${courseId}`).pipe(
+          switchMap((cached) => {
+            if (cached) return of(cached as CourseDetail);
+            // 降级到 Mock
+            return this.createMockServiceInstance().getCourseDetail(courseId);
+          })
+        );
+      })
+    );
   }
 
   /**
    * 获取知识图谱数据
    *
-   * @param forceRefresh 强制刷新缓存
+   * 降级策略: API → IndexedDB 缓存 → Mock 数据
    */
   getKnowledgeGraph(forceRefresh = false): Observable<KnowledgeGraphData | null> {
+    if (this.apiAvailable === false && !forceRefresh) {
+      // 先尝试 IndexedDB 缓存，再降级到 Mock
+      return this.cacheGet('knowledge_graph').pipe(
+        switchMap((cached) => {
+          if (cached) return of(cached as KnowledgeGraphData);
+          return this.createMockServiceInstance().getKnowledgeGraph();
+        })
+      );
+    }
+
     let params = new HttpParams();
     if (forceRefresh) {
       params = params.set('refresh', 'true');
     }
 
-    return this.http
-      .get<KnowledgeGraphData>(`${this.API_BASE}/knowledge-graph`, { params })
-      .pipe(catchError(() => of(null as KnowledgeGraphData | null)));
+    return this.http.get<KnowledgeGraphData>(`${this.API_BASE}/knowledge-graph`, { params }).pipe(
+      tap((data) => this.cacheSet('knowledge_graph', data)),
+      catchError(() => {
+        this.apiAvailable = false;
+        return this.cacheGet('knowledge_graph').pipe(
+          switchMap((cached) => {
+            if (cached) return of(cached as KnowledgeGraphData);
+            return this.createMockServiceInstance().getKnowledgeGraph();
+          })
+        );
+      })
+    );
   }
 
   /**
    * 搜索课程
    *
-   * @param keyword 搜索关键词
-   * @param page 页码
-   * @param pageSize 每页数量
+   * 降级策略: API → Mock 数据（搜索结果时效性强，不缓存 IndexedDB）
    */
   searchCourses(params: {
     keyword: string;
     page?: number;
     pageSize?: number;
   }): Observable<SearchResult> {
-    let httpParams = new HttpParams()
+    if (this.apiAvailable === false) {
+      return this.createMockServiceInstance().searchCourses(
+        params.keyword,
+        params.page ?? 1,
+        params.pageSize ?? 20
+      );
+    }
+
+    const httpParams = new HttpParams()
       .set('keyword', params.keyword)
       .set('page', String(params.page ?? 1))
       .set('page_size', String(params.pageSize ?? 20));
 
-    return this.http
-      .get<SearchResult>(`${this.API_BASE}/search`, { params: httpParams })
-      .pipe(catchError(() => of({ courses: [], total: 0, query: params.keyword, suggestions: [] } as SearchResult)));
+    return this.http.get<SearchResult>(`${this.API_BASE}/search`, { params: httpParams }).pipe(
+      tap(() => {
+        this.apiAvailable = true;
+      }),
+      catchError(() => {
+        this.apiAvailable = false;
+        return this.createMockServiceInstance().searchCourses(
+          params.keyword,
+          params.page ?? 1,
+          params.pageSize ?? 20
+        );
+      })
+    );
   }
 
   /**
    * 获取课程分类列表
+   *
+   * 降级策略: API → Mock 数据
    */
   getCategories(): Observable<CourseCategory[]> {
-    return this.http
-      .get<CourseCategory[]>(`${this.API_BASE}/categories`)
-      .pipe(catchError(() => of([] as CourseCategory[])));
+    if (this.apiAvailable === false) {
+      return this.createMockServiceInstance().getCategories();
+    }
+
+    return this.http.get<CourseCategory[]>(`${this.API_BASE}/categories`).pipe(
+      tap(() => {
+        this.apiAvailable = true;
+      }),
+      catchError(() => {
+        this.apiAvailable = false;
+        return this.createMockServiceInstance().getCategories();
+      })
+    );
   }
 
   /**
@@ -392,9 +505,7 @@ export class OpenSciEDUService {
    */
   healthCheck(): Observable<{ status: string; service: string; apiUrl: string }> {
     return this.http
-      .get<{ status: string; service: string; api_url: string }>(
-        `${this.API_BASE}/health`
-      )
+      .get<{ status: string; service: string; api_url: string }>(`${this.API_BASE}/health`)
       .pipe(
         map((response) => ({
           status: response.status,
@@ -410,10 +521,7 @@ export class OpenSciEDUService {
    */
   clearCache(): Observable<{ success: boolean; message: string }> {
     return this.http
-      .post<{ success: boolean; message: string }>(
-        `${this.API_BASE}/cache/clear`,
-        {}
-      )
+      .post<{ success: boolean; message: string }>(`${this.API_BASE}/cache/clear`, {})
       .pipe(catchError(() => of({ success: false, message: 'API unavailable' })));
   }
 
@@ -464,14 +572,5 @@ export class OpenSciEDUService {
       return `${(count / 1000).toFixed(1)} k`;
     }
     return String(count);
-  }
-
-  /**
-   * 错误处理
-   */
-  private handleError<T>(operation: string, error: unknown): Observable<T> {
-    console.error(`[OpenSciEDU] ${operation} failed:`, error);
-    // 返回空结果而不是抛出错误，避免组件崩溃
-    return of(null as unknown as T);
   }
 }

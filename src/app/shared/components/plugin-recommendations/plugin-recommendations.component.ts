@@ -1,6 +1,6 @@
 /**
  * 推荐插件展示组件
- * 
+ *
  * 功能:
  * 1. 显示个性化推荐插件
  * 2. 显示推荐捆绑包
@@ -8,16 +8,16 @@
  * 4. 一键安装推荐
  */
 
-import { Component, OnInit, OnDestroy } from '@angular/core';
+/* eslint-disable @typescript-eslint/no-floating-promises */
 import { CommonModule } from '@angular/common';
-import { MatIconModule } from '@angular/material/icon';
+import { Component, OnDestroy, OnInit } from '@angular/core';
 import { MatButtonModule } from '@angular/material/button';
 import { MatCardModule } from '@angular/material/card';
 import { MatChipsModule } from '@angular/material/chips';
+import { MatIconModule } from '@angular/material/icon';
 import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
 import { MatSnackBar, MatSnackBarModule } from '@angular/material/snack-bar';
 import { Subject } from 'rxjs';
-import { takeUntil } from 'rxjs/operators';
 
 interface Recommendation {
   pluginId: string;
@@ -68,38 +68,38 @@ export class PluginRecommendationsComponent implements OnInit, OnDestroy {
   confidence = 0;
   loading = true;
   error: string | null = null;
-  
+
   private destroy$ = new Subject<void>();
-  
+
   constructor(private snackBar: MatSnackBar) {}
-  
+
   ngOnInit(): void {
-    this.loadRecommendations();
+    void this.loadRecommendations();
   }
-  
+
   ngOnDestroy(): void {
     this.destroy$.next();
     this.destroy$.complete();
   }
-  
+
   /**
    * 加载推荐数据
    */
   async loadRecommendations(): Promise<void> {
     this.loading = true;
     this.error = null;
-    
+
     try {
       if (!window.pluginAPI) {
         throw new Error('Plugin API 不可用（非 Electron 环境）');
       }
-      
+
       const result = (await window.pluginAPI.getRecommendations({
         maxRecommendations: 10,
         includeBundles: true,
         excludeInstalled: true,
       })) as { success: boolean; data: RecommendationResult };
-      
+
       if (result.success && result.data) {
         const data: RecommendationResult = result.data;
         this.recommendations = data.recommendations;
@@ -114,7 +114,7 @@ export class PluginRecommendationsComponent implements OnInit, OnDestroy {
       this.loading = false;
     }
   }
-  
+
   /**
    * 安装推荐插件
    */
@@ -123,21 +123,19 @@ export class PluginRecommendationsComponent implements OnInit, OnDestroy {
       if (!window.pluginAPI) {
         throw new Error('Plugin API 不可用');
       }
-      
+
       await window.pluginAPI.installPlugin(pluginId);
       this.snackBar.open('开始安装插件', '关闭', { duration: 2000 });
-      
+
       // 从推荐列表中移除
-      this.recommendations = this.recommendations.filter(
-        rec => rec.pluginId !== pluginId
-      );
+      this.recommendations = this.recommendations.filter((rec) => rec.pluginId !== pluginId);
     } catch (err) {
       this.snackBar.open(`安装失败: ${(err as Error).message}`, '关闭', {
         duration: 5000,
       });
     }
   }
-  
+
   /**
    * 安装捆绑包
    */
@@ -146,9 +144,9 @@ export class PluginRecommendationsComponent implements OnInit, OnDestroy {
       if (!window.pluginAPI) {
         throw new Error('Plugin API 不可用');
       }
-      
+
       let installedCount = 0;
-      
+
       for (const pluginId of bundle.plugins) {
         try {
           await window.pluginAPI.installPlugin(pluginId);
@@ -157,27 +155,25 @@ export class PluginRecommendationsComponent implements OnInit, OnDestroy {
           console.warn(`插件 ${pluginId} 安装失败:`, err);
         }
       }
-      
-      this.snackBar.open(
-        `已安装 ${installedCount}/${bundle.plugins.length} 个插件`,
-        '关闭',
-        { duration: 3000 }
-      );
-      
+
+      this.snackBar.open(`已安装 ${installedCount}/${bundle.plugins.length} 个插件`, '关闭', {
+        duration: 3000,
+      });
+
       // 从推荐列表中移除已安装的插件
       this.recommendations = this.recommendations.filter(
-        rec => !bundle.plugins.includes(rec.pluginId)
+        (rec) => !bundle.plugins.includes(rec.pluginId)
       );
-      
+
       // 从捆绑包列表中移除
-      this.bundles = this.bundles.filter(b => b.id !== bundle.id);
+      this.bundles = this.bundles.filter((b) => b.id !== bundle.id);
     } catch (err) {
       this.snackBar.open(`安装失败: ${(err as Error).message}`, '关闭', {
         duration: 5000,
       });
     }
   }
-  
+
   /**
    * 获取置信度标签
    */
@@ -187,7 +183,7 @@ export class PluginRecommendationsComponent implements OnInit, OnDestroy {
     if (confidence >= 0.7) return '中等';
     return '较低';
   }
-  
+
   /**
    * 获取置信度颜色
    */
@@ -197,14 +193,14 @@ export class PluginRecommendationsComponent implements OnInit, OnDestroy {
     if (confidence >= 0.7) return '#FFC107';
     return '#FF9800';
   }
-  
+
   /**
    * 获取折扣文本
    */
   getDiscountText(discount: number): string {
     return `${Math.round(discount * 100)}% 折扣`;
   }
-  
+
   /**
    * 刷新推荐
    */

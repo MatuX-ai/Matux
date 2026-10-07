@@ -1,7 +1,23 @@
+// STEM K12 设计系统变量
+$stem-primary: #059669;
+$stem-primary-light: #10b981;
+$stem-primary-dark: #047857;
+$stem-secondary: #0ea5e9;
+$stem-accent: #06b6d4;
+$stem-success: #22c55e;
+$stem-warning: #f59e0b;
+$stem-error: #ef4444;
+$stem-radius-sm: 12px;
+$stem-radius-md: 20px;
+$stem-radius-lg: 9999px;
+$stem-shadow: 0 4px 20px rgb(5 150 105 / 15%);
+$stem-shadow-hover: 0 8px 30px rgb(5 150 105 / 20%);
+$stem-transition: 250ms cubic-bezier(0.4, 0, 0.2, 1);
+
 .recommendations-container {
-  padding: 24px;
   max-width: 1200px;
   margin: 0 auto;
+  padding: 24px;
 
   .header {
     display: flex;
@@ -9,8 +25,8 @@
     align-items: center;
     margin-bottom: 32px;
     padding: 24px;
-    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-    border-radius: 16px;
+    border-radius: $stem-radius-md;
+    background: linear-gradient(135deg, $stem-primary 0%, $stem-primary-dark 100%);
     color: white;
 
     .header-left {
@@ -19,9 +35,9 @@
       gap: 16px;
 
       .header-icon {
-        font-size: 48px;
         width: 48px;
         height: 48px;
+        font-size: 48px;
       }
 
       h2 {
@@ -32,8 +48,8 @@
 
       .reason {
         margin: 4px 0 0;
-        font-size: 14px;
         opacity: 0.9;
+        font-size: 14px;
       }
     }
 
@@ -47,8 +63,8 @@
         flex-direction: column;
         align-items: center;
         padding: 12px 20px;
-        border-radius: 12px;
-        background-color: rgba(255, 255, 255, 0.2);
+        border-radius: $stem-radius-sm;
+        background-color: rgb(255 255 255 / 20%);
         backdrop-filter: blur(10px);
 
         .confidence-value {
@@ -57,13 +73,15 @@
         }
 
         .confidence-label {
-          font-size: 12px;
           opacity: 0.9;
+          font-size: 12px;
         }
       }
 
       button {
+        border-radius: $stem-radius-lg;
         color: white;
+        transition: all $stem-transition;
 
         &:disabled {
           opacity: 0.5;
@@ -75,14 +93,14 @@
   .loading-container {
     display: flex;
     flex-direction: column;
-    align-items: center;
     justify-content: center;
+    align-items: center;
     padding: 60px 20px;
     text-align: center;
 
     p {
       margin-top: 16px;
-      color: #666;
+      color: rgba($stem-primary, 0.7);
       font-size: 14px;
     }
   }
@@ -90,21 +108,22 @@
   .error-container {
     display: flex;
     flex-direction: column;
-    align-items: center;
     justify-content: center;
+    align-items: center;
     padding: 60px 20px;
     text-align: center;
 
     mat-icon {
-      font-size: 64px;
       width: 64px;
       height: 64px;
       margin-bottom: 16px;
+      color: $stem-error;
+      font-size: 64px;
     }
 
     p {
       margin: 16px 0;
-      color: #666;
+      color: rgba($stem-primary, 0.7);
       font-size: 14px;
     }
   }
@@ -117,12 +136,12 @@
       align-items: center;
       gap: 8px;
       margin-bottom: 20px;
+      color: $stem-primary;
       font-size: 20px;
       font-weight: 600;
-      color: #333;
 
       .section-icon {
-        color: #667eea;
+        color: $stem-primary;
       }
     }
 
@@ -132,17 +151,21 @@
       gap: 20px;
 
       .bundle-card {
-        transition: transform 0.2s, box-shadow 0.2s;
+        border-radius: $stem-radius-md;
+        transition:
+          transform $stem-transition,
+          box-shadow $stem-transition;
 
         &:hover {
+          box-shadow: $stem-shadow-hover;
           transform: translateY(-4px);
-          box-shadow: 0 8px 16px rgba(0, 0, 0, 0.1);
         }
 
         mat-card-header {
           margin-bottom: 12px;
 
           mat-card-title {
+            color: $stem-primary;
             font-size: 20px;
             font-weight: 600;
           }
@@ -154,10 +177,10 @@
             margin-top: 4px;
 
             .discount-badge {
-              background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
-              color: white;
               padding: 4px 12px;
-              border-radius: 12px;
+              border-radius: $stem-radius-lg;
+              background: linear-gradient(135deg, $stem-primary 0%, $stem-primary-dark 100%);
+              color: white;
               font-size: 12px;
               font-weight: 600;
             }
@@ -167,7 +190,7 @@
         mat-card-content {
           p {
             margin: 0 0 12px;
-            color: #666;
+            color: rgba($stem-primary, 0.7);
             font-size: 14px;
             line-height: 1.5;
           }
@@ -179,6 +202,7 @@
               gap: 4px;
 
               mat-chip {
+                border-radius: $stem-radius-lg;
                 font-size: 12px;
               }
             }
@@ -191,6 +215,9 @@
           margin-top: 16px;
 
           button {
+            border-radius: $stem-radius-lg;
+            transition: all $stem-transition;
+
             mat-icon {
               margin-right: 4px;
             }
@@ -206,34 +233,34 @@
       align-items: center;
       gap: 8px;
       margin-bottom: 20px;
+      color: $stem-primary;
       font-size: 20px;
       font-weight: 600;
-      color: #333;
 
       .section-icon {
-        color: #ffc107;
+        color: $stem-warning;
       }
     }
 
     .empty-state {
       display: flex;
       flex-direction: column;
-      align-items: center;
       justify-content: center;
+      align-items: center;
       padding: 60px 20px;
       text-align: center;
 
       mat-icon {
-        font-size: 64px;
         width: 64px;
         height: 64px;
-        color: #4caf50;
         margin-bottom: 16px;
+        color: $stem-success;
+        font-size: 64px;
       }
 
       p {
         margin: 0;
-        color: #666;
+        color: rgba($stem-primary, 0.7);
         font-size: 16px;
       }
     }
@@ -244,11 +271,14 @@
       gap: 16px;
 
       .recommendation-card {
-        transition: transform 0.2s, box-shadow 0.2s;
+        border-radius: $stem-radius-md;
+        transition:
+          transform $stem-transition,
+          box-shadow $stem-transition;
 
         &:hover {
+          box-shadow: $stem-shadow-hover;
           transform: translateX(4px);
-          box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
         }
 
         mat-card-content {
@@ -263,14 +293,14 @@
 
               h4 {
                 margin: 0 0 4px;
+                color: $stem-primary;
                 font-size: 18px;
                 font-weight: 600;
-                color: #333;
               }
 
               .rec-reason {
                 margin: 0;
-                color: #666;
+                color: rgba($stem-primary, 0.7);
                 font-size: 14px;
                 line-height: 1.5;
               }
@@ -281,8 +311,8 @@
               flex-direction: column;
               align-items: center;
               padding: 12px 16px;
-              background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-              border-radius: 12px;
+              border-radius: $stem-radius-sm;
+              background: linear-gradient(135deg, $stem-primary 0%, $stem-primary-dark 100%);
               color: white;
 
               .score-value {
@@ -291,8 +321,8 @@
               }
 
               .score-label {
-                font-size: 11px;
                 opacity: 0.9;
+                font-size: 11px;
               }
             }
           }
@@ -303,6 +333,7 @@
               gap: 8px;
 
               mat-chip {
+                border-radius: $stem-radius-lg;
                 font-size: 12px;
               }
             }
@@ -315,6 +346,9 @@
           margin-top: 16px;
 
           button {
+            border-radius: $stem-radius-lg;
+            transition: all $stem-transition;
+
             mat-icon {
               margin-right: 4px;
             }
@@ -326,7 +360,7 @@
 }
 
 // 响应式设计
-@media (max-width: 768px) {
+@media (width <= 768px) {
   .recommendations-container {
     padding: 16px;
 
@@ -336,8 +370,8 @@
       gap: 16px;
 
       .header-right {
-        width: 100%;
         justify-content: space-between;
+        width: 100%;
       }
     }
 

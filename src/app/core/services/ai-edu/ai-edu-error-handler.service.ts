@@ -1,11 +1,12 @@
+/* eslint-disable max-lines-per-function */
 import { HttpErrorResponse } from '@angular/common/http';
 import { HttpClient } from '@angular/common/http';
 import { ErrorHandler, Injectable, Injector } from '@angular/core';
 import { Router } from '@angular/router';
 import { BehaviorSubject } from 'rxjs';
 
-import { AuthService } from '../auth.service';
 import { ROUTES } from '../../../routes.const';
+import { AuthService } from '../auth.service';
 
 /**
  * 错误类型枚举
@@ -349,22 +350,22 @@ export class AIEduErrorHandlerService implements ErrorHandler {
     // 创建 Toast 元素（使用安全的 DOM 操作，防止 XSS）
     const toast = document.createElement('div');
     toast.className = `ai-edu-toast ai-edu-toast-${type}`;
-    
+
     // 使用安全的 DOM 结构
     const contentDiv = document.createElement('div');
     contentDiv.className = 'toast-content';
-    
+
     const iconSpan = document.createElement('span');
     iconSpan.className = 'toast-icon';
-    iconSpan.textContent = this.getErrorIcon(type);  // textContent 自动转义
-    
+    iconSpan.textContent = this.getErrorIcon(type); // textContent 自动转义
+
     const messageSpan = document.createElement('span');
     messageSpan.className = 'toast-message';
-    messageSpan.textContent = message;  // textContent 自动转义，防止 XSS
-    
+    messageSpan.textContent = message; // textContent 自动转义，防止 XSS
+
     contentDiv.appendChild(iconSpan);
     contentDiv.appendChild(messageSpan);
-    
+
     if (finalConfig.dismissible) {
       const closeBtn = document.createElement('button');
       closeBtn.className = 'toast-close';
@@ -372,10 +373,10 @@ export class AIEduErrorHandlerService implements ErrorHandler {
       closeBtn.addEventListener('click', () => this.removeToast(toast));
       contentDiv.appendChild(closeBtn);
     }
-    
+
     const progressDiv = document.createElement('div');
     progressDiv.className = 'toast-progress';
-    
+
     toast.appendChild(contentDiv);
     toast.appendChild(progressDiv);
 
@@ -468,27 +469,27 @@ export class AIEduErrorHandlerService implements ErrorHandler {
       }
 
       .ai-edu-toast-VALIDATION {
-        border-left: 4px solid #f59e0b;
+        border-left: 4px solid var(--stem-warning, #f59e0b);
       }
 
       .ai-edu-toast-AUTH {
-        border-left: 4px solid #ef4444;
+        border-left: 4px solid var(--stem-error, #ef4444);
       }
 
       .ai-edu-toast-PERMISSION {
-        border-left: 4px solid #f59e0b;
+        border-left: 4px solid var(--stem-warning, #f59e0b);
       }
 
       .ai-edu-toast-NOT_FOUND {
-        border-left: 4px solid #3b82f6;
+        border-left: 4px solid var(--matux-color-primary, #3b82f6);
       }
 
       .ai-edu-toast-SERVER {
-        border-left: 4px solid #ef4444;
+        border-left: 4px solid var(--stem-error, #ef4444);
       }
 
       .ai-edu-toast-UNKNOWN {
-        border-left: 4px solid #94a3b8;
+        border-left: 4px solid var(--matux-color-text-disabled, #94a3b8);
       }
 
       .toast-content {
@@ -505,7 +506,7 @@ export class AIEduErrorHandlerService implements ErrorHandler {
       .toast-message {
         flex: 1;
         font-size: 15px;
-        color: #333;
+        color: var(--matux-color-text-primary, #1c1917);
       }
 
       .toast-close {
@@ -513,7 +514,7 @@ export class AIEduErrorHandlerService implements ErrorHandler {
         border: none;
         font-size: 20px;
         cursor: pointer;
-        color: #999;
+        color: var(--matux-color-text-secondary, #57534e);
         padding: 0;
         width: 24px;
         height: 24px;
@@ -525,12 +526,12 @@ export class AIEduErrorHandlerService implements ErrorHandler {
       }
 
       .toast-close:hover {
-        background: #f5f5f5;
+        background: var(--matux-color-background, #f1f5f9);
       }
 
       .toast-progress {
         height: 3px;
-        background: linear-gradient(90deg, #3b82f6 0%, #2563eb 100%);
+        background: linear-gradient(90deg, var(--matux-color-primary, #3b82f6) 0%, #2563eb 100%);
         animation: progress 5s linear;
       }
     `;

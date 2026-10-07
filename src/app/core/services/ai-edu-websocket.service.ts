@@ -1,3 +1,4 @@
+/* eslint-disable max-lines-per-function */
 /**
  * AI-Edu 学习进度 WebSocket 同步服务
  * 支持实时学习进度同步、多设备协作
@@ -163,9 +164,17 @@ export class AiEduWebSocketService implements OnDestroy {
     this.currentOrgId = orgId;
 
     // 构建 WebSocket URL
-    const protocol = baseUrl.startsWith('https') ? 'wss' : 'ws';
-    const host = baseUrl.replace(/^https?:\/\//, '');
-    this.wsUrl = `${protocol}://${host}/ws/ai-edu/progress/${userId}?org_id=${orgId}`;
+    let wsUrl: string;
+    if (baseUrl.startsWith('ws://') || baseUrl.startsWith('wss://')) {
+      // baseUrl 已经包含协议前缀，直接使用（避免 ws://ws:// 双前缀问题）
+      wsUrl = `${baseUrl}/ws/ai-edu/progress/${userId}?org_id=${orgId}`;
+    } else {
+      // baseUrl 只包含主机部分，需要添加协议前缀
+      const protocol = baseUrl.startsWith('https') ? 'wss' : 'ws';
+      const host = baseUrl.replace(/^https?:\/\//, '');
+      wsUrl = `${protocol}://${host}/ws/ai-edu/progress/${userId}?org_id=${orgId}`;
+    }
+    this.wsUrl = wsUrl;
 
     this.connectionStatusSubject.next('connecting');
 
@@ -191,8 +200,9 @@ export class AiEduWebSocketService implements OnDestroy {
           }
 
           this.messageSubject.next(message);
-        } catch {
-          /* 忽略解析错误 */
+        } catch (error) {
+          // 【P2修复】记录解析错误而非静默吞噬
+          console.warn('[WebSocket] 消息解析失败:', error, '原始数据:', event.data);
         }
       };
 
@@ -302,13 +312,15 @@ export class AiEduWebSocketService implements OnDestroy {
    */
   sendMessage(message: WebSocketMessage): void {
     if (!this.isConnected() || !this.websocket) {
+      console.warn('[WebSocket] 未连接，无法发送消息');
       return;
     }
 
     try {
       this.websocket.send(JSON.stringify(message));
-    } catch {
-      /* 忽略发送错误 */
+    } catch (error) {
+      // 【P2修复】记录发送错误而非静默吞噬
+      console.error('[WebSocket] 发送消息失败:', error);
     }
   }
 
@@ -483,11 +495,22 @@ export class AiEduWebSocketService implements OnDestroy {
 
   /**
    * 获取基础 URL
+   * 【P3修复】使用环境配置的端口而非硬编码
    */
   private getBaseUrl(): string {
-    // 从当前 URL 推断 API 基础 URL
+    // 优先使用 environment.wsUrl（Angular 环境变量）
+    // 注意：在开发环境使用代理时，origin 就是正确的
     const origin = window.location.origin;
-    return origin.includes('localhost') ? 'http://localhost:8000' : origin;
+
+    // 开发环境（使用 Angular 代理）
+    if (origin.includes('localhost') || origin.includes('127.0.0.1')) {
+      // 开发环境 Angular 代理会自动转发 /ws 到后端
+      // WebSocket 连接也使用相同的 origin
+      return origin.replace(/^http/, 'ws');
+    }
+
+    // 生产环境：使用当前 origin
+    return origin;
   }
 
   ngOnDestroy(): void {

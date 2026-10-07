@@ -10,7 +10,75 @@
     "edit": "编辑",
     "search": "搜索",
     "filter": "筛选",
-    "refresh": "刷新"
+    "refresh": "刷新",
+    "retry": "重试",
+    "back": "返回",
+    "next": "下一步",
+    "submit": "提交",
+    "close": "关闭"
+  },
+  "login": {
+    "title": "欢迎回到 MatuX",
+    "subtitle": "使用账号密码继续学习，或选择第三方快捷登录",
+    "email": "邮箱地址",
+    "password": "登录密码",
+    "rememberMe": "记住我",
+    "loginButton": "登 录",
+    "loggingIn": "正在登录...",
+    "forgotPassword": "忘记密码？",
+    "noAccount": "还没有账号？",
+    "registerNow": "立即注册",
+    "thirdParty": "其他登录方式",
+    "oauthQQ": "QQ 登录",
+    "oauthWechat": "微信登录",
+    "oauthGoogle": "Google 登录",
+    "oauthGithub": "GitHub 登录"
+  },
+  "register": {
+    "title": "创建账号",
+    "subtitle": "填写以下信息，开启 MatuX 学习之旅",
+    "username": "用户名",
+    "email": "邮箱",
+    "password": "密码",
+    "confirmPassword": "确认密码",
+    "agreeTerms": "我已阅读并同意《服务条款》与《隐私政策》",
+    "registerButton": "注 册",
+    "haveAccount": "已有账号？",
+    "loginNow": "立即登录"
+  },
+  "userNav": {
+    "home": "首页",
+    "search": "搜索",
+    "searchPlaceholder": "搜索课程、实验、插件...",
+    "notifications": "通知",
+    "profile": "个人资料",
+    "token": "Token 钱包",
+    "achievements": "成就",
+    "learningProfile": "学习画像",
+    "growthTrajectory": "成长轨迹",
+    "teachingSuggestions": "教学建议",
+    "emotionalCompanion": "心理陪伴",
+    "reports": "学习报告",
+    "aiTeacherSettings": "AI 教师设置",
+    "settings": "设置",
+    "logout": "退出登录",
+    "userTypeStudent": "学生",
+    "userTypeTeacher": "教师",
+    "userTypeAdmin": "管理员",
+    "userTypeEnterprise": "企业",
+    "userTypeDefault": "用户"
+  },
+  "userFooter": {
+    "profile": "个人资料",
+    "token": "Token 钱包",
+    "learningProfile": "学习画像",
+    "teachingSuggestions": "教学建议",
+    "emotionalCompanion": "心理陪伴",
+    "reports": "学习报告",
+    "settings": "设置",
+    "help": "帮助中心",
+    "about": "关于 MatuX",
+    "copyright": "保留所有权利"
   },
   "nav": {
     "home": "首页",
@@ -37,31 +105,17 @@
     "free": {
       "name": "免费版",
       "price": "¥0",
-      "features": [
-        "基础课程访问",
-        "社区支持",
-        "有限存储空间"
-      ]
+      "features": ["基础课程访问", "社区支持", "有限存储空间"]
     },
     "pro": {
       "name": "专业版",
       "price": "¥99/月",
-      "features": [
-        "所有课程访问",
-        "优先支持",
-        "无限存储空间",
-        "离线学习"
-      ]
+      "features": ["所有课程访问", "优先支持", "无限存储空间", "离线学习"]
     },
     "enterprise": {
       "name": "企业版",
       "price": "定制",
-      "features": [
-        "所有专业版功能",
-        "定制化课程",
-        "专属客服",
-        "数据分析报告"
-      ]
+      "features": ["所有专业版功能", "定制化课程", "专属客服", "数据分析报告"]
     }
   },
   "contact": {

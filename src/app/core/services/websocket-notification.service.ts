@@ -4,7 +4,7 @@
  * WebSocket 实时通知推送服务
  * 支持连接管理、心跳检测、自动重连等功能
  *
- * @author iMatu Development Team
+ * @author MatuX Lab
  * @version 1.0.0
  */
 

@@ -1,7 +1,7 @@
 /**
  * 数据导出功能组件
  * @description 提供许可证数据的导出功能
- * @author iMatuProject Team
+ * @author MatuX Lab
  * @version 1.0.0
  */
 

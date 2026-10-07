@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-unsafe-member-access, @typescript-eslint/no-unsafe-assignment, @typescript-eslint/no-unsafe-call, @typescript-eslint/no-explicit-any, no-console */
 /**
  * 文件关联服务
  *
@@ -6,7 +7,7 @@
  */
 
 import { Injectable, NgZone } from '@angular/core';
-import { Subject, Observable } from 'rxjs';
+import { Observable, Subject } from 'rxjs';
 
 /** 文件类型 */
 export type FileType = 'course' | 'blockly' | 'circuit';

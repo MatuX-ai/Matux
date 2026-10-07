@@ -1,0 +1,441 @@
+// K12 STEM 探索绿设计系统 - Design Tokens
+// 为 STEM 教育场景定制的绿色主题设计令牌
+// 探索绿：代表自然、成长、好奇心、探索精神
+
+// =============================================================================
+// K12 STEM 品牌色彩系统 - Brand Color System (探索绿主题)
+// =============================================================================
+
+// 主色调 - 探索绿 (Emerald-600, 充满活力与好奇心)
+$stem-primary: #059669; // Emerald-600 - Primary (探索绿主色)
+$stem-primary-light: #10b981; // Emerald-500 - Light Primary
+$stem-primary-dark: #047857; // Emerald-700 - Dark Primary
+$stem-primary-50: #ecfdf5; // Emerald-50
+$stem-primary-100: #d1fae5; // Emerald-100
+$stem-primary-200: #a7f3d0; // Emerald-200
+$stem-primary-300: #6ee7b7; // Emerald-300
+$stem-primary-400: #34d399; // Emerald-400
+$stem-primary-500: #10b981; // Emerald-500
+$stem-primary-600: #059669; // Emerald-600
+$stem-primary-700: #047857; // Emerald-700
+$stem-primary-800: #065f46; // Emerald-800
+$stem-primary-900: #064e3b; // Emerald-900
+
+// 辅助色 - 天空蓝 (Sky-500, 代表科技与天空)
+$stem-secondary: #0ea5e9; // Sky-500 - Accent
+$stem-secondary-light: #38bdf8; // Sky-400
+$stem-secondary-dark: #0284c7; // Sky-600
+$stem-secondary-50: #f0f9ff; // Sky-50
+$stem-secondary-100: #e0f2fe; // Sky-100
+$stem-secondary-200: #bae6fd; // Sky-200
+$stem-secondary-300: #7dd3fc; // Sky-300
+$stem-secondary-400: #38bdf8; // Sky-400
+$stem-secondary-500: #0ea5e9; // Sky-500
+$stem-secondary-600: #0284c7; // Sky-600
+$stem-secondary-700: #0369a1; // Sky-700
+$stem-secondary-800: #075985; // Sky-800
+$stem-secondary-900: #0c4a6e; // Sky-900
+
+// 学术科目主题色 - Subject Colors
+$stem-subject-science: #059669; // 科学 - 探索绿
+$stem-subject-technology: #2563eb; // 技术 - 科技蓝
+$stem-subject-engineering: #f59e0b; // 工程 - 琥珀橙
+$stem-subject-math: #8b5cf6; // 数学 - 紫罗兰
+$stem-subject-arts: #ec4899; // 艺术 - 粉红
+
+// 功能色 - Functional Colors
+$stem-success: #059669; // 成功绿
+$stem-success-light: #34d399;
+$stem-success-dark: #047857;
+$stem-warning: #f59e0b; // 琥珀黄
+$stem-warning-light: #fbbf24;
+$stem-warning-dark: #d97706;
+$stem-error: #ef4444; // 珊瑚红
+$stem-error-light: #f87171;
+$stem-error-dark: #dc2626;
+$stem-info: #0ea5e9; // 天空蓝
+$stem-info-light: #38bdf8;
+$stem-info-dark: #0284c7;
+
+// 学习状态色 - Learning State Colors
+$stem-progress: #059669; // 进行中 - 探索绿
+$stem-complete: #10b981; // 已完成 - 翡翠绿
+$stem-locked: #94a3b8; // 已锁定 - 灰色
+$stem-mastered: #f59e0b; // 已掌握 - 金色
+$stem-challenge: #ef4444; // 挑战中 - 红色
+
+// =============================================================================
+// K12 学生友好中性色系统 - Student-friendly Neutral System
+// =============================================================================
+
+// 浅色背景专用中性色 (更温暖、更友好)
+$stem-gray-50: #fafaf9; // 暖白 - Stone-50
+$stem-gray-100: #f5f5f4; // 石白 - Stone-100
+$stem-gray-200: #e7e5e4; // 石灰 - Stone-200
+$stem-gray-300: #d6d3d1; // 中灰 - Stone-300
+$stem-gray-400: #a8a29e; // 深灰 - Stone-400
+$stem-gray-500: #78716c; // 石板 - Stone-500
+$stem-gray-600: #57534e; // 深石板 - Stone-600
+$stem-gray-700: #44403c; // 暖灰 - Stone-700
+$stem-gray-800: #292524; // 深棕灰 - Stone-800
+$stem-gray-900: #1c1917; // 近黑 - Stone-900
+
+// 语义化中性色
+$stem-bg-page: #fafaf9; // 页面背景 - 暖白
+$stem-bg-surface: #fff; // 卡片表面 - 纯白
+$stem-bg-elevated: #fff; // 悬浮表面 - 纯白
+$stem-divider: #e7e5e4; // 分割线
+$stem-hover: rgb(5 150 105 / 5%); // 悬停状态 - 微绿
+$stem-selected: #d1fae5; // 选中状态 - 浅绿
+$stem-focus: rgb(5 150 105 / 25%); // 焦点状态 - 绿透
+$stem-disabled: #d6d3d1; // 禁用状态
+
+// 文本色
+$stem-text-primary: #1c1917; // 主文本 - 深暖灰
+$stem-text-secondary: #57534e; // 次要文本 - 中灰
+$stem-text-disabled: #a8a29e; // 禁用文本 - 浅灰
+$stem-text-inverse: #fff; // 反色文本 - 白
+$stem-text-on-primary: #fff; // 主色上文本 - 白
+$stem-text-on-secondary: #fff; // 辅色上文本 - 白
+
+// =============================================================================
+// K12 渐变系统 - Gradient System
+// =============================================================================
+
+// 探索主题渐变 (适合 STEM 背景)
+$stem-gradient-explore: linear-gradient(135deg, #059669 0%, #0ea5e9 100%);
+$stem-gradient-nature: linear-gradient(135deg, #10b981 0%, #34d399 100%);
+$stem-gradient-sky: linear-gradient(135deg, #0ea5e9 0%, #38bdf8 100%);
+$stem-gradient-sunset: linear-gradient(135deg, #f59e0b 0%, #ec4899 100%);
+$stem-gradient-cosmic: linear-gradient(135deg, #059669 0%, #8b5cf6 50%, #ec4899 100%);
+
+// 学科主题渐变
+$stem-subject-gradient-science: linear-gradient(135deg, #059669 0%, #10b981 100%);
+$stem-subject-gradient-technology: linear-gradient(135deg, #2563eb 0%, #0ea5e9 100%);
+$stem-subject-gradient-engineering: linear-gradient(135deg, #f59e0b 0%, #fbbf24 100%);
+$stem-subject-gradient-math: linear-gradient(135deg, #8b5cf6 0%, #a78bfa 100%);
+$stem-subject-gradient-arts: linear-gradient(135deg, #ec4899 0%, #f472b6 100%);
+
+// 按钮渐变
+$stem-btn-gradient-primary: linear-gradient(135deg, $stem-primary 0%, $stem-primary-dark 100%);
+$stem-btn-gradient-secondary: linear-gradient(
+  135deg,
+  $stem-secondary 0%,
+  $stem-secondary-dark 100%
+);
+
+// =============================================================================
+// K12 阴影系统 - Shadow System (更柔和、更有趣)
+// =============================================================================
+
+$stem-shadow-sm:
+  0 1px 3px 0 rgb(5 150 105 / 8%),
+  0 1px 2px 0 rgb(5 150 105 / 4%);
+$stem-shadow-md:
+  0 4px 6px -1px rgb(5 150 105 / 8%),
+  0 2px 4px -1px rgb(5 150 105 / 4%);
+$stem-shadow-lg:
+  0 10px 15px -3px rgb(5 150 105 / 8%),
+  0 4px 6px -2px rgb(5 150 105 / 4%);
+$stem-shadow-xl:
+  0 20px 25px -5px rgb(5 150 105 / 10%),
+  0 10px 10px -5px rgb(5 150 105 / 4%);
+$stem-shadow-2xl: 0 25px 50px -12px rgb(5 150 105 / 15%);
+
+// 特殊阴影 (用于 STEM 元素)
+$stem-shadow-card: 0 1px 3px rgb(5 150 105 / 8%), 0 1px 2px rgb(5 150 105 / 6%);
+$stem-shadow-glow: 0 0 20px rgb(5 150 105 / 30%);
+$stem-shadow-glow-sm: 0 0 10px rgb(5 150 105 / 20%);
+$stem-shadow-card-hover:
+  0 14px 28px rgb(5 150 105 / 12%),
+  0 10px 10px rgb(5 150 105 / 6%);
+
+// =============================================================================
+// K12 圆角系统 - Border Radius System (更圆润、更友好)
+// =============================================================================
+
+$stem-radius-xs: 0.25rem; // 4px
+$stem-radius-sm: 0.5rem; // 8px
+$stem-radius-md: 0.75rem; // 12px
+$stem-radius-lg: 1rem; // 16px
+$stem-radius-xl: 1.25rem; // 20px
+$stem-radius-2xl: 1.5rem; // 24px
+$stem-radius-3xl: 2rem; // 32px
+$stem-radius-full: 9999px;
+
+// K12 组件圆角 (更柔和)
+$stem-btn-radius: $stem-radius-full; // 完全圆角 (胶囊按钮)
+$stem-btn-radius-pill: $stem-radius-full; // 药丸形
+$stem-btn-radius-lg: $stem-radius-xl; // 大按钮圆角
+$stem-input-radius: $stem-radius-lg; // 输入框圆角 (16px)
+$stem-card-radius: $stem-radius-xl; // 卡片圆角 (20px)
+$stem-modal-radius: $stem-radius-2xl; // 模态框圆角 (24px)
+$stem-badge-radius: $stem-radius-full; // 徽章圆角
+
+// =============================================================================
+// K12 动画系统 - Animation System (更有趣、更吸引人)
+// =============================================================================
+
+$stem-transition-fast: 150ms cubic-bezier(0.4, 0, 0.2, 1);
+$stem-transition-normal: 250ms cubic-bezier(0.4, 0, 0.2, 1);
+$stem-transition-slow: 400ms cubic-bezier(0.4, 0, 0.2, 1);
+$stem-transition-bounce: 500ms cubic-bezier(0.34, 1.56, 0.64, 1);
+
+// 学习相关动画
+$stem-animation-bounce-in: bounce-in 0.5s cubic-bezier(0.34, 1.56, 0.64, 1);
+$stem-animation-pulse-glow: pulse-glow 2s ease-in-out infinite;
+$stem-animation-shimmer: shimmer 2s ease-in-out infinite;
+$stem-animation-float: float 3s ease-in-out infinite;
+
+// 关键帧动画
+@keyframes bounce-in {
+  0% {
+    opacity: 0;
+    transform: scale(0);
+  }
+
+  50% {
+    transform: scale(1.1);
+  }
+
+  100% {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
+@keyframes pulse-glow {
+  0%,
+  100% {
+    box-shadow: 0 0 10px rgb(5 150 105 / 30%);
+  }
+
+  50% {
+    box-shadow: 0 0 25px rgb(5 150 105 / 60%);
+  }
+}
+
+@keyframes shimmer {
+  0% {
+    background-position: -200% 0;
+  }
+
+  100% {
+    background-position: 200% 0;
+  }
+}
+
+@keyframes float {
+  0%,
+  100% {
+    transform: translateY(0);
+  }
+
+  50% {
+    transform: translateY(-10px);
+  }
+}
+
+// =============================================================================
+// K12 字体系统 - Typography System (更易读、更友好)
+// =============================================================================
+
+// 字体系列 (适合 K12 学生)
+$stem-font-family-sans:
+  'Inter',
+  'Noto Sans SC',
+  'PingFang SC',
+  'Microsoft YaHei',
+  -apple-system,
+  blinkmacsystemfont,
+  'Segoe UI',
+  roboto,
+  sans-serif;
+$stem-font-family-mono: 'JetBrains Mono', 'Fira Code', 'Source Code Pro', monospace;
+$stem-font-family-display: 'Nunito', 'Comic Sans MS', cursive; // 用于特殊标题
+
+// 字体大小 (K12 友好尺寸)
+$stem-font-size-xs: 0.75rem; // 12px
+$stem-font-size-sm: 0.875rem; // 14px
+$stem-font-size-base: 1rem; // 16px
+$stem-font-size-lg: 1.125rem; // 18px
+$stem-font-size-xl: 1.25rem; // 20px
+$stem-font-size-2xl: 1.5rem; // 24px
+$stem-font-size-3xl: 1.875rem; // 30px
+$stem-font-size-4xl: 2.25rem; // 36px
+
+// 行高 (更宽松，易于阅读)
+$stem-line-height-tight: 1.25;
+$stem-line-height-normal: 1.6;
+$stem-line-height-relaxed: 1.75;
+
+// 字重
+$stem-font-weight-normal: 400;
+$stem-font-weight-medium: 500;
+$stem-font-weight-semibold: 600;
+$stem-font-weight-bold: 700;
+
+// =============================================================================
+// K12 间距系统 - Spacing System (更宽松)
+// =============================================================================
+
+$stem-spacing-1: 0.25rem; // 4px
+$stem-spacing-2: 0.5rem; // 8px
+$stem-spacing-3: 0.75rem; // 12px
+$stem-spacing-4: 1rem; // 16px
+$stem-spacing-5: 1.25rem; // 20px
+$stem-spacing-6: 1.5rem; // 24px
+$stem-spacing-8: 2rem; // 32px
+$stem-spacing-10: 2.5rem; // 40px
+$stem-spacing-12: 3rem; // 48px
+$stem-spacing-16: 4rem; // 64px
+
+// 语义化间距
+$stem-space-xs: $stem-spacing-2; // 8px
+$stem-space-sm: $stem-spacing-4; // 16px
+$stem-space-md: $stem-spacing-6; // 24px
+$stem-space-lg: $stem-spacing-8; // 32px
+$stem-space-xl: $stem-spacing-12; // 48px
+
+// =============================================================================
+// K12 组件设计令牌 - Component Design Tokens
+// =============================================================================
+
+// ----- 按钮 (K12 友好版本) -----
+$stem-btn-height-sm: 2.25rem; // 36px
+$stem-btn-height-md: 2.75rem; // 44px (稍大，方便点击)
+$stem-btn-height-lg: 3.25rem; // 52px (更大，更易操作)
+$stem-btn-padding-x-sm: 1rem;
+$stem-btn-padding-x-md: 1.5rem;
+$stem-btn-padding-x-lg: 2rem;
+$stem-btn-font-size-sm: 0.875rem; // 14px
+$stem-btn-font-size-md: 1rem; // 16px
+$stem-btn-font-size-lg: 1.125rem; // 18px
+$stem-btn-font-weight: 600; // font-semibold
+$stem-btn-shadow-default: $stem-shadow-md;
+$stem-btn-shadow-hover: $stem-shadow-lg;
+
+// ----- 卡片 (更圆润) -----
+$stem-card-radius: $stem-radius-xl;
+$stem-card-padding: $stem-spacing-6;
+$stem-card-shadow: $stem-shadow-sm;
+$stem-card-shadow-hover: $stem-shadow-card-hover;
+$stem-card-border: 1px solid rgb(5 150 105 / 10%);
+
+// ----- 输入框 (K12 友好) -----
+$stem-input-radius: $stem-radius-lg;
+$stem-input-border: 2px solid $stem-gray-200;
+$stem-input-focus-border: $stem-primary;
+$stem-input-focus-ring: 0 0 0 4px rgb(5 150 105 / 15%);
+$stem-input-padding: $stem-spacing-3 $stem-spacing-4;
+$stem-input-font-size: 1rem; // 16px (移动端友好)
+
+// ----- 徽章 (学科标签) -----
+$stem-badge-radius: $stem-radius-full;
+$stem-badge-padding: $stem-spacing-1 $stem-spacing-3;
+$stem-badge-font-size: 0.75rem; // 12px
+$stem-badge-font-weight: 600;
+
+// ----- 进度条 (学习进度) -----
+$stem-progress-height: 0.5rem; // 8px (更粗，更明显)
+$stem-progress-radius: $stem-radius-full;
+$stem-progress-bg: $stem-gray-200;
+$stem-progress-fill-bg: $stem-gradient-explore;
+
+// ----- 成就徽章 (Gamification) -----
+$stem-badge-size-sm: 2rem; // 32px
+$stem-badge-size-md: 3rem; // 48px
+$stem-badge-size-lg: 4rem; // 64px
+$stem-badge-glow: $stem-shadow-glow;
+
+// ----- 导航栏 (K12 风格) -----
+$stem-navbar-height: 4.5rem; // 72px (更高，方便触摸)
+$stem-navbar-bg: rgb(255 255 255 / 95%);
+$stem-navbar-backdrop: blur(12px);
+$stem-navbar-shadow: $stem-shadow-sm;
+
+// =============================================================================
+// K12 特殊效果 - Special Effects
+// =============================================================================
+
+// 3D 效果 (用于 STEM 实验模拟)
+$stem-3d-depth-sm: 2px;
+$stem-3d-depth-md: 4px;
+$stem-3d-depth-lg: 8px;
+
+// 虚拟实验室效果
+$stem-lab-glow-green: 0 0 30px rgb(5 150 105 / 50%);
+$stem-lab-glow-blue: 0 0 30px rgb(14 165 233 / 50%);
+$stem-lab-grid:
+  linear-gradient(90deg, rgb(5 150 105 / 5%) 1px, transparent 1px),
+  linear-gradient(0deg, rgb(5 150 105 / 5%) 1px, transparent 1px);
+
+// =============================================================================
+// K12 暗色主题 - Dark Theme Colors
+// =============================================================================
+
+$stem-dark-bg: #0f172a; // Slate-900
+$stem-dark-surface: #1e293b; // Slate-800
+$stem-dark-elevated: #334155; // Slate-700
+$stem-dark-text-primary: #f8fafc;
+$stem-dark-text-secondary: #94a3b8;
+$stem-dark-border: #475569;
+
+// =============================================================================
+// 导出兼容性别名 - Export Aliases
+// =============================================================================
+
+// 与现有设计系统兼容的别名
+$color-stem-primary: $stem-primary;
+$color-stem-secondary: $stem-secondary;
+$color-stem-success: $stem-success;
+$color-stem-warning: $stem-warning;
+$color-stem-error: $stem-error;
+
+// =============================================================================
+// 补充缺失的 mixin 变量（供共享样式使用）
+// =============================================================================
+
+// 卡片阴影hover（共享样式需要）
+$stem-shadow-card-hover: 0 14px 28px rgb(5 150 105 / 12%), 0 10px 10px rgb(5 150 105 / 6%);
+
+// 渐变硬件背景
+$stem-accent: #06b6d4; // Cyan-500
+
+// =============================================================================
+// 游戏化设计系统变量 - Gamification Design Tokens
+// （学生仪表板重构新增，PRD 6.5 节游戏化设计）
+// =============================================================================
+
+// 积分系统 - 金钱感金色（用奖励色对应金色传统）
+$stem-points: #f59e0b;
+$stem-points-light: #fbbf24;
+$stem-points-dark: #d97706;
+$stem-points-text: #b45309; // Amber-700 - WCAG AA 4.6:1 on white
+$stem-gradient-points: linear-gradient(135deg, $stem-points 0%, $stem-points-light 100%);
+
+// 等级体系颜色（与稀有度颜色复用）
+$stem-level-common: #64748b; // Slate-500 - WCAG AA 4.6:1 on white
+$stem-level-rare: #2563eb; // Blue-600 - WCAG AA 4.6:1 on white
+$stem-level-epic: #7c3aed; // Violet-600 - WCAG AA 5.4:1 on white
+$stem-level-legendary: #b45309; // Amber-700 - WCAG AA 4.6:1 on white
+
+// 连续打卡火焰色
+$stem-streak-fire: #ef4444;
+$stem-streak-fire-light: #f87171;
+
+// 稀有度颜色（成就徽章、任务卡片）
+$stem-rarity-common: #94a3b8;
+$stem-rarity-rare: #3b82f6;
+$stem-rarity-epic: #7c3aed; // Violet-600 - WCAG AA 5.4:1 on white
+$stem-rarity-legendary: #b45309; // Amber-700 - WCAG AA 4.6:1 on white
+
+// 顶部状态栏变量
+$stem-statusbar-height: 48px;
+$stem-statusbar-bg: $stem-bg-surface;
+$stem-statusbar-border: 1px solid $stem-divider;
+
+// AI 浮动按钮变量
+$stem-floating-ai-size: 56px;
+$stem-floating-ai-shadow: 0 8px 24px rgba(5, 150, 105, 0.4);
+$stem-floating-ai-shadow-hover: 0 12px 32px rgba(5, 150, 105, 0.5);

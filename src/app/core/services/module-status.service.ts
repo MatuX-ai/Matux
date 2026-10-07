@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-non-null-assertion */
 /**
  * 模块状态服务
  *
@@ -7,13 +8,20 @@
 
 import { HttpClient } from '@angular/common/http';
 import { Injectable, OnDestroy } from '@angular/core';
-import { BehaviorSubject, interval, Observable, Subject, of } from 'rxjs';
-import { catchError, filter, map, switchMap, take, takeUntil, timeout } from 'rxjs/operators';
+import { BehaviorSubject, interval, Observable, of, Subject } from 'rxjs';
+import { catchError, map, switchMap, takeUntil, timeout } from 'rxjs/operators';
 
 import { environment } from '../../../environments/environment';
 
 /** HTTP 请求超时时间（毫秒），防止单次 health-detail 卡住整个状态栏 */
 const HTTP_TIMEOUT_MS = 5_000;
+
+/**
+ * 【P3-4 修复】连续失败次数达到阈徧后才认作后端宕机
+ * 避免 CORS 预检 / 冷启动 造成的一次性失败被误判为“后端未启动”
+ */
+const HEALTH_FAILURE_THRESHOLD = 3;
+const HEALTH_FAILURE_RESET_MS = 60_000;
 
 /** 模块摘要统计 */
 export interface ModuleSummary {
@@ -97,6 +105,10 @@ export class ModuleStatusService implements OnDestroy {
   /** 整体健康状态 */
   readonly healthy$ = new BehaviorSubject<boolean>(false);
 
+  /** [P3-4 修复] 连续失败计数，避免偶发 CORS 预检被误判为后端宕机 */
+  private consecutiveFailures = 0;
+  private lastSuccessTime = 0;
+
   /** 模块摘要 */
   readonly summary$ = new BehaviorSubject<ModuleSummary | null>(null);
 
@@ -124,7 +136,7 @@ export class ModuleStatusService implements OnDestroy {
     interval(POLL_INTERVAL_MS)
       .pipe(
         takeUntil(this.destroy$),
-        switchMap(() => this.fetchHealthInternal()),
+        switchMap(() => this.fetchHealthInternal())
       )
       .subscribe();
   }
@@ -138,15 +150,27 @@ export class ModuleStatusService implements OnDestroy {
     return this.http.get<HealthDetailResponse>(`${this.baseUrl}/health-detail`).pipe(
       timeout(HTTP_TIMEOUT_MS),
       catchError(() => {
-        this.healthy$.next(false);
+        // [P3-4 修复] 连续失败计数；未达阈值保持上一次状态，避免误判
+        this.consecutiveFailures += 1;
         this.summary$.next(null);
-        this.tierGroups$.next([]);
         this.modules$.next([]);
+        const now = Date.now();
+        const staleSinceLastSuccess = now - this.lastSuccessTime > HEALTH_FAILURE_RESET_MS;
+        if (
+          this.consecutiveFailures >= HEALTH_FAILURE_THRESHOLD ||
+          staleSinceLastSuccess
+        ) {
+          this.tierGroups$.next([]);
+          this.healthy$.next(false);
+        }
         return of(null);
       }),
       map((data) => {
         if (!data) return null;
 
+        // [P3-4 修复] 成功后重置失败计数
+        this.consecutiveFailures = 0;
+        this.lastSuccessTime = Date.now();
         this.healthy$.next(data.status === 'healthy');
 
         if (data.modules) {
@@ -189,16 +213,16 @@ export class ModuleStatusService implements OnDestroy {
     }
 
     // 触发激活
-    return this.http.post<ModuleActivationResult>(
-      `${this.baseUrl}/modules/${name}/activate`, {}
-    ).pipe(
-      timeout(ACTIVATION_TIMEOUT_MS),
-      map((result) => {
-        this.fetchHealth();  // 刷新状态
-        return result.success;
-      }),
-      catchError(() => of(false)),
-    );
+    return this.http
+      .post<ModuleActivationResult>(`${this.baseUrl}/modules/${name}/activate`, {})
+      .pipe(
+        timeout(ACTIVATION_TIMEOUT_MS),
+        map((result) => {
+          this.fetchHealth(); // 刷新状态
+          return result.success;
+        }),
+        catchError(() => of(false))
+      );
   }
 
   /**
@@ -208,18 +232,16 @@ export class ModuleStatusService implements OnDestroy {
    */
   onModuleStateChange(
     name: string,
-    callback: (entry: ModuleStatusEntry | undefined) => void,
+    callback: (entry: ModuleStatusEntry | undefined) => void
   ): void {
     let prevState: string | undefined;
-    this.modules$
-      .pipe(takeUntil(this.destroy$))
-      .subscribe((modules) => {
-        const mod = modules.find((m) => m.name === name);
-        if (mod?.state !== prevState) {
-          prevState = mod?.state;
-          callback(mod);
-        }
-      });
+    this.modules$.pipe(takeUntil(this.destroy$)).subscribe((modules) => {
+      const mod = modules.find((m) => m.name === name);
+      if (mod?.state !== prevState) {
+        prevState = mod?.state;
+        callback(mod);
+      }
+    });
   }
 
   /** 构建 Tier 分组 */

@@ -211,4 +211,16 @@
     <mat-icon>hourglass_empty</mat-icon>
     <p>正在加载你的课程...</p>
   </div>
+
+  <!-- 【P3 修复 #13】加载失败时显示重试卡片，避免无限 loading -->
+  <app-retry-card
+    *ngIf="!loading && loadError"
+    icon="cloud_off"
+    title="加载课程失败"
+    message="无法获取你的选课列表，可能是网络异常或后端服务暂不可用。"
+    [detail]="loadErrorDetail"
+    [retrying]="loading"
+    [showHomeButton]="true"
+    (retry)="retryLoadCourses()"
+  ></app-retry-card>
 </div>
