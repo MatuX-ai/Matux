@@ -109,6 +109,7 @@ async def create_db_and_tables() -> None:
     from models.license import Organization, License  # type: ignore[import-untyped]  # noqa: F401,E501
     from models.user import User  # type: ignore[import-untyped]  # noqa: F401,E501
     from models.ar_vr_content import ARVRContent  # type: ignore[import-untyped]  # noqa: F401,E501
+    from models.error_log import FrontendErrorLog  # type: ignore[import-untyped]  # noqa: F401,E501
     from models.content_store import ContentItem  # type: ignore[import-untyped]  # noqa: F401,E501
     from models.course_version import CourseVersion  # type: ignore[import-untyped]  # noqa: F401,E501
     from models.dynamic_course import GeneratedCourse  # type: ignore[import-untyped]  # noqa: F401,E501

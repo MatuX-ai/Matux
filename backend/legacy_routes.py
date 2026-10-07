@@ -60,6 +60,9 @@ def register_all_routes(app):
     from routes import achievement_routes
     from routes import openhydra_routes
     from routes import admin_settings_routes
+    from routes import admin_arvr_routes  # AR/VR 课程管理后台
+    from routes import error_log_routes  # 错误日志收集（前端兼容路径）
+    from routes import org_error_log_routes  # 组织级错误日志收集
     from routes import finance_routes
     from routes import sensor_data_routes
     from routes import oauth_routes
@@ -111,6 +114,10 @@ def register_all_routes(app):
     app.include_router(achievement_routes.router)
     app.include_router(finance_routes.router, tags=["财务管理"])
     app.include_router(admin_settings_routes.router, tags=["Admin 设置管理"])
+    app.include_router(admin_arvr_routes.router, tags=["Admin - AR/VR 课程管理"])
+    # 错误日志路由（保持 legacy 模式下的前端上报兼容）
+    app.include_router(error_log_routes.router, tags=["错误日志管理"])
+    app.include_router(org_error_log_routes.router, tags=["错误日志（前端兼容路径）"])
     app.include_router(sensor_data_routes.router)
     app.include_router(unified_auth_router)
     app.include_router(oauth_routes.router)

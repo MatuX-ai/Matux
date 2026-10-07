@@ -203,6 +203,7 @@ async def _do_startup(app: FastAPI, start_time: float):
     from models.sponsorship import Sponsorship  # noqa: F401
     from models.user import User  # noqa: F401
     from models.ar_vr_content import ARVRContent  # noqa: F401
+    from models.error_log import FrontendErrorLog  # noqa: F401
     from models.content_store import ContentItem  # noqa: F401
     from models.course_version import CourseVersion  # noqa: F401
     from models.dynamic_course import GeneratedCourse  # noqa: F401

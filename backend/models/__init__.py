@@ -30,6 +30,7 @@ from .classroom import (
 )
 from .sponsorship import Sponsorship  # 赞助模型，必须在Organization之后导入
 from .ai_request import AIRequest
+from .error_log import FrontendErrorLog, FrontendErrorLogResponse, FrontendErrorLogStats
 from .ar_vr_content import (
     ARVRContent,
     ARVRContentCreate,

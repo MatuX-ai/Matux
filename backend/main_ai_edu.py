@@ -12,6 +12,18 @@ from routes.llm_assistant_routes import router as llm_assistant_router
 from routes.leaderboard_routes import router as leaderboard_router
 from routes.error_log_routes import router as error_log_router
 from routes.creativity_routes import router as creativity_router
+# 【P1-Backend 修复 #1】补齐 arvr_course_routes：前端 ARVRCoursePlayerComponent 调用
+#   /api/v1/arvr-courses/{id}，原 routes/ar_vr_routes.py 提供的路径是 /api/v1/org/{org_id}/arvr/*，
+#   前端调用 404 → ARVR 课程 502。补齐后 ARVR 课程可正常加载。
+from routes.arvr_course_routes import router as arvr_course_router
+# 【P1-Backend 修复 #2】补齐 org_error_log_routes：前端 ErrorLoggerService 调用
+#   /api/v1/org/{org_id}/logs/error，原 routes/error_log_routes.py 提供的路径是 /logs/error（无 org_id 前缀），
+#   前端调用 404 → ErrorLoggerService 上报失败。补齐后前端错误可正常上报。
+from routes.org_error_log_routes import router as org_error_log_router
+# 【P1-Admin 补齐】注册 Admin AR/VR 课程管理路由
+#   提供后台课程 CRUD / 上传 / 编辑 / 删除能力，路径 /api/v1/admin/arvr/*，
+#   需要 Bearer JWT + admin 角色才能访问。
+from routes.admin_arvr_routes import router as admin_arvr_router
 # 协作文档模块因编码问题暂未修复，后续处理
 # from routes.collaboration_routes import (
 #     discussion_router,
@@ -141,6 +153,17 @@ app.include_router(
 app.include_router(
     vircadia_avatar_router, tags=["Vircadia Avatar"]
 )
+# 【P1-Backend 修复 #1】注册 ARVR 课程路由（前端简化路径）
+#   前端 ARVRCoursePlayerComponent 调用 GET /api/v1/arvr-courses/{id}
+#   路由内部 prefix 已包含 /api/v1/arvr-courses
+app.include_router(arvr_course_router)
+# 【P1-Backend 修复 #2】注册组织级错误日志路由（前端兼容路径）
+#   前端 ErrorLoggerService 调用 POST /api/v1/org/{org_id}/logs/error
+#   路由内部 prefix 已包含 /api/v1/org/{org_id}/logs
+app.include_router(org_error_log_router)
+# 【P1-Admin 补齐】注册 Admin AR/VR 课程管理后台
+#   路径 /api/v1/admin/arvr/*，要求 JWT + admin 角色
+app.include_router(admin_arvr_router)
 
 
 # 临时测试路由

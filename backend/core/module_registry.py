@@ -253,6 +253,52 @@ def get_all_module_specs() -> List[dict]:
         "model_classes": [],
     })
 
+    # 错误日志收集（前端兼容路径）
+    modules.append({
+        "name": "error_log",
+        "tier": 0,
+        "prefix": "",
+        "tags": ["错误日志管理"],
+        "router_factory": _factory("routes.error_log_routes", "router"),
+        "dependencies": [],
+        "required_services": [],
+        "fallback_services": {},
+        "model_classes": [
+            "models.error_log.ErrorLog",
+            "models.error_log.FrontendErrorLog",
+        ],
+    })
+
+    # 组织级错误日志收集（前端 ErrorLoggerService 直接上报）
+    modules.append({
+        "name": "org_error_log",
+        "tier": 0,
+        "prefix": "",
+        "tags": ["错误日志（前端兼容路径）"],
+        "router_factory": _factory("routes.org_error_log_routes", "router"),
+        "dependencies": [],
+        "required_services": [],
+        "fallback_services": {},
+        "model_classes": [
+            "models.error_log.FrontendErrorLog",
+        ],
+    })
+
+    # Admin AR/VR 课程管理后台
+    modules.append({
+        "name": "admin_arvr",
+        "tier": 0,
+        "prefix": "",
+        "tags": ["Admin - AR/VR 课程管理"],
+        "router_factory": _factory("routes.admin_arvr_routes", "router"),
+        "dependencies": ["auth"],
+        "required_services": [],
+        "fallback_services": {},
+        "model_classes": [
+            "models.ar_vr_content.ARVRContent",
+        ],
+    })
+
     # ==================== Tier 1: 高优先级 ====================
     # AI 服务、支付、考试 → 后台预加载，< 10 秒
 
@@ -469,6 +515,19 @@ def get_all_module_specs() -> List[dict]:
         "prefix": "",
         "tags": ["AR/VR Mock"],
         "router_factory": _factory("routes.ar_vr_mock_routes", "mock_router"),
+        "dependencies": ["auth"],
+        "required_services": [],
+        "fallback_services": {},
+        "model_classes": [],
+    })
+
+    # AR/VR 课程（前端简化路径 /api/v1/arvr-courses）
+    modules.append({
+        "name": "arvr_course",
+        "tier": 2,
+        "prefix": "",
+        "tags": ["AR/VR 课程（前端简化路径）"],
+        "router_factory": _factory("routes.arvr_course_routes", "router"),
         "dependencies": ["auth"],
         "required_services": [],
         "fallback_services": {},
