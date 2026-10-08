@@ -88,11 +88,29 @@
           <span>{{ errorMessage }}</span>
         </div>
 
+        <!-- 【启动优化 P3】fast mode 登录失败后引导：取消偏好 + 退出应用 -->
+        <div class="fast-mode-recovery" *ngIf="fastModeRecoveryHint">
+          <div class="recovery-text">
+            后端可能还在后台启动，建议<strong>关闭学习优先模式</strong>并重新启动应用。
+          </div>
+          <button
+            mat-stroked-button
+            color="primary"
+            type="button"
+            class="recovery-button"
+            (click)="quitAndRetryInNormalMode()"
+          >
+            <mat-icon>restart_alt</mat-icon>
+            取消学习优先模式并重启
+          </button>
+        </div>
+
         <button
           mat-flat-button
           color="primary"
           type="submit"
           class="full-width login-button"
+          [class.fast-mode]="fastMode && !backendReady"
           [disabled]="loginForm.invalid || loading"
         >
           <span class="btn-label" *ngIf="!loading">
@@ -101,6 +119,12 @@
           </span>
           <mat-spinner *ngIf="loading" diameter="20" class="btn-spinner"></mat-spinner>
         </button>
+
+        <!-- 【启动优化 P3】fast mode + 后端未就绪：友好提示横幅 -->
+        <div class="fast-mode-hint" *ngIf="fastMode && !backendReady">
+          <mat-icon class="hint-icon">hourglass_top</mat-icon>
+          <span class="hint-text">{{ fastModeHint }}</span>
+        </div>
 
         <!-- 测试账号一键登录：仅在非生产环境显示 -->
         <button

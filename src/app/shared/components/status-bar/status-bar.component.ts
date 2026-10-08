@@ -16,7 +16,7 @@ import { Component, inject, OnDestroy, OnInit } from '@angular/core';
 import { MatIconModule } from '@angular/material/icon';
 import { MatTooltipModule } from '@angular/material/tooltip';
 import { Subject, takeUntil } from 'rxjs';
-import { filter, map, pairwise } from 'rxjs/operators';
+import { distinctUntilChanged, map, startWith } from 'rxjs/operators';
 
 import { AuthService } from '../../../core/services/auth.service';
 import { ModuleStatusService, TierGroupStatus } from '../../../core/services/module-status.service';
@@ -78,19 +78,22 @@ export class StatusBarComponent implements OnInit, OnDestroy {
     });
 
     // 订阅模块状态
-    // 【P0 修复】跳过 BehaviorSubject 的初始 false（未检测时），
-    //   只有当 healthy$ 有过一次“状态变化”才更新 UI，避免初次订阅被
-    //   初始默认值 false 误判为「后端未启动」。
+    // 【P0-B 修复】原 pairwise()+filter 存在竞态：StatusBar 在后订阅时 BehaviorSubject
+    //   已发出 true，pairwise 缓冲 [true]，后续健康检查仍为 true 时 filter 拦截，
+    //   状态栏一直停留在「后端检测中…」。改用 startWith + distinctUntilChanged：
+    //   - startWith 立即发射当前值，避开 pairwise 需要 2 个值的问题
+    //   - distinctUntilChanged 只发射变化，让 UI 在状态变化时刷新
     this.moduleStatusService.healthy$
       .pipe(
-        pairwise(),
-        filter(([prev, curr]) => prev !== curr),
-        map(([, curr]) => curr),
+        startWith(this.moduleStatusService.healthy$.value),
+        distinctUntilChanged(),
+        map((healthy) => healthy ? 'healthy' : 'unhealthy'),
         takeUntil(this.destroy$)
       )
-      .subscribe((healthy) => {
-        // 【P0 修复】保留三态映射：healthy → 'healthy' / false → 'unhealthy'。
-        this.backendStatus = healthy ? 'healthy' : 'unhealthy';
+      .subscribe((status) => {
+        // 【P0-B 修复】保留三态：healthy → 'healthy' / unhealthy → 'unhealthy'。
+        //   'unknown' 仅用于初始未检测时。
+        this.backendStatus = status;
       });
 
     this.moduleStatusService.tierGroups$.pipe(takeUntil(this.destroy$)).subscribe((groups) => {

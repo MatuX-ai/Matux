@@ -15,6 +15,8 @@ import { environment } from '../../../environments/environment';
 import { LoginRequest } from '../../core/models/auth.models';
 import { AuthService } from '../../core/services/auth.service';
 import { I18nService } from '../../core/services/i18n.service';
+import { ModuleStatusService } from '../../core/services/module-status.service';
+import { StartupModeService } from '../../core/services/startup-mode.service';
 import { ROUTES } from '../../routes.const';
 
 // 测试账号配置（仅用于演示，敏感信息不应在前端硬编码）
@@ -174,6 +176,14 @@ export class LoginComponent implements OnInit, OnDestroy {
   errorMessage = '';
   hidePassword = true;
 
+  // 【启动优化 P3】学习优先模式：true 时按钮带加载圈 + 显示“后端后台启动”提示
+  // 后端就绪后自动恢复为正常可点击状态
+  fastMode = false;
+  backendReady = true;
+  fastModeHint = '';
+  // 【启动优化 P3】fast mode 登录失败时显示恢复引导：点击退出应用 + 取消偏好
+  fastModeRecoveryHint = false;
+
   readonly isProduction = environment.production;
   readonly ROUTES = ROUTES;
 
@@ -204,7 +214,9 @@ export class LoginComponent implements OnInit, OnDestroy {
     private router: Router,
     private route: ActivatedRoute,
     public i18n: I18nService,
-    private cdr: ChangeDetectorRef
+    private cdr: ChangeDetectorRef,
+    private startupMode: StartupModeService,
+    private moduleStatus: ModuleStatusService
   ) {
     this.rememberMe = this.authService.isRememberMe();
 
@@ -216,6 +228,35 @@ export class LoginComponent implements OnInit, OnDestroy {
         /* sessionStorage 不可用 */
       }
     }
+
+    // 【启动优化 P3】订阅启动模式与后端就绪状态
+    // - fast mode 下按钮带加载圈，提示后端后台启动
+    // - 后端就绪后自动恢复为正常可点击（不需要用户刷新页面）
+    this.startupMode.mode$.subscribe((mode) => {
+      this.fastMode = mode.fastMode;
+      if (mode.fastMode) {
+        this.fastModeHint = '⚡ 学习优先模式：后端正在后台启动（10~30s），登录将在后端就绪后自动可用';
+      } else {
+        this.fastModeHint = '';
+      }
+      this.cdr.markForCheck();
+    });
+    // 同步拉取一次，避免 race
+    void this.startupMode.refresh();
+    // 订阅模块状态：backend/任何 tier ready 都视为“后端可登录”
+    this.moduleStatus.healthy$.subscribe((healthy) => {
+      this.backendReady = healthy;
+      this.cdr.markForCheck();
+    });
+    this.moduleStatus.modules$.subscribe((modules) => {
+      // 【启动优化 P3】如果 fast mode 且后端尚未就绪，按钮不应禁用（保持可点击 + 加载圈）
+      // 判定：summary 出现 active 模块 或 healthy$ 推送 true
+      const hasActive = modules.some((m) => m.state === 'active');
+      if (hasActive) {
+        this.backendReady = true;
+        this.cdr.markForCheck();
+      }
+    });
   }
 
   ngOnInit(): void {
@@ -276,6 +317,14 @@ export class LoginComponent implements OnInit, OnDestroy {
     else if (!emailOk && passOk) this.loginButtonText = '继续 → 邮箱';
     else this.loginButtonText = '🚀 启动引擎';
   }
+
+  // 【P1 修复】登录兏底超时（毫秒）。
+  //   - 此前 30s 过长：桌面端冷启动后端可能未就绪，用户看到进度条停在“Loading user profile...”
+  //     上达 30 秒才报错，体验为“Validating credentials... 时间过长了”。
+  //   - auth.service.signIn 已加 rxjs timeout(8000~10s)，
+  //     这里兏底设为 13s 保留 3~5s 缓冲，避免因网络住额误判。
+  //   - 同步调整后“点登录 → 后端不在线”从 30s 缩短为 13s 内反馈。
+  private readonly LOGIN_FALLBACK_TIMEOUT_MS = 13000;
 
   // ============ 阶段状态机 ============
   private pushLine(text: string, type: TerminalLine['type'] = 'info'): void {
@@ -345,37 +394,76 @@ export class LoginComponent implements OnInit, OnDestroy {
       this.triggerXP(phase.exp, phase.rarity, phase.label);
     };
 
+    // 【P1 修复】阶段时序重整：
+    //   - validating: 客户端表单校验，仅 80ms（之前 250ms 过久）
+    //   - contacting: 立即发起 HTTP 请求，进度条停在 40% 等待响应
+    //   - 后续 verifying/loading 仅在登录成功后才走（不再预走 1.2s 动画）
+    //   - 失败时直接报错误，不再误显示 “Loading user profile...”
+    // 这样后端未启动时 13s 内反馈，不再卡 30s。
     runPhase(LOGIN_PHASES['validating']);
-    await this.delay(this.prefersReducedMotion ? 60 : 250);
+    await this.delay(this.prefersReducedMotion ? 40 : 80);
     runPhase(LOGIN_PHASES['contacting']);
 
     try {
-      await this.delay(this.prefersReducedMotion ? 80 : 350);
-      runPhase(LOGIN_PHASES['verifying']);
-      await this.delay(this.prefersReducedMotion ? 100 : 350);
-      runPhase(LOGIN_PHASES['loading']);
-      await this.delay(this.prefersReducedMotion ? 80 : 250);
-
-      // 30 秒兜底：防止后端挂起导致 loading 卡死
       await Promise.race([
         doLogin(),
-        this.delay(30000).then(() => {
-          throw new Error('登录请求超时，请检查网络后重试');
+        this.delay(this.LOGIN_FALLBACK_TIMEOUT_MS).then(() => {
+          throw new Error('后端服务响应超时，请检查后端是否启动完成');
         }),
       ]);
 
+      // 成功后：verifying → loading → ready
+      runPhase(LOGIN_PHASES['verifying']);
+      await this.delay(this.prefersReducedMotion ? 60 : 180);
+      runPhase(LOGIN_PHASES['loading']);
+      await this.delay(this.prefersReducedMotion ? 60 : 180);
       runPhase(LOGIN_PHASES['ready']);
       this.celebrate();
       await this.delay(900);
       this.navigateAfterLogin();
     } catch (err) {
-      const msg = (err as { message?: string })?.message ?? '登录失败，请检查邮箱和密码';
-      this.errorMessage = msg;
-      this.pushLine(`ERROR: ${msg}`, 'error');
+      const rawMsg = (err as { message?: string })?.message ?? '登录失败，请检查邮箱和密码';
+      // 【启动优化 P3】fast mode 登录失败时追加引导（风险 3 缓解）
+      // 原因：后端还在后台启动，13s 兑底超时后用户可能误以为账号密码错误。
+      // 引导用户切回正常模式（重启应用 + 取消 fast mode）。
+      const isFastMode = this.startupMode.isFastMode();
+      if (isFastMode) {
+        this.errorMessage = `${rawMsg}（fast mode 后端可能还在启动中）`;
+        this.fastModeRecoveryHint = true;
+      } else {
+        this.errorMessage = rawMsg;
+        this.fastModeRecoveryHint = false;
+      }
+      this.pushLine(`ERROR: ${this.errorMessage}`, 'error');
       this.setProgress(0);
       this.progressPercent = 0;
       this.progressText = '0%';
       this.loading = false;
+      // 【P1 修复】错误状态明确从 contacting 返回，避免用户在 UI 上看到
+      // “Loading user profile...” 与实际 “后端未就绪” 不一致的迷惑。
+      this.loginPhase = 'failed';
+    }
+  }
+
+  /**
+   * 【启动优化 P3】fast mode 登录失败后引导：取消偏好 + 退出应用
+   * 用户重启动后不再启用 fast mode，30s 启动完成后会看到完整后端
+   */
+  quitAndRetryInNormalMode(): void {
+    try {
+      // 1. 取消 fast mode 偏好
+      localStorage.setItem('matux-fast-mode-enabled', '0');
+    } catch {
+      /* localStorage 不可用 */
+    }
+    // 2. 提示用户即将重启
+    this.pushLine('已取消学习优先模式偏好，正在重启应用…', 'info');
+    // 3. 调 quit IPC：主进程退出应用
+    if (typeof window !== 'undefined' && window.electronAPI?.quit) {
+      window.electronAPI.quit();
+    } else {
+      // 兑底：非 Electron 环境下直接 reload
+      window.location.reload();
     }
   }
 
@@ -456,6 +544,10 @@ export class LoginComponent implements OnInit, OnDestroy {
   // ============ 登录入口 ============
   async onLogin(): Promise<void> {
     if (this.loading) return;
+    // 【启动优化 P3】重置恢复引导：开始新一轮登录尝试时清除上次的“切回正常模式”按钮
+    this.fastModeRecoveryHint = false;
+    // 【启动优化 P3】fast mode 下允许点击登录，runLoginSequence 内部按现有 13s 兏底超时
+    // 友好提示：后端还在后台启动中，按钮会显示加载圈
     await this.runLoginSequence(async () => {
       await new Promise<void>((resolve, reject) => {
         this.authService.setRememberMe(this.rememberMe);

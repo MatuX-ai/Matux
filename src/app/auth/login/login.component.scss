@@ -463,6 +463,50 @@ $color-legendary: #fde047;
   margin: 0 auto;
 }
 
+// =================== 启动优化 P3：学习优先模式样式 ===================
+.login-button.fast-mode {
+  // fast mode + 后端未就绪：加个蓝色脉动边光，提示状态中
+  animation: fast-mode-pulse 1.6s ease-in-out infinite;
+  box-shadow: 0 6px 20px rgba(59, 130, 246, 0.6) !important;
+}
+
+@keyframes fast-mode-pulse {
+  0%, 100% { box-shadow: 0 6px 20px rgba(59, 130, 246, 0.4) !important; }
+  50%      { box-shadow: 0 6px 28px rgba(59, 130, 246, 0.85) !important; }
+}
+
+.fast-mode-hint {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-top: 10px;
+  padding: 10px 12px;
+  border: 1px solid rgba(59, 130, 246, 0.35);
+  border-radius: 10px;
+  background: rgba(59, 130, 246, 0.08);
+  color: #93c5fd;
+  font-size: 12px;
+  line-height: 1.5;
+
+  .hint-icon {
+    color: #3b82f6;
+    font-size: 18px;
+    width: 18px;
+    height: 18px;
+    flex-shrink: 0;
+    animation: fast-mode-spin 2s linear infinite;
+  }
+
+  .hint-text {
+    flex: 1;
+  }
+}
+
+@keyframes fast-mode-spin {
+  from { transform: rotate(0deg); }
+  to   { transform: rotate(360deg); }
+}
+
 // =================== 测试账号按钮（游戏风格）====================
 .test-login-button {
   height: 42px !important;
@@ -915,4 +959,46 @@ $color-legendary: #fde047;
   .terminal-section {
     padding: 10px 12px;
   }
+}
+
+// =================== 启动优化 P3：fast mode 登录失败恢复引导 ===================
+.fast-mode-recovery {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  margin-top: 10px;
+  padding: 12px 14px;
+  border: 1px solid rgba(59, 130, 246, 0.4);
+  border-radius: 12px;
+  background: linear-gradient(135deg, rgba(59, 130, 246, 0.1), rgba(59, 130, 246, 0.05));
+}
+
+.fast-mode-recovery .recovery-text {
+  color: #dbeafe;
+  font-size: 13px;
+  line-height: 1.5;
+}
+
+.fast-mode-recovery .recovery-text strong {
+  color: #ffffff;
+  font-weight: 700;
+}
+
+.fast-mode-recovery .recovery-button {
+  align-self: flex-start;
+  height: 38px !important;
+  border-color: rgba(59, 130, 246, 0.6) !important;
+  color: #93c5fd !important;
+  font-weight: 600 !important;
+}
+
+.fast-mode-recovery .recovery-button:hover {
+  background: rgba(59, 130, 246, 0.15) !important;
+}
+
+.fast-mode-recovery .recovery-button mat-icon {
+  margin-right: 6px;
+  font-size: 18px;
+  width: 18px;
+  height: 18px;
 }

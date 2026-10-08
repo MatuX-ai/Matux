@@ -108,10 +108,21 @@ export class LearningReportsComponent implements OnInit, OnDestroy {
    * 导出当前报告为 PDF：
    * 1. 调用后端获取 Blob
    * 2. 后端不可用时回退到浏览器打印（用户可另存为 PDF）
+   * 【P3-1 修复】点击「导出 PDF」如果有可见反馈（即使是提示 / 也避免沉默失败）
    */
   exportAsPdf(): void {
     const report = this.selectedReport;
-    if (!report) return;
+    if (!report) {
+      // 【P3-1 修复】原逻辑在没有选中报告时静默 return，导致用户点击后无任何反馈。
+      //   现在给出明确提示，并自动 fallback 到打印整个报告页（用户可下载为 PDF）。
+      this.snackBar.open(
+        '当前未选中报告，已为你打开打印对话框（可“另存为 PDF”）',
+        '关闭',
+        { duration: 3000 }
+      );
+      this.printReport();
+      return;
+    }
     this.exporting = true;
     this.cdr.markForCheck();
 

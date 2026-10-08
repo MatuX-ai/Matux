@@ -9,10 +9,12 @@
  */
 
 import { CommonModule } from '@angular/common';
-import { Component, OnDestroy, OnInit } from '@angular/core';
+import { ChangeDetectorRef, Component, OnDestroy, OnInit } from '@angular/core';
 import { MatCardModule } from '@angular/material/card';
 import { MatIconModule } from '@angular/material/icon';
 import { MatProgressBarModule } from '@angular/material/progress-bar';
+import { MatSnackBar, MatSnackBarModule } from '@angular/material/snack-bar';
+import { Router } from '@angular/router';
 import { Subject } from 'rxjs';
 import { takeUntil } from 'rxjs/operators';
 
@@ -28,6 +30,7 @@ import { AchievementGalleryComponent } from '../../../features/achievement-integ
     MatCardModule,
     MatIconModule,
     MatProgressBarModule,
+    MatSnackBarModule,
     AchievementGalleryComponent,
   ],
   template: `
@@ -45,6 +48,15 @@ import { AchievementGalleryComponent } from '../../../features/achievement-integ
             <div class="empty-state">
               <mat-icon class="empty-icon">account_circle</mat-icon>
               <p>请先登录后查看成就信息</p>
+              <button
+                mat-stroked-button
+                color="primary"
+                class="login-cta"
+                (click)="goToLogin()"
+              >
+                <mat-icon>login</mat-icon>
+                去登录
+              </button>
             </div>
           </mat-card-content>
         </mat-card>
@@ -138,7 +150,12 @@ export class AchievementsComponent implements OnInit, OnDestroy {
 
   private destroy$ = new Subject<void>();
 
-  constructor(private authService: AuthService) {}
+  constructor(
+    private authService: AuthService,
+    private cdr: ChangeDetectorRef,
+    private snackBar: MatSnackBar,
+    private router: Router
+  ) {}
 
   get hasValidUserId(): boolean {
     return this.currentUserId > 0 && !Number.isNaN(this.currentUserId);
@@ -149,8 +166,25 @@ export class AchievementsComponent implements OnInit, OnDestroy {
       if (user?.id) {
         const parsed = Number(user.id);
         this.currentUserId = !Number.isNaN(parsed) ? parsed : 0;
+      } else {
+        // 【P2-1 修复】仅依靠 currentUser$ 可能错过已登录用户的初始化：
+        //   - 路由刷新后 currentUser$ 还未发射，或 user 对象被清理。
+        //   - 改用同时从 AuthService 同步读取 currentUser，避免出现 “已登录但页面说请先登录”。
+        const snapshot = this.authService.getCurrentUser?.();
+        if (snapshot?.id) {
+          const parsed = Number(snapshot.id);
+          this.currentUserId = !Number.isNaN(parsed) ? parsed : 0;
+        }
       }
+      // 【P2-1 修复】使用 ChangeDetectorRef.markForCheck() 主动推动变更检测，
+      //   防止路由复用（OnPush + reuseStrategy）下 currentUser 状态不反映到模板。
+      this.cdr.markForCheck();
     });
+  }
+
+  /** 【P2-1 修复】未登录提示 “去登录” 按钮跳转到登录页 */
+  goToLogin(): void {
+    void this.router.navigate(['/auth/login']);
   }
 
   ngOnDestroy(): void {

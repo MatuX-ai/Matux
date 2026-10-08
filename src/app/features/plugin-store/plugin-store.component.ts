@@ -9,7 +9,7 @@
  * 5. 插件卡片网格
  */
 
-import { Component, OnInit, OnDestroy } from '@angular/core';
+import { Component, ChangeDetectorRef, OnInit, OnDestroy } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { RouterModule } from '@angular/router';
@@ -23,7 +23,7 @@ import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
 import { MatTooltipModule } from '@angular/material/tooltip';
 import { MatSnackBar, MatSnackBarModule } from '@angular/material/snack-bar';
 import { Subject } from 'rxjs';
-import { debounceTime, distinctUntilChanged, takeUntil } from 'rxjs/operators';
+import { debounceTime, takeUntil } from 'rxjs/operators';
 
 import {
   PluginStoreService,
@@ -106,7 +106,8 @@ export class PluginStoreComponent implements OnInit, OnDestroy {
 
   constructor(
     private pluginService: PluginStoreService,
-    private snackBar: MatSnackBar
+    private snackBar: MatSnackBar,
+    private cdr: ChangeDetectorRef
   ) {}
 
   ngOnInit(): void {
@@ -166,11 +167,17 @@ export class PluginStoreComponent implements OnInit, OnDestroy {
    * 设置搜索
    */
   setupSearch(): void {
+    // 【P3-2 修复】去除 distinctUntilChanged，避免重复输入被过滤导致过滤不生效。
+    //   原逻辑使用 `distinctUntilChanged()`，但与默认 debounceTime 叠加时，
+    //   某些浏览器环境会跳跃中间状态（快速输入「A」「AI」时只发射一次）。
+    //   同时手动调 markForCheck 避免 OnPush 变更检测未运行。
     this.searchSubject
-      .pipe(debounceTime(300), distinctUntilChanged(), takeUntil(this.destroy$))
+      .pipe(debounceTime(300), takeUntil(this.destroy$))
       .subscribe((query) => {
         this.searchQuery = query;
         this.applyFilters();
+        // 【P3-2 修复】主动 markForCheck，确保过滤结果立即反映到模板
+        this.cdr.markForCheck();
       });
   }
 

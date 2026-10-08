@@ -8,6 +8,7 @@
 
 /* eslint-disable no-console */
 import { CommonModule } from '@angular/common';
+import { ChangeDetectorRef } from '@angular/core';
 import { Component, EventEmitter, OnDestroy, OnInit, Output } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { MatButtonModule } from '@angular/material/button';
@@ -86,13 +87,20 @@ export class OpenscieduCatalogComponent implements OnInit, OnDestroy {
   // ==================== 订阅管理（使用 takeUntil 模式） ====================
   private destroy$ = new Subject<void>();
   private currentLoadSubscription: Subscription | null = null;
+  /**
+   * 【P1-2 修复】超时计时器句柄。多次 loadCourses 调用时需重置，避免叠加。
+   */
+  private loadingFallbackTimer: ReturnType<typeof setTimeout> | null = null;
 
   // ==================== 事件 ====================
 
   @Output() courseSelected = new EventEmitter<PublicCourse>();
   @Output() loadMore = new EventEmitter<void>();
 
-  constructor(private openscieduService: OpenSciEDUService) {}
+  constructor(
+    private openscieduService: OpenSciEDUService,
+    private cdr: ChangeDetectorRef
+  ) {}
 
   ngOnInit(): void {
     this.loadCategories();
@@ -103,6 +111,11 @@ export class OpenscieduCatalogComponent implements OnInit, OnDestroy {
     // 完成 destroy$ 信号，所有 takeUntil 操作符会自动取消订阅
     this.destroy$.next();
     this.destroy$.complete();
+    // 【P1-2 修复】清理超时计时器，避免内存泄漏与兑底计时器误在销毁后触发。
+    if (this.loadingFallbackTimer) {
+      clearTimeout(this.loadingFallbackTimer);
+      this.loadingFallbackTimer = null;
+    }
   }
 
   // ==================== 数据加载 ====================
@@ -189,7 +202,13 @@ export class OpenscieduCatalogComponent implements OnInit, OnDestroy {
     // 【P2-3 修复】兑底：6s 后无论是否完成，都重置 isLoading
     //   openScieduService 内部已有 5s timeout + mock fallback，
     //   但若 mock 本身 hang（如 IndexedDB hang）则需额外兑底
-    setTimeout(() => {
+    // 【P1-2 修复】保存计时器句柄并先清除上次遗留计时器；
+    //   loadCourses 被多次调用（如切换分类）时避免叠加计时器导致的重复 false。
+    if (this.loadingFallbackTimer) {
+      clearTimeout(this.loadingFallbackTimer);
+    }
+    this.loadingFallbackTimer = setTimeout(() => {
+      this.loadingFallbackTimer = null;
       if (this.isLoading) {
         console.warn('[OpenSciEDU Catalog] 加载超时，强制重置 isLoading');
         this.isLoading = false;
@@ -197,8 +216,10 @@ export class OpenscieduCatalogComponent implements OnInit, OnDestroy {
           // 仍为空：使用 inline fallback 避免空页面
           this.error = '课程加载较慢，请点击重试或刷新页面';
         }
+        // 【P1-2 修复】手动 markForCheck 确保 Angular 在 setTimeout 回调中推动变更检测。
+        this.cdr.markForCheck();
       }
-    }, 8000);
+    }, 6000);
   }
 
   loadMoreCourses(): void {

@@ -3,7 +3,7 @@ import { HttpClient, HttpHeaders } from '@angular/common/http';
 import { Injectable } from '@angular/core';
 import { Router } from '@angular/router';
 import { BehaviorSubject, firstValueFrom, from, Observable, of, throwError } from 'rxjs';
-import { catchError, map, tap } from 'rxjs/operators';
+import { catchError, map, tap, timeout } from 'rxjs/operators';
 
 import { environment } from '../../../environments/environment';
 import { ROUTES } from '../../routes.const';
@@ -18,9 +18,9 @@ import {
   UnifiedTokenResponse,
   User,
 } from '../models/auth.models';
+import { decrypt, encrypt } from '../utils/crypto.util';
 
 import { ElectronService } from './electron.service';
-import { decrypt, encrypt } from '../utils/crypto.util';
 
 /**
  * 用户认证服务
@@ -85,16 +85,18 @@ export class AuthService {
     // 使用安全的环境配置访问
     const env = getSafeEnvironment();
 
-    // 优先使用 environment.apiUrl（已配置）
+    // 【P0-A 修复】用显式 undefined/null 判断替代 falsy 判断。
+    //   原 `if (!baseUrl)` 会把空字符串 "" 也当成未设置，错误 fallback 到 8002。
+    //   但 environment.ts 现在显式使用空字符串表示「同源相对路径」，应保留。
     const baseUrl = env.apiUrl;
-    if (!baseUrl) {
+    if (baseUrl === undefined || baseUrl === null) {
       if (env.production) {
         console.error('[Auth] 生产环境未配置 apiUrl，请检查 environment.ts');
       }
       // 开发环境默认使用 localhost:8002
       return 'http://localhost:8002';
     }
-    // 移除末尾斜杠，统一处理
+    // 移除末尾斜杠，统一处理（空字符串也安全）
     return baseUrl.replace(/\/$/, '');
   }
 
@@ -113,6 +115,17 @@ export class AuthService {
   private readonly USER_KEY = 'user_data';
   private readonly REMEMBER_ME_KEY = 'remember_me';
   private readonly OFFLINE_CREDENTIALS_KEY = 'offline_credentials';
+
+  // 【P1 修复】登录类请求 HTTP 超时（毫秒）。
+  //   - 桌面端首次启动后端可能需要 10~30s，超过 10s 没响应认为后端未就绪，
+  //     此时应快速给出错误反馈而不是让前端卡 30s。
+  //   - 取 environment.httpTimeout，缺失时默认 8000ms。
+  //   - 与 login.component 的兜底超时 (13000ms) 保持 5s 缓冲，避免误判。
+  private readonly SIGNIN_HTTP_TIMEOUT_MS: number = (() => {
+    const configured = (environment as { httpTimeout?: number }).httpTimeout;
+    // 登录路径至少给 8s，便于桌面端冷启动后端加载
+    return Math.max(configured ?? 8000, 8000);
+  })();
 
   // 用户认证状态
   private currentUserSubject = new BehaviorSubject<User | null>(null);
@@ -416,6 +429,7 @@ export class AuthService {
    */
   signUp(userData: RegisterRequest): Observable<AuthResponse> {
     return this.http.post<AuthResponse>(`${this.API_BASE_URL}/signup`, userData).pipe(
+      timeout(this.SIGNIN_HTTP_TIMEOUT_MS),
       tap((response) => this.storeAuthData(response)),
       catchError((error) => this.handleError(error))
     );
@@ -426,6 +440,7 @@ export class AuthService {
    */
   signIn(credentials: LoginRequest): Observable<AuthResponse> {
     return this.http.post<AuthResponse>(`${this.API_BASE_URL}/signin`, credentials).pipe(
+      timeout(this.SIGNIN_HTTP_TIMEOUT_MS),
       tap((response) => {
         this.storeAuthData(response);
         // 【安全】验证email存在后再缓存离线凭据
@@ -444,6 +459,7 @@ export class AuthService {
    */
   phoneLogin(req: PhoneLoginRequest): Observable<UnifiedTokenResponse> {
     return this.http.post<UnifiedTokenResponse>(`${this.UNIFIED_AUTH_URL}/login/phone`, req).pipe(
+      timeout(this.SIGNIN_HTTP_TIMEOUT_MS),
       tap((response) => {
         this.storeUnifiedAuthData(response);
         this.cacheOfflineCredentials(req.phone, response.access_token);
@@ -459,6 +475,7 @@ export class AuthService {
     return this.http
       .post<UnifiedTokenResponse>(`${this.UNIFIED_AUTH_URL}/register/phone`, req)
       .pipe(
+        timeout(this.SIGNIN_HTTP_TIMEOUT_MS),
         tap((response) => this.storeUnifiedAuthData(response)),
         catchError((error) => this.handleError(error))
       );
@@ -1209,11 +1226,26 @@ export class AuthService {
 
   /**
    * 统一错误处理
-   * 优先级：后端消息 > HTTP状态码消息 > 默认消息
+   * 优先级：超时/网络错误 > 后端业务消息 > HTTP状态码消息 > 默认消息
+   *
+   * 【P1 修复】桌面端冷启动场景下，后端可能需要 10~30s 才能就绪，
+   *   此前超时仅在 login.component 兏底 30s 才反馈，UI 体验为“卡住 30s”。
+   *   signIn/signUp/phone* 已使用 rxjs timeout()，这里需要优先识别 TimeoutError
+   *   并给出“后端未就绪”提示，避免与“网络连接不上”混淆。
    */
   private handleError(error: unknown): Observable<never> {
     let errorMessage = '认证失败';
     let httpStatus: number | null = null;
+
+    // 【P1】优先检测 rxjs timeout() 抛出的超时错误
+    // RxJS TimeoutError 在不同版本上 name 可能为 'TimeoutError'，
+    // 也可能通过 info.name 拿到，这里两者都检查。
+    const errorName = (error as { name?: string })?.name;
+    const errorInfoName = (error as { info?: { name?: string } })?.info?.name;
+    if (errorName === 'TimeoutError' || errorInfoName === 'TimeoutError') {
+      errorMessage = '后端服务响应超时，请稍后重试（后端可能尚未启动完成）';
+      return throwError(() => new Error(errorMessage));
+    }
 
     // 提取HTTP状态码
     if (typeof error === 'object' && error !== null && 'status' in error) {
@@ -1222,8 +1254,10 @@ export class AuthService {
     }
 
     // 网络错误（status === 0 或 -1）
+    // 【P1 修复】当后端未启动或不可达时，Angular HttpClient 会报 status=0，
+    //   这里补充“后端服务未启动”上下文，避免用户误以为是“宽带断开”。
     if (httpStatus === 0 || httpStatus === -1) {
-      errorMessage = '网络连接失败，请检查网络设置';
+      errorMessage = '网络连接不上，请检查后端服务是否启动';
       return throwError(() => new Error(errorMessage));
     }
 
