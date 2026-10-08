@@ -1,4 +1,10 @@
 <div class="arvr-course-player">
+  <!-- 【启动优化 P3】离线模式角标：数据来自本地缓存，提示用户 -->
+  <div *ngIf="isOffline && !isLoading && !errorMessage" class="offline-badge" role="status" aria-label="离线模式">
+    <mat-icon>cloud_off</mat-icon>
+    <span>离线模式</span>
+  </div>
+
   <!-- 加载状态 -->
   <div *ngIf="isLoading" class="loading-overlay">
     <mat-spinner diameter="48"></mat-spinner>

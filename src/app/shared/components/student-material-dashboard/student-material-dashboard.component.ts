@@ -3,15 +3,23 @@
  *
  * 在首页 widget 中展示最近 4-6 个课件，提供缩略图、文件类型和快速入口。
  * 完整课件库管理功能由独立路由页面承载（待规划）。
+ *
+ * 【启动优化 P3】学习优先模式：先查 IndexedDB 'cache' store 的 'student-materials' 键，
+ * 命中则使用本地缓存；未命中时使用 Mock 数据。命中时显示"离线模式"角标。
  */
 
 import { CommonModule } from '@angular/common';
-import { Component } from '@angular/core';
+import { Component, OnDestroy, OnInit } from '@angular/core';
 import { MatButtonModule } from '@angular/material/button';
 import { MatCardModule } from '@angular/material/card';
 import { MatChipsModule } from '@angular/material/chips';
 import { MatIconModule } from '@angular/material/icon';
 import { MatTooltipModule } from '@angular/material/tooltip';
+import { Subject, takeUntil } from 'rxjs';
+
+import { OfflineStorageService } from '../../../core/services/offline-storage.service';
+import { StartupModeService } from '../../../core/services/startup-mode.service';
+import { OfflineStorageKey } from '../../../../shared/models/offline.models';
 
 interface MaterialItem {
   id: string;
@@ -23,6 +31,14 @@ interface MaterialItem {
   icon: string;
   color: string;
 }
+
+/** IndexedDB 'cache' store 中的存储格式 */
+interface CachedMaterialsPayload {
+  items: MaterialItem[];
+  cachedAt: number;
+}
+
+const CACHE_KEY = 'student-materials';
 
 const MOCK_MATERIALS: MaterialItem[] = [
   {
@@ -107,6 +123,12 @@ const TYPE_LABEL_MAP: Record<MaterialItem['type'], string> = {
   ],
   template: `
     <div class="material-dashboard">
+      <!-- 启动优化 P3：离线模式角标 -->
+      <div *ngIf="isOffline" class="offline-badge" role="status" aria-label="离线模式">
+        <mat-icon>cloud_off</mat-icon>
+        <span>离线模式 · 本地缓存</span>
+      </div>
+
       <div class="material-grid">
         <mat-card *ngFor="let item of materials" class="material-card">
           <div
@@ -147,8 +169,34 @@ const TYPE_LABEL_MAP: Record<MaterialItem['type'], string> = {
       }
 
       .material-dashboard {
+        position: relative;
         display: block;
         width: 100%;
+      }
+
+      // 启动优化 P3：离线角标
+      .offline-badge {
+        position: absolute;
+        top: -6px;
+        right: 0;
+        z-index: 5;
+        display: inline-flex;
+        align-items: center;
+        gap: 4px;
+        padding: 3px 10px;
+        border-radius: 9999px;
+        background: rgba(245, 158, 11, 0.18);
+        border: 1px solid rgba(245, 158, 11, 0.5);
+        color: #b45309;
+        font-size: 11px;
+        font-weight: 600;
+        backdrop-filter: blur(8px);
+
+        mat-icon {
+          font-size: 14px;
+          width: 14px;
+          height: 14px;
+        }
       }
 
       .material-grid {
@@ -262,8 +310,63 @@ const TYPE_LABEL_MAP: Record<MaterialItem['type'], string> = {
     `,
   ],
 })
-export class StudentMaterialDashboardComponent {
-  readonly materials = MOCK_MATERIALS;
+export class StudentMaterialDashboardComponent implements OnInit, OnDestroy {
+  /** 【启动优化 P3】优先从 IndexedDB 'cache' store 读取，命中则替换 MOCK */
+  materials: MaterialItem[] = MOCK_MATERIALS;
+  /** 离线模式：数据来自本地缓存 */
+  isOffline = false;
+
+  private destroy$ = new Subject<void>();
+
+  constructor(
+    private offlineStorage: OfflineStorageService,
+    private startupMode: StartupModeService
+  ) {}
+
+  async ngOnInit(): Promise<void> {
+    // 【启动优化 P3】学习优先模式下优先读本地缓存
+    this.startupMode.mode$.pipe(takeUntil(this.destroy$)).subscribe((mode) => {
+      // 模式变化时重试加载（解决 fast mode 启动时 startupMode 还未就绪的 race）
+      if (mode.fastMode) {
+        void this.loadFromCache();
+      }
+    });
+    // 主动拉取一次
+    void this.startupMode.refresh().then(() => {
+      if (this.startupMode.isFastMode()) {
+        void this.loadFromCache();
+      }
+    });
+  }
+
+  ngOnDestroy(): void {
+    this.destroy$.next();
+    this.destroy$.complete();
+  }
+
+  /**
+   * 【启动优化 P3】从 IndexedDB 'cache' store 读取 'student-materials' 键
+   * 命中则替换 materials 并标记 isOffline
+   */
+  private async loadFromCache(): Promise<void> {
+    try {
+      const cached = await this.offlineStorage.getData<CachedMaterialsPayload>(
+        OfflineStorageKey.CACHE,
+        CACHE_KEY
+      );
+      if (cached && Array.isArray(cached.items) && cached.items.length > 0) {
+        this.materials = cached.items;
+        this.isOffline = true;
+        console.log(
+          `[StudentMaterialDashboard] 命中本地缓存: ${cached.items.length} 项, cachedAt=${new Date(cached.cachedAt).toISOString()}`
+        );
+      } else {
+        console.log('[StudentMaterialDashboard] 本地无缓存, 使用 Mock 数据');
+      }
+    } catch (err) {
+      console.warn('[StudentMaterialDashboard] IndexedDB 查询失败:', err);
+    }
+  }
 
   getTypeLabel(type: MaterialItem['type']): string {
     return TYPE_LABEL_MAP[type] ?? type;

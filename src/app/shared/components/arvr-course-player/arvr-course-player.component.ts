@@ -27,6 +27,9 @@ import { takeUntil, timeout } from 'rxjs/operators';
 import * as THREE from 'three';
 import { OrbitControls } from 'three/examples/jsm/controls/OrbitControls.js';
 
+import { OfflineStorageService } from '../../../core/services/offline-storage.service';
+import { OfflineStorageKey } from '../../../../shared/models/offline.models';
+
 /**
  * 【P1 修复】ARVR 课程加载统一超时兑底。避免后端代理 / CORS hang 时
  *   页面永远卡在 loading。
@@ -82,6 +85,9 @@ export class ARVRCoursePlayerComponent implements OnInit, AfterViewInit, OnDestr
   errorMessage: string | null = null;
   currentMaterialIndex = 0;
 
+  // 【启动优化 P3】离线模式标志：true 时数据来自 IndexedDB 而非后端
+  isOffline = false;
+
   private scene: THREE.Scene | null = null;
   private camera: THREE.PerspectiveCamera | null = null;
   private renderer: THREE.WebGLRenderer | null = null;
@@ -97,7 +103,8 @@ export class ARVRCoursePlayerComponent implements OnInit, AfterViewInit, OnDestr
     private http: HttpClient,
     private snackBar: MatSnackBar,
     private cdr: ChangeDetectorRef,
-    private zone: NgZone
+    private zone: NgZone,
+    private offlineStorage: OfflineStorageService
   ) {}
 
   ngOnInit(): void {
@@ -144,6 +151,7 @@ export class ARVRCoursePlayerComponent implements OnInit, AfterViewInit, OnDestr
   private loadCourseData(id: string): void {
     this.isLoading = true;
     this.errorMessage = null;
+    this.isOffline = false;
 
     // 【P1 终极兑底】清理上一轮 timer，注册三级新 timer。
     this.fallbackTimers.forEach((t) => clearTimeout(t));
@@ -169,6 +177,66 @@ export class ARVRCoursePlayerComponent implements OnInit, AfterViewInit, OnDestr
       this.fallbackTimers.push(timer);
     });
 
+    // 【启动优化 P3】先查本地 IndexedDB 缓存：fast mode / 后端未就绪时立即可用
+    this.tryLoadFromOfflineCache(id)
+      .then((cached) => {
+        if (cached) {
+          // 命中本地缓存 → 直接渲染，不发 HTTP 请求
+          this.fallbackTimers.forEach((t) => clearTimeout(t));
+          this.fallbackTimers = [];
+          this.zone.run(() => {
+            this.courseData = cached;
+            this.isLoading = false;
+            this.isOffline = true;
+            this.cdr.detectChanges();
+          });
+          if (cached.model_url) {
+            this.loadModel(cached.model_url);
+          }
+          console.log(`[ARVRPlayer] 从离线缓存加载课程 ${id}`);
+          return;
+        }
+        // 未命中 → 走原有 HTTP 路径
+        this.fetchCourseFromApi(id);
+      })
+      .catch((err) => {
+        console.warn('[ARVRPlayer] 离线缓存查询失败, 降级到 HTTP:', err);
+        this.fetchCourseFromApi(id);
+      });
+  }
+
+  /**
+   * 【启动优化 P3】从 IndexedDB 'courses' store 读取课程
+   * 仅查询 keyPath=id 命中即返回；未命中返回 null（不抛错，避免污染 HTTP 路径）
+   */
+  private async tryLoadFromOfflineCache(id: string): Promise<ARVRCourseData | null> {
+    try {
+      // OfflineStorageKey.COURSES = 'courses'，store 格式 { keyPath: 'id' }
+      const cached = await this.offlineStorage.getData<ARVRCourseData & { id: string | number }>(
+        OfflineStorageKey.COURSES,
+        id
+      );
+      if (!cached) return null;
+      // 兼容存储格式：可能字段是 id 字符串而非 number
+      return {
+        id: typeof cached.id === 'string' ? parseInt(cached.id, 10) : cached.id,
+        title: cached.title,
+        description: cached.description,
+        model_url: cached.model_url,
+        scene_config: cached.scene_config,
+        content_type: cached.content_type,
+        course_materials: cached.course_materials ?? [],
+      } as ARVRCourseData;
+    } catch (err) {
+      console.warn('[ARVRPlayer] IndexedDB 查询失败:', err);
+      return null;
+    }
+  }
+
+  /**
+   * 【启动优化 P3】从后端 API 加载课程（原有逻辑抽离）
+   */
+  private fetchCourseFromApi(id: string): void {
     this.http
       .get<ARVRCourseData>(`/api/v1/arvr-courses/${id}`)
       .pipe(
@@ -188,6 +256,10 @@ export class ARVRCoursePlayerComponent implements OnInit, AfterViewInit, OnDestr
           if (data.model_url) {
             this.loadModel(data.model_url);
           }
+          // 【启动优化 P3】顺便写入本地缓存（fire-and-forget），下次 fast mode 命中
+          void this.offlineStorage
+            .setData(OfflineStorageKey.COURSES, { ...data, id: String(data.id) })
+            .catch((err) => console.warn('[ARVRPlayer] 写离线缓存失败:', err));
         },
         error: (_error) => {
           this.fallbackTimers.forEach((t) => clearTimeout(t));
