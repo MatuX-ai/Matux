@@ -115,3 +115,9 @@ data/ghost/mysql/
 
 # Qoder IDE
 .qoder/
+
+# 例外：electron/build 包含 installer.nsh / icon.ico 等 NSIS 必需的构建资源
+# 必须在所有 build/ 规则之后，否则被后面的 build/ 覆盖
+!electron/build/
+!electron/build/**/*.nsh
+!electron/build/**/*.ico
