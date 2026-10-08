@@ -1,4 +1,6 @@
 <div class="app-container">
+  <!-- 【启动优化 P3】学习优先模式：后端后台启动中横幅（自动按 fastMode && !backendReady 显示） -->
+  <app-backend-loading-banner></app-backend-loading-banner>
   <div [@routeTransition]="(o ? $any(o)?.activatedRouteData?.['key'] : undefined) || ''">
     <router-outlet #o="outlet"></router-outlet>
   </div>

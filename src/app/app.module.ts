@@ -24,6 +24,7 @@ import { environment } from '../environments/environment';
 
 import { HttpAuthInterceptor } from './core/interceptors/http-auth.interceptor';
 import { HttpTimeoutInterceptor } from './core/interceptors/http-timeout.interceptor';
+import { BackendLoadingBannerComponent } from './core/components/backend-loading-banner/backend-loading-banner.component';
 import { StatusBarComponent } from './shared/components/status-bar/status-bar.component';
 import { SharedModule } from './shared/shared.module';
 import { AppComponent } from './app.component';
@@ -53,6 +54,8 @@ import { AppRoutingModule } from './app-routing.module';
     SharedModule,
     AppRoutingModule,
     StatusBarComponent,
+    // 【启动优化 P3】学习优先模式：在主窗口顶部显示后端后台启动横幅
+    BackendLoadingBannerComponent,
     // 【P2 修复】启用 ServiceWorker (PWA),仅生产环境生效
     ServiceWorkerModule.register('ngsw-worker.js', {
       enabled: environment.production,

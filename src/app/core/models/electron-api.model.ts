@@ -161,6 +161,22 @@ export interface ElectronAPI {
   /** 检查应用更新 */
   checkForUpdates(): Promise<{ success: boolean }>;
 
+  // ==================== 启动模式（启动优化 P3） ====================
+
+  /**
+   * 查询当前启动模式
+   * 返回 { fastMode, degraded }
+   * - fastMode: 用户启用"学习优先模式"，主窗口立即可见，后端在后台启动
+   * - degraded: 后端启动失败 / 用户主动跳过 / 端口被占用等降级场景
+   */
+  getStartupMode(): Promise<{ fastMode: boolean; degraded: boolean }>;
+
+  /**
+   * 【启动优化 P3】主动退出应用（fast mode 恢复全功能启动使用）
+   * 与 windowControl('close') 的区别：本接口直接 app.quit()，不隐藏到托盘
+   */
+  quit(): void;
+
   // ==================== 窗口控制 ====================
 
   /** 窗口操作（最小化/最大化/关闭/全屏等） */
