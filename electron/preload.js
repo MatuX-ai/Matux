@@ -229,6 +229,23 @@ contextBridge.exposeInMainWorld('electronAPI', {
 
   /** 获取当前版本 */
   getAppVersion: () => ipcRenderer.invoke('updater:get-version'),
+
+  // ==================== 启动模式（启动优化 P3） ====================
+
+  /**
+   * 【启动优化 P3】查询当前启动模式
+   * 返回 { fastMode: boolean, degraded: boolean }
+   * - fastMode: 用户启用"学习优先模式"，主窗口已显示，后端在后台启动
+   * - degraded: 后端启动失败 / 用户主动跳过 / 端口被占用等降级场景
+   * 调用方：StartupModeService（在主窗口 ready-to-show 后首次调用）
+   */
+  getStartupMode: () => ipcRenderer.invoke('startup:get-mode'),
+
+  /**
+   * 【启动优化 P3】主动退出应用：用于 fast mode 登录失败后引导用户重启
+   * 与 window-close（隐藏到托盘）不同，这里直接 app.quit()
+   */
+  quit: () => ipcRenderer.send('app-quit'),
 });
 
 // ==================== 插件管理 API（插件化架构 Phase 1） ====================

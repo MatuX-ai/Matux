@@ -58,6 +58,16 @@ contextBridge.exposeInMainWorld('splashAPI', {
   quit: () => {
     ipcRenderer.send('splash-quit');
   },
+
+  /**
+   * 【启动优化 P3】学习优先模式：用户点击"快速进入"或自动应用
+   * - 主进程标记 global.__matuxFastMode = true 与 global.__matuxUserSkippedStartup = true
+   * - 关闭 Splash 窗口，主窗口立即可见
+   * - 后端在后台启动，本地内容立即可用
+   */
+  fastMode: () => {
+    ipcRenderer.send('splash-fast-mode');
+  },
 });
 
 console.log('[Splash Preload] 启动画面预加载脚本已就绪');

@@ -917,6 +917,16 @@
       transform: translateY(1px);
     }
 
+    /* 【启动优化 P3】快速进入按钮：突出色（蓝色），与绿色默认按钮形成对比 */
+    .menu-btn.fast-btn {
+      color: #3b82f6;
+      border-color: rgba(59, 130, 246, 0.3);
+    }
+    .menu-btn.fast-btn:hover {
+      background: rgba(59, 130, 246, 0.18) !important;
+      border-color: rgba(59, 130, 246, 0.6) !important;
+    }
+
     body.mini-mode .game-menu {
       display: none;
     }
@@ -1363,6 +1373,17 @@
         <span class="toggle-slider"></span>
       </label>
     </div>
+    <!-- 【启动优化 P3】学习优先模式：跳过等待 Python 后端，本地内容优先可用 -->
+    <div class="setting-row">
+      <label class="setting-label" for="toggleFastMode" title="跳过 Python 后端启动等待，主窗口立即显示。已下载的视频与本地课程立即可用。">
+        <span>学习优先模式</span>
+      </label>
+      <label class="toggle-switch">
+        <input type="checkbox" id="toggleFastMode"
+          onchange="onFastModeToggle(this.checked)">
+        <span class="toggle-slider"></span>
+      </label>
+    </div>
   </div>
 
   <div class="splash-container">
@@ -1404,6 +1425,8 @@
     <!-- 游戏风格菜单 -->
     <div class="game-menu" id="gameMenu">
       <button class="menu-btn settings-btn" id="menuSettings" title="设置">设置</button>
+      <!-- 【启动优化 P3】学习优先模式入口：跳过 Python 等待，主窗口立即可见 -->
+      <button class="menu-btn fast-btn" id="menuFast" title="立即进入（后端后台启动）">快速进入</button>
       <button class="menu-btn skip-btn" id="menuSkip" title="跳过动画">跳过</button>
       <button class="menu-btn quit-btn" id="menuQuit" title="退出">退出</button>
     </div>
@@ -1988,6 +2011,49 @@
     }
 
     /**
+     * 【启动优化 P3】学习优先模式开关切换（localStorage 记忆）
+     * 注意：toggle 本身只持久化偏好，是否实际启用由用户在主菜单点"快速进入"触发。
+     * 这样可以避免"勾选即跳过"的破坏性默认行为。
+     */
+    function onFastModeToggle(enabled) {
+      try {
+        localStorage.setItem('matux-fast-mode-enabled', enabled ? '1' : '0');
+      } catch (err) {
+        console.warn('[Splash] localStorage write failed:', err);
+      }
+      addLogLine(
+        enabled
+          ? '学习优先模式已开启（下次启动可点"快速进入"或自动生效）'
+          : '学习优先模式已关闭',
+        'info'
+      );
+    }
+
+    /**
+     * 【启动优化 P3】读取持久化偏好：同步 toggle 初始状态 + 自动应用
+     * 如果用户已勾选"学习优先模式"且应用过至少一次，下次启动自动进入
+     */
+    function loadPersistedPreferences() {
+      try {
+        const fastMode = localStorage.getItem('matux-fast-mode-enabled');
+        const toggle = document.getElementById('toggleFastMode');
+        if (toggle && fastMode === '1') {
+          toggle.checked = true;
+          addLogLine('已恢复学习优先模式偏好（自动进入）', 'info');
+          // 1.5s 后自动触发快速进入（让用户先看到恢复提示）
+          setTimeout(function() {
+            if (window.splashAPI && window.splashAPI.fastMode) {
+              addLogLine('应用学习优先模式：主窗口立即可见', 'success');
+              window.splashAPI.fastMode();
+            }
+          }, 1500);
+        }
+      } catch (err) {
+        console.warn('[Splash] localStorage read failed:', err);
+      }
+    }
+
+    /**
      * 显示错误（独立报警弹窗 + 启动弹窗红警闪烁）
      */
     function showError(title, message, showRetry, options = {}) {
@@ -2106,6 +2172,24 @@
       // 同时本地切换到 mini-mode,作为视觉过渡
       if (!document.body.classList.contains('mini-mode')) {
         enterMiniMode();
+      }
+    });
+
+    // 【启动优化 P3】快速进入按钮 - 学习优先模式：跳过 Python 等待
+    document.getElementById('menuFast')?.addEventListener('click', function() {
+      addLogLine('User requested fast mode → enter immediately (backend background)', 'info');
+      // 持久化偏好，下次启动自动应用
+      try {
+        localStorage.setItem('matux-fast-mode-enabled', '1');
+      } catch (e) {
+        console.warn('[Splash] localStorage write failed:', e);
+      }
+      // 同步设置面板上的 toggle 状态
+      const toggle = document.getElementById('toggleFastMode');
+      if (toggle) toggle.checked = true;
+      // 通知主进程：启用学习优先模式
+      if (window.splashAPI && window.splashAPI.fastMode) {
+        window.splashAPI.fastMode();
       }
     });
 
@@ -2351,6 +2435,9 @@
         if (animToggle) animToggle.checked = false;
       }
     } catch (err) {}
+
+    // 【启动优化 P3】恢复学习优先模式偏好（仅 UI 状态，不自动应用）
+    loadPersistedPreferences();
 
     console.log('[Splash] 科技感启动画面已就绪 · 逐字打字 + XP 奖励已启用');
     if (prefersReducedMotion) {

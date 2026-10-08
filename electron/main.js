@@ -896,6 +896,15 @@ app.whenReady().then(async () => {
     app.quit();
   });
 
+  // 【启动优化 P3】主窗口主动退出应用：用于 fast mode 登录失败后引导用户重启
+  // 与 splash-quit 区别：splash 阶段 splashWindow 还在；主窗口阶段只有 mainWindow
+  // 走标准 quit 流程（before-quit 事件 + 资源清理 + 进程退出）
+  ipcMain.on('app-quit', () => {
+    console.log('[Main] User requested quit from main window (fast mode recovery)');
+    isQuitting = true;
+    app.quit();
+  });
+
   ipcMain.on('splash-skip', () => {
     console.log('[Main] User requested skip from splash → degraded mode');
     global.__matuxUserSkippedStartup = true;
@@ -907,6 +916,32 @@ app.whenReady().then(async () => {
     if (win && !win.isDestroyed() && !win.isVisible()) {
       win.show();
     }
+  });
+
+  // 【启动优化 P3】学习优先模式：用户点"快速进入"或本地偏好自动应用
+  // 复用 splash-skip 的全局标志位(__matuxUserSkippedStartup=true)让 appInitializer 立即走降级分支
+  // 同时新增 __matuxFastMode 供前端 StartupModeService 区分"主动跳过"与"学习优先模式"
+  ipcMain.on('splash-fast-mode', () => {
+    console.log('[Main] User requested fast mode → enter immediately, backend in background');
+    global.__matuxFastMode = true;
+    global.__matuxUserSkippedStartup = true;
+    if (splashWindow && !splashWindow.isDestroyed()) {
+      splashWindow.destroy();
+      splashWindow = null;
+    }
+    const win = windowManager?.getMainWindow?.();
+    if (win && !win.isDestroyed() && !win.isVisible()) {
+      win.show();
+    }
+  });
+
+  // 【启动优化 P3】前端查询启动模式（fast mode / degraded）
+  // StartupModeService 在主窗口 ready-to-show 后首次调用
+  ipcMain.handle('startup:get-mode', () => {
+    return {
+      fastMode: global.__matuxFastMode === true,
+      degraded: global.__matuxUserSkippedStartup === true,
+    };
   });
 
   // 【复用模式修复】Splash 上的“强制重启”按钮：异步执行 forceRestart（用户已点 Splash 上的弹窗按钮 = 确认）
@@ -961,8 +996,32 @@ app.whenReady().then(async () => {
   //   这样 initResult 会立刻得到 'degraded',主窗口立即显示。
   let initResult;
   if (global.__matuxUserSkippedStartup) {
-    console.log('[Main] 检测到用户跳过启动,直接走降级模式');
-    initResult = 'degraded';
+    if (global.__matuxFastMode) {
+      // 【启动优化 P3】学习优先模式：跳过同步等待，但保留后端后台启动
+      // 行为：splash 立即关闭 + 主窗口立即显示 + 后端在后台异步启动
+      // 与"主动跳过"区分：__matuxFastMode = true 时不放弃后端
+      console.log('[Main] 检测到学习优先模式,主窗口立即显示,后端后台启动');
+      initResult = 'fast-mode';
+      // 启动后端但不 await（fire-and-forget），失败仅记日志
+      appInitializer.initialize().then((result) => {
+        console.log(`[Main] 后台后端启动完成: ${result}`);
+        if (mainWindow && !mainWindow.isDestroyed()) {
+          if (result === false) {
+            mainWindow.webContents.send('app-event', { type: 'backend-degraded', reason: 'Fast mode 后台启动失败' });
+          } else {
+            mainWindow.webContents.send('app-event', { type: 'backend-ready' });
+          }
+        }
+      }).catch((err) => {
+        console.error('[Main] 学习优先模式后台启动后端失败:', err.message);
+        if (mainWindow && !mainWindow.isDestroyed()) {
+          mainWindow.webContents.send('app-event', { type: 'backend-degraded', reason: err.message });
+        }
+      });
+    } else {
+      console.log('[Main] 检测到用户跳过启动,直接走降级模式');
+      initResult = 'degraded';
+    }
   } else {
     initResult = await appInitializer.initialize();
   }
@@ -981,14 +1040,20 @@ app.whenReady().then(async () => {
     }
   }
 
-  const isDegraded = (initResult === 'degraded');
+  const isDegraded = (initResult === 'degraded' || initResult === 'fast-mode');
+  const isFastMode = (initResult === 'fast-mode');
 
-  if (isDegraded) {
+  if (isFastMode) {
+    console.log('[Main] 学习优先模式：主窗口已显示，后端在后台启动中');
+  } else if (isDegraded) {
     console.log('[Main] 降级模式运行中（无 Python 后端），跳过后端启动步骤');
   }
 
   // 6. 后端就绪 / 降级模式 → 通知 Splash 淡出并关闭
-  if (isDegraded) {
+  if (isFastMode) {
+    // 【启动优化 P3】学习优先模式：通知前端进入 fast mode + 后端后台启动
+    sendSplashStatus('fast-mode', '学习优先模式已启用', 100, '本地内容立即可用，后端在后台启动');
+  } else if (isDegraded) {
     // 降级模式：不传 fadeOut，由 splash.html 的 degraded-mode case 自行控制淡出时机
     sendSplashStatus('degraded-mode', '前端模式运行中（无后端）', 100, 'Python 后端不可用，部分功能受限');
   } else {
@@ -1015,7 +1080,13 @@ app.whenReady().then(async () => {
 
   // 7. 通知前端后端状态
   if (mainWindow && !mainWindow.isDestroyed()) {
-    if (isDegraded) {
+    if (isFastMode) {
+      // 【启动优化 P3】学习优先模式：发 fast-mode 事件（不标记 degraded，让前端显示"加载中"横幅）
+      mainWindow.webContents.send('app-event', {
+        type: 'fast-mode-active',
+        message: '学习优先模式：本地内容立即可用，后端在后台启动',
+      });
+    } else if (isDegraded) {
       mainWindow.webContents.send('app-event', {
         type: 'backend-degraded',
         reason: 'Python backend unavailable',

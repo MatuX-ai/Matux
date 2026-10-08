@@ -221,6 +221,11 @@ class AppInitializer {
   async initialize() {
     const mainWindow = this.windowManager?.getMainWindow();
 
+    // 【启动优化 P3】学习优先模式检测日志
+    if (global.__matuxFastMode) {
+      console.log('[INFO] 【学习优先模式】initialize() 被异步调用，后端在后台启动中');
+    }
+
     // 【跳过启动】用户在 Splash 上点了"跳过" → 直接进入降级模式
     if (global.__matuxUserSkippedStartup) {
       console.log('[INFO] 用户主动跳过启动检查，进入降级模式');
