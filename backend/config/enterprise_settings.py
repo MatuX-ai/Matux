@@ -3,10 +3,10 @@
 使用Pydantic BaseSettings管理企业网关环境变量
 """
 
-from typing import List
+from typing import Annotated, List
 
 from pydantic import validator
-from pydantic_settings import BaseSettings
+from pydantic_settings import BaseSettings, NoDecode
 
 
 class EnterpriseSettings(BaseSettings):
@@ -39,7 +39,9 @@ class EnterpriseSettings(BaseSettings):
     API_RATE_LIMIT_PER_HOUR: int = 1000
 
     # CORS配置
-    ALLOWED_ORIGINS: List[str] = [
+    # NoDecode: 环境变量里使用逗号分隔写法（见 .env.enterprise），
+    # 避免 pydantic-settings v2 对 List[str] 自动做 JSON 解析而报错
+    ALLOWED_ORIGINS: Annotated[List[str], NoDecode] = [
         "https://enterprise.imato.com",
         "http://localhost:3000",
     ]

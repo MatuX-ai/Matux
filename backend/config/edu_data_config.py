@@ -3,10 +3,10 @@
 包含教育数据特有的配置参数和设置
 """
 
-from typing import Dict, List
+from typing import Annotated, Dict, List
 
-from pydantic import Field
-from pydantic_settings import BaseSettings
+from pydantic import Field, field_validator
+from pydantic_settings import BaseSettings, NoDecode
 
 
 class EduDataConfig(BaseSettings):
@@ -25,18 +25,20 @@ class EduDataConfig(BaseSettings):
     edu_data_privacy_level: str = Field(
         default="high", description="数据隐私级别(low/medium/high)"
     )
-    edu_subjects: List[str] = Field(
+    # 以下字段在 .env.edu_data 中采用逗号分隔写法，
+    # NoDecode 用于阻止 pydantic-settings v2 对复杂类型自动做 JSON 解析
+    edu_subjects: Annotated[List[str], NoDecode] = Field(
         default=["math", "science", "technology", "engineering"],
         description="支持的学科",
     )
-    edu_grade_levels: List[str] = Field(
+    edu_grade_levels: Annotated[List[str], NoDecode] = Field(
         default=["elementary", "middle", "high"], description="年级级别"
     )
     edu_region_analysis: bool = Field(default=True, description="是否启用区域分析")
     edu_trend_prediction: bool = Field(default=True, description="是否启用趋势预测")
 
     # STEM能力评估配置
-    stem_assessment_weights: Dict[str, float] = Field(
+    stem_assessment_weights: Annotated[Dict[str, float], NoDecode] = Field(
         default={
             "math": 0.25,
             "science": 0.25,
@@ -47,7 +49,7 @@ class EduDataConfig(BaseSettings):
     )
 
     # 报告生成配置
-    report_formats: List[str] = Field(
+    report_formats: Annotated[List[str], NoDecode] = Field(
         default=["pdf", "excel"], description="支持的报告格式"
     )
     report_template_dir: str = Field(
@@ -63,7 +65,7 @@ class EduDataConfig(BaseSettings):
     data_masking_level: str = Field(
         default="strict", description="脱敏级别(basic/strict/comprehensive)"
     )
-    pii_fields: List[str] = Field(
+    pii_fields: Annotated[List[str], NoDecode] = Field(
         default=["student_name", "parent_name", "phone", "address"],
         description="个人身份信息字段",
     )
@@ -109,6 +111,23 @@ class EduDataConfig(BaseSettings):
         env_file = ".env.edu_data"
         env_file_encoding = "utf-8"
         case_sensitive = False
+        # .env.edu_data 中还存在 STEM_ASSESSMENT_WEIGHTS_* 之类的辅助变量，
+        # 它们无法映射到 Dict 字段，忽略即可
+        extra = "ignore"
+
+    @field_validator(
+        "edu_subjects",
+        "edu_grade_levels",
+        "report_formats",
+        "pii_fields",
+        mode="before",
+    )
+    @classmethod
+    def _split_comma_separated(cls, v):
+        """兼容逗号分隔的字符串写法"""
+        if isinstance(v, str):
+            return [item.strip() for item in v.split(",") if item.strip()]
+        return v
 
     def get_subject_weight(self, subject: str) -> float:
         """获取指定学科的权重"""
