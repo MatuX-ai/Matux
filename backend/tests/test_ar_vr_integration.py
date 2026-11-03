@@ -10,6 +10,12 @@ import sys
 import unittest
 from unittest.mock import Mock, patch
 
+import pytest
+
+# aiortc 是可选依赖（未列入 requirements.txt），
+# services/web_rtc_sensor_service.py 导入它，缺失时跳过整个模块。
+pytest.importorskip("aiortc")
+
 from sqlalchemy.orm import Session
 
 # 添加项目路径
