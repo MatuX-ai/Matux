@@ -87,7 +87,7 @@ export class StatusBarComponent implements OnInit, OnDestroy {
       .pipe(
         startWith(this.moduleStatusService.healthy$.value),
         distinctUntilChanged(),
-        map((healthy) => healthy ? 'healthy' : 'unhealthy'),
+        map((healthy) => (healthy ? 'healthy' : 'unhealthy')),
         takeUntil(this.destroy$)
       )
       .subscribe((status) => {

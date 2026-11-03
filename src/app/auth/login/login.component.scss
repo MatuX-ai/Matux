@@ -471,8 +471,13 @@ $color-legendary: #fde047;
 }
 
 @keyframes fast-mode-pulse {
-  0%, 100% { box-shadow: 0 6px 20px rgba(59, 130, 246, 0.4) !important; }
-  50%      { box-shadow: 0 6px 28px rgba(59, 130, 246, 0.85) !important; }
+  0%,
+  100% {
+    box-shadow: 0 6px 20px rgba(59, 130, 246, 0.4) !important;
+  }
+  50% {
+    box-shadow: 0 6px 28px rgba(59, 130, 246, 0.85) !important;
+  }
 }
 
 .fast-mode-hint {
@@ -503,8 +508,12 @@ $color-legendary: #fde047;
 }
 
 @keyframes fast-mode-spin {
-  from { transform: rotate(0deg); }
-  to   { transform: rotate(360deg); }
+  from {
+    transform: rotate(0deg);
+  }
+  to {
+    transform: rotate(360deg);
+  }
 }
 
 // =================== 测试账号按钮（游戏风格）====================

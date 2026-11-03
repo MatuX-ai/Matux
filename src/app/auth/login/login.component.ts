@@ -235,7 +235,8 @@ export class LoginComponent implements OnInit, OnDestroy {
     this.startupMode.mode$.subscribe((mode) => {
       this.fastMode = mode.fastMode;
       if (mode.fastMode) {
-        this.fastModeHint = '⚡ 学习优先模式：后端正在后台启动（10~30s），登录将在后端就绪后自动可用';
+        this.fastModeHint =
+          '⚡ 学习优先模式：后端正在后台启动（10~30s），登录将在后端就绪后自动可用';
       } else {
         this.fastModeHint = '';
       }

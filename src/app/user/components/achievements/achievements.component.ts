@@ -48,12 +48,7 @@ import { AchievementGalleryComponent } from '../../../features/achievement-integ
             <div class="empty-state">
               <mat-icon class="empty-icon">account_circle</mat-icon>
               <p>请先登录后查看成就信息</p>
-              <button
-                mat-stroked-button
-                color="primary"
-                class="login-cta"
-                (click)="goToLogin()"
-              >
+              <button mat-stroked-button color="primary" class="login-cta" (click)="goToLogin()">
                 <mat-icon>login</mat-icon>
                 去登录
               </button>
