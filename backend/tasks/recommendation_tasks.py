@@ -9,12 +9,11 @@ import json
 import logging
 from typing import Any, Dict, List
 
-from redis.redis_client import get_redis_client
-from sqlalchemy.ext.asyncio import AsyncSession
-
 from ai_service.recommendation_service import RecommendationEngine
 from models.recommendation import RecommendationFeedback
 from models.user import User
+from redis.redis_client import get_redis_client
+from sqlalchemy.ext.asyncio import AsyncSession
 from utils.database import get_db
 
 logger = logging.getLogger(__name__)

@@ -7,13 +7,12 @@ import logging
 import re
 from typing import Awaitable, Callable, Optional
 
+from config.settings import settings
 from fastapi import Depends, HTTPException, Request
 from fastapi.responses import JSONResponse
 from jose import JWTError, jwt
-from sqlalchemy.orm import Session
-
-from config.settings import settings
 from models.user import User, UserRole
+from sqlalchemy.orm import Session
 from utils.auth_utils import get_current_user_sync
 from utils.database import get_db
 from utils.tenant_context import TenantContext

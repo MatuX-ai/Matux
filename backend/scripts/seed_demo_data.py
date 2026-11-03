@@ -25,14 +25,13 @@ test_student 冷启动数据脚本
 """
 
 import asyncio
+from datetime import date, datetime, timedelta, timezone
 import logging
 import random
-from datetime import date, datetime, timedelta, timezone
 from typing import Any, Dict, List, Optional
 
-from sqlalchemy import select, func
+from sqlalchemy import func, select
 from sqlalchemy.exc import SQLAlchemyError
-
 from utils.database import AsyncSessionLocal
 
 logging.basicConfig(
@@ -791,7 +790,12 @@ async def seed_learning_records(db, student, sources, courses):
 async def seed_achievements(db, student):
     """尝试创建 20 个成就 + 8 个 user_achievements"""
     try:
-        from models.achievement import Achievement, AchievementCategory, AchievementType, UserAchievement
+        from models.achievement import (
+            Achievement,
+            AchievementCategory,
+            AchievementType,
+            UserAchievement,
+        )
     except Exception as e:
         logger.warning(f"  ⚠️ 跳过成就数据：{e}")
         return 0, 0
@@ -867,7 +871,7 @@ async def seed_achievements(db, student):
 async def seed_points(db, student):
     """尝试创建 user_points + 30 条流水"""
     try:
-        from models.leaderboard import UserPoints, PointsTransaction
+        from models.leaderboard import PointsTransaction, UserPoints
     except Exception as e:
         logger.warning(f"  ⚠️ 跳过积分数据：{e}")
         return 0, 0
@@ -947,7 +951,11 @@ async def seed_points(db, student):
 async def seed_leaderboard(db, student):
     """尝试创建排行榜：20 条周榜 + 20 条总榜"""
     try:
-        from models.leaderboard import LeaderboardRecord, LeaderboardPeriod, LeaderboardType
+        from models.leaderboard import (
+            LeaderboardPeriod,
+            LeaderboardRecord,
+            LeaderboardType,
+        )
     except Exception as e:
         logger.warning(f"  ⚠️ 跳过排行榜：{e}")
         return 0

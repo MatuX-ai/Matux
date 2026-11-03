@@ -13,12 +13,12 @@
 - 利用现有 AIManager 进行 LLM 生成
 """
 
-import logging
-import json
-import os
-import pickle
 from datetime import datetime
+import json
+import logging
+import os
 from pathlib import Path
+import pickle
 from typing import Any, Dict, List, Optional, Tuple
 
 logger = logging.getLogger(__name__)
@@ -198,6 +198,7 @@ class VectorKnowledgeService:
 
         try:
             from sentence_transformers import SentenceTransformer
+
             # 优先使用中文模型
             model_name = os.environ.get("EMBEDDING_MODEL", "shibing624/text2vec-base-chinese")
             self._embedding_model = SentenceTransformer(model_name)

@@ -14,16 +14,15 @@ AR/VR 课程 REST 路由（前端简化路径）
 Author: P1-Backend 修复
 """
 
-import logging
 from datetime import datetime
+import logging
 from typing import Any, Dict, List, Optional
 
 from fastapi import APIRouter, Depends, HTTPException
+from models.ar_vr_content import ARVRContent, ARVRContentType
 from pydantic import BaseModel, Field
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
-
-from models.ar_vr_content import ARVRContent, ARVRContentType
 from utils.database import get_db
 
 logger = logging.getLogger(__name__)

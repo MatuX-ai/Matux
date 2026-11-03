@@ -8,8 +8,6 @@ import logging
 from typing import List, Optional
 
 from fastapi import APIRouter, Body, Depends, HTTPException, Query
-from sqlalchemy.orm import Session
-
 from models.learning_behavior import (
     BehaviorAnalyticsRequest,
     BehaviorAnalyticsResponse,
@@ -21,6 +19,7 @@ from models.learning_behavior import (
 )
 from models.user import User
 from services.learning_behavior_service import get_learning_behavior_service
+from sqlalchemy.orm import Session
 from utils.auth_utils import get_current_user as get_current_active_user
 from utils.database import get_db
 

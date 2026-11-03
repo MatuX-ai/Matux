@@ -11,9 +11,8 @@ import json
 import logging
 from typing import Any, Dict, List, Optional
 
-import jwt
-
 from config.settings import settings
+import jwt
 from services.blockchain.fallback_handler import circuit_breaker_fallback
 from utils.circuit_breaker import CircuitBreaker
 

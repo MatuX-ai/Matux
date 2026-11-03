@@ -5,11 +5,10 @@
 from datetime import datetime, timedelta
 from unittest.mock import Mock, patch
 
-import pytest
-from sqlalchemy.orm import Session
-
 from models.license import LicenseCreate, LicenseStatus, LicenseType
+import pytest
 from services.license_service import LicenseService
+from sqlalchemy.orm import Session
 from utils.redis_client import redis_license_store
 
 

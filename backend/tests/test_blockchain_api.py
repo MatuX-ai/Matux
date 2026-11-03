@@ -5,9 +5,8 @@
 from unittest.mock import patch
 
 from fastapi.testclient import TestClient
-import pytest
-
 from main import app
+import pytest
 from services.blockchain.service import blockchain_service
 
 client = TestClient(app)

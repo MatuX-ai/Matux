@@ -2,10 +2,11 @@
 iMato 教育培训管理系统 - 签到数据验证模式
 """
 
-from pydantic import BaseModel, Field
 from datetime import datetime
-from typing import Optional
 from enum import Enum
+from typing import Optional
+
+from pydantic import BaseModel, Field
 
 
 class CheckinStatusEnum(str, Enum):

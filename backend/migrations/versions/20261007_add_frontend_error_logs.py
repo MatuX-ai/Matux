@@ -13,7 +13,6 @@ Create Date: 2026-10-07 12:00:00.000000
 from alembic import op
 import sqlalchemy as sa
 
-
 # revision identifiers, used by Alembic.
 revision = "20261007_add_frontend_error_logs"
 down_revision = "add_token_billing"

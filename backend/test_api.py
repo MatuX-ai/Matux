@@ -1,6 +1,7 @@
 """测试 start_exam API 端点"""
-import requests
 import json
+
+import requests
 
 BASE_URL = "http://localhost:8000"
 

@@ -4,15 +4,15 @@
 用于桌面端离线知识管理和个性化学习路径推荐
 """
 
+from datetime import datetime
+import hashlib
 import json
 import logging
-from datetime import datetime
 from pathlib import Path
 from typing import Any, Dict, List, Optional, Set, Tuple
-import hashlib
 
-import networkx as nx
 import chromadb
+import networkx as nx
 
 logger = logging.getLogger(__name__)
 

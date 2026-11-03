@@ -6,28 +6,37 @@
 """
 
 import asyncio
-import logging
-import sys
 import io
+import logging
 from pathlib import Path
+import sys
 
 # 修复Windows控制台编码问题
 if sys.platform.startswith('win'):
     sys.stdout = io.TextIOWrapper(sys.stdout.buffer, encoding='utf-8')
     sys.stderr = io.TextIOWrapper(sys.stderr.buffer, encoding='utf-8')
 
-# 使用SQLAlchemy 2.0兼容的导入方式
-from sqlalchemy import Column, Integer, String, Text, DateTime, Boolean, ForeignKey
-from sqlalchemy.orm import declarative_base
 from datetime import datetime
+
+# 使用SQLAlchemy 2.0兼容的导入方式
+from sqlalchemy import Boolean, Column, DateTime, ForeignKey, Integer, String, Text
+from sqlalchemy.orm import declarative_base
 
 # 添加backend目录到Python路径
 sys.path.insert(0, str(Path(__file__).parent.parent.parent))
 
 # 现在可以使用绝对导入
-from database.module_registry import DatabaseModuleRegistry, get_database_registry, ModuleMetadata
-from database.registry_manager import get_registry_manager, init_registry_manager, ModelBasedModule
-from database.module_registry import AutoDiscovery
+from database.module_registry import (
+    AutoDiscovery,
+    DatabaseModuleRegistry,
+    ModuleMetadata,
+    get_database_registry,
+)
+from database.registry_manager import (
+    ModelBasedModule,
+    get_registry_manager,
+    init_registry_manager,
+)
 
 # 配置日志
 logging.basicConfig(
@@ -200,7 +209,7 @@ async def demonstrate_auto_discovery():
     
     try:
         from database.module_registry import AutoDiscovery
-        
+
         # 注意：在实际项目中，models包应该已经在Python路径中
         # 这里我们模拟从models目录发现模型的过程
         
@@ -263,7 +272,7 @@ async def demonstrate_real_models():
         
         # 尝试注册一些真实的模型（如果存在）
         from database import Base
-        
+
         # 检查是否能导入真实模型
         try:
             from models.user import User

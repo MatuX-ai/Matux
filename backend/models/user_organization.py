@@ -2,14 +2,13 @@
 用户-组织关联模型
 """
 
-import enum
 from datetime import datetime
+import enum
 from typing import Optional
 
 from pydantic import BaseModel
 from sqlalchemy import Boolean, Column, DateTime, Enum, ForeignKey, Integer, String
 from sqlalchemy.orm import relationship
-
 from utils.database import Base
 
 

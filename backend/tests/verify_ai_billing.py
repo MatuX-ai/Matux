@@ -3,8 +3,8 @@ AI 计费功能快速验证脚本
 验证 Token 计费装饰器、降级开关和 AI 服务集成
 """
 
-import sys
 from pathlib import Path
+import sys
 
 # 添加项目路径
 sys.path.insert(0, str(Path(__file__).parent.parent))
@@ -17,9 +17,10 @@ def test_token_billing_decorator():
     print("="*60)
 
     try:
-        from utils.decorators import TokenBillingDecorator
+        from unittest.mock import MagicMock, Mock
+
         from services.token_service import TokenService
-        from unittest.mock import Mock, MagicMock
+        from utils.decorators import TokenBillingDecorator
 
         # 创建 Mock 数据库会话
         mock_db = Mock()
@@ -87,8 +88,9 @@ def test_llm_assistant_billing():
     print("="*60)
 
     try:
-        from services.llm_assistant_service import LLMAssistantService
         from unittest.mock import Mock
+
+        from services.llm_assistant_service import LLMAssistantService
 
         # 创建 Mock 数据库会话
         mock_db = Mock()
@@ -122,8 +124,9 @@ def test_course_generator_billing():
     print("="*60)
 
     try:
-        from ai_service.dynamic_course import DynamicCourseGenerator
         from unittest.mock import Mock
+
+        from ai_service.dynamic_course import DynamicCourseGenerator
 
         # 创建 Mock 数据库会话
         mock_db = Mock()

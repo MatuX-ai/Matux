@@ -4,8 +4,8 @@
 包含讨论区、协作文档、学习小组、项目任务、同伴审查等模型
 """
 
-import enum
 from datetime import datetime
+import enum
 
 from sqlalchemy import (
     JSON,
@@ -23,9 +23,7 @@ from sqlalchemy import (
 )
 from sqlalchemy.orm import relationship
 from sqlalchemy.sql import func
-
 from utils.database import Base
-
 
 # ==================== 枚举定义 ====================
 

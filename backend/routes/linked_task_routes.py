@@ -7,15 +7,14 @@ import logging
 from typing import Any, Dict, List, Optional
 
 from fastapi import APIRouter, Depends, File, Form, HTTPException, Query, UploadFile
-from sqlalchemy.orm import Session
-
-from utils.database import get_sync_db
 from models.user import User
-from utils.dependencies import get_current_user_sync
 from services.task_orchestration_service import (
     TaskOrchestrationService,
     get_task_orchestration_service,
 )
+from sqlalchemy.orm import Session
+from utils.database import get_sync_db
+from utils.dependencies import get_current_user_sync
 
 logger = logging.getLogger(__name__)
 
@@ -202,9 +201,8 @@ async def get_my_submissions(
     """
     try:
         # ✅ 从数据库查询用户的提交记录
-        from sqlalchemy import desc
-
         from models.ai_edu_rewards import AIEduLearningProgress
+        from sqlalchemy import desc
 
         # 构建查询
         query = db.query(AIEduLearningProgress).filter(

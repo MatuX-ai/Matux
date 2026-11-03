@@ -10,6 +10,7 @@ from typing import Any, Dict, Optional
 
 from gamification.services.rule_engine_service import RuleEngineService
 from services.blockchain.gateway_service import BlockchainGatewayService
+
 from .reward_event_bus import (
     RewardEvent,
     RewardEventBus,

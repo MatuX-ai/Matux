@@ -4,9 +4,6 @@ AI服务路由
 
 import time
 
-from fastapi import APIRouter, Depends, HTTPException
-from sqlalchemy.ext.asyncio import AsyncSession
-
 from ai_service import (
     AvailableModelsResponse,
     CodeGenerationRequest,
@@ -16,8 +13,10 @@ from ai_service import (
     ProgrammingLanguage,
     ai_manager,
 )
+from fastapi import APIRouter, Depends, HTTPException
 from models.ai_request import AIRequest
 from models.user import User
+from sqlalchemy.ext.asyncio import AsyncSession
 from utils.database import get_db
 
 # 延迟导入get_current_user避免循环依赖

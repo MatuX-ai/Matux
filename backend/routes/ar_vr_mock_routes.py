@@ -8,13 +8,12 @@ import logging
 from typing import Any, Dict, List, Optional
 
 from fastapi import APIRouter, Body, Depends, HTTPException, Query
-from sqlalchemy.orm import Session
-
 from services.ar_vr_mock_service import (
     MOCK_SCENARIOS,
     ARVRMockOrchestrator,
     MockScenario,
 )
+from sqlalchemy.orm import Session
 from utils.database import get_db
 
 logger = logging.getLogger(__name__)

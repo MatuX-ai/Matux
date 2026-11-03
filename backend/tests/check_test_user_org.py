@@ -1,13 +1,15 @@
 """检查测试账号的组织关联"""
 import asyncio
 import sys
+
 sys.path.insert(0, 'G:\\iMato\\backend')
 
+from models.user import User
+from models.user_organization import UserOrganization
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 from utils.database import get_db_session
-from models.user import User
-from models.user_organization import UserOrganization
+
 
 async def check_user_org():
     async with get_db_session() as db:

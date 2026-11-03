@@ -3,11 +3,10 @@
 创建组织和许可证相关数据表
 """
 
-from sqlalchemy import create_engine, text
-from sqlalchemy.orm import sessionmaker
-
 from config.settings import settings
 from models.license import Base, License, Organization
+from sqlalchemy import create_engine, text
+from sqlalchemy.orm import sessionmaker
 
 
 def create_license_tables():

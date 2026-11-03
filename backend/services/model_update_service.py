@@ -10,11 +10,10 @@ import os
 from pathlib import Path
 from typing import Dict, List, Optional
 
-from fastapi import Depends, HTTPException
-from sqlalchemy.orm import Session
-
 from config.settings import settings
+from fastapi import Depends, HTTPException
 from models.model_version import ModelVersion
+from sqlalchemy.orm import Session
 from utils.database import get_db
 
 logger = logging.getLogger(__name__)

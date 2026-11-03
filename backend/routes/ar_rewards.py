@@ -4,12 +4,11 @@ import logging
 from typing import Any, Dict, Optional
 
 from fastapi import APIRouter, BackgroundTasks, Depends, HTTPException
-from pydantic import BaseModel
-
-from utils.dependencies import get_current_user_sync
 from models.user import User
+from pydantic import BaseModel
 from services.ar_reward_service import ARSceneCompletionData, ar_reward_service
 from services.reward_event_bus import RewardEvent, reward_event_bus
+from utils.dependencies import get_current_user_sync
 
 router = APIRouter(prefix="/ar", tags=["AR Rewards"])
 logger = logging.getLogger(__name__)

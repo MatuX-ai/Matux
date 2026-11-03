@@ -3,10 +3,12 @@
 """
 
 import sys
+
 sys.path.insert(0, '.')
 
-from sqlalchemy import create_engine, inspect
 from config.settings import settings
+from sqlalchemy import create_engine, inspect
+
 
 def verify_materials_table():
     """验证unified_materials表是否存在"""

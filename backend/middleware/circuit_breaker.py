@@ -3,15 +3,16 @@ Sentinel 熔断器集成
 为第三方服务调用提供容错保护、降级策略和流量控制
 """
 
-from fastapi.responses import JSONResponse
-from fastapi import Request, Response
-from functools import wraps
-import time
 import asyncio
-from typing import Optional, Callable, Any, Dict, List
-from datetime import datetime, timedelta
 from collections import defaultdict
+from datetime import datetime, timedelta
+from functools import wraps
 import logging
+import time
+from typing import Any, Callable, Dict, List, Optional
+
+from fastapi import Request, Response
+from fastapi.responses import JSONResponse
 
 logger = logging.getLogger(__name__)
 

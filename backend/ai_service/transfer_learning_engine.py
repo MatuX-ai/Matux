@@ -9,15 +9,14 @@ import logging
 import os
 from typing import Any, Callable, Dict, List, Tuple
 
+from ai_service.traditional_ml_transfer import TraditionalTransferLearning
+from config.transfer_learning_config import settings
 import joblib
 import numpy as np
 import pandas as pd
+from services.dataset_processor import AssistmentsDatasetProcessor
 from sklearn.metrics import mean_absolute_error, mean_squared_error
 from sklearn.model_selection import cross_val_score, train_test_split
-
-from ai_service.traditional_ml_transfer import TraditionalTransferLearning
-from config.transfer_learning_config import settings
-from services.dataset_processor import AssistmentsDatasetProcessor
 
 logger = logging.getLogger(__name__)
 

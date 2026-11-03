@@ -13,9 +13,6 @@ from typing import Any, Dict, Optional
 import uuid
 
 from cryptography.fernet import Fernet
-from sqlalchemy import select
-from sqlalchemy.ext.asyncio import AsyncSession
-
 from models.content_store import (
     ContentAccessGrant,
     ContentAccessLog,
@@ -25,6 +22,8 @@ from models.content_store import (
     DRMStatus,
 )
 from models.subscription import SubscriptionStatus, UserSubscription
+from sqlalchemy import select
+from sqlalchemy.ext.asyncio import AsyncSession
 
 logger = logging.getLogger(__name__)
 

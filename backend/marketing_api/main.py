@@ -2,18 +2,19 @@
 MatuX 营销页面后端 API
 FastAPI 实现
 """
-from fastapi import FastAPI, HTTPException, Depends, BackgroundTasks
-from fastapi.security import OAuth2PasswordRequestForm
-from fastapi.middleware.cors import CORSMiddleware
-from fastapi.responses import JSONResponse
-from pydantic import BaseModel, EmailStr, validator
-from typing import List, Optional, Dict, Any, Annotated
 from datetime import datetime, timedelta
+import hashlib
 import json
 import os
 from pathlib import Path
-import hashlib
+from typing import Annotated, Any, Dict, List, Optional
+
+from fastapi import BackgroundTasks, Depends, FastAPI, HTTPException
+from fastapi.middleware.cors import CORSMiddleware
+from fastapi.responses import JSONResponse
+from fastapi.security import OAuth2PasswordRequestForm
 import jwt
+from pydantic import BaseModel, EmailStr, validator
 
 app = FastAPI(
     title="MatuX Marketing API",

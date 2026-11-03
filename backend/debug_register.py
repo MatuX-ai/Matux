@@ -1,6 +1,7 @@
 """调试注册端点"""
-import requests
 import traceback
+
+import requests
 
 BASE_URL = "http://localhost:8000"
 

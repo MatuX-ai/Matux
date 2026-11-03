@@ -8,9 +8,9 @@ OpenSciEDU 公共课程服务
 基于 PRD F-18: OpenSciEDU 公共课程自动接入
 """
 
+from datetime import datetime
 import logging
 import os
-from datetime import datetime
 from typing import Any, Dict, List, Optional
 
 import httpx

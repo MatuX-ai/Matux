@@ -30,15 +30,15 @@ def monitor_ai_operation(operation_name: str):
     return decorator
 
 
-from sqlalchemy import select
-from sqlalchemy.ext.asyncio import AsyncSession
-
 from config.transfer_learning_config import settings as tl_settings
 from models.content_store import ContentItem, ContentRating
 from models.recommendation import (
     CourseFeature,
 )
 from models.subscription import SubscriptionStatus, UserSubscription
+from sqlalchemy import select
+from sqlalchemy.ext.asyncio import AsyncSession
+
 from .difficulty_calculator import DifficultyCalculator
 from .knowledge_graph_manager import KnowledgeGraphManager
 
@@ -552,9 +552,8 @@ class RecommendationEngine:
         """判断是否应该使用预训练模型"""
         try:
             # 检查是否有可用的预训练模型
-            from sqlalchemy import select
-
             from models.recommendation import PretrainedModel
+            from sqlalchemy import select
 
             stmt = (
                 select(PretrainedModel)
@@ -658,10 +657,9 @@ class RecommendationEngine:
     ) -> Any:
         """为预训练模型提取用户特征"""
         try:
-            import numpy as np
-
             # 获取用户基本信息
             from models.recommendation import LearningRecord, UserLearningProfile
+            import numpy as np
 
             # 获取用户画像
             stmt = select(UserLearningProfile).where(

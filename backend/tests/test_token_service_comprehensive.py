@@ -3,12 +3,13 @@ Token 服务核心功能单元测试
 测试 Token 计费、套餐管理、余额查询等核心功能
 """
 
-import pytest
 from datetime import datetime, timedelta
 from decimal import Decimal
-from unittest.mock import AsyncMock, Mock, MagicMock, patch
-from sqlalchemy.orm import Session
+from unittest.mock import AsyncMock, MagicMock, Mock, patch
+
+import pytest
 from sqlalchemy.ext.asyncio import AsyncSession
+from sqlalchemy.orm import Session
 
 # models/token_models.py 已删除：TokenTransaction / TokenType 随
 # services/token_service.py 改造为 models/user_license.py 中的 TokenUsageRecord 等，
@@ -19,10 +20,11 @@ pytest.skip(
     allow_module_level=True,
 )
 
-# 假设的导入路径（根据实际项目结构调整）
-from services.token_service import TokenService, TokenPackage
 from models.token_models import TokenTransaction, TokenType, TransactionType
 from models.user import User
+
+# 假设的导入路径（根据实际项目结构调整）
+from services.token_service import TokenPackage, TokenService
 
 
 class TestTokenServiceBasic:

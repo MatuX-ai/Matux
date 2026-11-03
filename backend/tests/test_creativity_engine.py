@@ -4,8 +4,6 @@ AI创意激发引擎测试用例
 
 from unittest.mock import AsyncMock, patch
 
-import pytest
-
 from ai_service.business_evaluator import BusinessEvaluator
 from ai_service.creativity_engine import CreativityEngine
 from ai_service.idea_scorer import IdeaScorer
@@ -22,6 +20,7 @@ from models.creativity_models import (
     ImageGenerationResponse,
     PromptTemplateCreate,
 )
+import pytest
 
 
 class TestCreativityEngine:

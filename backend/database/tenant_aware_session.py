@@ -8,7 +8,6 @@ from typing import Any, Optional, Type
 
 from sqlalchemy.orm import Query, Session
 from sqlalchemy.sql.elements import BinaryExpression
-
 from utils.tenant_context import TenantContext
 
 logger = logging.getLogger(__name__)

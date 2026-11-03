@@ -11,8 +11,6 @@ import logging
 from typing import List, Optional
 
 from fastapi import APIRouter, Body, Depends, HTTPException, Path, Query
-from sqlalchemy.orm import Session
-
 from middleware.tenant_middleware import require_tenant_access
 from models.tenant_config import (
     FeatureFlagCreate,
@@ -25,6 +23,7 @@ from models.tenant_config import (
 )
 from models.user import User
 from services.tenant_config_service import TenantConfigService
+from sqlalchemy.orm import Session
 from utils.auth_utils import get_current_user_sync
 from utils.database import get_sync_db
 

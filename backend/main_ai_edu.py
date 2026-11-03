@@ -4,26 +4,20 @@ AI-Edu-for-Kids 简化版后端服务
 只包含 AI-Edu 相关的功能，避免其他模块的依赖问题
 """
 
-from routes.vircadia_avatar_routes import router as vircadia_avatar_router
-from routes.token_routes import router as token_router
-from routes.recommendation_routes import router as recommendation_router
-from routes.micro_course_routes import router as micro_course_router
-from routes.llm_assistant_routes import router as llm_assistant_router
-from routes.leaderboard_routes import router as leaderboard_router
-from routes.error_log_routes import router as error_log_router
-from routes.creativity_routes import router as creativity_router
-# 【P1-Backend 修复 #1】补齐 arvr_course_routes：前端 ARVRCoursePlayerComponent 调用
-#   /api/v1/arvr-courses/{id}，原 routes/ar_vr_routes.py 提供的路径是 /api/v1/org/{org_id}/arvr/*，
-#   前端调用 404 → ARVR 课程 502。补齐后 ARVR 课程可正常加载。
-from routes.arvr_course_routes import router as arvr_course_router
-# 【P1-Backend 修复 #2】补齐 org_error_log_routes：前端 ErrorLoggerService 调用
-#   /api/v1/org/{org_id}/logs/error，原 routes/error_log_routes.py 提供的路径是 /logs/error（无 org_id 前缀），
-#   前端调用 404 → ErrorLoggerService 上报失败。补齐后前端错误可正常上报。
-from routes.org_error_log_routes import router as org_error_log_router
+import os
+
+from fastapi import FastAPI
+from fastapi.middleware.cors import CORSMiddleware
+from routes.achievement_routes import router as achievement_router
+
 # 【P1-Admin 补齐】注册 Admin AR/VR 课程管理路由
 #   提供后台课程 CRUD / 上传 / 编辑 / 删除能力，路径 /api/v1/admin/arvr/*，
 #   需要 Bearer JWT + admin 角色才能访问。
 from routes.admin_arvr_routes import router as admin_arvr_router
+from routes.ai_edu_code_execution import router as ai_edu_code_router
+from routes.ai_edu_progress_routes import router as ai_edu_progress_router
+from routes.ai_edu_quiz_routes import router as ai_edu_quiz_router
+
 # 协作文档模块因编码问题暂未修复，后续处理
 # from routes.collaboration_routes import (
 #     discussion_router,
@@ -32,28 +26,41 @@ from routes.admin_arvr_routes import router as admin_arvr_router
 #     project_router,
 # )
 from routes.ai_edu_websocket_routes import router as ai_edu_websocket_router
-from routes.ai_edu_quiz_routes import router as ai_edu_quiz_router
-from routes.ai_edu_progress_routes import router as ai_edu_progress_router
-from routes.ai_edu_code_execution import router as ai_edu_code_router
-from routes.achievement_routes import router as achievement_router
-# 【P1 修复 #P1-2】补充 exam_router 注册：在线测验模块
-#   main_ai_edu.py 原版未注册 exam_routes，导致 /api/v1/exams 返回 404
-#   前端 ExamListComponent 会显示“服务器错误”，UX 完整度测试中标记为 P1。
-from routes.exam_routes import router as exam_router
+
+# 【P1-Backend 修复 #1】补齐 arvr_course_routes：前端 ARVRCoursePlayerComponent 调用
+#   /api/v1/arvr-courses/{id}，原 routes/ar_vr_routes.py 提供的路径是 /api/v1/org/{org_id}/arvr/*，
+#   前端调用 404 → ARVR 课程 502。补齐后 ARVR 课程可正常加载。
+from routes.arvr_course_routes import router as arvr_course_router
+
 # 【修复 #10】补充 auth_router 注册：main_ai_edu.py 原版未包含认证路由，
 #   导致 /api/v1/auth/signin 返回 404，前端登录失败。
 #   auth_routes 依赖为 iMato 标准库（bcrypt、jose、sqlalchemy 等），与现有后端环境兼容。
 from routes.auth_routes import router as auth_router
+from routes.creativity_routes import router as creativity_router
+from routes.error_log_routes import router as error_log_router
+
+# 【P1 修复 #P1-2】补充 exam_router 注册：在线测验模块
+#   main_ai_edu.py 原版未注册 exam_routes，导致 /api/v1/exams 返回 404
+#   前端 ExamListComponent 会显示“服务器错误”，UX 完整度测试中标记为 P1。
+from routes.exam_routes import router as exam_router
+from routes.leaderboard_routes import router as leaderboard_router
+from routes.llm_assistant_routes import router as llm_assistant_router
+from routes.micro_course_routes import router as micro_course_router
+
+# 【P1-Backend 修复 #2】补齐 org_error_log_routes：前端 ErrorLoggerService 调用
+#   /api/v1/org/{org_id}/logs/error，原 routes/error_log_routes.py 提供的路径是 /logs/error（无 org_id 前缀），
+#   前端调用 404 → ErrorLoggerService 上报失败。补齐后前端错误可正常上报。
+from routes.org_error_log_routes import router as org_error_log_router
+from routes.recommendation_routes import router as recommendation_router
+
 # 【修复 #11】补充 system_status_router 注册：底部状态栏轮询
 #   /api/v1/system/health-detail 和 /api/v1/system/modules 依赖此 router。
 #   缺失则 404 → catchError → healthy$.next(false) → 状态栏显示"后端未启动"。
 from routes.system_status_routes import router as system_status_router
-from fastapi import FastAPI
-from fastapi.middleware.cors import CORSMiddleware
-import os
-import uvicorn
-
+from routes.token_routes import router as token_router
+from routes.vircadia_avatar_routes import router as vircadia_avatar_router
 from utils.database import Base, sync_engine
+import uvicorn
 
 # 创建 FastAPI 应用
 app = FastAPI(

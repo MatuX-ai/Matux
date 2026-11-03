@@ -3,11 +3,11 @@
 提供桌面端本地知识图谱管理的HTTP接口
 """
 
-from fastapi import APIRouter, HTTPException, Depends
-from pydantic import BaseModel, Field
-from typing import List, Dict, Any, Optional, Set
 import logging
+from typing import Any, Dict, List, Optional, Set
 
+from fastapi import APIRouter, Depends, HTTPException
+from pydantic import BaseModel, Field
 from services.local_knowledge_graph import LocalKnowledgeGraph, StudentLearningProfile
 
 logger = logging.getLogger(__name__)

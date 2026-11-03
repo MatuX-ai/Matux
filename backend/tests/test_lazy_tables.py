@@ -4,12 +4,12 @@
 测试 LazyTableManager 的注册、分批创建、幂等性
 """
 
-from core.lazy_tables import LazyTableManager
-import pytest
-from unittest.mock import AsyncMock, MagicMock, patch
-
 import os
 import sys
+from unittest.mock import AsyncMock, MagicMock, patch
+
+from core.lazy_tables import LazyTableManager
+import pytest
 
 _backend_dir = os.path.abspath(os.path.join(os.path.dirname(__file__), ".."))
 if _backend_dir not in sys.path:

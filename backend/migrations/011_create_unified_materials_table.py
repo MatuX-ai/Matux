@@ -3,21 +3,21 @@
 创建unified_materials表及相关索引
 """
 
-import sys
 import os
+import sys
+
 sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
-from sqlalchemy import create_engine, text
-from sqlalchemy.orm import sessionmaker
-
 from config.settings import settings
-from models.unified_material import UnifiedMaterial, Base
+from models.course import Course, CourseLesson
 
 # 导入所有相关模型以确保外键关系正确
-from models.license import Organization, License
-from models.user import User
-from models.course import Course, CourseLesson
+from models.license import License, Organization
 from models.payment import Product
+from models.unified_material import Base, UnifiedMaterial
+from models.user import User
+from sqlalchemy import create_engine, text
+from sqlalchemy.orm import sessionmaker
 
 
 def create_unified_materials_table():

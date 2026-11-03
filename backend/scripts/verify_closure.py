@@ -1,5 +1,7 @@
 """闭包表迁移验收脚本"""
-import sys, os
+import os
+import sys
+
 script_dir = os.path.dirname(os.path.abspath(__file__))
 backend_dir = os.path.dirname(script_dir)  # back from scripts/ to backend/
 project_root = os.path.dirname(backend_dir)  # back from backend/ to project root
@@ -11,7 +13,7 @@ print()
 # 1. 模型导入
 print("[1] 模型导入验证")
 try:
-    from models.courseware_clousure import CoursewareNode, CoursewareClosure
+    from models.courseware_clousure import CoursewareClosure, CoursewareNode
     print(f"    PASS  CoursewareNode.__tablename__ = '{CoursewareNode.__tablename__}'")
     print(f"    PASS  CoursewareClosure.__tablename__ = '{CoursewareClosure.__tablename__}'")
     # 验证表结构字段
@@ -34,12 +36,22 @@ print()
 print("[2] Schema 导入验证")
 try:
     from schemas.courseware_closure import (
-        CoursewareNodeCreate, CoursewareNodeUpdate, CoursewareNodeMove,
-        CoursewareNodeResponse, CoursewareTreeNode,
-        HierarchyResponse, AncestorNode, DescendantNode,
-        LevelNodesResponse, NodePath, CoursewareSubtreeResponse,
-        BatchNodeCreate, BatchNodeCreateResponse,
-        ClosureValidationResult, MigrationResult, RollbackResult,
+        AncestorNode,
+        BatchNodeCreate,
+        BatchNodeCreateResponse,
+        ClosureValidationResult,
+        CoursewareNodeCreate,
+        CoursewareNodeMove,
+        CoursewareNodeResponse,
+        CoursewareNodeUpdate,
+        CoursewareSubtreeResponse,
+        CoursewareTreeNode,
+        DescendantNode,
+        HierarchyResponse,
+        LevelNodesResponse,
+        MigrationResult,
+        NodePath,
+        RollbackResult,
     )
     print(f"    PASS  Schema 类导入成功")
     # 验证关键字段

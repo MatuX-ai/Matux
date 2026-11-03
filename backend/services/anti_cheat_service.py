@@ -12,15 +12,14 @@ Anti-Cheat Service - 防作弊检测引擎
 from datetime import datetime, timedelta
 from typing import Optional
 
-from sqlalchemy import func, select
-from sqlalchemy.ext.asyncio import AsyncSession
-
 from models.exam import (
     AttemptStatus,
     CheatEvent,
     CheatType,
     ExamAttempt,
 )
+from sqlalchemy import func, select
+from sqlalchemy.ext.asyncio import AsyncSession
 
 
 class AntiCheatService:

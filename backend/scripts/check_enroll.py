@@ -2,6 +2,7 @@
 # -*- coding: utf-8 -*-
 """检查 course_enrollments 表结构"""
 import sqlite3
+
 conn = sqlite3.connect("ai_service.db")
 cur = conn.cursor()
 cur.execute("PRAGMA table_info(course_enrollments)")

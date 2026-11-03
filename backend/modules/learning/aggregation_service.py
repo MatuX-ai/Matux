@@ -3,22 +3,21 @@
 接收子项目回调、查询学生聚合课程列表
 """
 
-import json
 from datetime import datetime
+import json
 from typing import Dict, List, Optional
-
-from sqlalchemy import select, update, and_
-from sqlalchemy.ext.asyncio import AsyncSession
 
 from models.user import User
 from modules.learning.models import (
-    StudentCourseAggregation,
+    AggregatedCourseItem,
+    AggregatedCourseListResponse,
     CourseSource,
     CourseStatus,
     CourseSyncRequest,
-    AggregatedCourseItem,
-    AggregatedCourseListResponse,
+    StudentCourseAggregation,
 )
+from sqlalchemy import and_, select, update
+from sqlalchemy.ext.asyncio import AsyncSession
 
 
 class CourseAggregationService:

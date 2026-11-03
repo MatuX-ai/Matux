@@ -7,9 +7,9 @@
 - ModuleSpec: 模块规格描述
 """
 
-import time
 from dataclasses import dataclass, field
 from enum import Enum
+import time
 from typing import Any, Callable, Dict, List, Optional
 
 

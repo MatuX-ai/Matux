@@ -4,16 +4,15 @@
 """
 
 import functools
-import logging
-from typing import Callable, List, Optional, Union, Dict, Any, Tuple
 from functools import wraps
-from sqlalchemy.orm import Session
+import logging
+from typing import Any, Callable, Dict, List, Optional, Tuple, Union
 
 from fastapi import Depends, HTTPException, status
-from sqlalchemy.ext.asyncio import AsyncSession
-
 from models.user import User, UserRole
 from services.permission_service import permission_service
+from sqlalchemy.ext.asyncio import AsyncSession
+from sqlalchemy.orm import Session
 from utils.database import get_async_db
 
 # 循环导入问题：不在这里导入get_current_user，改为在函数内部导入

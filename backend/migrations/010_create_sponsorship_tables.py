@@ -3,9 +3,6 @@
 创建赞助活动、品牌曝光、积分转换等相关数据表
 """
 
-from sqlalchemy import create_engine, text
-from sqlalchemy.orm import sessionmaker
-
 from config.settings import settings
 from models.license import Organization
 from models.sponsorship import (
@@ -20,6 +17,8 @@ from models.sponsorship import (
     Sponsorship,
     SponsorshipStatus,
 )
+from sqlalchemy import create_engine, text
+from sqlalchemy.orm import sessionmaker
 
 
 def create_sponsorship_tables():

@@ -1,15 +1,14 @@
 """一次性脚本：创建测试管理员账号"""
 import asyncio
-import sys
 from pathlib import Path
+import sys
 
 sys.path.insert(0, str(Path(__file__).parent))
 
 import bcrypt
-from sqlalchemy import select
-
-from utils.database import AsyncSessionLocal
 from models.user import User, UserRole
+from sqlalchemy import select
+from utils.database import AsyncSessionLocal
 
 
 async def main():

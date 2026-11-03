@@ -12,22 +12,21 @@
 """
 
 import asyncio
+from datetime import datetime
 import json
 import logging
+from pathlib import Path
 import sys
 import time
-from datetime import datetime
-from pathlib import Path
 from typing import Any, Dict, List, Optional
 
 sys.path.insert(0, str(Path(__file__).resolve().parent.parent))
 
-from sqlalchemy import select, text, func, delete
-from sqlalchemy.ext.asyncio import AsyncSession
-
-from utils.database import AsyncSessionLocal, engine
-from models.courseware_clousure import CoursewareNode, CoursewareClosure
 from models.course import Course, CourseLesson
+from models.courseware_clousure import CoursewareClosure, CoursewareNode
+from sqlalchemy import delete, func, select, text
+from sqlalchemy.ext.asyncio import AsyncSession
+from utils.database import AsyncSessionLocal, engine
 
 logging.basicConfig(
     level=logging.INFO,

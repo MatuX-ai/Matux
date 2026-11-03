@@ -11,7 +11,6 @@ import uuid
 
 from fastapi import APIRouter, BackgroundTasks, File, Form, HTTPException, UploadFile
 from pydantic import BaseModel
-
 from utils.logger import setup_logger
 
 router = APIRouter(prefix="/api/v1", tags=["模型基准测试"])

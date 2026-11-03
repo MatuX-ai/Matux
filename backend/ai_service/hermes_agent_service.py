@@ -6,15 +6,14 @@ Hermes Agent 服务模块
 """
 
 import asyncio
+from enum import Enum
 import json
 import logging
 import socket
 from typing import Any, Dict, List, Optional
-from enum import Enum
-
-import httpx
 
 from config.settings import settings
+import httpx
 from utils.logger import get_logger
 
 logger = get_logger("hermes_agent")

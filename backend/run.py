@@ -6,11 +6,11 @@ iMato AI Service 启动脚本
 
 import logging
 import os
+from pathlib import Path
 import platform
 import subprocess
 import sys
 import time
-from pathlib import Path
 
 # =============================================================================
 # Windows 编码设置（必须在其他导入之前）
@@ -289,10 +289,9 @@ def main():
     print()
 
     # 启动主应用
-    import uvicorn
-
     # 延迟导入 settings，避免 Redis 未就绪时过早加载配置
     from config.settings import settings
+    import uvicorn
 
     print(f"Starting {settings.APP_NAME} v{settings.APP_VERSION}")
     print(f"Listening on {settings.HOST}:{settings.PORT}")

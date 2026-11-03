@@ -6,13 +6,11 @@
 import logging
 from typing import List, Optional
 
-from fastapi import APIRouter, Depends, HTTPException, Query
-from sqlalchemy import text
-
 from ai_service.business_evaluator import business_evaluator
 from ai_service.creativity_engine import creativity_engine
 from ai_service.idea_scorer import idea_scorer
 from ai_service.prompt_templates import prompt_template_manager
+from fastapi import APIRouter, Depends, HTTPException, Query
 from models.creativity_models import (
     BusinessEvaluationRequest,
     BusinessEvaluationResponse,
@@ -29,6 +27,7 @@ from models.creativity_models import (
 )
 from models.user import User
 from routes.auth_routes import get_current_user
+from sqlalchemy import text
 from utils.database import get_sync_db
 
 logger = logging.getLogger(__name__)

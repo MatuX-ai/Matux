@@ -10,10 +10,9 @@ from fastapi import (
     WebSocket,
     WebSocketDisconnect,
 )
-from sqlalchemy.orm import Session
-
-from utils.database import get_sync_db
 from models.user import User
+from sqlalchemy.orm import Session
+from utils.database import get_sync_db
 from utils.dependencies import get_current_user_sync
 
 logger = logging.getLogger(__name__)

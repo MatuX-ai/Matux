@@ -5,6 +5,10 @@
 from contextlib import contextmanager
 from typing import AsyncGenerator, Generator
 
+from config.settings import settings  # type: ignore[import-untyped]
+from database.tenant_aware_session import (  # type: ignore[import-not-found]
+    TenantAwareSession,
+)
 from sqlalchemy import (  # noqa: E501
     create_engine as create_sync_engine,
 )
@@ -17,11 +21,6 @@ from sqlalchemy.ext.asyncio import (  # noqa: E501
 )
 from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy.orm import sessionmaker
-
-from config.settings import settings  # type: ignore[import-untyped]
-from database.tenant_aware_session import (  # type: ignore[import-not-found]
-    TenantAwareSession,
-)
 
 # 创建异步引擎
 engine: AsyncEngine = create_async_engine(
@@ -106,27 +105,71 @@ async def create_db_and_tables() -> None:
     # 导入所有模型以确保它们被注册到 Base.metadata
     # 按依赖顺序导入：先导入基础模型，再导入依赖模型
     # fmt: off
-    from models.license import Organization, License  # type: ignore[import-untyped]  # noqa: F401,E501
+    from models.ai_request import (  # type: ignore[import-untyped]  # noqa: F401,E501
+        AIRequest,
+    )
+    from models.ar_vr_content import (  # type: ignore[import-untyped]  # noqa: F401,E501
+        ARVRContent,
+    )
+    from models.content_store import (  # type: ignore[import-untyped]  # noqa: F401,E501
+        ContentItem,
+    )
+    from models.course import (  # type: ignore[import-untyped]  # noqa: F401,E501
+        Course,
+        CourseAssignment,
+        CourseLesson,
+    )
+    from models.course_version import (  # type: ignore[import-untyped]  # noqa: F401,E501
+        CourseVersion,
+    )
+    from models.dynamic_course import (  # type: ignore[import-untyped]  # noqa: F401,E501
+        GeneratedCourse,
+    )
+    from models.error_log import (  # type: ignore[import-untyped]  # noqa: F401,E501
+        FrontendErrorLog,
+    )
+    from models.hardware_certification import (  # type: ignore[import-untyped]  # noqa: F401,E501
+        HardwareCertificationDB,
+    )
+    from models.hardware_module import (  # type: ignore[import-untyped]  # noqa: F401,E501
+        HardwareModule,
+    )
+    from models.learning_source import (  # type: ignore[import-untyped]  # noqa: F401,E501
+        LearningSource,
+    )
+    from models.license import (  # type: ignore[import-untyped]  # noqa: F401,E501
+        License,
+        Organization,
+    )
+    from models.payment import (  # type: ignore[import-untyped]  # noqa: F401,E501
+        Payment,
+    )
+    from models.permission import (  # type: ignore[import-untyped]  # noqa: F401,E501
+        Permission,
+    )
+    from models.subscription import (  # type: ignore[import-untyped]  # noqa: F401,E501
+        SubscriptionPlan,
+    )
+    from models.subscription_fsm import (  # type: ignore[import-untyped]  # noqa: F401,E501
+        SubscriptionFSM,
+    )
+    from models.unified_learning_record import (  # type: ignore[import-untyped]  # noqa: F401,E501
+        UnifiedLearningRecord,
+    )
     from models.user import User  # type: ignore[import-untyped]  # noqa: F401,E501
-    from models.ar_vr_content import ARVRContent  # type: ignore[import-untyped]  # noqa: F401,E501
-    from models.error_log import FrontendErrorLog  # type: ignore[import-untyped]  # noqa: F401,E501
-    from models.content_store import ContentItem  # type: ignore[import-untyped]  # noqa: F401,E501
-    from models.course_version import CourseVersion  # type: ignore[import-untyped]  # noqa: F401,E501
-    from models.dynamic_course import GeneratedCourse  # type: ignore[import-untyped]  # noqa: F401,E501
-    from models.hardware_certification import HardwareCertificationDB  # type: ignore[import-untyped]  # noqa: F401,E501
-    from models.hardware_module import HardwareModule  # type: ignore[import-untyped]  # noqa: F401,E501
-    from models.learning_source import LearningSource  # type: ignore[import-untyped]  # noqa: F401,E501
-    from models.payment import Payment  # type: ignore[import-untyped]  # noqa: F401,E501
-    from models.permission import Permission  # type: ignore[import-untyped]  # noqa: F401,E501
-    from models.subscription import SubscriptionPlan  # type: ignore[import-untyped]  # noqa: F401,E501
-    from models.subscription_fsm import SubscriptionFSM  # type: ignore[import-untyped]  # noqa: F401,E501
-    from models.unified_learning_record import UnifiedLearningRecord  # type: ignore[import-untyped]  # noqa: F401,E501
-    from models.user_license import UserLicense  # type: ignore[import-untyped]  # noqa: F401,E501
-    from models.user_organization import UserOrganization  # type: ignore[import-untyped]  # noqa: F401,E501
-    from models.ai_request import AIRequest  # type: ignore[import-untyped]  # noqa: F401,E501
-    from models.course import Course, CourseLesson, CourseAssignment  # type: ignore[import-untyped]  # noqa: F401,E501
-    from models.user_guardian import UserGuardian  # type: ignore[import-untyped]  # noqa: F401,E501
-    from modules.learning.models import StudentCourseAggregation  # type: ignore[import-not-found]  # noqa: F401,E501
+    from models.user_guardian import (  # type: ignore[import-untyped]  # noqa: F401,E501
+        UserGuardian,
+    )
+    from models.user_license import (  # type: ignore[import-untyped]  # noqa: F401,E501
+        UserLicense,
+    )
+    from models.user_organization import (  # type: ignore[import-untyped]  # noqa: F401,E501
+        UserOrganization,
+    )
+    from modules.learning.models import (  # type: ignore[import-not-found]  # noqa: F401,E501
+        StudentCourseAggregation,
+    )
+
     # fmt: on
 
     async with engine.begin() as conn:

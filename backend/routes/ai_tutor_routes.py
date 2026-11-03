@@ -13,7 +13,6 @@ from fastapi import (
     Depends,
     HTTPException,
 )
-
 from pydantic import BaseModel, Field
 
 from ..ai_service.ai_manager import AIManager
@@ -23,6 +22,7 @@ from ..middleware.permission_middleware import get_current_user
 from ..models.ai_completion import (
     CodeComplexity,
     CodeElement,
+    CodeExample,
     CodeGenerationRequest,
     DeepSeekExplainRequest,
     DeepSeekExplainResponse,
@@ -32,7 +32,6 @@ from ..models.ai_completion import (
     DeepSeekTutorResponse,
     ModelProvider,
     OptimizationImprovement,
-    CodeExample,
     ProgrammingLanguage,
 )
 from ..models.user import User

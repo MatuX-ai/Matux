@@ -5,10 +5,11 @@ Exam Models - 测验系统数据模型
 支持多种题型（单选、多选、判断、简答、编程题）
 """
 
-import enum
 from datetime import datetime
+import enum
 
 from sqlalchemy import (
+    JSON,
     Boolean,
     Column,
     DateTime,
@@ -16,13 +17,11 @@ from sqlalchemy import (
     Float,
     ForeignKey,
     Integer,
-    JSON,
     String,
     Text,
     func,
 )
 from sqlalchemy.orm import relationship
-
 from utils.database import Base
 
 

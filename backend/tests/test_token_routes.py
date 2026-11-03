@@ -3,14 +3,15 @@ Token 管理 API 路由测试
 验证 Token 相关的 RESTful API 功能
 """
 
-import pytest
-from fastapi.testclient import TestClient
-from sqlalchemy import create_engine
-from sqlalchemy.orm import sessionmaker
 from datetime import datetime
+
+from fastapi.testclient import TestClient
 
 # 导入主应用
 from main_ai_edu import app
+import pytest
+from sqlalchemy import create_engine
+from sqlalchemy.orm import sessionmaker
 
 # 测试数据库配置
 SQLALCHEMY_DATABASE_URL = "sqlite:///./test_token_routes.db"

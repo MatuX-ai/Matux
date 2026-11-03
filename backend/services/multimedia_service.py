@@ -10,9 +10,6 @@ from typing import Any, Dict, List
 import uuid
 
 import boto3
-from sqlalchemy import and_
-from sqlalchemy.orm import Session
-
 from database.tenant_aware_session import TenantQueryHelper
 from models.course import Course, CourseLesson
 from models.multimedia import (
@@ -24,6 +21,8 @@ from models.multimedia import (
     VideoStatus,
 )
 from models.user import User
+from sqlalchemy import and_
+from sqlalchemy.orm import Session
 
 logger = logging.getLogger(__name__)
 

@@ -8,7 +8,6 @@ from typing import Any, Dict, List, Optional
 
 from fastapi import APIRouter, HTTPException
 from pydantic import BaseModel
-
 from services.blockchain.service import blockchain_service
 
 logger = logging.getLogger(__name__)

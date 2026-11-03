@@ -7,11 +7,6 @@ import logging
 from typing import Optional, cast
 
 from fastapi import APIRouter, Body, Depends, HTTPException, Query
-from pydantic import BaseModel
-from sqlalchemy.orm import Session
-
-from utils.database import get_sync_db
-from models.user import User
 from models.token_schemas import (
     CostEstimateRequest,
     CostEstimateResponse,
@@ -23,8 +18,12 @@ from models.token_schemas import (
     TokenUsageRecordResponse,
     UserBalanceResponse,
 )
-from utils.dependencies import get_current_user_sync
+from models.user import User
+from pydantic import BaseModel
 from services.token_service import TokenService
+from sqlalchemy.orm import Session
+from utils.database import get_sync_db
+from utils.dependencies import get_current_user_sync
 
 logger = logging.getLogger(__name__)
 
@@ -172,8 +171,8 @@ async def get_usage_history(
         TokenUsageListResponse: 使用记录列表
     """
     try:
-        from sqlalchemy import desc
         from models.user_license import TokenUsageRecord
+        from sqlalchemy import desc
 
         # 查询总数
         query = db.query(TokenUsageRecord).filter(

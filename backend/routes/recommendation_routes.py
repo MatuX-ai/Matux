@@ -7,16 +7,15 @@ import logging
 from typing import Any, Dict, List, Optional, cast
 
 from fastapi import APIRouter, Body, Depends, HTTPException, Query
-from sqlalchemy import and_
-from sqlalchemy.orm import Session
-
-from utils.database import get_sync_db
 from models.user import User
-from utils.dependencies import get_current_user_sync
 from services.recommendation_service import (
     RecommendationService,
     get_recommendation_service,
 )
+from sqlalchemy import and_
+from sqlalchemy.orm import Session
+from utils.database import get_sync_db
+from utils.dependencies import get_current_user_sync
 
 logger = logging.getLogger(__name__)
 
@@ -348,9 +347,8 @@ async def get_recommendation_statistics(
     Returns:
         统计数据
     """
-    from sqlalchemy import func
-
     from models.recommendation import RecommendationRecord
+    from sqlalchemy import func
 
     try:
         # 总推荐数

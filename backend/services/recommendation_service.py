@@ -8,9 +8,6 @@ from datetime import datetime, timedelta
 import logging
 from typing import Any, Dict, List, Optional, Tuple
 
-from sqlalchemy import and_, or_
-from sqlalchemy.orm import Session
-
 from models.ai_edu_rewards import AIEduLesson, AIEduModule
 from models.recommendation import (
     CourseFeature,
@@ -19,6 +16,8 @@ from models.recommendation import (
     RecommendationRecord,
     UserLearningProfile,
 )
+from sqlalchemy import and_, or_
+from sqlalchemy.orm import Session
 
 logger = logging.getLogger(__name__)
 
@@ -118,10 +117,9 @@ class RecommendationService:
         Returns:
             技能分布字典 {skill_name: weight}
         """
-        from sqlalchemy import func
-
         from models.ai_edu_rewards import AIEduLearningProgress
         from models.course import CourseSkill
+        from sqlalchemy import func
 
         # 1. 查询用户已完成的课程
         completed_courses = (

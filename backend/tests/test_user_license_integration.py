@@ -6,9 +6,6 @@
 from datetime import datetime, timedelta
 from unittest.mock import Mock, patch
 
-import pytest
-from sqlalchemy.ext.asyncio import AsyncSession
-
 from middleware.permission_middleware import (
     LicensePermissionValidator,
     require_admin,
@@ -17,7 +14,9 @@ from middleware.permission_middleware import (
 from models.license import License, LicenseStatus, LicenseType, Organization
 from models.user import User, UserRole
 from models.user_license import UserLicense, UserLicenseStatus
+import pytest
 from services.user_license_service import user_license_service
+from sqlalchemy.ext.asyncio import AsyncSession
 
 
 @pytest.fixture

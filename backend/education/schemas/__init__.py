@@ -3,20 +3,20 @@
 """
 
 from .schedule_schema import (
-    CourseInfo,
-    TeacherInfo,
-    ClassroomInfo,
     ClassInfo,
+    ClassroomInfo,
     Constraint,
-    SchedulingConstraints,
+    CourseInfo,
+    CourseScheduleResponse,
+    ScheduleAdjustmentRequest,
+    ScheduleAdjustmentResponse,
+    ScheduleConflict,
     ScheduleGenerationOptions,
     ScheduleGenerationRequest,
-    ScheduleAdjustmentRequest,
-    ScheduleConflict,
-    CourseScheduleResponse,
     ScheduleGenerationResponse,
-    ScheduleAdjustmentResponse,
     ScheduleStatisticsResponse,
+    SchedulingConstraints,
+    TeacherInfo,
 )
 
 __all__ = [

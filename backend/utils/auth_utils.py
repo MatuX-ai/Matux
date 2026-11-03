@@ -5,14 +5,13 @@
 from datetime import datetime, timedelta
 from typing import Optional
 
+from config.settings import settings
 from fastapi import Depends, HTTPException, status
 from fastapi.security import OAuth2PasswordBearer
 from jose import JWTError, jwt
+from models.user import User
 from sqlalchemy import select
 from sqlalchemy.orm import Session
-
-from config.settings import settings
-from models.user import User
 from utils.database import get_db
 
 # OAuth2 scheme

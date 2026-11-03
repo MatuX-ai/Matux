@@ -10,22 +10,21 @@ Token 管理服务
 - 成本预估
 """
 
-import logging
-from typing import Optional, Dict, Any, List
 from datetime import datetime, timedelta
 from decimal import Decimal
+import logging
+from typing import Any, Dict, List, Optional
 
-from sqlalchemy.orm import Session
-from sqlalchemy import func
-
+from models.user import User
 from models.user_license import (
     TokenPackage,
     TokenPackageType,
-    UserTokenBalance,
     TokenRechargeRecord,
     TokenUsageRecord,
+    UserTokenBalance,
 )
-from models.user import User
+from sqlalchemy import func
+from sqlalchemy.orm import Session
 
 logger = logging.getLogger(__name__)
 
@@ -271,7 +270,7 @@ class TokenService:
         """
         from models.license import LicenseType
         from models.user_license import UserLicense
-        
+
         # 获取用户的许可证信息
         user_license = (
             self.db.query(UserLicense)

@@ -8,16 +8,15 @@ import logging
 from typing import Any, Dict, List, Optional
 import uuid
 
-from fastapi import APIRouter, BackgroundTasks, Depends, HTTPException, Query
-from pydantic import BaseModel
-from sqlalchemy import select
-from sqlalchemy.ext.asyncio import AsyncSession
-
 from ai_service.model_compressor import ModelCompressor
 from ai_service.transfer_learning_engine import TransferLearningEngine
 from config.transfer_learning_config import settings
+from fastapi import APIRouter, BackgroundTasks, Depends, HTTPException, Query
 from models.recommendation import PretrainedModel
+from pydantic import BaseModel
 from services.dataset_processor import AssistmentsDatasetProcessor
+from sqlalchemy import select
+from sqlalchemy.ext.asyncio import AsyncSession
 from utils.database import get_db
 
 logger = logging.getLogger(__name__)

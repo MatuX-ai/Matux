@@ -5,11 +5,10 @@
 
 from typing import AsyncGenerator, Generator
 
+from config.enterprise_settings import enterprise_settings
 from sqlalchemy import create_engine
 from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy.orm import Session, sessionmaker
-
-from config.enterprise_settings import enterprise_settings
 
 # 创建数据库引擎
 engine = create_engine(

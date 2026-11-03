@@ -8,9 +8,6 @@ from datetime import datetime, timedelta
 import logging
 from typing import Any, Dict, List, Optional, Tuple
 
-from sqlalchemy import and_, desc, func, or_
-from sqlalchemy.orm import Session
-
 from models.leaderboard import (
     LeaderboardPeriod,
     LeaderboardRecord,
@@ -20,6 +17,8 @@ from models.leaderboard import (
     UserStatistics,
 )
 from models.user import User
+from sqlalchemy import and_, desc, func, or_
+from sqlalchemy.orm import Session
 
 logger = logging.getLogger(__name__)
 

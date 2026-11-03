@@ -11,7 +11,6 @@ import logging
 from typing import Any, Dict, List
 
 from cryptography.hazmat.primitives.asymmetric import ed25519
-
 from models.verifiable_credential import (
     CredentialStatusType,
     CredentialSubject,

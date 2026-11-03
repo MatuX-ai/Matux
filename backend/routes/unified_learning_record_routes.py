@@ -7,9 +7,6 @@ import logging
 from typing import List, Optional
 
 from fastapi import APIRouter, Body, Depends, HTTPException, Path, Query
-from sqlalchemy.orm import Session
-
-from models.user import User
 from models.unified_learning_record import (
     LearningRecordStatus,
     UnifiedLearningRecord,
@@ -19,7 +16,9 @@ from models.unified_learning_record import (
     UnifiedLearningRecordUpdate,
     UnifiedProgressStats,
 )
+from models.user import User
 from services.unified_learning_record_service import UnifiedLearningRecordService
+from sqlalchemy.orm import Session
 from utils.auth_utils import get_current_user_sync
 from utils.database import get_sync_db
 

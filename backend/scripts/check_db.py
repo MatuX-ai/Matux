@@ -1,8 +1,10 @@
 """检查数据库表结构"""
-from sqlalchemy.ext.asyncio import create_async_engine, async_sessionmaker
-from sqlalchemy import text
 import asyncio
 import sys
+
+from sqlalchemy import text
+from sqlalchemy.ext.asyncio import async_sessionmaker, create_async_engine
+
 sys.path.insert(0, '.')
 
 

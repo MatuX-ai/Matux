@@ -3,20 +3,21 @@
 展示如何在实际项目中应用 Sentinel 熔断器保护第三方服务调用
 """
 
+import logging
+from typing import List, Optional
+
 from fastapi import APIRouter, Depends, HTTPException
 from sqlalchemy.orm import Session
-from typing import List, Optional
-import logging
 
-from backend.middleware.circuit_breaker import (
-    circuit_breaker,
-    CircuitBreakerManager,
-    CircuitBreakerConfig,
-    default_fallback_response,
-    cached_response_fallback
-)
-from backend.database import get_db
 from backend.core.security import get_current_user
+from backend.database import get_db
+from backend.middleware.circuit_breaker import (
+    CircuitBreakerConfig,
+    CircuitBreakerManager,
+    cached_response_fallback,
+    circuit_breaker,
+    default_fallback_response,
+)
 from backend.models.user import User
 
 logger = logging.getLogger(__name__)

@@ -4,12 +4,22 @@
 """
 
 from datetime import datetime
-from typing import Optional, List
-from sqlalchemy import Column, Integer, String, Float, DateTime, ForeignKey, Text, JSON, Enum
-from sqlalchemy.orm import relationship
 import enum
+from typing import List, Optional
 
 from database import Base
+from sqlalchemy import (
+    JSON,
+    Column,
+    DateTime,
+    Enum,
+    Float,
+    ForeignKey,
+    Integer,
+    String,
+    Text,
+)
+from sqlalchemy.orm import relationship
 
 
 class TransactionType(str, enum.Enum):

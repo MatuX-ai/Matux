@@ -3,16 +3,17 @@ Token 服务单元测试
 测试 Token 管理的核心业务逻辑
 """
 
-from models.user import User
-from services.token_service import TokenService
-from models.user_license import TokenPackage, TokenPackageType, UserTokenBalance
-import pytest
 from datetime import datetime, timedelta
-from sqlalchemy import create_engine
-from sqlalchemy.orm import sessionmaker
 
 # 使用 SQLite 内存数据库进行测试
 from config.settings import Settings
+from models.user import User
+from models.user_license import TokenPackage, TokenPackageType, UserTokenBalance
+import pytest
+from services.token_service import TokenService
+from sqlalchemy import create_engine
+from sqlalchemy.orm import sessionmaker
+
 settings = Settings()
 settings.DATABASE_URL = "sqlite:///:memory:"
 
@@ -34,7 +35,13 @@ def db_session():
     # 直接导入 Base 并创建所有需要的表
     from database import Base as DatabaseBase
     from models.user import User
-    from models.user_license import TokenPackage, TokenPackageType, UserTokenBalance, TokenRechargeRecord, TokenUsageRecord
+    from models.user_license import (
+        TokenPackage,
+        TokenPackageType,
+        TokenRechargeRecord,
+        TokenUsageRecord,
+        UserTokenBalance,
+    )
 
     # 创建所有表（不检查外键）
     DatabaseBase.metadata.create_all(bind=engine)

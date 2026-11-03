@@ -44,8 +44,8 @@ class SimpleBacktestValidator:
     def test_string_utils(self):
         """测试字符串工具函数"""
         from utils.string_utils import (
-            capitalize,
             camel_to_snake,
+            capitalize,
             is_empty,
             random_string,
             snake_to_camel,
@@ -62,13 +62,14 @@ class SimpleBacktestValidator:
 
     def test_date_utils(self):
         """测试日期工具函数"""
+        from datetime import datetime
+
         from utils.date_utils import (
             format_date,
             get_time_ago,
             is_leap_year,
             is_same_day,
         )
-        from datetime import datetime
 
         # 测试格式化
         now = datetime.now()
@@ -146,8 +147,9 @@ class SimpleBacktestValidator:
     def test_type_annotations(self):
         """测试类型注解完整性"""
         import inspect
-        from utils.string_utils import capitalize, is_empty
+
         from utils.date_utils import format_date
+        from utils.string_utils import capitalize, is_empty
 
         # 检查函数是否有类型注解
         capitalize_sig = inspect.signature(capitalize)

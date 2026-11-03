@@ -6,13 +6,13 @@
 
 import asyncio
 import logging
-from typing import Dict, List, Optional, Any
+from typing import Any, Dict, List, Optional
 
 from .module_registry import (
-    DatabaseModuleRegistry,
     DatabaseModule,
+    DatabaseModuleRegistry,
     ModuleMetadata,
-    get_database_registry
+    get_database_registry,
 )
 
 logger = logging.getLogger(__name__)

@@ -3,11 +3,11 @@
 定义创意想法、Prompt模板、评分等相关数据结构
 """
 
-from models.user import User
 from datetime import datetime
 from enum import Enum
 from typing import Any, Dict, List, Optional
 
+from models.user import User
 from pydantic import BaseModel, Field
 from sqlalchemy import (
     JSON,
@@ -21,7 +21,6 @@ from sqlalchemy import (
     Text,
 )
 from sqlalchemy.orm import relationship
-
 from utils.database import Base
 
 

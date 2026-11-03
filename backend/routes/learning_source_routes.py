@@ -7,8 +7,6 @@ import logging
 from typing import List, Optional
 
 from fastapi import APIRouter, Body, Depends, HTTPException, Path, Query
-from sqlalchemy.orm import Session
-
 from models.learning_source import (
     LearningSource,
     LearningSourceCreate,
@@ -20,6 +18,7 @@ from models.learning_source import (
 )
 from models.user import User
 from services.learning_source_service import LearningSourceService
+from sqlalchemy.orm import Session
 from utils.auth_utils import get_current_user_sync
 from utils.database import get_sync_db
 

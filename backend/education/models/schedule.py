@@ -1,10 +1,20 @@
 """
 课程排课表模型
 """
-from sqlalchemy import Column, Integer, String, Time, Date, ForeignKey, Boolean, DateTime
-from sqlalchemy.orm import relationship
-from database.session_base import Base
 from datetime import datetime
+
+from database.session_base import Base
+from sqlalchemy import (
+    Boolean,
+    Column,
+    Date,
+    DateTime,
+    ForeignKey,
+    Integer,
+    String,
+    Time,
+)
+from sqlalchemy.orm import relationship
 
 # 前向声明，避免循环导入
 type Course = 'Course'

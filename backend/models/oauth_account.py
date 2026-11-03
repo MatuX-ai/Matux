@@ -6,13 +6,20 @@ OAuth Account Model - 第三方登录账户关联
 """
 
 from datetime import datetime
-
-from sqlalchemy import Boolean, Column, DateTime, Enum, ForeignKey, Integer, String, func
-from sqlalchemy.orm import relationship
-
-from utils.database import Base
-
 import enum
+
+from sqlalchemy import (
+    Boolean,
+    Column,
+    DateTime,
+    Enum,
+    ForeignKey,
+    Integer,
+    String,
+    func,
+)
+from sqlalchemy.orm import relationship
+from utils.database import Base
 
 
 class OAuthProvider(str, enum.Enum):

@@ -11,9 +11,8 @@ import time
 from typing import Any, Dict, List
 
 from PIL import Image  # type: ignore[import-untyped]
-import httpx
-
 from config.settings import settings
+import httpx
 from models.creativity_models import (
     ImageGenerationRequest,
     ImageGenerationResponse,

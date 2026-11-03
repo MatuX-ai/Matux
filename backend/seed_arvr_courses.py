@@ -17,11 +17,10 @@ sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 
 from datetime import datetime
 
-from sqlalchemy import create_engine
-from sqlalchemy.orm import sessionmaker
-
 from config.settings import settings
 from models.ar_vr_content import ARVRContent, ARVRContentType, ARVRPlatform
+from sqlalchemy import create_engine
+from sqlalchemy.orm import sessionmaker
 
 
 def seed():

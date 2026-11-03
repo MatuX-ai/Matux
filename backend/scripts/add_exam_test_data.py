@@ -6,13 +6,14 @@
     python scripts/add_exam_test_data.py
 """
 
-from models.user import User
-from models.exam import Exam, Question, ExamStatus, QuestionType, ExamDifficulty
-from sqlalchemy.ext.asyncio import create_async_engine, async_sessionmaker
-from sqlalchemy import select, update
 import asyncio
-import sys
 from datetime import datetime, timedelta
+import sys
+
+from models.exam import Exam, ExamDifficulty, ExamStatus, Question, QuestionType
+from models.user import User
+from sqlalchemy import select, update
+from sqlalchemy.ext.asyncio import async_sessionmaker, create_async_engine
 
 sys.path.insert(0, ".")
 

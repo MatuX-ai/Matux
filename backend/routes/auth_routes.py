@@ -6,21 +6,20 @@ from datetime import datetime, timedelta
 from typing import Dict, List, Optional
 
 import bcrypt
+from config.settings import settings
 from fastapi import APIRouter, Depends, HTTPException, UploadFile, status
 from fastapi.security import OAuth2PasswordBearer, OAuth2PasswordRequestForm
 from jose import JWTError, jwt
-from pydantic import BaseModel, ConfigDict, Field, field_validator
-from sqlalchemy import select
-from sqlalchemy.ext.asyncio import AsyncSession
-
-from config.settings import settings
 from models.user import User, UserRole
+from pydantic import BaseModel, ConfigDict, Field, field_validator
 from services.permission_service import permission_service
 from services.user_bulk_import_service import (
     ConflictResolution,
     user_bulk_import_service,
 )
 from services.user_license_service import user_license_service
+from sqlalchemy import select
+from sqlalchemy.ext.asyncio import AsyncSession
 from utils.database import get_db
 from utils.decorators import admin_required, require_role
 

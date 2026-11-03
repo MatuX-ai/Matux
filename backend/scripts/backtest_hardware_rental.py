@@ -12,9 +12,6 @@ import sys
 # 添加项目路径
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 
-from sqlalchemy.ext.asyncio import AsyncSession, create_async_engine
-from sqlalchemy.orm import sessionmaker
-
 from config.settings import Settings
 from models.hardware_module import (
     Base,
@@ -26,6 +23,8 @@ from models.hardware_module import (
 )
 from models.user_license import UserLicense
 from services.hardware_inventory_service import hardware_inventory_service
+from sqlalchemy.ext.asyncio import AsyncSession, create_async_engine
+from sqlalchemy.orm import sessionmaker
 
 
 class HardwareRentalBacktest:

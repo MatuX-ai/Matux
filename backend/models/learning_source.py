@@ -3,15 +3,16 @@
 支持多种学习来源类型：学校统一课程、兴趣班、校外机构、自学等
 """
 
-from pydantic import BaseModel, Field
+from datetime import date, datetime
+import enum
+from typing import Any, Dict, Optional
+
 from models.course import CourseEnrollment
 from models.organization import Organization as OrgModel
 from models.user import User
-import enum
-from datetime import date, datetime
-from typing import Optional, Dict, Any
-
+from pydantic import BaseModel, Field
 from sqlalchemy import (
+    JSON,
     Boolean,
     Column,
     Date,
@@ -21,10 +22,8 @@ from sqlalchemy import (
     Integer,
     String,
     Text,
-    JSON,
 )
 from sqlalchemy.orm import relationship
-
 from utils.database import Base
 
 

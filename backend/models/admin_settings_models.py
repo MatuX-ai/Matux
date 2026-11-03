@@ -5,9 +5,9 @@ Admin 后台全局设置 Pydantic 模型定义
 对应前端 TypeScript 接口：src/app/admin/shared/models/api-settings.models.ts
 """
 
-from typing import List, Optional, Literal
-from pydantic import BaseModel, Field, HttpUrl, validator
+from typing import List, Literal, Optional
 
+from pydantic import BaseModel, Field, HttpUrl, validator
 
 # ==================== 配置项模型 ====================
 

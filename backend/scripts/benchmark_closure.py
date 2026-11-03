@@ -24,20 +24,19 @@
 
 import asyncio
 import logging
+from pathlib import Path
 import random
 import sys
 import time
-from pathlib import Path
 from typing import Any, Dict, List, Optional, Tuple
 
 sys.path.insert(0, str(Path(__file__).resolve().parent.parent))
 
-from sqlalchemy.ext.asyncio import AsyncSession
-from sqlalchemy import select, func, text
-
-from utils.database import AsyncSessionLocal, engine
-from models.courseware_clousure import CoursewareNode, CoursewareClosure
+from models.courseware_clousure import CoursewareClosure, CoursewareNode
 from repositories.courseware_repository import CoursewareRepository
+from sqlalchemy import func, select, text
+from sqlalchemy.ext.asyncio import AsyncSession
+from utils.database import AsyncSessionLocal, engine
 
 logging.basicConfig(
     level=logging.INFO,

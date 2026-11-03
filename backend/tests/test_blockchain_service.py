@@ -5,9 +5,8 @@
 import json
 from unittest.mock import MagicMock, patch
 
-import pytest
-
 from models.verifiable_credential import CredentialSubject, VerifiableCredential
+import pytest
 from services.blockchain.service import BlockchainService
 
 

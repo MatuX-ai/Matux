@@ -3,8 +3,8 @@ Token 管理 API 路由快速验证脚本
 验证 Token 相关的 RESTful API 端点
 """
 
-import sys
 from pathlib import Path
+import sys
 
 # 添加项目路径
 sys.path.insert(0, str(Path(__file__).parent.parent))
@@ -36,14 +36,14 @@ def test_token_schemas():
 
     try:
         from models.token_schemas import (
-            TokenPackageResponse,
+            CostEstimateRequest,
+            CostEstimateResponse,
             PurchaseTokenRequest,
             PurchaseTokenResponse,
-            UserBalanceResponse,
-            TokenUsageRecordResponse,
+            TokenPackageResponse,
             TokenStatsResponse,
-            CostEstimateRequest,
-            CostEstimateResponse
+            TokenUsageRecordResponse,
+            UserBalanceResponse,
         )
 
         print("✅ Token Schema 模型导入成功")
@@ -140,8 +140,9 @@ def test_token_service_integration():
     print("="*60)
 
     try:
-        from services.token_service import TokenService
         from unittest.mock import Mock
+
+        from services.token_service import TokenService
 
         # 创建 Mock 数据库会话
         mock_db = Mock()

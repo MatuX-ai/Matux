@@ -8,9 +8,8 @@ import random
 import time
 
 from fastapi import FastAPI
-import uvicorn
-
 from middleware.circuit_breaker import CircuitBreakerConfig, CircuitBreakerMiddleware
+import uvicorn
 
 app = FastAPI(title="熔断器测试应用", version="1.0.0")
 

@@ -8,12 +8,11 @@ from datetime import datetime, timedelta
 import logging
 from typing import Any, Dict, List, Optional
 
+from models.dynamic_course import BacktestResult, GeneratedCourse
 import numpy as np
 from scipy import stats
 from sqlalchemy import and_, desc, func, select
 from sqlalchemy.ext.asyncio import AsyncSession
-
-from models.dynamic_course import BacktestResult, GeneratedCourse
 
 logger = logging.getLogger(__name__)
 

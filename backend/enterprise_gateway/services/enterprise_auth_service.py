@@ -7,12 +7,11 @@ from datetime import datetime
 import logging
 from typing import Any, Dict, Optional
 
-from sqlalchemy.orm import Session
-
 from config.enterprise_settings import enterprise_settings
 from models.enterprise_models import EnterpriseAPILog, EnterpriseClient
 from services.device_whitelist_service import device_whitelist_service
 from services.enterprise_oauth_service import enterprise_oauth_service
+from sqlalchemy.orm import Session
 from utils.database import get_db
 from utils.security_utils import SecurityUtil
 

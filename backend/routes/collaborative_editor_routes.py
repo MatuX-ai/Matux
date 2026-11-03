@@ -18,8 +18,6 @@ from fastapi import (
     WebSocket,
     WebSocketDisconnect,
 )
-from sqlalchemy.orm import Session
-
 from middleware.tenant_middleware import require_tenant_access
 from models.collaborative_editor import (
     CollaborativeDocumentCreate,
@@ -38,6 +36,7 @@ from services.collaborative_editor_service import (
     CollaborativeEditorService,
     get_collaborative_editor_service,
 )
+from sqlalchemy.orm import Session
 from utils.auth_utils import get_current_user_sync
 from utils.database import get_sync_db
 

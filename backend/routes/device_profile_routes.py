@@ -5,9 +5,9 @@
 注意：实际设备评估在 Electron 主进程执行，后端仅提供数据转发和存储。
 """
 
+import json
 import logging
 import os
-import json
 from pathlib import Path
 from typing import Optional
 

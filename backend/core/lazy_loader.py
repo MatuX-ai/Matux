@@ -9,9 +9,9 @@
 """
 
 import asyncio
+from collections import defaultdict
 import logging
 import time
-from collections import defaultdict
 from typing import Any, Dict, List, Optional
 
 from fastapi import FastAPI
@@ -367,8 +367,8 @@ class ModuleLazyLoader:
         if self._breaker_registry is None:
             try:
                 from .module_circuit_breaker import (
-                    get_breaker_registry,
                     CircuitBreakerConfig,
+                    get_breaker_registry,
                     init_breaker_registry,
                 )
                 try:

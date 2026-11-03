@@ -8,12 +8,6 @@ from datetime import datetime
 import logging
 from typing import Any, Dict, List, Optional, Tuple
 
-import numpy as np
-import pandas as pd
-from scipy import stats
-from sklearn.linear_model import LinearRegression
-from sklearn.preprocessing import StandardScaler
-
 from config.edu_data_config import edu_config
 from models.edu_data_models import (
     EduAcademicPerformance,
@@ -21,6 +15,11 @@ from models.edu_data_models import (
     EduStudentDemographics,
     EduSubject,
 )
+import numpy as np
+import pandas as pd
+from scipy import stats
+from sklearn.linear_model import LinearRegression
+from sklearn.preprocessing import StandardScaler
 
 logger = logging.getLogger(__name__)
 

@@ -3,10 +3,11 @@ Token 计费系统数据库迁移测试脚本
 用于验证迁移脚本是否能正确执行
 """
 
-from config.settings import settings
-from sqlalchemy import create_engine, text, inspect
-import sys
 from pathlib import Path
+import sys
+
+from config.settings import settings
+from sqlalchemy import create_engine, inspect, text
 
 # 添加项目根目录到 Python 路径
 sys.path.insert(0, str(Path(__file__).parent.parent))

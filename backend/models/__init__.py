@@ -2,35 +2,7 @@
 数据库模型包
 """
 
-# 先导入基础模型（Organization, User 等）
-from .license import (
-    License,
-    LicenseActivityLog,
-    LicenseCreate,
-    LicenseResponse,
-    LicenseStatus,
-    LicenseType,
-    Organization as OrgPydantic,
-    OrganizationCreate,
-    OrganizationResponse,
-    OrganizationUpdate,
-)
-# SQLAlchemy Organization 模型（必须在其他模型之前导入）
-from .organization import Organization
-from .user import User, UserRole
-
-# 然后导入依赖基础模型的模型
-from .classroom import (
-    ClassSchedule,
-    ClassScheduleCreate,
-    ClassScheduleResponse,
-    Classroom,
-    ClassroomCreate,
-    ClassroomResponse,
-)
-from .sponsorship import Sponsorship  # 赞助模型，必须在Organization之后导入
 from .ai_request import AIRequest
-from .error_log import FrontendErrorLog, FrontendErrorLogResponse, FrontendErrorLogStats
 from .ar_vr_content import (
     ARVRContent,
     ARVRContentCreate,
@@ -48,6 +20,16 @@ from .ar_vr_content import (
     SensorDataCreate,
     SensorDataResponse,
     SensorType,
+)
+
+# 然后导入依赖基础模型的模型
+from .classroom import (
+    Classroom,
+    ClassroomCreate,
+    ClassroomResponse,
+    ClassSchedule,
+    ClassScheduleCreate,
+    ClassScheduleResponse,
 )
 from .content_store import (
     ContentAccessGrant,
@@ -81,6 +63,10 @@ from .course_version import (
     VersionBranch,
     VersionChange,
 )
+from .courseware_clousure import (
+    CoursewareClosure,
+    CoursewareNode,
+)
 from .dynamic_course import (
     BacktestResult,
     CourseComponentResponse,
@@ -92,6 +78,22 @@ from .dynamic_course import (
     GeneratedCourse,
     StudentProfileCreate,
     TemplateEvaluation,
+)
+from .error_log import FrontendErrorLog, FrontendErrorLogResponse, FrontendErrorLogStats
+from .finance import (
+    ConsumptionStatus,
+    ConsumptionType,
+    CourseConsumption,
+    CoursePricing,
+    FinancialTransaction,
+    PaymentMethod,
+    PaymentStatus,
+    PricingStrategy,
+    SalaryStatus,
+    TeacherSalary,
+    TransactionStatus,
+    TransactionType,
+    TuitionRecord,
 )
 from .hardware_certification import (
     BadgeConfig,
@@ -125,24 +127,23 @@ from .learning_source import (
     LearningSourceType,
     LearningSourceUpdate,
 )
-from .user_organization import (
-    UserOrganization,
-    UserOrganizationCreate,
-    UserOrganizationListResponse,
-    UserOrganizationResponse,
-    UserOrganizationRole,
-    UserOrganizationStatus,
-    UserOrganizationUpdate,
+
+# 先导入基础模型（Organization, User 等）
+from .license import (
+    License,
+    LicenseActivityLog,
+    LicenseCreate,
+    LicenseResponse,
+    LicenseStatus,
+    LicenseType,
+    Organization as OrgPydantic,
+    OrganizationCreate,
+    OrganizationResponse,
+    OrganizationUpdate,
 )
-from .unified_learning_record import (
-    LearningRecordStatus,
-    UnifiedLearningRecord,
-    UnifiedLearningRecordCreate,
-    UnifiedLearningRecordListResponse,
-    UnifiedLearningRecordResponse,
-    UnifiedLearningRecordUpdate,
-    UnifiedProgressStats,
-)
+
+# SQLAlchemy Organization 模型（必须在其他模型之前导入）
+from .organization import Organization
 from .payment import (
     Order,
     OrderStatus,
@@ -164,6 +165,12 @@ from .permission import (
 from .recommendation import (
     CourseFeature,
 )
+from .sponsorship import Sponsorship  # 赞助模型，必须在Organization之后导入
+from .student import (
+    Student,
+    StudentCreate,
+    StudentResponse,
+)
 from .subscription import (
     BillingCycle,
     SubscriptionCycle,
@@ -178,9 +185,24 @@ from .subscription_fsm import (
     create_subscription_fsm,
     process_subscription_lifecycle,
 )
+from .teacher import (
+    Teacher,
+    TeacherCreate,
+    TeacherResponse,
+)
+from .unified_learning_record import (
+    LearningRecordStatus,
+    UnifiedLearningRecord,
+    UnifiedLearningRecordCreate,
+    UnifiedLearningRecordListResponse,
+    UnifiedLearningRecordResponse,
+    UnifiedLearningRecordUpdate,
+    UnifiedProgressStats,
+)
 from .unified_material import (
     UnifiedMaterial,
 )
+from .user import User, UserRole
 from .user_license import (
     AssignUserLicenseRequest,
     HardwareRentalSummary,
@@ -194,34 +216,14 @@ from .user_license import (
     UserLicenseStatus,
     UserTokenBalance,
 )
-from .student import (
-    Student,
-    StudentCreate,
-    StudentResponse,
-)
-from .teacher import (
-    Teacher,
-    TeacherCreate,
-    TeacherResponse,
-)
-from .finance import (
-    FinancialTransaction,
-    TransactionType,
-    TransactionStatus,
-    PaymentMethod,
-    TuitionRecord,
-    PaymentStatus,
-    CoursePricing,
-    PricingStrategy,
-    TeacherSalary,
-    SalaryStatus,
-    CourseConsumption,
-    ConsumptionType,
-    ConsumptionStatus,
-)
-from .courseware_clousure import (
-    CoursewareNode,
-    CoursewareClosure,
+from .user_organization import (
+    UserOrganization,
+    UserOrganizationCreate,
+    UserOrganizationListResponse,
+    UserOrganizationResponse,
+    UserOrganizationRole,
+    UserOrganizationStatus,
+    UserOrganizationUpdate,
 )
 
 __all__ = [

@@ -11,7 +11,6 @@ from sqlalchemy import (
     Text,
 )
 from sqlalchemy.sql import func
-
 from utils.database import Base
 
 

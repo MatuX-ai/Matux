@@ -7,11 +7,10 @@ from datetime import datetime
 import logging
 from typing import List, Optional
 
-from fastapi import APIRouter, Depends, HTTPException, Query, status
-from pydantic import BaseModel
-
 from config.settings import settings
+from fastapi import APIRouter, Depends, HTTPException, Query, status
 from models.hardware_alert import AlertSeverity, AlertSource, AlertType
+from pydantic import BaseModel
 from services.hardware_alert_detection_service import HardwareAlertManager
 from services.hardware_alert_mqtt_service import HardwareAlertMQTTService, MQTTConfig
 

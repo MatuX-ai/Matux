@@ -3,18 +3,17 @@
 提供细粒度的功能访问控制和灵活的商业模式支持
 """
 
-from functools import wraps
 from datetime import datetime
-from typing import List, Callable, Optional, Dict, Any
-from fastapi import HTTPException, status, Depends
-from sqlalchemy.orm import Session
+from functools import wraps
+from typing import Any, Callable, Dict, List, Optional
 
-from models.license import LicenseType, LicenseStatus
-from models.user_license import UserLicense
-from utils.database import get_db
+from fastapi import Depends, HTTPException, status
 from middleware.auth import get_current_user
+from models.license import LicenseStatus, LicenseType
 from models.user import User
-
+from models.user_license import UserLicense
+from sqlalchemy.orm import Session
+from utils.database import get_db
 
 # ============================================
 # 权限矩阵定义

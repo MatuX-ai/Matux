@@ -9,8 +9,6 @@ import os
 from typing import Any, Dict, List
 
 import boto3
-from sqlalchemy.orm import Session
-
 from celery_app import celery_app
 from models.multimedia import (
     MediaTranscodingJob,
@@ -19,6 +17,7 @@ from models.multimedia import (
     VideoStatus,
 )
 from services.multimedia_service import StorageConfig
+from sqlalchemy.orm import Session
 from utils.database import get_db
 
 logger = logging.getLogger(__name__)

@@ -21,11 +21,10 @@ import logging
 from typing import Any, Dict, List, Optional
 
 from fastapi import APIRouter, Depends
+from models.error_log import FrontendErrorLog
 from pydantic import BaseModel, Field
 from sqlalchemy import and_, func, select
 from sqlalchemy.ext.asyncio import AsyncSession
-
-from models.error_log import FrontendErrorLog
 from utils.database import get_db
 
 logger = logging.getLogger(__name__)

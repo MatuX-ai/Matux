@@ -5,15 +5,14 @@
 所有操作均在事务中执行，确保节点表与闭包表的一致性。
 """
 
-import logging
 from datetime import datetime
+import logging
 from typing import List, Optional, Tuple
 
+from models.courseware_clousure import CoursewareClosure, CoursewareNode
 from sqlalchemy import and_, delete, func, select, text
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.orm import selectinload
-
-from models.courseware_clousure import CoursewareNode, CoursewareClosure
 
 logger = logging.getLogger(__name__)
 

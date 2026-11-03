@@ -8,7 +8,6 @@ Create Date: 2026-03-14 12:00:00.000000
 from alembic import op
 import sqlalchemy as sa
 
-
 # revision identifiers, used by Alembic.
 revision = 'add_token_billing'
 down_revision = 'ai_edu_001_create_ai_edu_tables'

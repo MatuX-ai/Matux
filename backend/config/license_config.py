@@ -3,8 +3,8 @@ Redis许可证存储配置模块
 提供Redis连接和许可证存储配置
 """
 
-import os
 from dataclasses import dataclass, field
+import os
 from typing import Optional
 
 

@@ -8,13 +8,11 @@ import logging
 from typing import Optional
 
 from fastapi import APIRouter, Depends, HTTPException, Query
-from sqlalchemy.ext.asyncio import AsyncSession
-
-from utils.database import get_db
 from schemas.courseware_closure import (
+    BatchDeleteResponse,
     BatchNodeCreate,
     BatchNodeCreateResponse,
-    BatchDeleteResponse,
+    ClosureValidationResult,
     CoursewareNodeCreate,
     CoursewareNodeListResponse,
     CoursewareNodeMove,
@@ -24,12 +22,13 @@ from schemas.courseware_closure import (
     CoursewareTreeNode,
     HierarchyResponse,
     LevelNodesResponse,
-    NodePath,
-    ClosureValidationResult,
     MigrationResult,
+    NodePath,
     RollbackResult,
 )
 from services.courseware_service import CoursewareService
+from sqlalchemy.ext.asyncio import AsyncSession
+from utils.database import get_db
 
 logger = logging.getLogger(__name__)
 

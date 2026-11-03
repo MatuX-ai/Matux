@@ -4,9 +4,8 @@
 
 from unittest.mock import AsyncMock, MagicMock, patch
 
-import pytest
-
 from models.payment import OrderStatus, PaymentMethod, PaymentStatus
+import pytest
 from services.payment_service import PaymentService
 
 

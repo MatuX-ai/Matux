@@ -7,9 +7,6 @@ from datetime import datetime, timedelta
 import logging
 from typing import Any, Dict, List, Optional
 
-from sqlalchemy import and_, func
-from sqlalchemy.orm import Session
-
 from models.license import Organization
 from models.sponsorship import (
     BrandExposure,
@@ -23,6 +20,8 @@ from models.sponsorship import (
     SponsorshipStatus,
     SponsorshipUpdate,
 )
+from sqlalchemy import and_, func
+from sqlalchemy.orm import Session
 from utils.redis_client import redis_client
 
 logger = logging.getLogger(__name__)

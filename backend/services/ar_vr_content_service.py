@@ -11,8 +11,6 @@ from typing import Any, Dict, List, Optional
 import zipfile
 
 import aiofiles
-from sqlalchemy.orm import Session
-
 from models.ar_vr_content import (
     ARVRContent,
     ARVRContentCreate,
@@ -20,6 +18,7 @@ from models.ar_vr_content import (
     ARVRContentUpdate,
 )
 from models.course import Course, CourseLesson
+from sqlalchemy.orm import Session
 from utils.file_storage import FileStorageManager
 
 logger = logging.getLogger(__name__)

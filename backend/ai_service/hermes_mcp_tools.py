@@ -5,13 +5,13 @@ Hermes Agent MCP 工具封装
 支持与本地或远程Hermes Agent服务集成
 """
 
+from dataclasses import dataclass
 import json
 import logging
 from typing import Any, Dict, List, Optional
-from dataclasses import dataclass
 
-from .hermes_agent_service import get_hermes_service, HermesAgentService
 from .ai_manager import AIManager, CodeGenerationRequest, ModelProvider
+from .hermes_agent_service import HermesAgentService, get_hermes_service
 
 logger = logging.getLogger("hermes_mcp_tools")
 

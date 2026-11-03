@@ -102,9 +102,8 @@ def test_database_connectivity():
     print("🔍 测试数据库连接...")
 
     try:
-        from sqlalchemy import create_engine
-
         from config.settings import settings
+        from sqlalchemy import create_engine
 
         # 测试SQLite连接（开发环境默认）
         engine = create_engine(settings.DATABASE_URL)

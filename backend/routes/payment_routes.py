@@ -6,12 +6,11 @@ import logging
 from typing import List, Optional
 
 from fastapi import APIRouter, Depends, HTTPException, Query
-from sqlalchemy.ext.asyncio import AsyncSession
-
 from models.payment import OrderStatus, PaymentMethod, PaymentStatus
 from models.user import User
 from routes.auth_routes import get_current_user
 from services.payment_service import PaymentService
+from sqlalchemy.ext.asyncio import AsyncSession
 from utils.database import get_db
 
 logger = logging.getLogger(__name__)
@@ -313,9 +312,8 @@ async def get_payment_status(
         db: 数据库会话
     """
     try:
-        from sqlalchemy import select
-
         from models.payment import Payment
+        from sqlalchemy import select
 
         result = await db.execute(
             select(Payment).where(

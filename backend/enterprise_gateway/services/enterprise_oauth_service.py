@@ -6,14 +6,13 @@
 import logging
 from typing import Any, Dict, Optional
 
-from sqlalchemy.orm import Session
-
 from config.enterprise_settings import enterprise_settings
 from models.enterprise_models import (
     EnterpriseClient,
     OAuthTokenRequest,
     OAuthTokenResponse,
 )
+from sqlalchemy.orm import Session
 from utils.database import get_db
 from utils.jwt_utils import JWTUtil
 from utils.security_utils import SecurityUtil

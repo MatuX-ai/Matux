@@ -6,17 +6,16 @@ import io
 from unittest.mock import AsyncMock, patch
 
 from fastapi import UploadFile
+from models.user import User, UserRole
 import pandas as pd
 import pytest
-from sqlalchemy.ext.asyncio import AsyncSession
-
-from models.user import User, UserRole
 from services.user_bulk_import_service import (
     ConflictResolution,
     ImportResult,
     UserBulkImportService,
     UserImportValidator,
 )
+from sqlalchemy.ext.asyncio import AsyncSession
 
 
 class TestUserImportValidator:

@@ -3,16 +3,15 @@
 提供OAuth2.0企业认证、设备白名单管理和API访问控制服务
 """
 
+from config.enterprise_settings import enterprise_settings
 from fastapi import FastAPI
 from fastapi.exceptions import RequestValidationError
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.openapi.utils import get_openapi
 from fastapi.responses import JSONResponse
-from starlette.exceptions import HTTPException as StarletteHTTPException
-
-from config.enterprise_settings import enterprise_settings
 from middleware.enterprise_auth_middleware import EnterpriseAuthMiddleware
 from routes import device_management_routes, enterprise_auth_routes, monitoring_routes
+from starlette.exceptions import HTTPException as StarletteHTTPException
 from utils.logger import setup_enterprise_logger
 
 

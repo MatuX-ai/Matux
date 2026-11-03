@@ -10,14 +10,13 @@ Exam Routes - 测验系统 API 端点
 """
 
 from fastapi import APIRouter, Depends, HTTPException, Query, status
-from pydantic import BaseModel, Field
-from sqlalchemy.ext.asyncio import AsyncSession
-
 from middleware.auth import get_current_user
-from models.exam import ExamStatus, AttemptStatus
+from models.exam import AttemptStatus, ExamStatus
 from models.user import User
+from pydantic import BaseModel, Field
 from services.anti_cheat_service import anti_cheat_service
 from services.exam_service import exam_service
+from sqlalchemy.ext.asyncio import AsyncSession
 from utils.database import get_db
 
 router = APIRouter(prefix="/api/v1/exams", tags=["测验系统"])

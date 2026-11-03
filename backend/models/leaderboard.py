@@ -7,6 +7,7 @@ and aggregated user statistics for the iMato learning platform.
 
 import enum
 
+from database.db import Base
 from sqlalchemy import (
     JSON,
     Column,
@@ -21,8 +22,6 @@ from sqlalchemy import (
 )
 from sqlalchemy.orm import relationship
 from sqlalchemy.sql import func as sql_func
-
-from database.db import Base
 
 
 class LeaderboardPeriod(str, enum.Enum):

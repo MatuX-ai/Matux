@@ -6,10 +6,9 @@ from datetime import datetime
 from unittest.mock import Mock, patch
 
 from fastapi.testclient import TestClient
-import pytest
-
 from main import app
 from models.license import LicenseStatus, LicenseType
+import pytest
 
 client = TestClient(app)
 

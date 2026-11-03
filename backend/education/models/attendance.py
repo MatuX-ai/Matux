@@ -2,10 +2,19 @@
 iMato 教育培训管理系统 - 签到记录模型
 """
 
-from sqlalchemy import Column, String, DateTime, ForeignKey, Integer, Boolean, Enum as SQLEnum
-from sqlalchemy.orm import relationship
 from datetime import datetime
 import enum
+
+from sqlalchemy import (
+    Boolean,
+    Column,
+    DateTime,
+    Enum as SQLEnum,
+    ForeignKey,
+    Integer,
+    String,
+)
+from sqlalchemy.orm import relationship
 
 from backend.database import Base
 

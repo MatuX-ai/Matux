@@ -9,26 +9,25 @@
 - 批量操作
 """
 
-import logging
 from datetime import datetime
+import logging
 from typing import Any, Dict, List, Optional
-
-from sqlalchemy.ext.asyncio import AsyncSession
 
 from repositories.courseware_repository import CoursewareRepository
 from schemas.courseware_closure import (
     AncestorNode,
     BatchNodeCreate,
     BatchNodeCreateResponse,
-    CoursewareNodeResponse,
-    CoursewareTreeNode,
     ClosureValidationResult,
+    CoursewareNodeResponse,
+    CoursewareSubtreeResponse,
+    CoursewareTreeNode,
     DescendantNode,
     HierarchyResponse,
     LevelNodesResponse,
     NodePath,
-    CoursewareSubtreeResponse,
 )
+from sqlalchemy.ext.asyncio import AsyncSession
 
 logger = logging.getLogger(__name__)
 

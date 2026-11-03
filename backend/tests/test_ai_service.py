@@ -5,9 +5,8 @@ AI服务后端测试用例
 from unittest.mock import AsyncMock, patch
 
 from fastapi.testclient import TestClient
-import pytest
-
 from main import app
+import pytest
 
 client = TestClient(app)
 

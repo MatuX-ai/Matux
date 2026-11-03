@@ -9,7 +9,6 @@ from typing import Any, Dict, Optional
 
 from fastapi import APIRouter, Depends, HTTPException
 from pydantic import BaseModel, HttpUrl
-
 from services.vircadia_avatar_sync_impl import (
     AvatarMetadataExtractor,
     AvatarURLValidator,

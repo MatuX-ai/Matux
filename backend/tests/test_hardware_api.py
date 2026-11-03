@@ -10,12 +10,11 @@ import sys
 # 添加项目根目录到Python路径
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 
-from sqlalchemy.ext.asyncio import AsyncSession, create_async_engine
-from sqlalchemy.orm import sessionmaker
-
 from config.settings import Settings
 from models.hardware_module import Base, HardwareModule, HardwareModuleStatus
 from services.hardware_inventory_service import hardware_inventory_service
+from sqlalchemy.ext.asyncio import AsyncSession, create_async_engine
+from sqlalchemy.orm import sessionmaker
 
 
 async def test_hardware_module_creation():

@@ -8,9 +8,8 @@ import json
 import logging
 from typing import Any, Dict, Optional
 
-import redis
-
 from config.license_config import load_sentinel_config
+import redis
 
 logger = logging.getLogger(__name__)
 

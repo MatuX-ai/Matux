@@ -9,9 +9,8 @@ import time
 from unittest.mock import Mock, patch
 
 from fastapi.testclient import TestClient
-import pytest
-
 from main import app
+import pytest
 
 client = TestClient(app)
 

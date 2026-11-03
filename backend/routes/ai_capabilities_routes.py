@@ -9,11 +9,10 @@ import time
 from typing import Any, Dict, List, Optional
 
 from fastapi import APIRouter, Depends, HTTPException, status
-from pydantic import BaseModel, Field
-from sqlalchemy.orm import Session
-
 from models.user import User
+from pydantic import BaseModel, Field
 from services.performance_monitor import performance_monitor
+from sqlalchemy.orm import Session
 from utils.dependencies import get_current_user_sync, get_sync_db
 
 logger = logging.getLogger(__name__)

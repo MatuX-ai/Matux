@@ -7,9 +7,6 @@ from datetime import datetime, timedelta
 import logging
 from typing import Any, Dict, List, Optional
 
-from sqlalchemy import and_, or_
-from sqlalchemy.orm import Session
-
 from models.achievement import (
     DEFAULT_ACHIEVEMENTS,
     Achievement,
@@ -19,6 +16,8 @@ from models.achievement import (
     UserAchievement,
 )
 from models.user import User
+from sqlalchemy import and_, or_
+from sqlalchemy.orm import Session
 
 logger = logging.getLogger(__name__)
 

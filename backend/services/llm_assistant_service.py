@@ -7,8 +7,8 @@ from datetime import datetime
 import logging
 from typing import Any, Dict, List, Optional
 
-from sqlalchemy.orm import Session
 from fastapi import HTTPException
+from sqlalchemy.orm import Session
 
 logger = logging.getLogger(__name__)
 
