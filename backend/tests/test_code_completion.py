@@ -3,14 +3,14 @@ from unittest.mock import AsyncMock, MagicMock, patch
 
 import pytest
 
-from backend.ai_service.completion_memory import CompletionMemory
-from backend.models.ai_completion import (
+from ai_service.completion_memory import CompletionMemory
+from models.ai_completion import (
     CompletionRequest,
     CompletionSuggestion,
     ModelProvider,
     ProgrammingLanguage,
 )
-from backend.services.code_completion_service import CodeCompletionService
+from services.code_completion_service import CodeCompletionService
 
 
 class TestCodeCompletionService:
@@ -63,7 +63,7 @@ class TestCodeCompletionService:
     ):
         """测试缓存命中情况"""
         with patch(
-            "backend.ai_service.completion_memory.completion_memory"
+            "ai_service.completion_memory.completion_memory"
         ) as mock_memory:
             mock_memory.get_cached_completion.return_value = (
                 [
@@ -190,7 +190,7 @@ class TestCompletionMemory:
     @pytest.mark.asyncio
     async def test_add_user_history(self, completion_memory):
         """测试添加用户历史记录"""
-        from backend.models.ai_completion import UserHistoryRecord
+        from models.ai_completion import UserHistoryRecord
 
         record = UserHistoryRecord(
             user_id=1,
@@ -200,7 +200,7 @@ class TestCompletionMemory:
         )
 
         with patch(
-            "backend.database.tenant_aware_session.get_db_session"
+            "database.tenant_aware_session.get_db_session"
         ) as mock_session:
             mock_db = AsyncMock()
             mock_session.return_value.__aenter__.return_value = mock_db
@@ -215,7 +215,7 @@ class TestCompletionMemory:
     async def test_get_user_patterns(self, completion_memory):
         """测试获取用户模式"""
         with patch(
-            "backend.database.tenant_aware_session.get_db_session"
+            "database.tenant_aware_session.get_db_session"
         ) as mock_session:
             mock_db = AsyncMock()
             mock_session.return_value.__aenter__.return_value = mock_db
@@ -243,7 +243,7 @@ class TestCompletionMemory:
         confidence_scores = [0.95]
 
         with patch(
-            "backend.database.tenant_aware_session.get_db_session"
+            "database.tenant_aware_session.get_db_session"
         ) as mock_session:
             mock_db = AsyncMock()
             mock_session.return_value.__aenter__.return_value = mock_db
@@ -259,7 +259,7 @@ class TestCompletionMemory:
     async def test_get_cached_completion(self, completion_memory):
         """测试获取缓存的补全结果"""
         with patch(
-            "backend.database.tenant_aware_session.get_db_session"
+            "database.tenant_aware_session.get_db_session"
         ) as mock_session:
             mock_db = AsyncMock()
             mock_session.return_value.__aenter__.return_value = mock_db

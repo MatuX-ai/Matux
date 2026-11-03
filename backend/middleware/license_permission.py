@@ -9,10 +9,12 @@ from typing import List, Callable, Optional, Dict, Any
 from fastapi import HTTPException, status, Depends
 from sqlalchemy.orm import Session
 
-from backend.models.license import LicenseType, License, LicenseStatus
-from backend.database import get_db
-from backend.core.security import get_current_user
-from backend.models.user import User
+# 与仓库主流风格保持一致：使用顶层绝对导入（from models.X / from utils.X），
+# 避免 backend. 前缀造成同一模块被解析成两个身份
+from models.license import LicenseType, License, LicenseStatus
+from utils.database import get_db
+from middleware.auth import get_current_user
+from models.user import User
 
 
 # ============================================

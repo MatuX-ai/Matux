@@ -8,14 +8,14 @@ from datetime import datetime, timedelta
 from unittest.mock import Mock, MagicMock, AsyncMock
 from fastapi import HTTPException
 
-from backend.middleware.license_permission import (
+from middleware.license_permission import (
     LicensePermissionService,
     require_license_type,
     require_feature,
     PERMISSION_MATRIX,
     UPGRADE_SUGGESTIONS
 )
-from backend.models.license import LicenseType, License, LicenseStatus
+from models.license import LicenseType, License, LicenseStatus
 
 
 class TestLicensePermissionService:

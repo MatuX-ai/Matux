@@ -107,7 +107,7 @@ class TestDynamicCourseGenerator:
 
     def test_init_success(self):
         """测试初始化成功"""
-        with patch("backend.ai_service.dynamic_course.AsyncOpenAI") as mock_openai:
+        with patch("ai_service.dynamic_course.AsyncOpenAI") as mock_openai:
             generator = DynamicCourseGenerator()
             assert generator.client is not None
             assert len(generator.course_templates) > 0
@@ -208,7 +208,7 @@ class TestDynamicCourseGenerator:
     async def test_call_openai_success(self, mock_openai_response):
         """测试调用OpenAI API成功"""
         with patch(
-            "backend.ai_service.dynamic_course.AsyncOpenAI"
+            "ai_service.dynamic_course.AsyncOpenAI"
         ) as mock_openai_class:
             mock_client = AsyncMock()
             mock_response = AsyncMock()
@@ -236,7 +236,7 @@ class TestDynamicCourseGenerator:
     async def test_call_openai_failure(self):
         """测试调用OpenAI API失败"""
         with patch(
-            "backend.ai_service.dynamic_course.AsyncOpenAI"
+            "ai_service.dynamic_course.AsyncOpenAI"
         ) as mock_openai_class:
             mock_client = AsyncMock()
             mock_client.chat.completions.create.side_effect = Exception("API调用失败")
@@ -335,7 +335,7 @@ class TestDynamicCourseAPI:
     ):
         """测试课程生成API成功"""
         with patch(
-            "backend.routes.dynamic_course_routes.dynamic_course_generator"
+            "routes.dynamic_course_routes.dynamic_course_generator"
         ) as mock_generator:
             # 模拟生成器行为
             mock_response = MagicMock()
@@ -355,13 +355,13 @@ class TestDynamicCourseAPI:
             mock_generator.validate_request.return_value = True
 
             # 模拟数据库会话
-            with patch("backend.utils.database.get_db") as mock_get_db:
+            with patch("utils.database.get_db") as mock_get_db:
                 mock_db = AsyncMock()
                 mock_get_db.return_value.__aenter__.return_value = mock_db
 
                 # 模拟用户认证
                 with patch(
-                    "backend.routes.auth_routes.get_current_user"
+                    "routes.auth_routes.get_current_user"
                 ) as mock_get_user:
                     mock_user = MagicMock()
                     mock_user.id = 1
@@ -433,7 +433,7 @@ class TestDynamicCourseAPI:
 
     def test_get_course_history_success(self, mock_user_token):
         """测试获取课程历史成功"""
-        with patch("backend.utils.database.get_db") as mock_get_db:
+        with patch("utils.database.get_db") as mock_get_db:
             mock_db = AsyncMock()
             mock_get_db.return_value.__aenter__.return_value = mock_db
 
@@ -452,7 +452,7 @@ class TestDynamicCourseAPI:
 
     def test_get_course_stats_success(self, mock_user_token):
         """测试获取统计信息成功"""
-        with patch("backend.utils.database.get_db") as mock_get_db:
+        with patch("utils.database.get_db") as mock_get_db:
             mock_db = AsyncMock()
             mock_get_db.return_value.__aenter__.return_value = mock_db
 
@@ -497,7 +497,7 @@ class TestIntegration:
 
         # 2. 生成动态课程
         with patch(
-            "backend.ai_service.dynamic_course.DynamicCourseGenerator._call_openai"
+            "ai_service.dynamic_course.DynamicCourseGenerator._call_openai"
         ) as mock_call:
             mock_call.return_value = mock_openai_response
 

@@ -9,15 +9,15 @@ import unittest
 import numpy as np
 import pandas as pd
 
-from backend.analytics.stem_analyzer import STEMCapabilityAnalyzer
-from backend.data.edu_data_standardization import EduDataProtocol, EduDataStandardizer
-from backend.models.edu_data_models import EduAcademicPerformance
-from backend.security.edu_privacy_protection import (
+from analytics.stem_analyzer import STEMCapabilityAnalyzer
+from data.edu_data_standardization import EduDataProtocol, EduDataStandardizer
+from models.edu_data_models import EduAcademicPerformance
+from security.edu_privacy_protection import (
     DataAnonymization,
     DifferentialPrivacyEngine,
     SecureAggregation,
 )
-from backend.utils.data_masking import DataMaskingService, DataQualityChecker
+from utils.data_masking import DataMaskingService, DataQualityChecker
 
 
 class TestDataMaskingService(unittest.TestCase):

@@ -9,7 +9,7 @@ from datetime import datetime
 from unittest.mock import AsyncMock, Mock, patch
 from typing import Dict, Any
 
-from backend.middleware.circuit_breaker import (
+from middleware.circuit_breaker import ( 
     CircuitBreaker,
     CircuitBreakerConfig,
     CircuitState,

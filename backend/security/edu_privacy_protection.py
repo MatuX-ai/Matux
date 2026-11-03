@@ -12,7 +12,7 @@ from typing import Any, Dict, List, Optional, Tuple
 import numpy as np
 import torch
 
-from ..config.edu_data_config import edu_config
+from config.edu_data_config import edu_config
 
 logger = logging.getLogger(__name__)
 
