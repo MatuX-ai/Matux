@@ -121,7 +121,7 @@ def print_troubleshooting_tips(base_url: str):
     print("-" * 80)
     print("1. 确认后端服务已启动:")
     print("   cd g:\\iMato\\backend")
-    print("   python main_ai_edu_full.py")
+    print("   python main_ai_edu.py")
     print("\n2. 检查端口是否被占用:")
     print(f"   netstat -ano | findstr :{port}")
     print("\n3. 检查防火墙设置:")

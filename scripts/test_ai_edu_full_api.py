@@ -137,7 +137,7 @@ for i, test in enumerate(test_cases, 1):
         
     except requests.exceptions.ConnectionError:
         print(f"  ❌ 连接失败 - 无法连接到 {url}")
-        print(f"  💡 提示：请确保后端服务已启动 (python main_ai_edu_full.py)")
+        print(f"  💡 提示：请确保后端服务已启动 (python main_ai_edu.py)")
         results.append({
             'name': test['name'],
             'success': False,
