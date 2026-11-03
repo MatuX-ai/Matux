@@ -34,7 +34,7 @@ jobs:
       run: npm run lint:scss-check || true
       
     - name: Prettier format check
-      run: npm run format:check || true
+      run: npm run format:check
       
     - name: Build test
       run: npx ng build --configuration=production
@@ -61,7 +61,7 @@ jobs:
       run: black --check backend/ || true
       
     - name: isort import check
-      run: isort --check-only backend/ || true
+      run: isort --check-only backend/
       
     - name: Flake8 linting
       run: flake8 backend/ || true
