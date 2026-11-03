@@ -3,13 +3,23 @@
 使用Pydantic BaseSettings管理环境变量
 """
 
+import logging
 import os
 import secrets
 import sys
+from pathlib import Path
 from typing import Optional
 
 from pydantic import field_validator, Field
 from pydantic_settings import BaseSettings, SettingsConfigDict
+
+logger = logging.getLogger(__name__)
+
+# 应用环境变量文件（backend/.env）的绝对路径
+# 说明：pydantic-settings 的 env_file 若使用相对路径，是相对于「当前工作目录」
+# 解析的 —— 从仓库根目录启动后端时 .env 会静默失效（配置全部退回默认值）。
+# 这里固定为基于 __file__ 的绝对路径，保证任意 CWD 下配置加载行为一致。
+ENV_FILE_PATH = str(Path(__file__).resolve().parent.parent / ".env")
 
 
 class Settings(BaseSettings):
@@ -226,7 +236,7 @@ class Settings(BaseSettings):
     # Pydantic v2 配置
     # ========================================================================
     model_config = SettingsConfigDict(
-        env_file=".env",
+        env_file=ENV_FILE_PATH,
         env_file_encoding="utf-8",
         case_sensitive=True,
         extra="ignore",  # 忽略额外的环境变量
@@ -417,9 +427,14 @@ def get_settings() -> Settings:
 # 如果需要延迟初始化，使用 get_settings() 函数
 try:
     # 仅在非测试环境中立即初始化
-    if "pytest" not in sys.modules and "test" not in os.getenv("", ""):
-        settings = Settings()
-    else:
-        settings = None
+    settings = Settings()
 except Exception:
-    settings = None
+    # 【P1修复】配置加载失败必须显式暴露：静默降级为 settings=None 会让下游
+    # 模块拿到 None 后抛出 'NoneType' has no attribute 之类的误导性错误。
+    logger.error(
+        "Settings 初始化失败：无法加载应用配置（env_file=%s）。"
+        "已终止启动，避免以静默失效的默认配置继续运行。",
+        ENV_FILE_PATH,
+        exc_info=True,
+    )
+    raise

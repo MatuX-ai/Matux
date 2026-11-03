@@ -143,23 +143,32 @@ module = [
 disallow_untyped_defs = false
 disallow_incomplete_defs = false
 
+# =============================================================================
+# pytest 配置说明
+# =============================================================================
+# pytest 的唯一配置源为 backend/pytest.ini（单一配置源）。
+# 本文件不再声明 backend/pytest.ini 中已有的 pythonpath / testpaths /
+# python_files / markers / addopts，避免双配置互相覆盖，原因：
+#   1. 双配置打架：根配置曾通过 testpaths 额外拉入根目录下的 tests/，
+#      而 backend/pytest.ini 的配置均以 rootdir=backend 为基准，
+#      两份配置叠加时 rootdir 与收集范围互相覆盖；
+#   2. 根配置 addopts 里的 --cov=backend 依赖 pytest-cov，未安装时
+#      pytest 直接以 usage error（EXIT=4）退出，无法给出任何有效信息；
+#   3. 根目录 tests/ 目录下的用例与 backend/tests/ 不同源，
+#      混入会导致用例数与失败数在不同 CWD 下对不上（多出 8 项）。
+#
+# 仓库根目录不是测试入口：此处仅保留两条最小护栏，
+#   - norecursedirs: 禁止从根目录递归收集子目录；
+#   - --noconftest: 不加载 conftest.py。
+# 二者共同保证误在仓库根执行 pytest 时得到明确的 "no tests collected"（EXIT=5），
+# 而不是 usage error（EXIT=4）或全仓库递归扫描触发的 INTERNALERROR
+# （pytest 会无条件加载锚点目录下 test* 子目录的 conftest.py，
+#   而根目录 tests/conftest.py 中的 pytest_xdist_setupnodes 钩子在未安装
+#   pytest-xdist 时会触发 PluginValidationError）。
+# 正确的执行方式：cd backend && pytest（配置见 backend/pytest.ini）。
 [tool.pytest.ini_options]
-minversion = "7.0"
-addopts = "-ra -q --tb=short --strict-markers --cov=backend --cov-report=term-missing --cov-report=html"
-testpaths = [
-    "backend/tests",
-    "tests"
-]
-markers = [
-    "slow: marks tests as slow",
-    "integration: marks tests as integration tests",
-    "unit: marks tests as unit tests",
-]
-filterwarnings = [
-    "error",
-    "ignore::DeprecationWarning",
-    "ignore::PendingDeprecationWarning",
-]
+addopts = "--noconftest"
+norecursedirs = ["*"]
 
 [tool.coverage.run]
 source = ["backend"]
