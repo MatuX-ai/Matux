@@ -1,7 +1,7 @@
 """测试不同账号"""
 import requests
 
-BASE_URL = "http://localhost:8002"
+BASE_URL = "http://localhost:8000"
 
 # 测试不同账号
 accounts = [

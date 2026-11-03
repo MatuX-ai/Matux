@@ -2,7 +2,7 @@
 import requests
 import traceback
 
-BASE_URL = "http://localhost:8002"
+BASE_URL = "http://localhost:8000"
 
 print("=== 调试注册 ===")
 try:
