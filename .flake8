@@ -1,0 +1,26 @@
+[flake8]
+# 仓库唯一的 flake8 配置源。
+# flake8 只识别 setup.cfg / tox.ini / .flake8，不读取 pyproject.toml 的 [tool.flake8]，
+# 因此本文件必须放在仓库根，且 CI 需从仓库根执行 flake8。
+max-line-length = 88
+max-complexity = 10
+select = E,W,F,C,B
+extend-ignore =
+    E203,
+    E501,
+    W503,
+    B008
+exclude =
+    .git,
+    __pycache__,
+    dist,
+    build,
+    .venv,
+    venv,
+    marketing_api/venv,
+    migrations,
+    alembic
+per-file-ignores =
+    __init__.py:F401
+    tests/*:S101,T201
+    */conftest.py:S101

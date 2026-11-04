@@ -84,41 +84,6 @@ no_lines_before = ["LOCALFOLDER"]
 force_sort_within_sections = true
 combine_as_imports = true
 
-[tool.flake8]
-max-line-length = 88
-max-complexity = 10
-select = [
-    "E",      # pycodestyle errors
-    "W",      # pycodestyle warnings
-    "F",      # pyflakes
-    "I",      # isort
-    "C",      # mccabe
-    "B",      # flake8-bugbear
-    "Q",      # flake8-quotes
-    "T20",    # flake8-print
-]
-extend-ignore = [
-    "E203",   # whitespace before ':'
-    "E501",   # line too long (handled by black)
-    "W503",   # line break before binary operator
-    "C901",   # function is too complex (handled separately)
-]
-exclude = [
-    ".git",
-    "__pycache__",
-    "dist",
-    "build",
-    ".venv",
-    "venv",
-    "migrations",
-    "alembic",
-]
-per-file-ignores = [
-    "__init__.py:F401",           # imported but unused in __init__.py
-    "tests/*:S101,T201",          # asserts and prints in tests
-    "*/conftest.py:S101",         # asserts in conftest
-]
-
 [tool.mypy]
 python_version = "3.8"
 warn_return_any = true
