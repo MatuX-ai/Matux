@@ -5,12 +5,11 @@ OpenHydra AI 沙箱环境集成测试
 
 import asyncio
 
-from httpx import ASGITransport, AsyncClient
-import pytest
-
-from main import app
-from services.openhydra_service import ContainerConfig, OpenHydraService
 from config.settings import settings
+from httpx import ASGITransport, AsyncClient
+from main import app
+import pytest
+from services.openhydra_service import ContainerConfig, OpenHydraService
 
 
 class TestOpenHydraIntegration:

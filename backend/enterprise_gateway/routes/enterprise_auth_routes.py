@@ -4,8 +4,6 @@
 """
 
 from fastapi import APIRouter, Depends, HTTPException, status
-from sqlalchemy.orm import Session
-
 from models.enterprise_models import (
     EnterpriseClientCreate,
     EnterpriseClientUpdate,
@@ -13,6 +11,7 @@ from models.enterprise_models import (
     OAuthTokenResponse,
 )
 from services.enterprise_oauth_service import enterprise_oauth_service
+from sqlalchemy.orm import Session
 from utils.database import get_db
 
 router = APIRouter()

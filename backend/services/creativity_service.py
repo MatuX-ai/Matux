@@ -8,8 +8,6 @@ from datetime import datetime
 import logging
 from typing import Any, Dict, List, Optional
 
-from sqlalchemy import text
-
 from ai_service.business_evaluator import business_evaluator
 from ai_service.creativity_engine import creativity_engine
 from ai_service.idea_scorer import idea_scorer
@@ -22,6 +20,7 @@ from models.creativity_models import (
     IdeaScoreRequest,
     ImageGenerationRequest,
 )
+from sqlalchemy import text
 from utils.database import get_sync_db
 
 logger = logging.getLogger(__name__)

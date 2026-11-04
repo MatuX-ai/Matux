@@ -6,8 +6,6 @@
 from datetime import datetime, timedelta
 from decimal import Decimal
 
-import pytest
-
 from models.hardware_module import (
     DamageLevel,
     HardwareModule,
@@ -15,6 +13,7 @@ from models.hardware_module import (
     ModuleRentalStatus,
 )
 from models.user_license import UserLicense
+import pytest
 
 
 class TestDamageCompensationProcess:

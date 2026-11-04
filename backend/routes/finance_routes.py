@@ -5,10 +5,10 @@
 
 from datetime import datetime
 from typing import Optional
-from fastapi import APIRouter, Depends, HTTPException
-from sqlalchemy.ext.asyncio import AsyncSession
 import uuid
 
+from fastapi import APIRouter, Depends, HTTPException
+from sqlalchemy.ext.asyncio import AsyncSession
 
 router = APIRouter(prefix="/api/v1/finance", tags=["财务管理"])
 
@@ -16,6 +16,7 @@ router = APIRouter(prefix="/api/v1/finance", tags=["财务管理"])
 # ==================== Pydantic 模型 ====================
 
 from pydantic import BaseModel
+
 
 class SalaryCalculateRequest(BaseModel):
     teacher_id: int

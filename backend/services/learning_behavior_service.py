@@ -10,9 +10,6 @@ import logging
 import statistics
 from typing import Any, Dict, List, Optional
 
-from sqlalchemy import and_
-from sqlalchemy.orm import Session
-
 from models.learning_behavior import (
     BehaviorAnalyticsRequest,
     BehaviorCategory,
@@ -22,6 +19,8 @@ from models.learning_behavior import (
     LearningBehaviorSummary,
     LearningBehaviorUpdate,
 )
+from sqlalchemy import and_
+from sqlalchemy.orm import Session
 
 logger = logging.getLogger(__name__)
 

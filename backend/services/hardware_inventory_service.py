@@ -5,11 +5,10 @@
 
 from typing import Optional
 
+from models.hardware_module import HardwareModule, HardwareModuleStatus
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.future import select
 from sqlalchemy.orm import selectinload
-
-from models.hardware_module import HardwareModule, HardwareModuleStatus
 from utils.logger import setup_logger
 
 logger = setup_logger("INFO")

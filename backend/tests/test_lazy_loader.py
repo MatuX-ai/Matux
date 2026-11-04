@@ -4,15 +4,15 @@
 测试 ModuleLazyLoader 的注册、激活、状态管理、并发安全
 """
 
-from core.module_spec import ModuleSpec, ModuleState, ModuleTier
-from core.lazy_loader import ModuleLazyLoader, ModuleActivationError
 import asyncio
-import sys
 import os
+import sys
 from unittest.mock import AsyncMock, MagicMock, patch
 
+from core.lazy_loader import ModuleActivationError, ModuleLazyLoader
+from core.module_spec import ModuleSpec, ModuleState, ModuleTier
+from fastapi import APIRouter, FastAPI
 import pytest
-from fastapi import FastAPI, APIRouter
 
 # 确保 backend 目录在 sys.path 中
 _backend_dir = os.path.abspath(os.path.join(os.path.dirname(__file__), ".."))
@@ -396,7 +396,7 @@ class TestGlobalInstance:
 
     def test_init_and_get_lazy_loader(self, app):
         """测试初始化和获取全局实例"""
-        from core.lazy_loader import init_lazy_loader, get_lazy_loader
+        from core.lazy_loader import get_lazy_loader, init_lazy_loader
 
         loader = init_lazy_loader(app)
 

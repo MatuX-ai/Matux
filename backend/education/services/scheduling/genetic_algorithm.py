@@ -14,10 +14,10 @@
 7. 返回最优解
 """
 
-from typing import List, Dict, Tuple, Optional
-import random
 from datetime import time
 import logging
+import random
+from typing import Dict, List, Optional, Tuple
 
 logger = logging.getLogger(__name__)
 

@@ -4,24 +4,24 @@
 """
 
 import asyncio
+from contextlib import asynccontextmanager
 import signal
 import sys
-from contextlib import asynccontextmanager
+
+from config.settings import Settings
+from database import init_registry_manager
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import JSONResponse
-
-from config.settings import Settings
 from middleware import (
     APMMiddleware,
-    init_apm,
-    PermissionMiddleware,
-    LicenseMiddleware,
-    license_exception_handler,
     CircuitBreakerConfig,
-    CircuitBreakerMiddleware
+    CircuitBreakerMiddleware,
+    LicenseMiddleware,
+    PermissionMiddleware,
+    init_apm,
+    license_exception_handler,
 )
-from database import init_registry_manager
 from utils.database import create_db_and_tables
 from utils.logger import setup_logger
 

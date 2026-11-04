@@ -6,9 +6,6 @@ AI-Edu 协作学习服务
 import logging
 from typing import Any, Dict, List, Optional
 
-from sqlalchemy import and_, asc, desc, func, or_
-from sqlalchemy.orm import Session
-
 from models.collaboration import (
     CollaborativeDocument,
     CommentLike,
@@ -28,6 +25,8 @@ from models.collaboration import (
     StudyProject,
 )
 from models.user import User
+from sqlalchemy import and_, asc, desc, func, or_
+from sqlalchemy.orm import Session
 
 logger = logging.getLogger(__name__)
 

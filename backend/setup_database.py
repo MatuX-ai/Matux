@@ -383,6 +383,7 @@ if __name__ == "__main__":
         print("=" * 60)
         try:
             import asyncio as _asyncio
+
             from scripts.seed_demo_data import seed_test_student_data
             _asyncio.run(seed_test_student_data())
         except Exception as e:

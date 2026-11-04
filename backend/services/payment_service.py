@@ -7,12 +7,11 @@ import logging
 from typing import Any, Dict, List, Optional
 import uuid
 
-from sqlalchemy import func, select
-from sqlalchemy.ext.asyncio import AsyncSession
-
 from models.payment import Order, OrderStatus, Payment, PaymentMethod, PaymentStatus
 from models.user import User
 from models.user_license import TokenPackage, TokenRechargeRecord, UserTokenBalance
+from sqlalchemy import func, select
+from sqlalchemy.ext.asyncio import AsyncSession
 
 logger = logging.getLogger(__name__)
 
@@ -119,6 +118,7 @@ class PaymentService:
         """
         try:
             from sqlalchemy import select
+
             # 获取订单信息
             result = await db.execute(select(Order).where(Order.order_id == order_id))
             order = result.scalar_one_or_none()

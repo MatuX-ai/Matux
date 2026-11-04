@@ -22,10 +22,10 @@ Admin 后台 AR/VR 课程管理 API 路由
 Author: Admin 后台补齐
 """
 
+from datetime import datetime
 import logging
 import os
 import shutil
-from datetime import datetime
 from typing import Any, Dict, List, Optional
 
 import aiofiles
@@ -39,10 +39,6 @@ from fastapi import (
     UploadFile,
     status,
 )
-from pydantic import BaseModel, Field
-from sqlalchemy import and_, func, or_, select
-from sqlalchemy.ext.asyncio import AsyncSession
-
 from middleware.auth import get_current_user
 from models.ar_vr_content import (
     ARVRContent,
@@ -52,6 +48,9 @@ from models.ar_vr_content import (
     ARVRPlatform,
 )
 from models.user import User, UserRole
+from pydantic import BaseModel, Field
+from sqlalchemy import and_, func, or_, select
+from sqlalchemy.ext.asyncio import AsyncSession
 from utils.database import get_db
 
 logger = logging.getLogger(__name__)

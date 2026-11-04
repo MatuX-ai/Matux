@@ -7,9 +7,8 @@ from datetime import datetime
 from unittest.mock import patch
 
 from fastapi.testclient import TestClient
-import pytest
-
 from main import app
+import pytest
 from services.blockchain.gateway_service import blockchain_gateway_service
 
 client = TestClient(app)

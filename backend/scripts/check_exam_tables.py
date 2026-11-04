@@ -1,7 +1,9 @@
 """检查exam相关表"""
+import sys
+
 from sqlalchemy import text
 from utils.database import get_sync_db
-import sys
+
 sys.path.insert(0, '.')
 
 

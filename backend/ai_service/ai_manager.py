@@ -5,12 +5,12 @@ AI管理器 - 统一管理各种AI模型的调用
 import time
 from typing import Any, Dict, Optional
 
+from config.settings import settings
 import httpx
 from langchain_core.messages import HumanMessage, SystemMessage
 from langchain_openai import ChatOpenAI
-
-from config.settings import settings
 from utils.logger import get_logger
+
 from .models import (
     CodeGenerationRequest,
     CodeGenerationResponse,

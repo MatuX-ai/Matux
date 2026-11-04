@@ -8,14 +8,10 @@ import logging
 from typing import Callable, List, Optional
 
 from fastapi import HTTPException, Request
-from fastapi.security import (  # noqa: F401,E501
-    HTTPAuthorizationCredentials, HTTPBearer
-)
+from fastapi.security import HTTPAuthorizationCredentials, HTTPBearer  # noqa: F401,E501
+from services.license_service import LicenseService  # type: ignore[import-untyped]
 from starlette.middleware.base import BaseHTTPMiddleware
 from starlette.responses import JSONResponse
-
-from services.license_service import \
-    LicenseService  # type: ignore[import-untyped]
 from utils.database import AsyncSessionLocal  # type: ignore[import-untyped]
 
 logger = logging.getLogger(__name__)

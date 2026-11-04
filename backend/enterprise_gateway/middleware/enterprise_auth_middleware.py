@@ -9,9 +9,8 @@ from typing import Awaitable, Callable
 
 from fastapi import HTTPException, Request, Response, status
 from fastapi.responses import JSONResponse
-from starlette.middleware.base import BaseHTTPMiddleware
-
 from services.enterprise_auth_service import enterprise_auth_service
+from starlette.middleware.base import BaseHTTPMiddleware
 from utils.logger import log_security_event
 from utils.security_utils import SecurityUtil
 

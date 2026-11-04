@@ -3,13 +3,13 @@
 用于创建测试账号和预置数据
 """
 
-import logging
 from datetime import datetime
-from sqlalchemy.ext.asyncio import AsyncSession
-from sqlalchemy import select
+import logging
 
+from models.license import License, LicenseStatus, LicenseType, Organization
 from models.user import User, UserRole
-from models.license import Organization, License, LicenseType, LicenseStatus
+from sqlalchemy import select
+from sqlalchemy.ext.asyncio import AsyncSession
 
 logger = logging.getLogger(__name__)
 

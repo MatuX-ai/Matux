@@ -12,15 +12,14 @@ from typing import Optional
 
 from fastapi import APIRouter, Depends, HTTPException, Query
 from pydantic import BaseModel
-
 from services.opensciedu_service import (
+    CourseCategory,
     CourseDetail,
     CourseListResponse,
-    CourseCategory,
     KnowledgeGraphData,
+    OpenSciEDUService,
     SearchResult,
     get_opensciedu_service,
-    OpenSciEDUService,
 )
 
 logger = logging.getLogger(__name__)

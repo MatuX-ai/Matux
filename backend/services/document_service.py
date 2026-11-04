@@ -12,11 +12,10 @@ from PIL import Image
 from docx import Document
 import fitz  # PyMuPDF
 import markdown
-from pptx import Presentation
-from sqlalchemy.orm import Session
-
 from models.multimedia import DocumentFormat, MediaType, MultimediaResource
+from pptx import Presentation
 from services.multimedia_service import StorageConfig
+from sqlalchemy.orm import Session
 
 logger = logging.getLogger(__name__)
 

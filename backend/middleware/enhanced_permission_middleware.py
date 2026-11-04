@@ -8,9 +8,8 @@ from typing import Awaitable, Callable, List, Optional
 
 from fastapi import HTTPException, Request, status
 from fastapi.responses import JSONResponse
-from starlette.middleware.base import BaseHTTPMiddleware
-
 from models.user import User, UserRole
+from starlette.middleware.base import BaseHTTPMiddleware
 from utils.database import get_sync_db
 from utils.tenant_context import TenantContext
 
@@ -204,9 +203,8 @@ class EnhancedPermissionMiddleware(BaseHTTPMiddleware):
             # 这里需要查询用户所属的组织
             # 简化实现：假设通过数据库查询验证
             try:
-                from sqlalchemy import select
-
                 from models.license import Organization
+                from sqlalchemy import select
 
                 # 使用同步数据库会话
                 db_gen = get_sync_db()
@@ -360,9 +358,8 @@ class EnhancedPermissionMiddleware(BaseHTTPMiddleware):
         token = auth_header[7:]  # 移除 'Bearer ' 前缀
 
         try:
-            from jose import jwt
-
             from config.settings import settings
+            from jose import jwt
 
             payload = jwt.decode(
                 token, settings.SECRET_KEY, algorithms=[settings.ALGORITHM]
@@ -373,9 +370,9 @@ class EnhancedPermissionMiddleware(BaseHTTPMiddleware):
                 return None
 
             # 使用异步数据库查询
-            from utils.database import AsyncSessionLocal
-            from sqlalchemy import select
             from models.user import User
+            from sqlalchemy import select
+            from utils.database import AsyncSessionLocal
             
             async with AsyncSessionLocal() as db:
                 stmt = select(User).filter(
@@ -400,9 +397,9 @@ class EnhancedPermissionMiddleware(BaseHTTPMiddleware):
             组织ID，如果找不到则返回 None
         """
         try:
-            from utils.database import AsyncSessionLocal
-            from sqlalchemy import select
             from models.license import UserLicense
+            from sqlalchemy import select
+            from utils.database import AsyncSessionLocal
             
             async with AsyncSessionLocal() as db:
                 # 查找用户的第一个有效许可证对应的组织

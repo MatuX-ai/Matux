@@ -2,8 +2,9 @@
 API 测试脚本
 快速测试 MatuX Marketing API 的基本功能
 """
-import requests
 import json
+
+import requests
 
 BASE_URL = "http://localhost:8000"
 

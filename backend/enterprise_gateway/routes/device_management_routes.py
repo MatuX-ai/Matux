@@ -7,10 +7,9 @@ from datetime import datetime
 from typing import List
 
 from fastapi import APIRouter, Depends, HTTPException, Query, status
-from sqlalchemy.orm import Session
-
 from models.enterprise_models import DeviceApprovalRequest, DeviceWhitelistUpdate
 from services.device_whitelist_service import device_whitelist_service
+from sqlalchemy.orm import Session
 from utils.database import get_db
 from utils.security_utils import SecurityUtil
 

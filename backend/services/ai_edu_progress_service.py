@@ -7,10 +7,6 @@ from datetime import datetime, timedelta
 import logging
 from typing import Any, Dict, List, Optional
 
-from pydantic import BaseModel, Field
-from sqlalchemy import and_, func
-from sqlalchemy.orm import Session
-
 from models.ai_edu_rewards import (
     AIEduLearningProgress,
     AIEduLesson,
@@ -18,6 +14,9 @@ from models.ai_edu_rewards import (
     AIEduPointsTransaction,
 )
 from models.recommendation import UserLearningProfile
+from pydantic import BaseModel, Field
+from sqlalchemy import and_, func
+from sqlalchemy.orm import Session
 
 logger = logging.getLogger(__name__)
 

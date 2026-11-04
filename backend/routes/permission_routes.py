@@ -11,13 +11,12 @@ from datetime import datetime
 from typing import List, Optional
 
 from fastapi import APIRouter, Depends, HTTPException, Query, status
-from pydantic import BaseModel
-from sqlalchemy.ext.asyncio import AsyncSession
-
 from models.permission import Permission, Role, UserRoleAssignment
 from models.user import User, UserRole
+from pydantic import BaseModel
 from routes.auth_routes import get_current_user
 from services.permission_service import permission_service
+from sqlalchemy.ext.asyncio import AsyncSession
 from utils.database import get_db
 from utils.decorators import admin_required, require_permission
 

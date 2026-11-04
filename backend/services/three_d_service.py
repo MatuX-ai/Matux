@@ -8,12 +8,11 @@ import logging
 import os
 from typing import Any, Dict, List
 
+from models.multimedia import MediaType, MultimediaResource
 from pygltflib import GLTF2
+from services.multimedia_service import StorageConfig
 from sqlalchemy.orm import Session
 import trimesh
-
-from models.multimedia import MediaType, MultimediaResource
-from services.multimedia_service import StorageConfig
 
 logger = logging.getLogger(__name__)
 

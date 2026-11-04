@@ -6,10 +6,9 @@
 from unittest.mock import AsyncMock, Mock, patch
 
 from fastapi import HTTPException
-import pytest
-
 from models.permission import Permission, Role, UserRoleAssignment
 from models.user import User, UserRole
+import pytest
 from services.permission_service import permission_service
 from utils.decorators import admin_required, require_permission, require_role
 

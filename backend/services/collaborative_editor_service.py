@@ -8,8 +8,6 @@ import logging
 from typing import Any, Dict, List, Optional, Tuple
 
 from fastapi import Depends
-from sqlalchemy.orm import Session
-
 from models.collaborative_editor import (
     CollaborativeDocument,
     CollaborativeDocumentCreate,
@@ -22,6 +20,7 @@ from models.collaborative_editor import (
     DocumentSuggestionCreate,
 )
 from models.user import User
+from sqlalchemy.orm import Session
 from utils.database import get_sync_db
 
 logger = logging.getLogger(__name__)

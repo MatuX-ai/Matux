@@ -32,7 +32,9 @@ except ImportError:
 
 from .apm_middleware import APMMiddleware
 from .apm_monitoring import init_apm
-from .enhanced_permission_middleware import EnhancedPermissionMiddleware as PermissionMiddleware
+from .enhanced_permission_middleware import (
+    EnhancedPermissionMiddleware as PermissionMiddleware,
+)
 from .license_middleware import LicenseMiddleware, license_exception_handler
 
 __all__ = [

@@ -4,14 +4,13 @@
 """
 
 from fastapi import APIRouter, Depends, HTTPException, status
-from sqlalchemy.ext.asyncio import AsyncSession
-
 from modules.learning.aggregation_service import course_aggregation_service
 from modules.learning.models import (
+    AggregatedCourseListResponse,
     CourseSyncRequest,
     CourseSyncResponse,
-    AggregatedCourseListResponse,
 )
+from sqlalchemy.ext.asyncio import AsyncSession
 from utils.database import get_db
 
 router = APIRouter(prefix="/api/v1/courses", tags=["课程聚合"])

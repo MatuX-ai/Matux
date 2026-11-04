@@ -8,7 +8,6 @@ import logging
 from typing import Any, Dict
 
 from fastapi import APIRouter, Body, HTTPException, status
-
 from models.admin_settings_models import (
     AiServiceConfig,
     ApiSettingsResponse,

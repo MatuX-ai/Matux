@@ -8,12 +8,11 @@ import asyncio
 import json
 import logging
 import os
-import time
 from pathlib import Path
+import time
 from typing import Any, Dict, Optional
 
 import aiohttp
-
 from models.admin_settings_models import (
     AiServiceConfig,
     CeleryConfig,
@@ -238,7 +237,7 @@ class AdminSettingsService:
             # 尝试导入异步 PostgreSQL 驱动
             try:
                 import asyncpg
-                
+
                 # 构建连接字符串
                 ssl_mode = "require" if config.ssl else "prefer"
                 connection_url = (
@@ -288,7 +287,7 @@ class AdminSettingsService:
         """
         try:
             import psycopg2
-            
+
             # 建立连接
             conn = psycopg2.connect(
                 host=config.host,

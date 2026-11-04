@@ -8,11 +8,10 @@ from typing import Awaitable, Callable, List
 
 from fastapi import HTTPException, Request, status
 from fastapi.responses import JSONResponse
-from sqlalchemy.ext.asyncio import AsyncSession
-from starlette.middleware.base import BaseHTTPMiddleware
-
 from models.user import User, UserRole
 from services.user_license_service import user_license_service
+from sqlalchemy.ext.asyncio import AsyncSession
+from starlette.middleware.base import BaseHTTPMiddleware
 
 logger = logging.getLogger(__name__)
 

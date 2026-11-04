@@ -10,10 +10,9 @@ import re
 import time
 from typing import Any, Dict
 
+from config.sponsorship_config import get_sponsorship_config
 from fastapi import Depends, HTTPException, Request
 from fastapi.security import HTTPAuthorizationCredentials, HTTPBearer
-
-from config.sponsorship_config import get_sponsorship_config
 
 security_config = get_sponsorship_config().security
 

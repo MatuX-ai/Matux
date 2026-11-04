@@ -2,7 +2,7 @@
 教育业务服务层模块
 """
 
-from .scheduling import GeneticSchedulingAlgorithm, ConflictDetector, SchedulingService
+from .scheduling import ConflictDetector, GeneticSchedulingAlgorithm, SchedulingService
 
 __all__ = [
     'GeneticSchedulingAlgorithm',

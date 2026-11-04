@@ -7,9 +7,6 @@ import logging
 from typing import List, Optional
 
 from fastapi import APIRouter, Depends, File, Form, HTTPException, Query, UploadFile
-from sqlalchemy.orm import Session
-from starlette.responses import HTMLResponse
-
 from models.multimedia import (
     DocumentFormat,
     DocumentProcessingRequest,
@@ -28,6 +25,8 @@ from models.user import User
 from services.document_service import DocumentProcessingService
 from services.multimedia_service import MultimediaService
 from services.three_d_service import ThreeDModelService
+from sqlalchemy.orm import Session
+from starlette.responses import HTMLResponse
 from utils.dependencies import get_current_user_sync, get_sync_db
 from utils.tenant_context import get_current_tenant
 

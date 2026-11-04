@@ -8,8 +8,6 @@ import json
 import logging
 from typing import Any, Dict, List, Optional
 
-from sqlalchemy.orm import Session
-
 from models.tenant_config import (
     DEFAULT_FEATURE_FLAGS,
     DEFAULT_RESOURCE_QUOTAS,
@@ -23,6 +21,7 @@ from models.tenant_config import (
     TenantResourceQuota,
 )
 from models.user import User, UserRole
+from sqlalchemy.orm import Session
 
 logger = logging.getLogger(__name__)
 

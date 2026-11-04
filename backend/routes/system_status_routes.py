@@ -103,8 +103,8 @@ async def get_module_status(module_name: str):
 async def activate_module(module_name: str):
     """手动激活指定模块"""
     try:
-        from core.lazy_loader import get_lazy_loader, ModuleActivationError
         from config.settings import settings
+        from core.lazy_loader import ModuleActivationError, get_lazy_loader
 
         loader = get_lazy_loader()
 

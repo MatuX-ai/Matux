@@ -12,6 +12,7 @@
 """
 
 import logging
+
 from sqlalchemy import create_engine, text
 from sqlalchemy.orm import sessionmaker
 
@@ -22,6 +23,7 @@ def get_database_url():
     """从配置获取数据库URL"""
     try:
         from config.settings import settings
+
         # 返回同步数据库URL
         db_url = settings.DATABASE_URL
         # 如果是 aiosqlite，转换为普通 sqlite

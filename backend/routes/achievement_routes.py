@@ -7,13 +7,12 @@ import logging
 from typing import Any, Dict, List, Optional
 
 from fastapi import APIRouter, Body, Depends, HTTPException, Query
-from sqlalchemy.orm import Session
-
-from utils.database import get_sync_db
 from models.achievement import Achievement, AchievementCategory, AchievementType
 from models.user import User
-from utils.dependencies import get_current_user_sync
 from services.achievement_service import AchievementService, get_achievement_service
+from sqlalchemy.orm import Session
+from utils.database import get_sync_db
+from utils.dependencies import get_current_user_sync
 
 logger = logging.getLogger(__name__)
 
@@ -359,9 +358,8 @@ async def get_current_progress(
     Returns:
         进度数据
     """
-    from sqlalchemy import and_
-
     from models.achievement import AchievementProgress
+    from sqlalchemy import and_
 
     try:
         query = db.query(AchievementProgress).filter(

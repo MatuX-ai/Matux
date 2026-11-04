@@ -7,13 +7,12 @@ import logging
 from typing import Any, Dict, List, Optional
 
 from fastapi import APIRouter, Depends, HTTPException, Query
-from sqlalchemy.orm import Session
-
-from utils.database import get_sync_db
 from models.leaderboard import LeaderboardPeriod, LeaderboardType
 from models.user import User
-from utils.dependencies import get_current_user_sync
 from services.leaderboard_service import LeaderboardService, get_leaderboard_service
+from sqlalchemy.orm import Session
+from utils.database import get_sync_db
+from utils.dependencies import get_current_user_sync
 
 logger = logging.getLogger(__name__)
 

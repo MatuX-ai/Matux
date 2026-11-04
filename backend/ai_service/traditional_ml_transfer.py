@@ -9,6 +9,7 @@ import logging
 import os
 from typing import Any, Dict, List
 
+from config.transfer_learning_config import settings
 import joblib
 import numpy as np
 import pandas as pd
@@ -18,8 +19,6 @@ from sklearn.linear_model import LogisticRegression
 from sklearn.metrics import accuracy_score, precision_recall_fscore_support
 from sklearn.model_selection import train_test_split
 from sklearn.preprocessing import StandardScaler
-
-from config.transfer_learning_config import settings
 
 logger = logging.getLogger(__name__)
 

@@ -6,7 +6,6 @@ Celery任务监控API路由
 from typing import Optional
 
 from fastapi import APIRouter, Depends, Query
-
 from services.celery_monitoring import (
     CeleryMonitoringService,
     get_celery_monitoring_service,

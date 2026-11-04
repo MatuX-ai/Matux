@@ -6,15 +6,14 @@
 import logging
 from typing import List
 
+from config.settings import settings
 from fastapi import Depends, HTTPException, status
 from fastapi.security import HTTPAuthorizationCredentials, HTTPBearer
 import jwt
-from sqlalchemy import select
-from sqlalchemy.ext.asyncio import AsyncSession
-
-from config.settings import settings
 from models.user import User, UserRole
 from services.permission_service import permission_service
+from sqlalchemy import select
+from sqlalchemy.ext.asyncio import AsyncSession
 from utils.database import get_db
 
 logger = logging.getLogger(__name__)

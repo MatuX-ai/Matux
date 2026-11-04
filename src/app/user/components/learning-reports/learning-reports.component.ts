@@ -115,11 +115,9 @@ export class LearningReportsComponent implements OnInit, OnDestroy {
     if (!report) {
       // 【P3-1 修复】原逻辑在没有选中报告时静默 return，导致用户点击后无任何反馈。
       //   现在给出明确提示，并自动 fallback 到打印整个报告页（用户可下载为 PDF）。
-      this.snackBar.open(
-        '当前未选中报告，已为你打开打印对话框（可“另存为 PDF”）',
-        '关闭',
-        { duration: 3000 }
-      );
+      this.snackBar.open('当前未选中报告，已为你打开打印对话框（可“另存为 PDF”）', '关闭', {
+        duration: 3000,
+      });
       this.printReport();
       return;
     }

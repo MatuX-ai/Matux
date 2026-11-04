@@ -8,16 +8,15 @@ import logging
 import math
 from typing import Any, Dict, List, Optional, Tuple
 
-import numpy as np
-from sqlalchemy.orm import Session
-
 from models.ar_vr_content import (
     ARVRContent,
     ARVRInteractionLog,
     ARVRProgressTracking,
     InteractionMode,
 )
+import numpy as np
 from services.ar_vr_content_service import ARVRContentService
+from sqlalchemy.orm import Session
 
 logger = logging.getLogger(__name__)
 

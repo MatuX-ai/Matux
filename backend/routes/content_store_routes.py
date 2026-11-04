@@ -6,10 +6,8 @@ from datetime import datetime
 import logging
 from typing import Any, Dict, List, Optional
 
-from fastapi import APIRouter, Body, Depends, HTTPException, Path, Query
-from sqlalchemy.ext.asyncio import AsyncSession
-
 from ai_service.recommendation_service import RecommendationEngine
+from fastapi import APIRouter, Body, Depends, HTTPException, Path, Query
 from models.content_store import (
     ContentCategory,
     ContentItem,
@@ -26,6 +24,7 @@ from models.subscription import SubscriptionStatus, UserSubscription
 from models.user import User
 from routes.auth_routes import get_current_user
 from services.drm_service import get_drm_service
+from sqlalchemy.ext.asyncio import AsyncSession
 from utils.database import get_db
 
 logger = logging.getLogger(__name__)

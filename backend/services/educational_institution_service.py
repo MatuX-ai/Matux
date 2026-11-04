@@ -7,14 +7,13 @@ from datetime import date, datetime
 import logging
 from typing import Any, Dict, List, Optional
 
-from sqlalchemy import and_, or_
-from sqlalchemy.orm import Session
-
 from models.classroom import Classroom, ClassSchedule
 from models.course import Course, CourseEnrollment
 from models.student import Student
 from models.teacher import Teacher, TeacherCreate
 from models.user import User, UserRole
+from sqlalchemy import and_, or_
+from sqlalchemy.orm import Session
 
 logger = logging.getLogger(__name__)
 

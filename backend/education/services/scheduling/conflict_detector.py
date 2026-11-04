@@ -9,9 +9,9 @@
 - 容量冲突 (班级人数超过教室容量)
 """
 
-from typing import List, Dict, Set, Tuple
 from collections import defaultdict
 import logging
+from typing import Dict, List, Set, Tuple
 
 logger = logging.getLogger(__name__)
 

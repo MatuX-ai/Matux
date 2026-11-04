@@ -3,9 +3,9 @@ API 速率限制中间件
 【P2修复】基于滑动窗口算法的全局 API 速率限制
 """
 
-import time
 from collections import defaultdict
 from datetime import datetime, timedelta
+import time
 from typing import Dict, List, Optional, Tuple
 
 from starlette.middleware.base import BaseHTTPMiddleware

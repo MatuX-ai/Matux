@@ -1,10 +1,21 @@
 """
 教师信息模型
 """
-from sqlalchemy import Column, Integer, String, Date, ForeignKey, Boolean, DateTime, Numeric, Text
-from sqlalchemy.orm import relationship
-from database.session_base import Base
 from datetime import datetime
+
+from database.session_base import Base
+from sqlalchemy import (
+    Boolean,
+    Column,
+    Date,
+    DateTime,
+    ForeignKey,
+    Integer,
+    Numeric,
+    String,
+    Text,
+)
+from sqlalchemy.orm import relationship
 
 
 class Teacher(Base):

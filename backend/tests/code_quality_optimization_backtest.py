@@ -66,10 +66,10 @@ class QuickBacktestValidator:
 
     def test_config_debug_settings(self):
         """测试配置 DEBUG 设置"""
-        from backend.config.settings import settings
         from backend.config.enterprise_settings import (
             settings as enterprise_settings,
         )
+        from backend.config.settings import settings
 
         # 验证 DEBUG 默认为 False
         assert settings.DEBUG is False, "settings.py 中 DEBUG 应该为 False"
@@ -110,14 +110,14 @@ class QuickBacktestValidator:
 
     def test_type_annotations_utils(self):
         """测试工具函数类型注解"""
+        from utils.date_utils import format_date, get_time_ago, is_leap_year
         from utils.string_utils import (
-            capitalize,
             camel_to_snake,
+            capitalize,
             is_empty,
             random_string,
             snake_to_camel,
         )
-        from utils.date_utils import format_date, get_time_ago, is_leap_year
 
         # 测试字符串工具
         assert is_empty("") is True

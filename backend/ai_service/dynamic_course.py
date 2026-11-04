@@ -7,12 +7,11 @@ from datetime import datetime
 import logging
 from typing import Any, Dict, List, Optional
 
+from config.settings import settings
+from fastapi import HTTPException
 from openai import AsyncOpenAI
 from pydantic import BaseModel, Field
 from sqlalchemy.orm import Session
-from fastapi import HTTPException
-
-from config.settings import settings
 
 logger = logging.getLogger(__name__)
 

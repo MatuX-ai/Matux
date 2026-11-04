@@ -1,11 +1,22 @@
 """
 学员档案模型
 """
-from sqlalchemy import Column, Integer, String, Date, ForeignKey, Boolean, DateTime, Enum as SQLEnum, Text
-from sqlalchemy.orm import relationship
-from database.session_base import Base
 from datetime import datetime
 import enum
+
+from database.session_base import Base
+from sqlalchemy import (
+    Boolean,
+    Column,
+    Date,
+    DateTime,
+    Enum as SQLEnum,
+    ForeignKey,
+    Integer,
+    String,
+    Text,
+)
+from sqlalchemy.orm import relationship
 
 
 class StudentStatus(enum.Enum):

@@ -12,7 +12,6 @@ from typing import Any, Dict, List, Optional
 
 from fastapi import APIRouter, HTTPException, Query
 from pydantic import BaseModel, Field
-
 from services.vector_knowledge_service import get_vector_knowledge_service
 
 logger = logging.getLogger(__name__)

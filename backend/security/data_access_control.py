@@ -6,11 +6,10 @@
 import logging
 from typing import Any, List, Optional, Type, Union
 
-from fastapi import HTTPException, status
-from sqlalchemy.orm import Query
-
 from database.tenant_aware_session import TenantQueryHelper
+from fastapi import HTTPException, status
 from models.user import User, UserRole
+from sqlalchemy.orm import Query
 from utils.tenant_context import TenantContext
 
 logger = logging.getLogger(__name__)
@@ -297,9 +296,8 @@ class DataAccessControl:
             # 管理员可以访问所有组织
             if user.is_superuser or user.role == UserRole.ADMIN:
                 # 查询所有活跃组织
-                from sqlalchemy import select
-
                 from models.license import Organization
+                from sqlalchemy import select
                 from utils.database import get_sync_db
 
                 db_gen = get_sync_db()

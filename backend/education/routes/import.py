@@ -2,14 +2,15 @@
 iMato 教育培训管理系统 - 批量导入 API
 """
 
-from fastapi import APIRouter, UploadFile, File, HTTPException, Depends
-from sqlalchemy.orm import Session
-from typing import List
-import pandas as pd
 from io import BytesIO
+from typing import List
+
+from fastapi import APIRouter, Depends, File, HTTPException, UploadFile
+import pandas as pd
+from sqlalchemy.orm import Session
 
 from backend.database import get_db
-from backend.education.models.student import StudentProfile, ParentInfo
+from backend.education.models.student import ParentInfo, StudentProfile
 from backend.education.schemas.student import StudentProfileCreate
 
 router = APIRouter(prefix="/api/v1/import", tags=["批量导入"])

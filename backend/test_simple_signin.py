@@ -1,6 +1,7 @@
 """直接测试 signin 端点"""
-import requests
 import traceback
+
+import requests
 
 BASE_URL = "http://localhost:8000"
 

@@ -4,8 +4,8 @@
 实际硬件连接时可通过 ESP32 串口服务获取真实数据
 """
 
-import logging
 from datetime import datetime
+import logging
 from random import uniform
 
 from fastapi import APIRouter

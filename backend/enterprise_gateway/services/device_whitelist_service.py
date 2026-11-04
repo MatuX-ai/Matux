@@ -7,8 +7,6 @@ from datetime import datetime, timedelta
 import logging
 from typing import List, Optional
 
-from sqlalchemy.orm import Session
-
 from config.enterprise_settings import enterprise_settings
 from models.enterprise_models import (
     DeviceApprovalRequest,
@@ -16,6 +14,7 @@ from models.enterprise_models import (
     DeviceWhitelistUpdate,
     EnterpriseClient,
 )
+from sqlalchemy.orm import Session
 from utils.database import get_db
 from utils.security_utils import SecurityUtil
 

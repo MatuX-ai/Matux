@@ -7,7 +7,6 @@ from datetime import datetime
 from typing import Optional
 
 from fastapi import APIRouter, HTTPException, Query
-
 from models.hardware_certification import (
     BadgeConfig,
     BadgeStyle,

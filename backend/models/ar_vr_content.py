@@ -3,12 +3,11 @@ AR/VR 课程内容数据模型
 支持增强现实和虚拟现实课程内容的管理
 """
 
-from pydantic import BaseModel, Field
-from typing import Any, Dict, List, Optional
 from datetime import datetime
 import enum
-from typing import Any, Dict, List, Optional, TYPE_CHECKING
+from typing import TYPE_CHECKING, Any, Dict, List, Optional
 
+from pydantic import BaseModel, Field
 from sqlalchemy import (
     JSON,
     Boolean,
@@ -22,7 +21,6 @@ from sqlalchemy import (
     Text,
 )
 from sqlalchemy.orm import relationship
-
 from utils.database import Base
 
 if TYPE_CHECKING:

@@ -9,10 +9,10 @@ OAuth 认证服务测试
 5. 账户绑定与管理
 """
 
-import pytest
 from unittest.mock import AsyncMock, MagicMock, patch
 
 from models.oauth_account import OAuthAccount, OAuthProvider
+import pytest
 from services.oauth_service import OAuthService
 
 

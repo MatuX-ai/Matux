@@ -5,19 +5,18 @@ AI-Edu-for-Kids 学习进度 API 路由
 import logging
 from typing import List, Optional
 
-from fastapi import APIRouter, Depends, HTTPException, Query
-from sqlalchemy import and_
-from sqlalchemy.orm import Session
-
 from database.db import Base
+from fastapi import APIRouter, Depends, HTTPException, Query
 from models.user import User
-from utils.auth_utils import get_current_user_sync
 from services.ai_edu_progress_service import (
     AIEduProgressService,
     LessonCompletionRequest,
     ProgressStatisticsResponse,
     ProgressUpdateRequest,
 )
+from sqlalchemy import and_
+from sqlalchemy.orm import Session
+from utils.auth_utils import get_current_user_sync
 from utils.database import get_sync_db
 
 logger = logging.getLogger(__name__)
@@ -212,9 +211,8 @@ async def reset_progress(
     Returns:
         操作结果
     """
-    from sqlalchemy import delete
-
     from models.ai_edu_rewards import AIEduLearningProgress
+    from sqlalchemy import delete
 
     try:
         # 删除进度记录

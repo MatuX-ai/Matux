@@ -4,19 +4,19 @@
 测试 ServiceDependencyManager 的服务检测、降级方案、缓存机制
 """
 
-from core.service_dependencies import (
-    ServiceDependencyManager,
-    MemoryCacheBackend,
-    LocalTemplateResponder,
-    ReadOnlyMode,
-    DisabledService,
-    ServiceStatus,
-)
 import asyncio
-import sys
 import os
+import sys
 import time
 
+from core.service_dependencies import (
+    DisabledService,
+    LocalTemplateResponder,
+    MemoryCacheBackend,
+    ReadOnlyMode,
+    ServiceDependencyManager,
+    ServiceStatus,
+)
 import pytest
 
 # 确保 backend 目录在 sys.path 中
@@ -395,7 +395,7 @@ class TestGlobalInstance:
 
     def test_init_and_get_manager(self):
         """测试初始化和获取全局管理器"""
-        from core.service_dependencies import init_service_manager, get_service_manager
+        from core.service_dependencies import get_service_manager, init_service_manager
 
         manager = init_service_manager()
 
@@ -404,8 +404,8 @@ class TestGlobalInstance:
 
     def test_get_manager_before_init(self):
         """测试未初始化时获取应抛出异常"""
-        from core.service_dependencies import _manager_instance, get_service_manager
         import core.service_dependencies as dep_module
+        from core.service_dependencies import _manager_instance, get_service_manager
 
         old_instance = _manager_instance
 

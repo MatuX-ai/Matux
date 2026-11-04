@@ -6,15 +6,14 @@
 from datetime import datetime
 from unittest.mock import AsyncMock, MagicMock, patch
 
-from fastapi.testclient import TestClient
-import pytest
-
 from ai_service.dynamic_course import (
     DynamicCourseGenerator,
     DynamicCourseRequest,
     StudentProfile,
 )
+from fastapi.testclient import TestClient
 from main import app
+import pytest
 
 client = TestClient(app)
 

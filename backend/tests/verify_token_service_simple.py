@@ -2,10 +2,12 @@
 Token 服务简单功能验证（简化版）
 """
 
-from sqlalchemy.orm import sessionmaker
-from sqlalchemy import create_engine, event, text
-import sys
 from pathlib import Path
+import sys
+
+from sqlalchemy import create_engine, event, text
+from sqlalchemy.orm import sessionmaker
+
 sys.path.insert(0, str(Path(__file__).parent.parent))
 
 

@@ -6,10 +6,6 @@
 import asyncio
 from datetime import datetime, timedelta
 
-import pytest
-from sqlalchemy.ext.asyncio import AsyncSession, create_async_engine
-from sqlalchemy.orm import sessionmaker
-
 from config.settings import Settings
 from models.hardware_module import (
     DamageLevel,
@@ -19,7 +15,10 @@ from models.hardware_module import (
     ModuleRentalStatus,
 )
 from models.user_license import UserLicense
+import pytest
 from services.hardware_inventory_service import hardware_inventory_service
+from sqlalchemy.ext.asyncio import AsyncSession, create_async_engine
+from sqlalchemy.orm import sessionmaker
 
 
 class TestHardwareModuleModel:

@@ -3,11 +3,12 @@
 跨来源汇总学生的学习进度、成绩和活动记录
 """
 
-import enum
 from datetime import date, datetime
-from typing import Optional, Dict, Any
+import enum
+from typing import Any, Dict, Optional
 
 from sqlalchemy import (
+    JSON,
     Boolean,
     Column,
     Date,
@@ -18,10 +19,8 @@ from sqlalchemy import (
     Integer,
     String,
     Text,
-    JSON,
 )
 from sqlalchemy.orm import relationship
-
 from utils.database import Base
 
 

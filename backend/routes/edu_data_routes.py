@@ -7,6 +7,8 @@ from datetime import datetime
 import json
 import logging
 
+from ai_service.fl_models import FLTrainingProgress
+from config.edu_data_config import edu_config
 from fastapi import (
     APIRouter,
     BackgroundTasks,
@@ -16,9 +18,6 @@ from fastapi import (
     HTTPException,
     UploadFile,
 )
-
-from ai_service.fl_models import FLTrainingProgress
-from config.edu_data_config import edu_config
 from middleware.auth import get_current_active_user
 from models.edu_data_models import (
     EduDataSharingProtocol,
@@ -27,6 +26,7 @@ from models.edu_data_models import (
     EduReportRequest,
     EduTrainingConfig,
 )
+
 from ..models.user import User
 from ..services.edu_federated_service import EduFederatedLearningService
 

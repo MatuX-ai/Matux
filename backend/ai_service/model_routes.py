@@ -4,14 +4,15 @@ AI 模型管理 API 路由
 提供模型的注册、加载、卸载、推理等 RESTful API。
 """
 
+from typing import Any, Dict, List, Optional
+
 from fastapi import APIRouter, HTTPException, Query
 from pydantic import BaseModel, Field
-from typing import Any, Dict, List, Optional
 
 from .model_manager import (
     ModelManager,
-    ModelType,
     ModelStatus,
+    ModelType,
 )
 
 router = APIRouter(prefix="/api/v1/models", tags=["models"])

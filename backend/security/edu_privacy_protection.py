@@ -9,10 +9,9 @@ import logging
 import math
 from typing import Any, Dict, List, Optional, Tuple
 
+from config.edu_data_config import edu_config
 import numpy as np
 import torch
-
-from config.edu_data_config import edu_config
 
 logger = logging.getLogger(__name__)
 

@@ -1,17 +1,19 @@
 """直接测试 start_exam 方法"""
 import asyncio
 import sys
+
 sys.path.insert(0, '.')
 
-from sqlalchemy.ext.asyncio import AsyncSession, create_async_engine, async_sessionmaker
-from sqlalchemy import select
 from datetime import datetime
+
+from sqlalchemy import select
+from sqlalchemy.ext.asyncio import AsyncSession, async_sessionmaker, create_async_engine
 
 # 模拟配置
 DATABASE_URL = "sqlite+aiosqlite:///./ai_service.db"
 
 async def test_start_exam():
-    from models.exam import Exam, ExamAttempt, ExamStatus, AttemptStatus
+    from models.exam import AttemptStatus, Exam, ExamAttempt, ExamStatus
     from models.user import User
     
     engine = create_async_engine(DATABASE_URL, echo=True)

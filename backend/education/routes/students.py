@@ -2,18 +2,19 @@
 iMato 教育培训管理系统 - 学员管理 API 接口
 """
 
-from fastapi import APIRouter, Depends, HTTPException, Query
-from sqlalchemy.orm import Session
 from typing import List, Optional
 
+from fastapi import APIRouter, Depends, HTTPException, Query
+from sqlalchemy.orm import Session
+
 from backend.database import get_db
-from backend.education.models.student import StudentProfile, ParentInfo
+from backend.education.models.student import ParentInfo, StudentProfile
 from backend.education.schemas.student import (
-    StudentProfileSchema,
+    StudentListResponse,
     StudentProfileCreate,
+    StudentProfileSchema,
     StudentProfileUpdate,
     StudentQuery,
-    StudentListResponse,
 )
 
 router = APIRouter(prefix="/api/v1/students", tags=["学员管理"])

@@ -8,9 +8,8 @@ import logging
 from typing import Any, Dict, Optional
 
 from fastapi import Request
-from starlette.middleware.base import BaseHTTPMiddleware
-
 from services.permission_service import permission_service
+from starlette.middleware.base import BaseHTTPMiddleware
 
 logger = logging.getLogger(__name__)
 
@@ -116,9 +115,8 @@ class PermissionLoggingMiddleware(BaseHTTPMiddleware):
         auth_header = request.headers.get("authorization")
         if auth_header and auth_header.startswith("Bearer "):
             try:
-                from jose import jwt
-
                 from config.settings import Settings
+                from jose import jwt
 
                 settings = Settings()
                 token = auth_header[7:]  # 移除 'Bearer ' 前缀

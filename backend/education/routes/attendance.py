@@ -2,21 +2,26 @@
 iMato 教育培训管理系统 - 签到管理 API
 """
 
-from fastapi import APIRouter, Depends, HTTPException, Query
-from sqlalchemy.orm import Session
 from datetime import datetime, timedelta
-import uuid
-import qrcode
 from io import BytesIO
+import uuid
+
+from fastapi import APIRouter, Depends, HTTPException, Query
 from fastapi.responses import StreamingResponse
+import qrcode
+from sqlalchemy.orm import Session
 
 from backend.database import get_db
-from backend.education.models.attendance import AttendanceRecord, QRCodeToken, CheckinStatus
+from backend.education.models.attendance import (
+    AttendanceRecord,
+    CheckinStatus,
+    QRCodeToken,
+)
 from backend.education.models.student import StudentProfile
 from backend.education.schemas.attendance import (
+    AttendanceStats,
     CheckinRequest,
     CheckinResponse,
-    AttendanceStats,
 )
 
 router = APIRouter(prefix="/api/v1/attendance", tags=["签到管理"])

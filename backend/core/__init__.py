@@ -10,36 +10,36 @@ MatuX 核心引擎
 - ServiceDependencyManager: 依赖降级管理
 """
 
-from .module_spec import ModuleSpec, ModuleState, ModuleTier
+from .activation_middleware import ModuleActivationMiddleware
 from .lazy_loader import (
-    ModuleLazyLoader,
     ModuleActivationError,
+    ModuleLazyLoader,
     get_lazy_loader,
     init_lazy_loader,
 )
-from .activation_middleware import ModuleActivationMiddleware
 from .lazy_tables import (
     LazyTableManager,
     get_lazy_table_manager,
     init_lazy_table_manager,
 )
-from .service_dependencies import (
-    ServiceDependencyManager,
-    MemoryCacheBackend,
-    LocalTemplateResponder,
-    ReadOnlyMode,
-    DisabledService,
-    get_service_manager,
-    init_service_manager,
-)
 from .module_circuit_breaker import (
-    ModuleCircuitBreaker,
-    ModuleCircuitBreakerRegistry,
     CircuitBreakerConfig,
     CircuitBreakerOpenError,
     CircuitState,
+    ModuleCircuitBreaker,
+    ModuleCircuitBreakerRegistry,
     get_breaker_registry,
     init_breaker_registry,
+)
+from .module_spec import ModuleSpec, ModuleState, ModuleTier
+from .service_dependencies import (
+    DisabledService,
+    LocalTemplateResponder,
+    MemoryCacheBackend,
+    ReadOnlyMode,
+    ServiceDependencyManager,
+    get_service_manager,
+    init_service_manager,
 )
 
 __all__ = [

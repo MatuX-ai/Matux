@@ -11,9 +11,8 @@ from pathlib import Path
 import shutil
 from typing import Any, Dict, List, Optional
 
-from sqlalchemy.orm import Session
-
 from models.ai_edu_rewards import AIEduLesson, AIEduModule, AIEduRewardRule
+from sqlalchemy.orm import Session
 
 logger = logging.getLogger(__name__)
 

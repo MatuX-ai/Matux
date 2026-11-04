@@ -4,8 +4,6 @@
 
 from datetime import datetime
 
-import pytest
-
 from models.hardware_certification import (
     BadgeConfig,
     BadgeStyle,
@@ -14,6 +12,7 @@ from models.hardware_certification import (
     TestCategory,
     TestResult,
 )
+import pytest
 from services.badge_generator import BadgeGenerator
 from services.hardware_certification_service import HardwareCertificationService
 

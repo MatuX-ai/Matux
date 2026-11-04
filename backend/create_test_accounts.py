@@ -6,10 +6,11 @@
 - 学生: test_student / TestStudent123!
 """
 import asyncio
+
 import bcrypt
+from models.user import User, UserRole
 from sqlalchemy import select
 from utils.database import AsyncSessionLocal
-from models.user import User, UserRole
 
 
 async def create_test_accounts():

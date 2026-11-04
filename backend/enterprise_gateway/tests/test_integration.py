@@ -7,9 +7,8 @@ from datetime import datetime
 from unittest.mock import Mock, patch
 
 from fastapi.testclient import TestClient
-import pytest
-
 from main import app
+import pytest
 from services.device_whitelist_service import device_whitelist_service
 from services.enterprise_auth_service import enterprise_auth_service
 from services.enterprise_oauth_service import enterprise_oauth_service

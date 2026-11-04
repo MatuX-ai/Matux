@@ -8,9 +8,8 @@ import logging
 from typing import Optional
 
 from fastapi import APIRouter, Depends, HTTPException, status
-from pydantic import BaseModel
-
 from models.user import User, UserRole
+from pydantic import BaseModel
 from routes.auth_routes import get_current_user
 from services.blockchain.gateway_service import blockchain_gateway_service
 from utils.decorators import require_role

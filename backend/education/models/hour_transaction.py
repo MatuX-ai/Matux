@@ -2,10 +2,11 @@
 iMato 教育培训管理系统 - 课时流水记录模型
 """
 
-from sqlalchemy import Column, String, DateTime, ForeignKey, Integer, Text, Numeric
-from sqlalchemy.orm import relationship
 from datetime import datetime
 import enum
+
+from sqlalchemy import Column, DateTime, ForeignKey, Integer, Numeric, String, Text
+from sqlalchemy.orm import relationship
 
 from backend.database import Base
 

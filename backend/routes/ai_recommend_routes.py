@@ -7,10 +7,8 @@ from datetime import datetime
 import logging
 from typing import Any, Dict, List, Optional
 
-from fastapi import APIRouter, Depends, HTTPException, Query
-from sqlalchemy.ext.asyncio import AsyncSession
-
 from ai_service.recommendation_service import RecommendationEngine as RecEngine
+from fastapi import APIRouter, Depends, HTTPException, Query
 
 # 导入APM监控装饰器
 from middleware.apm_middleware import (
@@ -20,6 +18,7 @@ from middleware.apm_middleware import (
 from middleware.apm_monitoring import trace_endpoint
 from models.user import User
 from routes.auth_routes import get_current_user
+from sqlalchemy.ext.asyncio import AsyncSession
 from utils.database import get_db
 
 logger = logging.getLogger(__name__)

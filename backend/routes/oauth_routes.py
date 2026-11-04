@@ -10,12 +10,11 @@ OAuth 认证路由 - 第三方登录
 """
 
 from fastapi import APIRouter, Depends, HTTPException, Query, status
-from pydantic import BaseModel, Field
-from sqlalchemy.ext.asyncio import AsyncSession
-
 from middleware.auth import get_current_user
 from models.user import User
+from pydantic import BaseModel, Field
 from services.oauth_service import oauth_service
+from sqlalchemy.ext.asyncio import AsyncSession
 from utils.database import get_db
 
 router = APIRouter(prefix="/api/v1/oauth", tags=["OAuth 认证"])

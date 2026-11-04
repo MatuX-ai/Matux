@@ -8,9 +8,8 @@ import secrets
 import string
 from typing import Any, Dict, Optional
 
-import jwt
-
 from config.enterprise_settings import enterprise_settings
+import jwt
 
 
 class JWTUtil:

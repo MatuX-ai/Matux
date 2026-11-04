@@ -886,8 +886,8 @@ def discover_plugins(base_path: str = "routes") -> List[dict]:
     扫描指定目录下的所有 Python 文件，查找 @register_module 装饰的模块。
     """
     import os
-    import sys
     from pathlib import Path
+    import sys
 
     discovered = []
     backend_path = Path(__file__).parent.parent

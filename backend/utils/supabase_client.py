@@ -3,12 +3,12 @@ Supabase 数据库连接工具
 提供与 Supabase PostgreSQL 数据库的连接和会话管理
 """
 
+from contextlib import asynccontextmanager
 import os
 from typing import AsyncGenerator, Generator
-from contextlib import asynccontextmanager
 
 from sqlalchemy import create_engine
-from sqlalchemy.ext.asyncio import AsyncSession, create_async_engine, async_sessionmaker
+from sqlalchemy.ext.asyncio import AsyncSession, async_sessionmaker, create_async_engine
 from sqlalchemy.orm import Session, sessionmaker
 from sqlalchemy.pool import NullPool
 

@@ -11,15 +11,14 @@ import logging
 import os
 from typing import Any, Dict, List, Optional
 
-from redis import asyncio as aioredis
-from sqlalchemy import select
-from sqlalchemy.ext.asyncio import AsyncSession
-
 from ai_service.model_compressor import ModelCompressor
 from ai_service.traditional_ml_transfer import TraditionalTransferLearning
 from ai_service.transfer_learning_engine import TransferLearningEngine
 from config.transfer_learning_config import settings
 from models.recommendation import ColdStartRecommendationLog, PretrainedModel
+from redis import asyncio as aioredis
+from sqlalchemy import select
+from sqlalchemy.ext.asyncio import AsyncSession
 
 logger = logging.getLogger(__name__)
 

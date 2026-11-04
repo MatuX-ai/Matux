@@ -7,15 +7,14 @@ import logging
 from typing import Any, Dict, List, Optional
 
 from fastapi import APIRouter, Body, Depends, HTTPException, Query
-from sqlalchemy.orm import Session
-
-from utils.database import get_sync_db
 from models.user import User
-from utils.dependencies import get_current_user_sync
 from services.llm_assistant_service import (
     LLMAssistantService,
     get_llm_assistant_service,
 )
+from sqlalchemy.orm import Session
+from utils.database import get_sync_db
+from utils.dependencies import get_current_user_sync
 
 logger = logging.getLogger(__name__)
 

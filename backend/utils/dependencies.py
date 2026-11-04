@@ -3,9 +3,8 @@
 提供常用的依赖项注入函数
 """
 
-from sqlalchemy.orm import Session
-
 from models.user import User
+from sqlalchemy.orm import Session
 
 
 def get_current_user_sync() -> User:

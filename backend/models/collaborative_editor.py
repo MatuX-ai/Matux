@@ -3,11 +3,11 @@
 实现实时协同编辑和评论批注功能
 """
 
-from pydantic import BaseModel, Field, validator
 from datetime import datetime
 import hashlib
 from typing import Any, Dict, List, Optional
 
+from pydantic import BaseModel, Field, validator
 from sqlalchemy import (
     JSON,
     Boolean,
@@ -20,7 +20,6 @@ from sqlalchemy import (
     Text,
 )
 from sqlalchemy.orm import relationship
-
 from utils.database import Base
 
 

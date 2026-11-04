@@ -4,16 +4,17 @@
 测试 ModuleActivationMiddleware 的路径匹配、状态拦截、自动激活
 """
 
+import os
+import sys
+from unittest.mock import AsyncMock, MagicMock, patch
+
 from core.activation_middleware import (
-    ModuleActivationMiddleware,
     WHITELIST_PATHS,
     WHITELIST_PREFIXES,
+    ModuleActivationMiddleware,
 )
 from core.module_spec import ModuleState, ModuleTier
-import sys
-import os
 import pytest
-from unittest.mock import AsyncMock, MagicMock, patch
 
 # 确保 backend 目录在 sys.path 中，支持 `from core.lazy_loader import ...` 的内部导入
 _backend_dir = os.path.abspath(os.path.join(os.path.dirname(__file__), ".."))

@@ -3,10 +3,11 @@ Token 计费系统数据库初始化脚本
 直接使用 SQLAlchemy 创建表（不使用 Alembic）
 """
 
+from pathlib import Path
+import sys
+
 from config.settings import settings
 from sqlalchemy import create_engine, text
-import sys
-from pathlib import Path
 
 # 添加项目根目录到 Python 路径
 sys.path.insert(0, str(Path(__file__).parent.parent))

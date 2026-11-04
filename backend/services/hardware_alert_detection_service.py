@@ -10,9 +10,6 @@ import logging
 from typing import Any, Dict, List, Optional
 import uuid
 
-from hardware.hal.performance_monitor import PerformanceMonitor
-import numpy as np
-
 from models.hardware_alert import (
     AlertSeverity,
     AlertSource,
@@ -20,7 +17,10 @@ from models.hardware_alert import (
     HardwareAlert,
     HardwareDeviceStatus,
 )
+import numpy as np
 from services.hardware_alert_mqtt_service import HardwareAlertMQTTService
+
+from hardware.hal.performance_monitor import PerformanceMonitor
 
 logger = logging.getLogger(__name__)
 

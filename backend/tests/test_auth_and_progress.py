@@ -1,8 +1,9 @@
 """
 测试用户认证和学习进度API
 """
-import requests
 import json
+
+import requests
 
 # 基础URL
 BASE_URL = "http://localhost:8000"

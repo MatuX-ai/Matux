@@ -1,13 +1,13 @@
 """
 iMato 教育培训管理系统 - 排课模块数据模型
 """
-from .schedule import CourseSchedule, ScheduleConflict
-from .student import StudentProfile, ParentInfo, StudentStatus
-from .teacher import Teacher, TeachingRecord, TeacherSalary
-from .classroom import Classroom, ClassroomEquipment
 from .attendance import Attendance, AttendanceStatus, LeaveType
-from .order import Order, OrderItem, PaymentMethod, OrderStatus
-from .salary import SalaryDetail, PerformanceBonus
+from .classroom import Classroom, ClassroomEquipment
+from .order import Order, OrderItem, OrderStatus, PaymentMethod
+from .salary import PerformanceBonus, SalaryDetail
+from .schedule import CourseSchedule, ScheduleConflict
+from .student import ParentInfo, StudentProfile, StudentStatus
+from .teacher import Teacher, TeacherSalary, TeachingRecord
 
 __all__ = [
     # 排课相关

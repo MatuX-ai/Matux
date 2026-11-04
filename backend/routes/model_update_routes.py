@@ -5,7 +5,6 @@ AI模型热更新API路由
 import logging
 
 from fastapi import APIRouter, Depends, File, Form, HTTPException, Query, UploadFile
-
 from models.model_version import ModelVersion
 from services.model_update_service import ModelUpdateService, get_model_update_service
 

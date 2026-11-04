@@ -6,12 +6,11 @@
 from typing import Optional
 
 from fastapi import APIRouter, Depends, HTTPException, status
-from pydantic import BaseModel, Field
-from sqlalchemy.ext.asyncio import AsyncSession
-
 from models.user import User
 from models.user_guardian import GuardianBindRequest, GuardianBindResponse
-from modules.auth.auth_service import unified_auth_service, decode_token
+from modules.auth.auth_service import decode_token, unified_auth_service
+from pydantic import BaseModel, Field
+from sqlalchemy.ext.asyncio import AsyncSession
 from utils.database import get_db
 
 router = APIRouter(prefix="/api/v1/unified-auth", tags=["统一认证"])

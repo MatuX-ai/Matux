@@ -23,12 +23,13 @@ from config.settings import Settings
 ms("importing models (heavy)...")
 # 跳过实际 import 全部 models，改为只测大块时间
 import importlib
+
 import models
 
 ms(f"models package imported (count={len([n for n in dir(models) if not n.startswith('_')])})")
 
 ms("importing database...")
-from utils.database import create_db_and_tables, AsyncSessionLocal
+from utils.database import AsyncSessionLocal, create_db_and_tables
 
 ms("importing legacy_routes...")
 from legacy_routes import register_all_routes

@@ -6,7 +6,6 @@ from datetime import datetime
 from unittest.mock import MagicMock, patch
 
 import pytest
-
 from services.blockchain.fallback_handler import CircuitBreakerFallback
 from services.blockchain.gateway_service import BlockchainGatewayService
 from utils.circuit_breaker import CircuitBreaker, CircuitState

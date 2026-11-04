@@ -7,11 +7,10 @@ import io
 from typing import Dict, List, Tuple
 
 from fastapi import UploadFile
+from models.user import User, UserRole
 import pandas as pd
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
-
-from models.user import User, UserRole
 from utils.logger import get_logger
 
 logger = get_logger(__name__)

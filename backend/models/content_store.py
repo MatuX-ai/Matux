@@ -5,6 +5,7 @@
 from datetime import datetime
 import enum
 
+from database import Base
 from sqlalchemy import (
     JSON,
     Boolean,
@@ -19,8 +20,6 @@ from sqlalchemy import (
 )
 from sqlalchemy.orm import relationship
 from sqlalchemy.types import Enum as SQLEnum
-
-from database import Base
 
 
 # 内容类型枚举

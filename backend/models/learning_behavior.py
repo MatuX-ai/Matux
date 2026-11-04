@@ -3,12 +3,11 @@
 用于追踪和分析学生的学习行为特征，包括代码调试时长和硬件操作成功率等指标
 """
 
-from pydantic import BaseModel, Field
-from typing import Any, Dict, List
 from datetime import datetime
 from enum import Enum
-from typing import Optional
+from typing import Any, Dict, List, Optional
 
+from pydantic import BaseModel, Field
 from sqlalchemy import (
     Boolean,
     Column,
@@ -21,7 +20,6 @@ from sqlalchemy import (
     Text,
 )
 from sqlalchemy.orm import relationship
-
 from utils.database import Base
 
 

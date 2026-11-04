@@ -7,10 +7,6 @@ from datetime import datetime, timedelta
 from typing import List, Optional
 
 from fastapi import APIRouter, Depends, HTTPException, Path, Query
-from sqlalchemy.ext.asyncio import AsyncSession
-from sqlalchemy.future import select
-from sqlalchemy.orm import selectinload
-
 from middleware.auth import get_current_user
 from models.hardware_module import (
     DamageLevel,
@@ -28,6 +24,9 @@ from models.hardware_module import (
 from models.user import User
 from models.user_license import HardwareRentalSummary, UserLicense
 from services.hardware_inventory_service import hardware_inventory_service
+from sqlalchemy.ext.asyncio import AsyncSession
+from sqlalchemy.future import select
+from sqlalchemy.orm import selectinload
 from utils.database import get_db
 from utils.logger import setup_logger
 

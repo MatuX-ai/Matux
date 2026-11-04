@@ -3,15 +3,19 @@ Token 计费集成测试
 验证 AI 功能的 Token 消费逻辑
 """
 
-import pytest
 from datetime import datetime
-from sqlalchemy.orm import Session
-from fastapi import HTTPException
 
-from services.token_service import TokenService
-from services.llm_assistant_service import LLMAssistantService
-from ai_service.dynamic_course import DynamicCourseGenerator, DynamicCourseRequest, StudentProfile
+from ai_service.dynamic_course import (
+    DynamicCourseGenerator,
+    DynamicCourseRequest,
+    StudentProfile,
+)
+from fastapi import HTTPException
 from models.user import User
+import pytest
+from services.llm_assistant_service import LLMAssistantService
+from services.token_service import TokenService
+from sqlalchemy.orm import Session
 
 
 class TestAIBillingIntegration:

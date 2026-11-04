@@ -5,11 +5,11 @@
 整合遗传算法和冲突检测，提供完整的排课功能。
 """
 
-from typing import List, Dict, Tuple, Optional
 import logging
+from typing import Dict, List, Optional, Tuple
 
-from .genetic_algorithm import GeneticSchedulingAlgorithm
 from .conflict_detector import ConflictDetector
+from .genetic_algorithm import GeneticSchedulingAlgorithm
 
 logger = logging.getLogger(__name__)
 

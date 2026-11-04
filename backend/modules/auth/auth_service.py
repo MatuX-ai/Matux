@@ -4,18 +4,17 @@
 作为 iMato 统一身份认证中心的核心服务
 """
 
-import re
 from datetime import datetime, timedelta
-from typing import Optional, List
+import re
+from typing import List, Optional
 
 import bcrypt
-from jose import JWTError, jwt
-from sqlalchemy import select, or_
-from sqlalchemy.ext.asyncio import AsyncSession
-
 from config.settings import settings
+from jose import JWTError, jwt
 from models.user import User, UserRole
 from models.user_guardian import UserGuardian
+from sqlalchemy import or_, select
+from sqlalchemy.ext.asyncio import AsyncSession
 
 
 def hash_password(password: str) -> str:

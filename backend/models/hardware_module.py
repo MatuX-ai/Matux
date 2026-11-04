@@ -3,11 +3,12 @@
 支持1元/个的配件租赁功能
 """
 
-from pydantic import BaseModel, Field, validator
 from datetime import datetime
 import enum
 from typing import Optional
 
+from database import Base
+from pydantic import BaseModel, Field, validator
 from sqlalchemy import (
     Boolean,
     Column,
@@ -21,8 +22,6 @@ from sqlalchemy import (
 )
 from sqlalchemy.orm import relationship
 from sqlalchemy.sql import func
-
-from database import Base
 
 
 class HardwareModuleStatus(str, enum.Enum):

@@ -8,8 +8,6 @@ import logging
 from typing import Any, Dict, List, Optional
 
 from fastapi import APIRouter, Body, Depends, HTTPException, Path, Query
-from sqlalchemy.orm import Session
-
 from middleware.auth import get_current_user
 from models.license import Organization
 from models.sponsorship import (
@@ -24,6 +22,7 @@ from models.sponsorship import (
 )
 from models.user import User
 from services.sponsorship_service import SponsorshipService, get_sponsorship_service
+from sqlalchemy.orm import Session
 from utils.database import get_db
 
 logger = logging.getLogger(__name__)

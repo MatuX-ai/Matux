@@ -17,7 +17,6 @@ from sqlalchemy import (
     String,
 )
 from sqlalchemy.orm import relationship
-
 from utils.database import Base
 
 

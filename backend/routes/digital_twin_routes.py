@@ -8,15 +8,14 @@ import json
 import logging
 from typing import Any, Dict, List, Optional
 
+from database.tenant_aware_session import TenantAwareSession
 from fastapi import APIRouter, Depends, HTTPException, WebSocket, WebSocketDisconnect
+from models.user import User
 from pydantic import BaseModel
 from sqlalchemy.orm import Session
-
-from database.tenant_aware_session import TenantAwareSession
 from utils.database import get_sync_db
-from models.user import User
-from utils.redis_client import redis_client
 from utils.dependencies import get_current_user_sync
+from utils.redis_client import redis_client
 
 logger = logging.getLogger(__name__)
 

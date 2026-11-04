@@ -4,18 +4,18 @@
 测试 ModuleCircuitBreaker 的三态机转换、执行包装、降级调用
 """
 
-from core.module_circuit_breaker import (
-    ModuleCircuitBreaker,
-    CircuitBreakerConfig,
-    CircuitState,
-    CircuitBreakerOpenError,
-    ModuleCircuitBreakerRegistry,
-)
 import asyncio
-import sys
 import os
+import sys
 import time
 
+from core.module_circuit_breaker import (
+    CircuitBreakerConfig,
+    CircuitBreakerOpenError,
+    CircuitState,
+    ModuleCircuitBreaker,
+    ModuleCircuitBreakerRegistry,
+)
 import pytest
 
 # 确保 backend 目录在 sys.path 中
@@ -358,7 +358,10 @@ class TestGlobalInstance:
 
     def test_init_and_get_registry(self):
         """测试初始化和获取全局注册表"""
-        from core.module_circuit_breaker import init_breaker_registry, get_breaker_registry
+        from core.module_circuit_breaker import (
+            get_breaker_registry,
+            init_breaker_registry,
+        )
 
         registry = init_breaker_registry()
 
@@ -367,8 +370,8 @@ class TestGlobalInstance:
 
     def test_get_registry_before_init(self):
         """测试未初始化时获取应抛出异常"""
-        from core.module_circuit_breaker import _registry_instance, get_breaker_registry
         import core.module_circuit_breaker as breaker_module
+        from core.module_circuit_breaker import _registry_instance, get_breaker_registry
 
         old_instance = _registry_instance
 

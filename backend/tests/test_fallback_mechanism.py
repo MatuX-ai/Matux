@@ -3,19 +3,19 @@
 测试 Fallback Mechanism 的各种场景和边界情况
 """
 
-import pytest
 import asyncio
 from datetime import datetime
+from typing import Any, Dict
 from unittest.mock import AsyncMock, Mock, patch
-from typing import Dict, Any
 
-from middleware.circuit_breaker import ( 
+from middleware.circuit_breaker import (
     CircuitBreaker,
     CircuitBreakerConfig,
     CircuitState,
+    cached_response_fallback,
     default_fallback_response,
-    cached_response_fallback
 )
+import pytest
 
 
 class TestFallbackStrategies:

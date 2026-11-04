@@ -5,15 +5,13 @@
 
 from typing import Optional
 
+from config.settings import settings
 from fastapi import Depends, HTTPException, status
 from fastapi.security import OAuth2PasswordBearer
 from jose import JWTError, jwt
-from sqlalchemy.ext.asyncio import AsyncSession
-
-from config.settings import settings
 from models.user import User
+from sqlalchemy.ext.asyncio import AsyncSession
 from utils.database import get_db
-
 
 oauth2_scheme = OAuth2PasswordBearer(tokenUrl="/api/v1/auth/signin")
 

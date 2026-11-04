@@ -6,9 +6,17 @@ from datetime import date, datetime
 from typing import Optional
 
 from pydantic import BaseModel, Field
-from sqlalchemy import Boolean, Column, Date, DateTime, ForeignKey, Integer, String, Text
+from sqlalchemy import (
+    Boolean,
+    Column,
+    Date,
+    DateTime,
+    ForeignKey,
+    Integer,
+    String,
+    Text,
+)
 from sqlalchemy.orm import relationship
-
 from utils.database import Base
 
 

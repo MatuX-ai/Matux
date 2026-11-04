@@ -7,12 +7,11 @@ from datetime import datetime
 import logging
 from typing import List, Optional
 
-from fastapi import APIRouter, BackgroundTasks, Depends, HTTPException
-
 from ai_service.fl_models import FLParticipantInfo, FLTrainingConfig, FLTrainingProgress
-from utils.dependencies import get_current_user_sync
+from fastapi import APIRouter, BackgroundTasks, Depends, HTTPException
 from models.user import User
 from services.federated_service import FederatedLearningService
+from utils.dependencies import get_current_user_sync
 
 logger = logging.getLogger(__name__)
 

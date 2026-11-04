@@ -1,9 +1,10 @@
 #!/usr/bin/env python3
 """检查测试账号是否存在"""
 import asyncio
+
+from models.user import User
 from sqlalchemy import select
 from utils.database import AsyncSessionLocal
-from models.user import User
 
 
 async def check():

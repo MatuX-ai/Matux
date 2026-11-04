@@ -7,9 +7,8 @@ from datetime import datetime
 import logging
 from typing import Any, Dict, Optional
 
-from fastapi import HTTPException
-
 from config.settings import settings
+from fastapi import HTTPException
 from middleware.celery_circuit_breaker import (
     CeleryTaskCircuitBreakerConfig,
     TaskCircuitState,

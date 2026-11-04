@@ -16,8 +16,6 @@ from fastapi import (
     WebSocket,
     WebSocketDisconnect,
 )
-from sqlalchemy.orm import Session
-
 from models.ar_vr_content import (
     ARVRContent,
     ARVRContentCreate,
@@ -37,7 +35,9 @@ from models.ar_vr_content import (
 from models.user import User
 from services.ar_physics_service import ARPhysicsService
 from services.ar_vr_content_service import ARVRContentService
+from sqlalchemy.orm import Session
 from utils.dependencies import get_current_user_sync, get_sync_db
+
 
 # 临时替代函数
 def get_tenant_id() -> int:

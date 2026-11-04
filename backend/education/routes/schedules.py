@@ -2,19 +2,20 @@
 排课管理 API 路由
 """
 
-from fastapi import APIRouter, Depends, HTTPException, status
-from typing import List, Dict
 import logging
+from typing import Dict, List
 
-from ..services.scheduling import SchedulingService
+from fastapi import APIRouter, Depends, HTTPException, status
+
 from ..schemas.schedule_schema import (
-    ScheduleGenerationRequest,
-    ScheduleGenerationResponse,
     CourseScheduleResponse,
     ScheduleAdjustmentRequest,
     ScheduleAdjustmentResponse,
-    ScheduleStatisticsResponse
+    ScheduleGenerationRequest,
+    ScheduleGenerationResponse,
+    ScheduleStatisticsResponse,
 )
+from ..services.scheduling import SchedulingService
 
 logger = logging.getLogger(__name__)
 

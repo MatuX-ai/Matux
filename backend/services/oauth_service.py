@@ -9,17 +9,14 @@ OAuth Service - 第三方登录集成服务
 4. 查找或创建本地用户
 """
 
+from datetime import datetime, timedelta
 import json
 import secrets
-from datetime import datetime, timedelta
 from typing import Optional
 from urllib.parse import urlencode
 
-import httpx
-from sqlalchemy import select
-from sqlalchemy.ext.asyncio import AsyncSession
-
 from config.settings import settings
+import httpx
 from models.oauth_account import OAuthAccount, OAuthProvider
 from models.user import User, UserRole
 from modules.auth.auth_service import (
@@ -28,6 +25,8 @@ from modules.auth.auth_service import (
     create_refresh_token,
     hash_password,
 )
+from sqlalchemy import select
+from sqlalchemy.ext.asyncio import AsyncSession
 
 
 class OAuthProviderConfig:

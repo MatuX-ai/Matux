@@ -7,12 +7,11 @@ import logging
 import os
 from typing import Any, Dict
 
+from config.transfer_learning_config import settings
 import numpy as np
 import pandas as pd
 from sklearn.feature_extraction.text import TfidfVectorizer
 from sklearn.preprocessing import LabelEncoder
-
-from config.transfer_learning_config import settings
 
 logger = logging.getLogger(__name__)
 

@@ -3,9 +3,18 @@
 """
 
 from datetime import datetime
+
 from sqlalchemy import (
-    Boolean, Column, Date, DateTime, Float,
-    ForeignKey, Integer, String, Text, JSON,
+    JSON,
+    Boolean,
+    Column,
+    Date,
+    DateTime,
+    Float,
+    ForeignKey,
+    Integer,
+    String,
+    Text,
 )
 from sqlalchemy.orm import relationship
 from utils.database import Base

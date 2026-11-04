@@ -4,18 +4,18 @@
 """
 
 import asyncio
-import logging
 from datetime import date, datetime
-from sqlalchemy import select
-from sqlalchemy.ext.asyncio import AsyncSession
+import logging
 
-from models.user import User
 from models.license import Organization
+from models.user import User
 from models.user_organization import (
     UserOrganization,
     UserOrganizationRole,
     UserOrganizationStatus,
 )
+from sqlalchemy import select
+from sqlalchemy.ext.asyncio import AsyncSession
 from utils.database import AsyncSessionLocal
 
 logging.basicConfig(level=logging.INFO)

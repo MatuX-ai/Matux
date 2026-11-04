@@ -11,8 +11,8 @@ AI 个性化教师 API 路由
 - 知识状态查询
 """
 
-import logging
 from datetime import datetime
+import logging
 from typing import Any, Dict, List, Optional
 
 from fastapi import APIRouter, HTTPException, Query

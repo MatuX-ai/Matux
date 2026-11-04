@@ -7,9 +7,8 @@ from enum import Enum
 import logging
 from typing import Any, Dict, List, Union
 
-import pandas as pd
-
 from models.edu_data_models import EduAssessmentType, EduSubject
+import pandas as pd
 from utils.data_masking import DataQualityChecker
 
 logger = logging.getLogger(__name__)

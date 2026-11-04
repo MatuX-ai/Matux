@@ -19,11 +19,18 @@ def register_all_routes(app):
     仅在 ENABLE_LAZY_LOADING=False 时调用。
     当懒加载启用时，路由由 core.lazy_loader 自动管理。
     """
+    from ai_service.model_routes import router as model_router
+    from config.settings import Settings
+    from modules.auth.auth_routes import router as unified_auth_router
+    from modules.learning.aggregation_routes import router as aggregation_router
     from routes import (
+        achievement_routes,
+        admin_settings_routes,
+        ai_capabilities_routes,
+        ai_edu_progress_routes,
         ai_recommend_routes,
         ai_routes,
-        ai_edu_websocket_routes,  # AI 教育 WebSocket 路由
-        ai_tutor_routes,  # AI 导师路由 (DeepSeek深度集成)
+        ai_teacher_routes,
         ar_lab_routes,
         ar_rewards,
         ar_vr_mock_routes,
@@ -37,42 +44,34 @@ def register_all_routes(app):
         digital_twin_routes,
         dynamic_course_routes,
         educational_institution_routes,
+        exam_routes,
+        finance_routes,
         hardware_certification_routes,
         learning_behavior_routes,
-        learning_source_routes,  # 路由已有 /api/v1 前缀
         local_knowledge_graph_routes,
         material_routes,
         model_benchmark_routes,
         model_update_routes,
         multimedia_routes,
-        opensciedu_routes,  # OpenSciEDU 公共课程
+        oauth_routes,
+        openhydra_routes,
         payment_routes,
         permission_routes,
+        sensor_data_routes,
         sponsorship_routes,
         subscription_routes,
         tenant_config_routes,
-        unified_learning_record_routes,  # 路由已有 /api/v1 前缀
-        ai_edu_progress_routes,
-        ai_teacher_routes,
         vector_knowledge_routes,
     )
-    from routes import ai_capabilities_routes
-    from routes import achievement_routes
-    from routes import openhydra_routes
-    from routes import admin_settings_routes
     from routes import admin_arvr_routes  # AR/VR 课程管理后台
+    from routes import ai_edu_websocket_routes  # AI 教育 WebSocket 路由
+    from routes import ai_tutor_routes  # AI 导师路由 (DeepSeek深度集成)
     from routes import error_log_routes  # 错误日志收集（前端兼容路径）
+    from routes import learning_source_routes  # 路由已有 /api/v1 前缀
+    from routes import opensciedu_routes  # OpenSciEDU 公共课程
     from routes import org_error_log_routes  # 组织级错误日志收集
-    from routes import finance_routes
-    from routes import sensor_data_routes
-    from routes import oauth_routes
-    from routes import exam_routes
     from routes import system_status_routes  # 系统状态路由
-    from ai_service.model_routes import router as model_router
-    from modules.auth.auth_routes import router as unified_auth_router
-    from modules.learning.aggregation_routes import router as aggregation_router
-
-    from config.settings import Settings
+    from routes import unified_learning_record_routes  # 路由已有 /api/v1 前缀
     settings = Settings()
 
     logger.info("📦 注册所有路由（传统模式）...")

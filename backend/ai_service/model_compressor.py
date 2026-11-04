@@ -10,12 +10,11 @@ import logging
 import os
 from typing import Any, Dict, List, Union
 
+from config.transfer_learning_config import settings
 import joblib
 import numpy as np
 from sklearn.ensemble import RandomForestClassifier, RandomForestRegressor
 from sklearn.tree import DecisionTreeClassifier
-
-from config.transfer_learning_config import settings
 
 logger = logging.getLogger(__name__)
 

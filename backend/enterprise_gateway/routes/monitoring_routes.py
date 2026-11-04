@@ -7,10 +7,9 @@ from datetime import datetime, timedelta
 from typing import List, Optional
 
 from fastapi import APIRouter, Depends, HTTPException, Query, status
-from sqlalchemy.orm import Session
-
 from models.enterprise_models import EnterpriseAPILog
 from services.enterprise_auth_service import enterprise_auth_service
+from sqlalchemy.orm import Session
 from utils.database import get_db
 
 router = APIRouter()
@@ -79,9 +78,8 @@ async def get_client_logs(
         API访问日志列表
     """
     try:
-        from sqlalchemy import desc
-
         from models.enterprise_models import EnterpriseClient
+        from sqlalchemy import desc
 
         # 获取客户端内部ID
         client = (

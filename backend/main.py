@@ -6,21 +6,20 @@ MatuX STEM 学习平台 API 服务主入口
 本项目保留的路由存根仅用于兼容性，新功能请在对应项目中开发。
 """
 
-from middleware.rate_limit import RateLimitConfig, RateLimitMiddleware
 import asyncio
+from contextlib import asynccontextmanager
 import logging
 import os
 import sys
 import time
-from contextlib import asynccontextmanager
 
+from config.settings import Settings, get_settings
 from fastapi import FastAPI
 from fastapi.exceptions import RequestValidationError
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import JSONResponse, Response
+from middleware.rate_limit import RateLimitConfig, RateLimitMiddleware
 from starlette.exceptions import HTTPException as StarletteHTTPException
-
-from config.settings import Settings, get_settings
 
 # =============================================================================
 # 全局异常处理：Settings 实例化失败时提供清晰的错误信息
@@ -37,24 +36,24 @@ except Exception as e:
     sys.exit(1)
 
 # =============================================================================
-# 导入中间件模块（延迟导入避免循环依赖）
-# =============================================================================
-from middleware import (
-    APMMiddleware,
-    init_apm,
-    PermissionMiddleware,
-    LicenseMiddleware,
-    license_exception_handler,
-    CircuitBreakerConfig,
-    CircuitBreakerMiddleware
-)
-
-# =============================================================================
 # 导入数据库模块
 # =============================================================================
 from database import (
     Base,
     init_registry_manager,
+)
+
+# =============================================================================
+# 导入中间件模块（延迟导入避免循环依赖）
+# =============================================================================
+from middleware import (
+    APMMiddleware,
+    CircuitBreakerConfig,
+    CircuitBreakerMiddleware,
+    LicenseMiddleware,
+    PermissionMiddleware,
+    init_apm,
+    license_exception_handler,
 )
 from utils.database import create_db_and_tables
 from utils.logger import setup_logger
@@ -200,34 +199,34 @@ async def _do_startup(app: FastAPI, start_time: float):
     """执行实际的启动逻辑"""
     # 导入所有模型以确保它们被注册到 Base.metadata
     # 按依赖顺序导入：先导入基础模型，再导入依赖模型
-    from models.sponsorship import Sponsorship  # noqa: F401
-    from models.user import User  # noqa: F401
+    from models.ai_request import AIRequest  # noqa: F401
     from models.ar_vr_content import ARVRContent  # noqa: F401
-    from models.error_log import FrontendErrorLog  # noqa: F401
     from models.content_store import ContentItem  # noqa: F401
     from models.course_version import CourseVersion  # noqa: F401
     from models.dynamic_course import GeneratedCourse  # noqa: F401
+    from models.error_log import FrontendErrorLog  # noqa: F401
+    from models.exam import CheatEvent, Exam, ExamAttempt, Question  # noqa: F401
     from models.hardware_certification import (  # noqa: F401
         HardwareCertificationDB,
     )
     from models.hardware_module import HardwareModule  # noqa: F401
     from models.learning_source import LearningSource  # noqa: F401
+    from models.oauth_account import OAuthAccount  # noqa: F401
     from models.payment import Payment  # noqa: F401
     from models.permission import Permission  # noqa: F401
+    from models.sponsorship import Sponsorship  # noqa: F401
     from models.subscription import SubscriptionPlan  # noqa: F401
     from models.subscription_fsm import SubscriptionFSM  # noqa: F401
     from models.unified_learning_record import (  # noqa: F401
         UnifiedLearningRecord,
     )
+    from models.unified_material import UnifiedMaterial  # noqa: F401
+    from models.user import User  # noqa: F401
+    from models.user_guardian import UserGuardian  # noqa: F401
     from models.user_license import UserLicense  # noqa: F401
     from models.user_organization import (  # noqa: F401
         UserOrganization,
     )
-    from models.ai_request import AIRequest  # noqa: F401
-    from models.unified_material import UnifiedMaterial  # noqa: F401
-    from models.user_guardian import UserGuardian  # noqa: F401
-    from models.oauth_account import OAuthAccount  # noqa: F401
-    from models.exam import Exam, Question, ExamAttempt, CheatEvent  # noqa: F401
     from modules.learning.models import (  # noqa: F401
         StudentCourseAggregation,
     )
@@ -328,14 +327,14 @@ async def _init_lazy_architecture(app_instance, start_time: float):
     6. 后台预加载 Tier 1 模块
     """
     from core import (
+        ModuleSpec,
+        ModuleTier,
         init_lazy_loader,
         init_lazy_table_manager,
         init_service_manager,
-        ModuleSpec,
-        ModuleTier,
     )
-    from core.module_registry import get_all_module_specs
     from core.lazy_tables import get_lazy_table_manager
+    from core.module_registry import get_all_module_specs
 
     logger.info("\n" + "=" * 60)
     logger.info("启动懒加载架构")
@@ -363,7 +362,7 @@ async def _init_lazy_architecture(app_instance, start_time: float):
     logger.info("核心组件初始化完成")
 
     # Step 2: 注册所有模块（支持插件机制）
-    from core.module_registry import get_all_module_specs_with_plugins, discover_plugins
+    from core.module_registry import discover_plugins, get_all_module_specs_with_plugins
 
     # 自动发现插件
     discover_plugins(base_path="routes")
@@ -673,6 +672,7 @@ async def list_registry_modules(category: str | None = None):
 async def faulty_endpoint():
     """故障测试端点 - 用于熔断器测试"""
     import random
+
     from fastapi import HTTPException
 
     if random.random() < 0.7:  # 70%概率失败

@@ -3,19 +3,19 @@
 测试基于许可证类型的功能访问限制
 """
 
-import pytest
 from datetime import datetime, timedelta
-from unittest.mock import Mock, MagicMock, AsyncMock
-from fastapi import HTTPException
+from unittest.mock import AsyncMock, MagicMock, Mock
 
+from fastapi import HTTPException
 from middleware.license_permission import (
-    LicensePermissionService,
-    require_license_type,
-    require_feature,
     PERMISSION_MATRIX,
-    UPGRADE_SUGGESTIONS
+    UPGRADE_SUGGESTIONS,
+    LicensePermissionService,
+    require_feature,
+    require_license_type,
 )
-from models.license import LicenseType, License, LicenseStatus
+from models.license import License, LicenseStatus, LicenseType
+import pytest
 
 
 class TestLicensePermissionService:
