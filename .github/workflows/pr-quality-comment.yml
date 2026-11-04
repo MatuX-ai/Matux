@@ -41,11 +41,21 @@ jobs:
         echo "$PRETTIER_RESULT" > prettier-report.txt
 
         # 统计问题数量
-        ESLINT_ERRORS=$(echo "$ESLINT_RESULT" | grep -c "error" || echo "0")
-        ESLINT_WARNINGS=$(echo "$ESLINT_RESULT" | grep -c "warning" || echo "0")
-        STYLELINT_ERRORS=$(echo "$STYLELINT_RESULT" | grep -c "error" || echo "0")
-        STYLELINT_WARNINGS=$(echo "$STYLELINT_RESULT" | grep -c "warning" || echo "0")
-        PRETTIER_ISSUES=$(echo "$PRETTIER_RESULT" | grep -c "Code style issues" || echo "0")
+        # 注意：grep -c 在零匹配时仍会向 stdout 输出 0，并以 exit code 1 结束。
+        # 若写成 `|| echo "0"`，会额外追加一行 0，导致变量变成多行值 "0\n0"，
+        # 后续整数比较会报 "integer expression expected"，
+        # 且 `echo "k=$VAR" >> $GITHUB_OUTPUT` 会写出裸 "0" 行 -> Invalid format -> step 失败。
+        # 统一改用 `|| true`（吞掉非零退出码但保留 grep 已输出的 0），并用 ${VAR:-0} 兜底空值。
+        ESLINT_ERRORS=$(echo "$ESLINT_RESULT" | grep -c "error" 2>/dev/null || true)
+        ESLINT_ERRORS=${ESLINT_ERRORS:-0}
+        ESLINT_WARNINGS=$(echo "$ESLINT_RESULT" | grep -c "warning" 2>/dev/null || true)
+        ESLINT_WARNINGS=${ESLINT_WARNINGS:-0}
+        STYLELINT_ERRORS=$(echo "$STYLELINT_RESULT" | grep -c "error" 2>/dev/null || true)
+        STYLELINT_ERRORS=${STYLELINT_ERRORS:-0}
+        STYLELINT_WARNINGS=$(echo "$STYLELINT_RESULT" | grep -c "warning" 2>/dev/null || true)
+        STYLELINT_WARNINGS=${STYLELINT_WARNINGS:-0}
+        PRETTIER_ISSUES=$(echo "$PRETTIER_RESULT" | grep -c "Code style issues" 2>/dev/null || true)
+        PRETTIER_ISSUES=${PRETTIER_ISSUES:-0}
 
         echo "eslint_errors=$ESLINT_ERRORS" >> $GITHUB_OUTPUT
         echo "eslint_warnings=$ESLINT_WARNINGS" >> $GITHUB_OUTPUT
@@ -54,7 +64,7 @@ jobs:
         echo "prettier_issues=$PRETTIER_ISSUES" >> $GITHUB_OUTPUT
 
         # 判断是否通过
-        if [ "$ESLINT_ERRORS" -eq 0 ] && [ "$STYLELINT_ERRORS" -eq 0 ] && [ "$PRETTIER_ISSUES" -eq 0 ]; then
+        if [ "${ESLINT_ERRORS:-0}" -eq 0 ] && [ "${STYLELINT_ERRORS:-0}" -eq 0 ] && [ "${PRETTIER_ISSUES:-0}" -eq 0 ]; then
           echo "status=success" >> $GITHUB_OUTPUT
         else
           echo "status=failure" >> $GITHUB_OUTPUT
@@ -83,15 +93,21 @@ jobs:
         echo "|--------|--------|--------|------|" >> comment.md
 
         ESLINT_STATUS="✅"
-        [ "${{ steps.quality.outputs.eslint_errors }}" -ne 0 ] && ESLINT_STATUS="❌"
+        ESLINT_ERRORS_VALUE="${{ steps.quality.outputs.eslint_errors }}"
+        ESLINT_ERRORS_VALUE="${ESLINT_ERRORS_VALUE:-0}"
+        [ "$ESLINT_ERRORS_VALUE" -ne 0 ] && ESLINT_STATUS="❌"
         echo "| ESLint | ${{ steps.quality.outputs.eslint_errors }} | ${{ steps.quality.outputs.eslint_warnings }} | ${ESLINT_STATUS} |" >> comment.md
 
         STYLELINT_STATUS="✅"
-        [ "${{ steps.quality.outputs.stylelint_errors }}" -ne 0 ] && STYLELINT_STATUS="❌"
+        STYLELINT_ERRORS_VALUE="${{ steps.quality.outputs.stylelint_errors }}"
+        STYLELINT_ERRORS_VALUE="${STYLELINT_ERRORS_VALUE:-0}"
+        [ "$STYLELINT_ERRORS_VALUE" -ne 0 ] && STYLELINT_STATUS="❌"
         echo "| Stylelint | ${{ steps.quality.outputs.stylelint_errors }} | ${{ steps.quality.outputs.stylelint_warnings }} | ${STYLELINT_STATUS} |" >> comment.md
 
         PRETTIER_STATUS="✅"
-        [ "${{ steps.quality.outputs.prettier_issues }}" -ne 0 ] && PRETTIER_STATUS="❌"
+        PRETTIER_ISSUES_VALUE="${{ steps.quality.outputs.prettier_issues }}"
+        PRETTIER_ISSUES_VALUE="${PRETTIER_ISSUES_VALUE:-0}"
+        [ "$PRETTIER_ISSUES_VALUE" -ne 0 ] && PRETTIER_STATUS="❌"
         echo "| Prettier | ${{ steps.quality.outputs.prettier_issues }} | - | ${PRETTIER_STATUS} |" >> comment.md
 
         echo "" >> comment.md
