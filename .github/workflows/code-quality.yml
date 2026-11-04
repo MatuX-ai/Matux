@@ -63,8 +63,10 @@ jobs:
     - name: isort import check
       run: isort --check-only backend/
       
-    - name: Flake8 linting
-      run: flake8 backend/ || true
+    # 既有 lint 债务冻结在 config/lint-baseline.txt，只对新增错误失败。
+    # 收紧基线：python scripts/flake8_baseline.py --update
+    - name: Flake8 linting (baseline gate)
+      run: python scripts/flake8_baseline.py
       
     - name: MyPy type checking
       run: mypy backend/ --ignore-missing-imports || true
