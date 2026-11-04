@@ -15,7 +15,6 @@ from sqlalchemy.orm import sessionmaker
 # 添加项目路径
 sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), "..")))
 
-from database.db import Base
 from models.recommendation import (
     CourseFeature,
     LearningStyle,
@@ -26,6 +25,7 @@ from services.recommendation_service import (
     RecommendationService,
     get_recommendation_service,
 )
+from utils.database import Base
 
 # ==================== 测试夹具 ====================
 

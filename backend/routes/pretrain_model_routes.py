@@ -12,7 +12,7 @@ from ai_service.model_compressor import ModelCompressor
 from ai_service.transfer_learning_engine import TransferLearningEngine
 from config.transfer_learning_config import settings
 from fastapi import APIRouter, BackgroundTasks, Depends, HTTPException, Query
-from models.recommendation import PretrainedModel
+from models.recommendation import ColdStartRecommendationLog, PretrainedModel
 from pydantic import BaseModel
 from services.dataset_processor import AssistmentsDatasetProcessor
 from sqlalchemy import select

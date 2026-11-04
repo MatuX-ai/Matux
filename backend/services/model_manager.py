@@ -17,7 +17,7 @@ from ai_service.transfer_learning_engine import TransferLearningEngine
 from config.transfer_learning_config import settings
 from models.recommendation import ColdStartRecommendationLog, PretrainedModel
 from redis import asyncio as aioredis
-from sqlalchemy import select
+from sqlalchemy import func, select
 from sqlalchemy.ext.asyncio import AsyncSession
 
 logger = logging.getLogger(__name__)

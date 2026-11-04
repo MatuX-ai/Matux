@@ -4,8 +4,8 @@ Supports user profiles, course features, recommendation records, etc.
 """
 
 import enum
+from datetime import datetime
 
-from database.db import Base
 from sqlalchemy import (
     JSON,
     Boolean,
@@ -21,6 +21,7 @@ from sqlalchemy import (
 )
 from sqlalchemy.orm import relationship
 from sqlalchemy.sql import func
+from utils.database import Base
 
 
 class LearningStyle(str, enum.Enum):
@@ -90,15 +91,30 @@ class UserLearningProfile(Base):
     # Recommendation weights config (JSON)
     recommendation_weights = Column(JSON, default=dict, comment="Recommendation algorithm weights")
 
+    # Behavior-oriented fields consumed by ai_service.recommendation_service
+    learning_preferences = Column(
+        JSON, default=dict, comment="Learning preference config"
+    )
+    skill_levels = Column(
+        JSON, default=dict, comment="Skill level map (knowledge point -> level)"
+    )
+    interests = Column(JSON, default=list, comment="Interest list")
+    learning_history_vector = Column(
+        JSON, default=list, comment="Learning history feature vector"
+    )
+
     # Timestamps
     created_at = Column(DateTime(timezone=True), server_default=func.now())
     updated_at = Column(DateTime(timezone=True), onupdate=func.now())
+    last_updated = Column(
+        DateTime(timezone=True),
+        default=datetime.utcnow,
+        onupdate=datetime.utcnow,
+        comment="Last profile update time",
+    )
 
     # Relationships
     user = relationship("User", backref="learning_profile")
-    recommendations = relationship(
-        "RecommendationRecord", back_populates="user_profile"
-    )
 
     # Indexes
     __table_args__ = (
@@ -259,7 +275,8 @@ class RecommendationRecord(Base):
     created_at = Column(DateTime(timezone=True), server_default=func.now())
 
     # Relationships
-    user_profile = relationship("UserLearningProfile", backref="recommendations")
+    # 注：RecommendationRecord 与 UserLearningProfile 之间没有直接外键
+    # （前者只持有指向 users.id 的 user_id），因此不建立 ORM relationship。
 
     # Indexes
     __table_args__ = (
@@ -287,6 +304,230 @@ class RecommendationRecord(Base):
                 self.completed_at.isoformat() if self.completed_at is not None else None
             ),
             "created_at": self.created_at.isoformat() if self.created_at is not None else None,
+        }
+
+
+class LearningRecord(Base):
+    """User learning record table (per-lesson learning behavior log)"""
+
+    __tablename__ = "learning_records"
+
+    id = Column(Integer, primary_key=True, autoincrement=True)
+
+    # Association info
+    user_id = Column(Integer, nullable=False, index=True, comment="User ID")
+    course_id = Column(Integer, nullable=False, index=True, comment="Course ID")
+    lesson_id = Column(Integer, nullable=True, index=True, comment="Lesson ID (optional)")
+
+    # Learning behavior
+    progress = Column(Float, default=0.0, comment="Learning progress (0-1)")
+    time_spent = Column(Integer, default=0, comment="Time spent (minutes)")
+    completion_status = Column(
+        String(20),
+        default="in_progress",
+        index=True,
+        comment="Completion status (in_progress/completed)",
+    )
+
+    # Ratings
+    difficulty_rating = Column(Integer, comment="Difficulty rating (1-5)")
+    interest_rating = Column(Integer, comment="Interest rating (1-5)")
+
+    # Timestamps
+    timestamp = Column(
+        DateTime(timezone=True),
+        default=datetime.utcnow,
+        index=True,
+        comment="Event time",
+    )
+
+    # Indexes
+    __table_args__ = (
+        Index("idx_learning_record_user_course", "user_id", "course_id"),
+        Index("idx_learning_record_user_status", "user_id", "completion_status"),
+    )
+
+    def to_dict(self):
+        """Convert to dictionary"""
+        return {
+            "id": self.id,
+            "user_id": self.user_id,
+            "course_id": self.course_id,
+            "lesson_id": self.lesson_id,
+            "progress": self.progress,
+            "time_spent": self.time_spent,
+            "completion_status": self.completion_status,
+            "difficulty_rating": self.difficulty_rating,
+            "interest_rating": self.interest_rating,
+            "timestamp": self.timestamp.isoformat() if self.timestamp is not None else None,
+        }
+
+
+class RecommendationFeedback(Base):
+    """Recommendation feedback table (collected from real-time user actions)"""
+
+    __tablename__ = "recommendation_feedbacks"
+
+    id = Column(Integer, primary_key=True, autoincrement=True)
+
+    # Association info
+    user_id = Column(Integer, nullable=False, index=True, comment="User ID")
+    recommended_course_id = Column(
+        String(64), nullable=True, index=True, comment="Recommended course ID"
+    )
+
+    # Feedback payload
+    feedback_type = Column(
+        String(50), nullable=False, index=True, comment="Feedback type"
+    )
+    context = Column(JSON, default=dict, comment="Feedback context")
+
+    # Timestamps
+    timestamp = Column(
+        DateTime(timezone=True),
+        default=datetime.utcnow,
+        index=True,
+        comment="Feedback time",
+    )
+
+    # Indexes
+    __table_args__ = (
+        Index("idx_recommendation_feedback_user_type", "user_id", "feedback_type"),
+    )
+
+    def to_dict(self):
+        """Convert to dictionary"""
+        return {
+            "id": self.id,
+            "user_id": self.user_id,
+            "recommended_course_id": self.recommended_course_id,
+            "feedback_type": self.feedback_type,
+            "context": self.context,
+            "timestamp": self.timestamp.isoformat() if self.timestamp is not None else None,
+        }
+
+
+class PretrainedModel(Base):
+    """Pretrained model table (transfer learning / model compression registry)"""
+
+    __tablename__ = "pretrained_models"
+
+    id = Column(Integer, primary_key=True, autoincrement=True)
+
+    # Model identity
+    model_name = Column(String(100), nullable=False, index=True, comment="Model name")
+    model_version = Column(String(50), nullable=False, comment="Model version")
+    base_model = Column(String(100), comment="Base model")
+    dataset_source = Column(String(200), comment="Training dataset source")
+
+    # Training state
+    training_status = Column(
+        String(20),
+        default="pending",
+        index=True,
+        comment="Training status (pending/training/completed/failed)",
+    )
+    training_progress = Column(Float, default=0.0, comment="Training progress (0-100)")
+
+    # Model artifacts
+    model_path = Column(String(500), comment="Model storage path")
+    model_size = Column(Integer, default=0, comment="Model size (bytes)")
+    compression_method = Column(String(50), comment="Compression method")
+    compression_ratio = Column(Float, comment="Compression ratio")
+
+    # Evaluation metrics
+    accuracy_before = Column(Float, comment="Accuracy before transfer learning")
+    accuracy_after = Column(Float, comment="Accuracy after transfer learning")
+
+    # Extra info
+    metadata_info = Column(JSON, default=dict, comment="Additional metadata")
+
+    # Timestamps
+    created_at = Column(DateTime(timezone=True), server_default=func.now())
+    updated_at = Column(DateTime(timezone=True), onupdate=func.now())
+
+    # Indexes
+    __table_args__ = (
+        Index("idx_pretrained_model_status", "training_status", "created_at"),
+    )
+
+    def to_dict(self):
+        """Convert to dictionary"""
+        return {
+            "id": self.id,
+            "model_name": self.model_name,
+            "model_version": self.model_version,
+            "base_model": self.base_model,
+            "dataset_source": self.dataset_source,
+            "training_status": self.training_status,
+            "training_progress": self.training_progress,
+            "model_path": self.model_path,
+            "model_size": self.model_size,
+            "compression_method": self.compression_method,
+            "compression_ratio": self.compression_ratio,
+            "accuracy_before": self.accuracy_before,
+            "accuracy_after": self.accuracy_after,
+            "metadata_info": self.metadata_info,
+            "created_at": self.created_at.isoformat() if self.created_at is not None else None,
+            "updated_at": self.updated_at.isoformat() if self.updated_at is not None else None,
+        }
+
+
+class ColdStartRecommendationLog(Base):
+    """Cold start recommendation log table (audit trail for new-user recommendations)"""
+
+    __tablename__ = "cold_start_recommendation_logs"
+
+    id = Column(Integer, primary_key=True, autoincrement=True)
+
+    # Association info
+    user_id = Column(Integer, nullable=False, index=True, comment="User ID")
+    model_id = Column(
+        Integer, nullable=True, index=True, comment="Pretrained model ID"
+    )
+
+    # Recommendation payload
+    recommended_courses = Column(
+        JSON, default=list, comment="Recommended course list"
+    )
+    coverage_score = Column(
+        Float, default=0.0, comment="Recommendation coverage score"
+    )
+
+    # Metrics
+    response_time_ms = Column(Integer, default=0, comment="Response time (milliseconds)")
+    is_cold_start = Column(
+        Integer, default=1, comment="Whether it is a cold start recommendation"
+    )
+
+    # Timestamps
+    recommendation_timestamp = Column(
+        DateTime(timezone=True),
+        default=datetime.utcnow,
+        index=True,
+        comment="Recommendation time",
+    )
+
+    # Indexes
+    __table_args__ = (
+        Index("idx_cold_start_log_user_model", "user_id", "model_id"),
+    )
+
+    def to_dict(self):
+        """Convert to dictionary"""
+        return {
+            "id": self.id,
+            "user_id": self.user_id,
+            "model_id": self.model_id,
+            "recommended_courses": self.recommended_courses,
+            "coverage_score": self.coverage_score,
+            "response_time_ms": self.response_time_ms,
+            "is_cold_start": self.is_cold_start,
+            "recommendation_timestamp": (
+                self.recommendation_timestamp.isoformat()
+                if self.recommendation_timestamp is not None
+                else None
+            ),
         }
 
 
