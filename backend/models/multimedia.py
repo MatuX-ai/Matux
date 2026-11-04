@@ -5,8 +5,10 @@
 
 from datetime import datetime
 import enum
-from typing import Any, Dict, Optional
+from typing import Any, Dict, List, Optional
 
+# Pydantic模型用于API请求/响应
+from pydantic import BaseModel, Field
 from sqlalchemy import (
     JSON,
     Boolean,
@@ -21,10 +23,6 @@ from sqlalchemy import (
 )
 from sqlalchemy.orm import relationship
 from utils.database import Base
-from typing import List, Optional
-
-# Pydantic模型用于API请求/响应
-from pydantic import BaseModel, Field
 
 
 class MediaType(str, enum.Enum):

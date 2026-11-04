@@ -4,9 +4,9 @@
 
 from unittest.mock import AsyncMock, MagicMock, patch
 
-import pytest
 from ai_service.recommendation_service import RecommendationEngine
 from models.recommendation import CourseFeature, LearningRecord, UserLearningProfile
+import pytest
 
 # models/recommendation.py 中的 LearningRecord 已被 UserLearningProfile 取代，
 # 测试断言的字段（progress/time_spent/difficulty_rating 等）不再匹配。

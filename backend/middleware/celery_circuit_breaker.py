@@ -8,9 +8,9 @@ import logging
 import time
 from typing import Any, Dict, List, Optional
 
+from celery import Task as BaseTask
 from celery.exceptions import SoftTimeLimitExceeded, TimeLimitExceeded
 from prometheus_client import Counter, Enum as PromEnum, Gauge, Histogram
-from celery import Task as BaseTask
 
 logger = logging.getLogger(__name__)
 

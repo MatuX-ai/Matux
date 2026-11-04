@@ -7,7 +7,7 @@ from datetime import date, datetime
 import logging
 from typing import Any, Dict, List, Optional
 
-from models.classroom import ClassScheduleCreate, Classroom, ClassSchedule
+from models.classroom import Classroom, ClassSchedule, ClassScheduleCreate
 from models.course import Course, CourseEnrollment
 from models.student import Student, StudentCreate
 from models.teacher import Teacher, TeacherCreate

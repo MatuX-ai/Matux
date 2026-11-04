@@ -37,7 +37,10 @@ from services.ar_physics_service import ARPhysicsService  # noqa: E402
 
 # 导入服务
 from services.ar_vr_content_service import ARVRContentService  # noqa: E402
-from services.web_rtc_sensor_service import WebRTCManager, WebRTCSensorDataStream  # noqa: E402
+from services.web_rtc_sensor_service import (  # noqa: E402
+    WebRTCManager,
+    WebRTCSensorDataStream,
+)
 
 
 class TestARVRModels(unittest.TestCase):

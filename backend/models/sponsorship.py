@@ -5,8 +5,11 @@
 
 from datetime import datetime
 import enum
-from typing import Any, Dict, Optional
 
+# Pydantic模型用于API请求/响应
+from typing import Any, Dict, List, Optional
+
+from pydantic import BaseModel, Field
 from sqlalchemy import (
     JSON,
     Boolean,
@@ -23,10 +26,6 @@ from sqlalchemy.orm import relationship, validates
 
 # 使用统一的Base，避免多个declarative_base()导致的mapper初始化错误
 from utils.database import Base
-# Pydantic模型用于API请求/响应
-from typing import List, Optional
-
-from pydantic import BaseModel, Field
 
 
 class SponsorshipStatus(str, enum.Enum):

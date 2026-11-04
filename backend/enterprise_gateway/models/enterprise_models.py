@@ -4,8 +4,12 @@
 """
 
 from datetime import datetime
+from typing import Optional
 
 from passlib.context import CryptContext
+
+# 请求模型定义
+from pydantic import BaseModel
 from sqlalchemy import (
     JSON,
     Boolean,
@@ -20,10 +24,6 @@ from sqlalchemy import (
 from sqlalchemy.orm import relationship
 from sqlalchemy.sql import func
 from utils.database import Base
-from typing import Optional
-
-# 请求模型定义
-from pydantic import BaseModel
 
 pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
 

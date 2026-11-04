@@ -10,10 +10,6 @@ import os
 import pickle
 from typing import Any, Dict, List
 
-import numpy as np
-from sklearn.feature_extraction.text import TfidfVectorizer
-from sklearn.metrics.pairwise import cosine_similarity
-from sklearn.neighbors import NearestNeighbors
 from config.transfer_learning_config import settings as tl_settings
 from models.content_store import ContentItem, ContentRating
 from models.recommendation import (
@@ -23,6 +19,10 @@ from models.recommendation import (
     UserLearningProfile,
 )
 from models.subscription import SubscriptionStatus, UserSubscription
+import numpy as np
+from sklearn.feature_extraction.text import TfidfVectorizer
+from sklearn.metrics.pairwise import cosine_similarity
+from sklearn.neighbors import NearestNeighbors
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 

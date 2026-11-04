@@ -5,11 +5,11 @@ User model
 import enum
 from typing import List
 
+from models.permission import Permission, Role
 from passlib.context import CryptContext
 from sqlalchemy import Boolean, Column, DateTime, Enum, Integer, String
 from sqlalchemy.orm import relationship
 from sqlalchemy.sql import func
-from models.permission import Permission, Role
 from utils.database import Base
 
 pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")

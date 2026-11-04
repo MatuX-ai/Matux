@@ -5,19 +5,19 @@
 
 from unittest.mock import Mock, patch
 
-from fastapi.testclient import TestClient
-import pytest
-from sqlalchemy import create_engine
-from sqlalchemy.orm import sessionmaker
-from sqlalchemy.pool import StaticPool
 from database.tenant_aware_session import TenantAwareSession, TenantQueryHelper
+from fastapi.testclient import TestClient
 from main import app
 from middleware.tenant_middleware import TenantMiddleware
 from models.course import Course, CourseCreate
 from models.license import Organization
 from models.user import User, UserRole
+import pytest
 from security.data_access_control import DataAccessControl, DataMasking
 from services.course_service import CourseService
+from sqlalchemy import create_engine
+from sqlalchemy.orm import sessionmaker
+from sqlalchemy.pool import StaticPool
 from utils.tenant_context import TenantContext, with_tenant_context
 
 # models/course.py 中不存在 CourseCreate，services/course_service.py 已删除，

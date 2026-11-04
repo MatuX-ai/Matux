@@ -6,7 +6,11 @@ sys.path.insert(0, '.')
 
 
 from sqlalchemy import select  # noqa: E402
-from sqlalchemy.ext.asyncio import AsyncSession, async_sessionmaker, create_async_engine  # noqa: E402
+from sqlalchemy.ext.asyncio import (  # noqa: E402
+    AsyncSession,
+    async_sessionmaker,
+    create_async_engine,
+)
 
 # 模拟配置
 DATABASE_URL = "sqlite+aiosqlite:///./ai_service.db"

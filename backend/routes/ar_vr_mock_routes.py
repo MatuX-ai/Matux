@@ -5,10 +5,12 @@ AR/VR Mock接口API路由
 
 import asyncio
 from datetime import datetime
+import json
 import logging
 from typing import Any, Dict, List, Optional
 
-from fastapi import APIRouter, Body, Depends, HTTPException, Query
+# WebSocket端点用于实时数据流
+from fastapi import APIRouter, Body, Depends, HTTPException, Query, WebSocket
 from services.ar_vr_mock_service import (
     MOCK_SCENARIOS,
     ARVRMockOrchestrator,
@@ -16,10 +18,6 @@ from services.ar_vr_mock_service import (
 )
 from sqlalchemy.orm import Session
 from utils.database import get_db
-import json
-
-# WebSocket端点用于实时数据流
-from fastapi import WebSocket
 
 logger = logging.getLogger(__name__)
 

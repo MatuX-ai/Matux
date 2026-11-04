@@ -4,14 +4,13 @@
 """
 
 import enum
+from typing import Any, Dict, Optional
 
+from pydantic import BaseModel, Field
 from sqlalchemy import Column, DateTime, Enum, Float, ForeignKey, Integer, String, Text
 from sqlalchemy.orm import relationship
 from sqlalchemy.sql import func
 from utils.database import Base
-from typing import Any, Dict, Optional
-
-from pydantic import BaseModel, Field
 
 
 class CourseSource(str, enum.Enum):

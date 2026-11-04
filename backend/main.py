@@ -326,9 +326,6 @@ async def _init_lazy_architecture(app_instance, start_time: float):
     5. 注册激活中间件
     6. 后台预加载 Tier 1 模块
     """
-    from core.lazy_tables import get_lazy_table_manager
-    from core.module_registry import get_all_module_specs
-
     from core import (
         ModuleSpec,
         ModuleTier,
@@ -336,6 +333,8 @@ async def _init_lazy_architecture(app_instance, start_time: float):
         init_lazy_table_manager,
         init_service_manager,
     )
+    from core.lazy_tables import get_lazy_table_manager
+    from core.module_registry import get_all_module_specs
 
     logger.info("\n" + "=" * 60)
     logger.info("启动懒加载架构")

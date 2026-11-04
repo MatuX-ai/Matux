@@ -7,6 +7,7 @@ from datetime import datetime
 import enum
 from typing import Any, Dict, Optional
 
+from pydantic import BaseModel, Field
 from sqlalchemy import (
     JSON,
     Boolean,
@@ -21,7 +22,6 @@ from sqlalchemy import (
 )
 from sqlalchemy.orm import relationship
 from utils.database import Base
-from pydantic import BaseModel, Field
 
 
 class LearningRecordStatus(str, enum.Enum):

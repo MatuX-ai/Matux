@@ -6,13 +6,13 @@ Token 服务核心功能单元测试
 from datetime import datetime, timedelta
 from unittest.mock import Mock
 
-import pytest
-from sqlalchemy.orm import Session
 from models.token_models import TokenTransaction, TransactionType
 from models.user import User
+import pytest
 
 # 假设的导入路径（根据实际项目结构调整）
 from services.token_service import TokenPackage, TokenService
+from sqlalchemy.orm import Session
 
 # models/token_models.py 已删除：TokenTransaction / TokenType 随
 # services/token_service.py 改造为 models/user_license.py 中的 TokenUsageRecord 等，

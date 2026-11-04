@@ -1,7 +1,6 @@
 from datetime import datetime
 from unittest.mock import AsyncMock, MagicMock, patch
 
-import pytest
 from ai_service.completion_memory import CompletionMemory
 from models.ai_completion import (
     CompletionRequest,
@@ -9,6 +8,7 @@ from models.ai_completion import (
     ModelProvider,
     ProgrammingLanguage,
 )
+import pytest
 from services.code_completion_service import CodeCompletionService
 
 # 该模块依赖的生产代码已失效：

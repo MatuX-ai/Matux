@@ -3,8 +3,8 @@ AI-Edu intelligent recommendation system data models
 Supports user profiles, course features, recommendation records, etc.
 """
 
-import enum
 from datetime import datetime
+import enum
 
 from sqlalchemy import (
     JSON,

@@ -2,6 +2,8 @@
 支付服务核心实现
 """
 
+# 导入asyncio用于sleep
+import asyncio
 from datetime import datetime
 import logging
 from typing import Any, Dict, List, Optional
@@ -12,8 +14,6 @@ from models.user import User
 from models.user_license import TokenPackage, TokenRechargeRecord
 from sqlalchemy import func, select
 from sqlalchemy.ext.asyncio import AsyncSession
-# 导入asyncio用于sleep
-import asyncio
 
 logger = logging.getLogger(__name__)
 

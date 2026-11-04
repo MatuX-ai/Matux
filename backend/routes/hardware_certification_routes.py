@@ -7,6 +7,9 @@ from datetime import datetime
 from typing import Optional
 
 from fastapi import APIRouter, HTTPException, Query
+
+# 导入Response用于返回SVG内容
+from fastapi.responses import Response
 from models.hardware_certification import (
     BadgeConfig,
     BadgeStyle,
@@ -17,8 +20,6 @@ from models.hardware_certification import (
 from services.badge_generator import badge_generator
 from services.hardware_certification_service import hardware_certification_service
 from utils.logger import setup_logger
-# 导入Response用于返回SVG内容
-from fastapi.responses import Response
 
 router = APIRouter()
 logger = setup_logger("INFO")

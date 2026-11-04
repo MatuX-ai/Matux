@@ -7,6 +7,9 @@ import time
 import tracemalloc
 from typing import Any, Dict, List
 
+# 用于mock的装饰器
+from unittest.mock import patch
+
 import pytest
 from services.complex_gesture_recognizer import (
     GesturePoint,
@@ -18,9 +21,6 @@ from services.integral_decay_calculator import decay_calculator
 from services.reward_event_bus import RewardEvent, reward_event_bus
 from services.voice_correction_detector import VoiceCorrectionDetector
 from utils.blockchain_client import BlockchainClient
-
-# 用于mock的装饰器
-from unittest.mock import patch
 
 # 该模块依赖已删除的 utils/blockchain_client.py（BlockchainClient），
 # 待区块链客户端重新实现后删除本跳过。

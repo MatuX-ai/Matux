@@ -4,8 +4,10 @@
 """
 
 from datetime import datetime
-from typing import Any, Dict, Optional
+from typing import Any, Dict, Optional, Union
 
+# Pydantic模型用于API请求/响应
+from pydantic import BaseModel, Field, validator
 from sqlalchemy import (
     JSON,
     Boolean,
@@ -18,10 +20,6 @@ from sqlalchemy import (
 )
 from sqlalchemy.orm import relationship
 from utils.database import Base
-from typing import Optional, Union
-
-# Pydantic模型用于API请求/响应
-from pydantic import BaseModel, Field, validator
 
 
 class TenantConfig(Base):
