@@ -17,14 +17,14 @@ import { MatTooltipModule } from '@angular/material/tooltip';
 import { BrowserModule } from '@angular/platform-browser';
 import { BrowserAnimationsModule } from '@angular/platform-browser/animations';
 import { ServiceWorkerModule } from '@angular/service-worker';
-import { MonacoEditorModule } from 'ngx-monaco-editor-v2';
 import { NgxEchartsModule } from 'ngx-echarts';
+import { MonacoEditorModule } from 'ngx-monaco-editor-v2';
 
 import { environment } from '../environments/environment';
 
+import { BackendLoadingBannerComponent } from './core/components/backend-loading-banner/backend-loading-banner.component';
 import { HttpAuthInterceptor } from './core/interceptors/http-auth.interceptor';
 import { HttpTimeoutInterceptor } from './core/interceptors/http-timeout.interceptor';
-import { BackendLoadingBannerComponent } from './core/components/backend-loading-banner/backend-loading-banner.component';
 import { StatusBarComponent } from './shared/components/status-bar/status-bar.component';
 import { SharedModule } from './shared/shared.module';
 import { AppComponent } from './app.component';
