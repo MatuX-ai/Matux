@@ -7,9 +7,9 @@ from datetime import date, datetime
 import logging
 from typing import Any, Dict, List, Optional
 
-from models.classroom import Classroom, ClassSchedule
+from models.classroom import ClassScheduleCreate, Classroom, ClassSchedule
 from models.course import Course, CourseEnrollment
-from models.student import Student
+from models.student import Student, StudentCreate
 from models.teacher import Teacher, TeacherCreate
 from models.user import User, UserRole
 from sqlalchemy import and_, or_

@@ -473,7 +473,7 @@ async def get_user_rental_history(
         result = await db.execute(query)
         rentals = result.scalars().all()
 
-        return [ModuleRentalRecordResponse.from_orm(rental) for rent in rentals]
+        return [ModuleRentalRecordResponse.from_orm(rent) for rent in rentals]
 
     except Exception as e:
         logger.error(f"获取租赁历史失败: {str(e)}")

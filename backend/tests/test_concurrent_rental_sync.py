@@ -8,6 +8,7 @@ from datetime import datetime, timedelta
 import time
 
 from config.settings import Settings
+from database import Base as HardwareBase
 from models.hardware_module import (
     HardwareModule,
     HardwareModuleStatus,
@@ -19,6 +20,7 @@ import pytest
 from services.hardware_inventory_service import hardware_inventory_service
 from sqlalchemy.ext.asyncio import AsyncSession, create_async_engine
 from sqlalchemy.orm import sessionmaker
+from utils.database import Base as LicenseBase
 
 
 class TestConcurrentRentalSync:
@@ -36,7 +38,8 @@ class TestConcurrentRentalSync:
         )
 
         async with engine.begin() as conn:
-            await conn.run_sync(Base.metadata.create_all)
+            await conn.run_sync(HardwareBase.metadata.create_all)
+            await conn.run_sync(LicenseBase.metadata.create_all)
 
         async with async_session() as session:
             yield session

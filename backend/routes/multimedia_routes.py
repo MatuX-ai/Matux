@@ -10,6 +10,7 @@ from fastapi import APIRouter, Depends, File, Form, HTTPException, Query, Upload
 from models.multimedia import (
     DocumentFormat,
     DocumentProcessingRequest,
+    MediaTranscodingJob,
     MediaType,
     MultimediaResource,
     MultimediaResourceCreate,

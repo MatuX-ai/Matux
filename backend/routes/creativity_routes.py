@@ -9,6 +9,7 @@ from typing import List, Optional
 from ai_service.business_evaluator import business_evaluator
 from ai_service.creativity_engine import creativity_engine
 from ai_service.idea_scorer import idea_scorer
+from ai_service.image_generator import dalle_generator
 from ai_service.prompt_templates import prompt_template_manager
 from fastapi import APIRouter, Depends, HTTPException, Query
 from models.creativity_models import (

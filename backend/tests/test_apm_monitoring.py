@@ -19,7 +19,11 @@ from middleware.apm_monitoring import APMConfig, init_apm, trace_endpoint
 import pytest
 from routes.ai_recommend_routes import router as ai_recommend_router
 from sqlalchemy.ext.asyncio import AsyncSession
-from utils.metrics_collector import metrics_collector, record_recommendation_metrics
+from utils.metrics_collector import (
+    metrics_collector,
+    record_ai_metrics,
+    record_recommendation_metrics,
+)
 
 
 # Mock配置

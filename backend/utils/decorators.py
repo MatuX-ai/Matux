@@ -603,5 +603,3 @@ def create_token_billing_decorator(db_session_getter: Callable[[], Session]):
         return TokenBillingDecorator(token_service)
 
     return get_decorator
-
-    return current_user

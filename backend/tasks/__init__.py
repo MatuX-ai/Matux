@@ -17,6 +17,7 @@ from models.multimedia import (
     VideoStatus,
 )
 from services.multimedia_service import StorageConfig
+from sqlalchemy import and_
 from sqlalchemy.orm import Session
 from utils.database import get_db
 
