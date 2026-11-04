@@ -12,8 +12,19 @@ from datetime import datetime, timedelta  # noqa: E402
 import hashlib  # noqa: E402
 from typing import Optional  # noqa: E402
 
-from fastapi import Body, Depends, FastAPI, HTTPException, Path, Query, status  # noqa: E402
-from fastapi.security import OAuth2PasswordBearer, OAuth2PasswordRequestForm  # noqa: E402
+from fastapi import (  # noqa: E402
+    Body,
+    Depends,
+    FastAPI,
+    HTTPException,
+    Path,
+    Query,
+    status,
+)
+from fastapi.security import (  # noqa: E402
+    OAuth2PasswordBearer,
+    OAuth2PasswordRequestForm,
+)
 from jose import JWTError, jwt  # noqa: E402
 
 

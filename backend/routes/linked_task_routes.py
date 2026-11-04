@@ -3,6 +3,8 @@ AI-Edu 联动任务 API 路由
 提供跨平台任务的提交、评测和排行榜功能
 """
 
+# 导入 datetime
+from datetime import datetime
 import logging
 from typing import Optional
 
@@ -14,8 +16,6 @@ from services.task_orchestration_service import (
 from sqlalchemy.orm import Session
 from utils.database import get_sync_db
 from utils.dependencies import get_current_user_sync
-# 导入 datetime
-from datetime import datetime
 
 logger = logging.getLogger(__name__)
 

@@ -11,7 +11,11 @@ import sys
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 
 from config.settings import Settings  # noqa: E402
-from models.hardware_module import Base, HardwareModule, HardwareModuleStatus  # noqa: E402
+from models.hardware_module import (  # noqa: E402
+    Base,
+    HardwareModule,
+    HardwareModuleStatus,
+)
 from services.hardware_inventory_service import hardware_inventory_service  # noqa: E402
 from sqlalchemy.ext.asyncio import AsyncSession, create_async_engine  # noqa: E402
 from sqlalchemy.orm import sessionmaker  # noqa: E402

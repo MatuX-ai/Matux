@@ -6,8 +6,6 @@
 from datetime import datetime
 from unittest.mock import Mock, patch
 
-import pytest
-from sqlalchemy.orm import Session
 from models.course import Course
 from models.course_version import (
     BranchCreate,
@@ -18,7 +16,9 @@ from models.course_version import (
     VersionBranch,
 )
 from models.user import User
+import pytest
 from services.course_version_service import CourseVersionService
+from sqlalchemy.orm import Session
 
 # services/course_version_service.py 已从仓库中删除（models/course_version.py 仍在），
 # 待服务层恢复后删除本跳过。
