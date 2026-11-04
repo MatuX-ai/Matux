@@ -33,7 +33,7 @@ def check_backend():
         print("❌ 后端服务未启动！")
         print("\n💡 请先启动后端服务:")
         print("   cd g:\\iMato\\backend")
-        print("   python main_ai_edu_full.py")
+        print("   python main_ai_edu.py")
         return False
 
 def start_http_server():

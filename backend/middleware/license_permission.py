@@ -9,31 +9,38 @@ from typing import List, Callable, Optional, Dict, Any
 from fastapi import HTTPException, status, Depends
 from sqlalchemy.orm import Session
 
-from backend.models.license import LicenseType, License, LicenseStatus
-from backend.database import get_db
-from backend.core.security import get_current_user
-from backend.models.user import User
+from models.license import LicenseType, LicenseStatus
+from models.user_license import UserLicense
+from utils.database import get_db
+from middleware.auth import get_current_user
+from models.user import User
 
 
 # ============================================
 # 权限矩阵定义
 # ============================================
+# 档位对应关系：BASIC 与 OPEN_SOURCE 同为免费基础档，
+# PREMIUM 与 CLOUD_HOSTED 同为付费档。
 
 PERMISSION_MATRIX: Dict[str, Dict[LicenseType, bool]] = {
     # 基础功能（所有版本都可用）
     "course_management": {
+        LicenseType.BASIC: True,
         LicenseType.OPEN_SOURCE: True,
         LicenseType.WINDOWS_LOCAL: True,
         LicenseType.CLOUD_HOSTED: True,
+        LicenseType.PREMIUM: True,
         LicenseType.TRIAL: True,
         LicenseType.COMMERCIAL: True,
         LicenseType.EDUCATION: True,
         LicenseType.ENTERPRISE: True,
     },
     "user_management": {
+        LicenseType.BASIC: True,
         LicenseType.OPEN_SOURCE: True,
         LicenseType.WINDOWS_LOCAL: True,
         LicenseType.CLOUD_HOSTED: True,
+        LicenseType.PREMIUM: True,
         LicenseType.TRIAL: True,
         LicenseType.COMMERCIAL: True,
         LicenseType.EDUCATION: True,
@@ -42,27 +49,33 @@ PERMISSION_MATRIX: Dict[str, Dict[LicenseType, bool]] = {
 
     # AI 功能（仅付费版可用）
     "ai_course_generation": {
+        LicenseType.BASIC: False,
         LicenseType.OPEN_SOURCE: False,
         LicenseType.WINDOWS_LOCAL: True,
         LicenseType.CLOUD_HOSTED: True,
+        LicenseType.PREMIUM: True,
         LicenseType.TRIAL: False,
         LicenseType.COMMERCIAL: True,
         LicenseType.EDUCATION: True,
         LicenseType.ENTERPRISE: True,
     },
     "ai_chat_assistant": {
+        LicenseType.BASIC: False,
         LicenseType.OPEN_SOURCE: False,
         LicenseType.WINDOWS_LOCAL: True,
         LicenseType.CLOUD_HOSTED: True,
+        LicenseType.PREMIUM: True,
         LicenseType.TRIAL: False,
         LicenseType.COMMERCIAL: True,
         LicenseType.EDUCATION: True,
         LicenseType.ENTERPRISE: True,
     },
     "ai_code_completion": {
+        LicenseType.BASIC: False,
         LicenseType.OPEN_SOURCE: False,
         LicenseType.WINDOWS_LOCAL: True,
         LicenseType.CLOUD_HOSTED: True,
+        LicenseType.PREMIUM: True,
         LicenseType.TRIAL: False,
         LicenseType.COMMERCIAL: True,
         LicenseType.EDUCATION: True,
@@ -71,27 +84,33 @@ PERMISSION_MATRIX: Dict[str, Dict[LicenseType, bool]] = {
 
     # 部署模式相关功能
     "offline_mode": {
+        LicenseType.BASIC: False,
         LicenseType.OPEN_SOURCE: False,
         LicenseType.WINDOWS_LOCAL: True,
         LicenseType.CLOUD_HOSTED: False,
+        LicenseType.PREMIUM: False,
         LicenseType.TRIAL: False,
         LicenseType.COMMERCIAL: False,
         LicenseType.EDUCATION: False,
         LicenseType.ENTERPRISE: True,
     },
     "cloud_sync": {
+        LicenseType.BASIC: False,
         LicenseType.OPEN_SOURCE: False,
         LicenseType.WINDOWS_LOCAL: False,
         LicenseType.CLOUD_HOSTED: True,
+        LicenseType.PREMIUM: True,
         LicenseType.TRIAL: False,
         LicenseType.COMMERCIAL: False,
         LicenseType.EDUCATION: False,
         LicenseType.ENTERPRISE: True,
     },
     "multi_tenant": {
+        LicenseType.BASIC: False,
         LicenseType.OPEN_SOURCE: False,
         LicenseType.WINDOWS_LOCAL: False,
         LicenseType.CLOUD_HOSTED: False,
+        LicenseType.PREMIUM: False,
         LicenseType.TRIAL: False,
         LicenseType.COMMERCIAL: False,
         LicenseType.EDUCATION: False,
@@ -100,18 +119,22 @@ PERMISSION_MATRIX: Dict[str, Dict[LicenseType, bool]] = {
 
     # Token 计费功能
     "token_billing": {
+        LicenseType.BASIC: False,
         LicenseType.OPEN_SOURCE: False,
         LicenseType.WINDOWS_LOCAL: True,
         LicenseType.CLOUD_HOSTED: True,
+        LicenseType.PREMIUM: True,
         LicenseType.TRIAL: False,
         LicenseType.COMMERCIAL: True,
         LicenseType.EDUCATION: True,
         LicenseType.ENTERPRISE: True,
     },
     "monthly_bonus_tokens": {
+        LicenseType.BASIC: False,
         LicenseType.OPEN_SOURCE: False,
         LicenseType.WINDOWS_LOCAL: False,
         LicenseType.CLOUD_HOSTED: True,
+        LicenseType.PREMIUM: True,
         LicenseType.TRIAL: False,
         LicenseType.COMMERCIAL: False,
         LicenseType.EDUCATION: False,
@@ -120,27 +143,33 @@ PERMISSION_MATRIX: Dict[str, Dict[LicenseType, bool]] = {
 
     # 高级功能
     "advanced_analytics": {
+        LicenseType.BASIC: False,
         LicenseType.OPEN_SOURCE: False,
         LicenseType.WINDOWS_LOCAL: False,
         LicenseType.CLOUD_HOSTED: True,
+        LicenseType.PREMIUM: True,
         LicenseType.TRIAL: False,
         LicenseType.COMMERCIAL: True,
         LicenseType.EDUCATION: True,
         LicenseType.ENTERPRISE: True,
     },
     "priority_support": {
+        LicenseType.BASIC: False,
         LicenseType.OPEN_SOURCE: False,
         LicenseType.WINDOWS_LOCAL: False,
         LicenseType.CLOUD_HOSTED: True,
+        LicenseType.PREMIUM: True,
         LicenseType.TRIAL: False,
         LicenseType.COMMERCIAL: False,
         LicenseType.EDUCATION: False,
         LicenseType.ENTERPRISE: True,
     },
     "custom_branding": {
+        LicenseType.BASIC: False,
         LicenseType.OPEN_SOURCE: False,
         LicenseType.WINDOWS_LOCAL: False,
         LicenseType.CLOUD_HOSTED: False,
+        LicenseType.PREMIUM: False,
         LicenseType.TRIAL: False,
         LicenseType.COMMERCIAL: False,
         LicenseType.EDUCATION: False,
@@ -150,10 +179,12 @@ PERMISSION_MATRIX: Dict[str, Dict[LicenseType, bool]] = {
 
 # 升级建议映射
 UPGRADE_SUGGESTIONS: Dict[LicenseType, str] = {
+    LicenseType.BASIC: "升级到 Windows 本地版或云托管版以解锁 AI 功能和高级特性",
     LicenseType.OPEN_SOURCE: "升级到 Windows 本地版或云托管版以解锁 AI 功能和高级特性",
     LicenseType.TRIAL: "购买正式版以解锁完整功能（Windows 本地版/云托管版/企业版）",
     LicenseType.WINDOWS_LOCAL: "升级到云托管版以支持云端同步和多租户管理",
     LicenseType.CLOUD_HOSTED: "升级到企业定制版以获得离线模式和自定义品牌功能",
+    LicenseType.PREMIUM: "升级到企业定制版以获得离线模式和自定义品牌功能",
 }
 
 
@@ -167,16 +198,53 @@ class LicensePermissionService:
     def __init__(self, db: Session):
         self.db = db
 
-    async def get_user_license(self, user_id: str) -> Optional[License]:
-        """获取用户的有效许可证"""
-        license_obj = self.db.query(License).filter(
-            License.status == LicenseStatus.ACTIVE,
-            License.is_active == True,
-            # 这里假设 License 表有 user_id 字段，如果没有需要调整
-            # 实际项目中可能需要通过 User.license_id 或其他方式关联
+    async def get_user_license(self, user_id: str) -> Optional[Any]:
+        """获取用户的有效许可证
+
+        注意：models/license.py 中的 License 是 Pydantic 模型（不是 SQLAlchemy 映射类），
+        不能作为 db.query() 的查询目标（类级字段访问会直接抛 AttributeError），
+        因此这里查询用户许可证关联表 user_licenses。
+        状态/类型/有效期等字段统一由下方 _extract_* 辅助方法从记录中安全提取。
+        """
+        license_row = self.db.query(UserLicense).filter(
+            UserLicense.user_id == user_id,
+            UserLicense.is_active == True,
         ).first()
 
-        return license_obj
+        return license_row
+
+    @staticmethod
+    def _extract_status(license_obj: Any) -> LicenseStatus:
+        """从许可证记录中提取状态（无法识别时视为 ACTIVE）"""
+        raw_status = getattr(license_obj, "status", None)
+        status_value = getattr(raw_status, "value", raw_status)
+        try:
+            return LicenseStatus(status_value)
+        except (ValueError, TypeError):
+            return LicenseStatus.ACTIVE
+
+    @staticmethod
+    def _extract_license_type(license_obj: Any) -> LicenseType:
+        """从许可证记录中提取许可证类型（无法识别时缺省为 BASIC）"""
+        raw_type = getattr(license_obj, "license_type", None)
+        type_value = getattr(raw_type, "value", raw_type)
+        try:
+            return LicenseType(type_value)
+        except (ValueError, TypeError):
+            return LicenseType.BASIC
+
+    @staticmethod
+    def _is_expired(license_obj: Any) -> bool:
+        """判断许可证是否已过期"""
+        expired_flag = getattr(license_obj, "is_expired", None)
+        if isinstance(expired_flag, bool):
+            return expired_flag
+
+        expires_at = getattr(license_obj, "expires_at", None)
+        if expires_at is None:
+            return False
+
+        return expires_at < datetime.utcnow()
 
     def check_feature_permission(
         self,
@@ -260,15 +328,16 @@ class LicensePermissionService:
             }
 
         # 检查许可证状态
-        if license_obj.status != LicenseStatus.ACTIVE:
+        license_status = self._extract_status(license_obj)
+        if license_status != LicenseStatus.ACTIVE:
             return {
                 "allowed": False,
-                "reason": f"许可证状态异常：{license_obj.status.value}",
+                "reason": f"许可证状态异常：{license_status.value}",
                 "upgrade_suggestion": "请联系管理员激活许可证"
             }
 
         # 检查是否过期
-        if license_obj.is_expired:
+        if self._is_expired(license_obj):
             return {
                 "allowed": False,
                 "reason": "许可证已过期",
@@ -276,13 +345,14 @@ class LicensePermissionService:
             }
 
         # 检查功能权限
+        license_type = self._extract_license_type(license_obj)
         permission_result = self.check_feature_permission(
             feature,
-            license_obj.license_type
+            license_type
         )
 
         # 添加许可证类型信息
-        permission_result["license_type"] = license_obj.license_type.value
+        permission_result["license_type"] = license_type.value
 
         return permission_result
 
@@ -328,18 +398,19 @@ def require_license_type(*allowed_types: LicenseType):
                 )
 
             # 检查许可证状态
-            if license_obj.status != LicenseStatus.ACTIVE:
+            license_status = LicensePermissionService._extract_status(license_obj)
+            if license_status != LicenseStatus.ACTIVE:
                 raise HTTPException(
                     status_code=status.HTTP_403_FORBIDDEN,
                     detail={
                         "error": "inactive_license",
-                        "message": f"许可证状态异常：{license_obj.status.value}",
+                        "message": f"许可证状态异常：{license_status.value}",
                         "upgrade_suggestion": "请联系管理员激活许可证"
                     }
                 )
 
             # 检查是否过期
-            if license_obj.is_expired:
+            if LicensePermissionService._is_expired(license_obj):
                 raise HTTPException(
                     status_code=status.HTTP_403_FORBIDDEN,
                     detail={
@@ -350,12 +421,13 @@ def require_license_type(*allowed_types: LicenseType):
                 )
 
             # 检查许可证类型是否在允许列表中
-            if license_obj.license_type not in allowed_types:
+            license_type = LicensePermissionService._extract_license_type(license_obj)
+            if license_type not in allowed_types:
                 allowed_names = [t.value for t in allowed_types]
-                current_type = license_obj.license_type.value
+                current_type = license_type.value
 
                 upgrade_suggestion = UPGRADE_SUGGESTIONS.get(
-                    license_obj.license_type,
+                    license_type,
                     f"当前功能需要以下许可证类型之一：{', '.join(allowed_names)}"
                 )
 
@@ -414,7 +486,7 @@ def require_feature(feature_name: str):
             # 检查功能权限
             permission = license_service.check_feature_permission(
                 feature_name,
-                license_obj.license_type
+                LicensePermissionService._extract_license_type(license_obj)
             )
 
             if not permission["allowed"]:

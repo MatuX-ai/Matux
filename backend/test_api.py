@@ -2,7 +2,7 @@
 import requests
 import json
 
-BASE_URL = "http://localhost:8002"
+BASE_URL = "http://localhost:8000"
 
 def get_token():
     """获取认证 token"""

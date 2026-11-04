@@ -14,8 +14,8 @@ from scipy import stats
 from sklearn.linear_model import LinearRegression
 from sklearn.preprocessing import StandardScaler
 
-from ..config.edu_data_config import edu_config
-from ..models.edu_data_models import (
+from config.edu_data_config import edu_config
+from models.edu_data_models import (
     EduAcademicPerformance,
     EduRegionalData,
     EduStudentDemographics,

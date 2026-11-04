@@ -21,6 +21,12 @@ class LicenseType(str, Enum):
     PREMIUM = "premium"
     ENTERPRISE = "enterprise"
     TRIAL = "trial"
+    # 以下成员供 middleware/license_permission.py 的权限矩阵使用
+    OPEN_SOURCE = "open_source"
+    WINDOWS_LOCAL = "windows_local"
+    CLOUD_HOSTED = "cloud_hosted"
+    COMMERCIAL = "commercial"
+    EDUCATION = "education"
 
 
 class Organization(BaseModel):

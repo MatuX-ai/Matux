@@ -1,7 +1,7 @@
 """注册新用户并测试"""
 import requests
 
-BASE_URL = "http://localhost:8002"
+BASE_URL = "http://localhost:8000"
 
 # 注册新用户
 print("=== 注册新用户 ===")

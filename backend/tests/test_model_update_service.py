@@ -10,7 +10,7 @@ from unittest.mock import Mock, patch
 import pytest
 from sqlalchemy.orm import Session
 
-from ..services.model_update_service import (
+from services.model_update_service import (
     ModelUpdateService,
     calculate_file_hash,
     compress_file,

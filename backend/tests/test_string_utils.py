@@ -4,7 +4,7 @@
 
 import unittest
 
-from backend.utils.string_utils import (
+from utils.string_utils import (
     camel_to_snake,
     capitalize,
     contains_sensitive_words,

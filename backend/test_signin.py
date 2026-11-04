@@ -1,7 +1,7 @@
 """测试 signin API"""
 import requests
 
-BASE_URL = "http://localhost:8002"
+BASE_URL = "http://localhost:8000"
 
 # 测试登录
 print("=== 测试登录 ===")

@@ -1,7 +1,7 @@
 """使用新注册用户测试"""
 import requests
 
-BASE_URL = "http://localhost:8002"
+BASE_URL = "http://localhost:8000"
 
 # 登录
 print("=== 登录 ===")

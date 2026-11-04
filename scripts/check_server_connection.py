@@ -198,7 +198,7 @@ class ServerConnectionChecker:
         print("-" * 80)
         print("1. 确认后端服务已启动:")
         print("   cd g:\\iMato\\backend")
-        print("   python main_ai_edu_full.py")
+        print("   python main_ai_edu.py")
         print("\n2. 检查端口是否被占用:")
         print("   netstat -ano | findstr :8000")
         print("\n3. 检查防火墙设置:")

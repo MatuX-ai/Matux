@@ -8,8 +8,8 @@ import asyncio
 from httpx import ASGITransport, AsyncClient
 import pytest
 
-from backend.main import app
-from backend.services.openhydra_service import ContainerConfig, OpenHydraService
+from main import app
+from services.openhydra_service import ContainerConfig, OpenHydraService
 from config.settings import settings
 
 

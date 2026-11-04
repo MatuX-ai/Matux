@@ -7,7 +7,7 @@ from unittest.mock import AsyncMock, patch
 from fastapi.testclient import TestClient
 import pytest
 
-from backend.main import app
+from main import app
 
 client = TestClient(app)
 
@@ -122,7 +122,7 @@ class TestAIRoutes:
     def test_generate_code_success(self, auth_headers, mock_ai_response):
         """测试代码生成成功"""
         with patch(
-            "backend.ai_service.ai_manager.AIManager.generate_code"
+            "ai_service.ai_manager.AIManager.generate_code"
         ) as mock_generate:
             mock_generate.return_value = mock_ai_response
 
@@ -199,9 +199,9 @@ class TestAIManager:
     @pytest.mark.asyncio
     async def test_openai_generation(self, mock_ai_response):
         """测试OpenAI代码生成"""
-        from backend.ai_service.ai_manager import AIManager
+        from ai_service.ai_manager import AIManager
 
-        with patch("backend.ai_service.ai_manager.ChatOpenAI") as mock_chat:
+        with patch("ai_service.ai_manager.ChatOpenAI") as mock_chat:
             # 模拟ChatOpenAI响应
             mock_instance = AsyncMock()
             mock_instance.agenerate.return_value = AsyncMock(
@@ -221,9 +221,9 @@ class TestAIManager:
     @pytest.mark.asyncio
     async def test_lingma_generation(self, mock_ai_response):
         """测试Lingma代码生成"""
-        from backend.ai_service.ai_manager import AIManager
+        from ai_service.ai_manager import AIManager
 
-        with patch("backend.ai_service.ai_manager.httpx.AsyncClient") as mock_client:
+        with patch("ai_service.ai_manager.httpx.AsyncClient") as mock_client:
             mock_instance = AsyncMock()
             mock_instance.post.return_value = AsyncMock(
                 status_code=200,
@@ -280,7 +280,7 @@ class TestErrorHandling:
 
     def test_database_error(self, auth_headers):
         """测试数据库错误"""
-        with patch("backend.utils.database.AsyncSessionLocal") as mock_session:
+        with patch("utils.database.AsyncSessionLocal") as mock_session:
             mock_session.side_effect = Exception("Database connection failed")
 
             response = client.post(
@@ -323,7 +323,7 @@ class TestIntegration:
 
         # 4. 生成代码
         with patch(
-            "backend.ai_service.ai_manager.AIManager.generate_code"
+            "ai_service.ai_manager.AIManager.generate_code"
         ) as mock_generate:
             mock_generate.return_value = {
                 "code": "def test_func(): pass",

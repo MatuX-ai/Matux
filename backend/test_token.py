@@ -1,7 +1,7 @@
 """测试使用 token 端点登录"""
 import requests
 
-BASE_URL = "http://localhost:8002"
+BASE_URL = "http://localhost:8000"
 
 # 使用 /api/v1/auth/token 获取 token
 print("=== 测试 /api/v1/auth/token ===")

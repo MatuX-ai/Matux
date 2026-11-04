@@ -4,12 +4,12 @@
 
 import unittest
 
-from backend.utils.validation.base_validator import (
+from utils.validation.base_validator import (
     validate_email,
     validate_password,
     validate_username,
 )
-from backend.utils.validation.validation_factory import (
+from utils.validation.validation_factory import (
     CommonValidators,
     FormValidator,
     ValidatorFactory,
