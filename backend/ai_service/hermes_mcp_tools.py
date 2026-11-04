@@ -298,11 +298,17 @@ class AITutorMCPTools:
                 return self._parse_json_response(result.get("message", "{}"))
 
         # 回退到原有实现
+        # 注意：f-string 的表达式部分不能包含反斜杠（Python 3.11 及更早版本的限制，
+        # PEP 701 到 3.12 才放宽），因此代码片段段落先在外部拼装再注入。
+        context_block = ""
+        if context_code:
+            context_block = f"相关代码：\n```{language}\n{context_code}\n```"
+
         prompt = f"""你是一位专业的编程导师。请回答用户的问题：
 
 问题：{question}
 编程语言：{language}
-{f'相关代码：\n```{language}\n{context_code}\n```' if context_code else ''}
+{context_block}
 
 请用JSON格式返回，包含answer, code_examples, related_topics, next_steps字段。"""
 
