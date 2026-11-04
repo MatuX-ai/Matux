@@ -1,51 +1,61 @@
 # 开发环境依赖包
 # MatuX Backend 开发工具链
+#
+# 版本策略：全部使用精确版本（==）锁定，避免 CI 镜像随上游发布而漂移，
+# 导致「本地绿 / CI 红」或反之。升级时改本文件并单独提交。
 
 # 代码格式化工具
-black>=23.0.0
-isort>=5.12.0
+black==26.10.1
+isort==9.0.2
 
 # 代码质量检查工具
-flake8>=6.0.0
-flake8-bugbear>=23.0.0
-flake8-comprehensions>=3.12.0
-flake8-docstrings>=1.7.0
-flake8-import-order>=0.18.2
-flake8-print>=5.0.0
-flake8-quotes>=3.3.0
+# 说明：flake8 插件只保留与根 .flake8 的 select=E,W,F,C,B 对应的三个：
+#   - flake8-bugbear      -> B 码
+#   - flake8-comprehensions-> C4xx 码
+#   - flake8 本身         -> E/W/F 码与 mccabe 的 C901
+# 已移除（其码段不在 select 内，且与 black/isort 冲突）：
+#   - flake8-quotes      -> Q 码（默认单引号，与 black 双引号冲突）
+#   - flake8-docstrings  -> D 码
+#   - flake8-import-order-> I 码（与 isort 排序规则打架）
+#   - flake8-print       -> T20 码
+# 机械类问题（F401/W293/E712 等）改由 ruff 批量处理。
+flake8==7.5.0
+flake8-bugbear==26.10.27
+flake8-comprehensions==3.17.0
+ruff==0.17.3
 
 # 类型检查工具
-mypy>=1.0.0
+mypy==2.4.1
 
 # 测试工具
-pytest>=7.0.0
-pytest-cov>=4.0.0
-pytest-asyncio>=0.21.0
-pytest-mock>=3.10.0
+pytest==9.2.0
+pytest-cov==7.1.0
+pytest-asyncio==1.4.1.post1
+pytest-mock==3.17.0
 
 # Git钩子工具
-pre-commit>=3.0.0
+pre-commit==4.7.0
 
 # 代码复杂度分析
-radon>=5.1.0
-xenon>=0.9.0
+radon==6.0.1
+xenon==0.9.3
 
 # 安全检查工具
-bandit>=1.7.0
-safety>=2.3.0
+bandit==1.9.4
+safety==3.8.1
 
 # 性能分析工具
-py-spy>=0.3.0
-line-profiler>=4.0.0
+py-spy==0.4.3
+line-profiler==5.1.0
 
 # 文档生成工具
-sphinx>=6.0.0
-sphinx-rtd-theme>=1.2.0
-sphinx-autodoc-typehints>=1.20.0
+sphinx==9.1.1
+sphinx-rtd-theme==3.1.0
+sphinx-autodoc-typehints==3.17.5
 
 # 依赖管理工具
-pip-tools>=7.0.0
+pip-tools==7.6.2
 
 # 其他开发工具
-ipython>=8.0.0
-jupyter>=1.0.0
+ipython==9.18.1
+jupyter==1.1.1
