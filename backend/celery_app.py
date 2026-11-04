@@ -171,7 +171,8 @@ def on_task_timeout(sender=None, task_id=None, **kwargs):
 # =============================================================================
 try:
     # type: ignore[import-untyped]
-    from middleware.celery_circuit_breaker import CircuitBreakerTask
+    # 该 import 仅用于探测可选模块是否存在（真正的注册走下面的字符串 task_cls），名字本身不被引用，故忽略 F401
+    from middleware.celery_circuit_breaker import CircuitBreakerTask  # noqa: F401
     celery_app.conf.update(
         task_cls="middleware.celery_circuit_breaker:CircuitBreakerTask"
     )

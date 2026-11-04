@@ -23,6 +23,10 @@ from sqlalchemy.orm import relationship, validates
 
 # 使用统一的Base，避免多个declarative_base()导致的mapper初始化错误
 from utils.database import Base
+# Pydantic模型用于API请求/响应
+from typing import List, Optional
+
+from pydantic import BaseModel, Field
 
 
 class SponsorshipStatus(str, enum.Enum):
@@ -307,13 +311,6 @@ class PointConversionRule(Base):
         if points <= 0:
             raise ValueError("所需积分数必须大于0")
         return points
-
-
-# Pydantic模型用于API请求/响应
-from datetime import datetime
-from typing import List, Optional
-
-from pydantic import BaseModel, Field
 
 
 class SponsorshipCreate(BaseModel):

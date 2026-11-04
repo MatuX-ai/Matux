@@ -128,7 +128,7 @@ class SubscriptionService:
             plan_query = select(SubscriptionPlan).where(
                 and_(
                     SubscriptionPlan.plan_id == plan_id,
-                    SubscriptionPlan.is_active == True,
+                    SubscriptionPlan.is_active.is_(True),
                 )
             )
             plan_result = await db.execute(plan_query)
@@ -274,7 +274,7 @@ class SubscriptionService:
                 and_(
                     UserSubscription.status == SubscriptionStatus.ACTIVE,
                     UserSubscription.next_billing_date <= today,
-                    UserSubscription.auto_renew == True,
+                    UserSubscription.auto_renew.is_(True),
                 )
             )
 

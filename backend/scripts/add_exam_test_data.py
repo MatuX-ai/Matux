@@ -12,7 +12,7 @@ import sys
 
 from models.exam import Exam, ExamDifficulty, ExamStatus, Question, QuestionType
 from models.user import User
-from sqlalchemy import select, update
+from sqlalchemy import select
 from sqlalchemy.ext.asyncio import async_sessionmaker, create_async_engine
 
 sys.path.insert(0, ".")

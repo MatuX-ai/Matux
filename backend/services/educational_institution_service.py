@@ -115,7 +115,7 @@ class EducationalInstitutionService:
             query = self.db.query(ClassSchedule).filter(
                 ClassSchedule.teacher_id == teacher_id,
                 ClassSchedule.org_id == org_id,
-                ClassSchedule.is_active == True,
+                ClassSchedule.is_active.is_(True),
             )
 
             # 添加日期筛选
@@ -275,7 +275,7 @@ class EducationalInstitutionService:
             query = self.db.query(ClassSchedule).filter(
                 ClassSchedule.course_id.in_(course_ids),
                 ClassSchedule.org_id == org_id,
-                ClassSchedule.is_active == True,
+                ClassSchedule.is_active.is_(True),
             )
 
             # 添加日期筛选
@@ -337,7 +337,7 @@ class EducationalInstitutionService:
             query = self.db.query(Classroom).filter(
                 Classroom.org_id == org_id,
                 Classroom.capacity >= capacity_needed,
-                Classroom.is_available == True,
+                Classroom.is_available.is_(True),
             )
 
             available_classrooms = query.all()
@@ -370,7 +370,7 @@ class EducationalInstitutionService:
                 self.db.query(ClassSchedule)
                 .filter(
                     ClassSchedule.org_id == org_id,
-                    ClassSchedule.is_active == True,
+                    ClassSchedule.is_active.is_(True),
                     ClassSchedule.day_of_week
                     == check_date.weekday() + 1,  # Python weekday: 0-6, 数据库: 1-7
                     or_(
@@ -513,7 +513,7 @@ class EducationalInstitutionService:
                 ClassSchedule.classroom_id == classroom_id,
                 ClassSchedule.org_id == org_id,
                 ClassSchedule.day_of_week == day_of_week,
-                ClassSchedule.is_active == True,
+                ClassSchedule.is_active.is_(True),
             )
 
             # 添加时间重叠检查
@@ -596,13 +596,13 @@ class EducationalInstitutionService:
             # 统计各类人员数量
             teacher_count = (
                 self.db.query(Teacher)
-                .filter(Teacher.org_id == org_id, Teacher.is_active == True)
+                .filter(Teacher.org_id == org_id, Teacher.is_active.is_(True))
                 .count()
             )
 
             student_count = (
                 self.db.query(Student)
-                .filter(Student.org_id == org_id, Student.is_active == True)
+                .filter(Student.org_id == org_id, Student.is_active.is_(True))
                 .count()
             )
 
@@ -613,7 +613,7 @@ class EducationalInstitutionService:
 
             available_classroom_count = (
                 self.db.query(Classroom)
-                .filter(Classroom.org_id == org_id, Classroom.is_available == True)
+                .filter(Classroom.org_id == org_id, Classroom.is_available.is_(True))
                 .count()
             )
 
@@ -632,7 +632,7 @@ class EducationalInstitutionService:
                 self.db.query(ClassSchedule)
                 .filter(
                     ClassSchedule.org_id == org_id,
-                    ClassSchedule.is_active == True,
+                    ClassSchedule.is_active.is_(True),
                     ClassSchedule.day_of_week == today.weekday() + 1,
                 )
                 .count()

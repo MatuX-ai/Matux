@@ -199,7 +199,7 @@ async def get_usage_stats(db: AsyncSession = Depends(get_db)):
 
     # 统计成功请求数
     stmt = select(func.count(AIRequest.id)).where(
-        AIRequest.user_id == current_user.id, AIRequest.success == True
+        AIRequest.user_id == current_user.id, AIRequest.success.is_(True)
     )
     result = await db.execute(stmt)
     successful_requests = result.scalar()

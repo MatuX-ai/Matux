@@ -505,7 +505,7 @@ class MultimediaService:
                 and_(
                     MultimediaResource.org_id == org_id,
                     MultimediaResource.course_id == course_id,
-                    MultimediaResource.is_active == True,
+                    MultimediaResource.is_active.is_(True),
                 )
             )
 

@@ -3,7 +3,6 @@ AI-Edu 协作学习系统单元测试
 测试覆盖：讨论区、协作文档、学习小组、项目管理
 """
 
-from datetime import datetime, timedelta
 import os
 import sys
 
@@ -14,19 +13,8 @@ from sqlalchemy.orm import sessionmaker
 # 添加项目路径
 sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), "..")))
 
-from database.db import Base
-from models.collaboration import (
-    CollaborativeDocument,
-    DiscussionComment,
-    DiscussionPost,
-    DocumentVersion,
-    PeerReview,
-    PostLike,
-    StudyGroup,
-    StudyGroupMember,
-)
-from services.collaboration_service import (
-    CollaborationService,
+from database.db import Base  # noqa: E402
+from services.collaboration_service import (  # noqa: E402
     get_collaboration_service,
 )
 

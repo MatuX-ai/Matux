@@ -500,7 +500,7 @@ def cleanup_old_files(days_old: int = 30) -> Dict[str, Any]:
             .filter(
                 and_(
                     MultimediaResource.created_at < cutoff_date,
-                    MultimediaResource.is_active == False,
+                    MultimediaResource.is_active.is_(False),
                 )
             )
             .all()

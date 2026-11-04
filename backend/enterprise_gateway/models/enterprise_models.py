@@ -20,6 +20,10 @@ from sqlalchemy import (
 from sqlalchemy.orm import relationship
 from sqlalchemy.sql import func
 from utils.database import Base
+from typing import Optional
+
+# 请求模型定义
+from pydantic import BaseModel
 
 pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
 
@@ -195,12 +199,6 @@ class EnterpriseAPILog(Base):
             "ip_address": self.ip_address,
             "timestamp": self.timestamp.isoformat() if self.timestamp else None,
         }
-
-
-from typing import Optional
-
-# 请求模型定义
-from pydantic import BaseModel
 
 
 class EnterpriseClientCreate(BaseModel):

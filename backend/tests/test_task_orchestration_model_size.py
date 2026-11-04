@@ -3,9 +3,7 @@
 测试覆盖：文件大小计算、边界情况、异常处理
 """
 
-import asyncio
 import os
-from pathlib import Path
 
 # 添加项目路径
 import sys
@@ -15,7 +13,7 @@ import pytest
 
 sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), "..")))
 
-from services.task_orchestration_service import TaskOrchestrationService
+from services.task_orchestration_service import TaskOrchestrationService  # noqa: E402
 
 # ==================== 测试夹具 ====================
 

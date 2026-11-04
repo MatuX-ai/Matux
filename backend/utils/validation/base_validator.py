@@ -4,7 +4,7 @@
 
 from abc import ABC, abstractmethod
 import re
-from typing import Any, Callable, Dict, List, Optional, Tuple
+from typing import Any, List, Optional
 
 
 class ValidationResult:

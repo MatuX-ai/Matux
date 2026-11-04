@@ -42,7 +42,7 @@ class TestBlockchainService:
 
             await blockchain_service.initialize()
 
-            assert blockchain_service.initialized == True
+            assert blockchain_service.initialized is True
             assert blockchain_service.client == mock_client_instance
 
     @pytest.mark.asyncio
@@ -53,7 +53,7 @@ class TestBlockchainService:
             side_effect=Exception("Connection failed"),
         ):
             await blockchain_service.initialize()
-            assert blockchain_service.initialized == True  # 应该降级到mock模式
+            assert blockchain_service.initialized is True  # 应该降级到mock模式
 
     @pytest.mark.asyncio
     async def test_issue_certificate_success(
@@ -217,7 +217,7 @@ class TestBlockchainService:
         health = await blockchain_service.health_check()
 
         assert health["status"] == "healthy"
-        assert health["initialized"] == True
+        assert health["initialized"] is True
 
     @pytest.mark.asyncio
     async def test_health_check_uninitialized(self, blockchain_service):
@@ -303,7 +303,7 @@ class TestVCService:
         # 验证证书
         result = vc_service.verify_credential(vc)
 
-        assert result["valid"] == True
+        assert result["valid"] is True
         assert len(result["errors"]) == 0
 
     @pytest.mark.asyncio
@@ -327,7 +327,7 @@ class TestVCService:
 
         result = vc_service.verify_credential(vc)
 
-        assert result["valid"] == False
+        assert result["valid"] is False
         assert any("过期" in error for error in result["errors"])
 
 

@@ -14,12 +14,12 @@ import uvicorn
 
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 
-from config.settings import Settings
-from middleware.permission_middleware import PermissionMiddleware
-from routes.auth_routes import router as auth_router
-from routes.user_license_routes import router as user_license_router
-from utils.database import create_db_and_tables
-from utils.logger import setup_logger
+from config.settings import Settings  # noqa: E402
+from middleware.permission_middleware import PermissionMiddleware  # noqa: E402
+from routes.auth_routes import router as auth_router  # noqa: E402
+from routes.user_license_routes import router as user_license_router  # noqa: E402
+from utils.database import create_db_and_tables  # noqa: E402
+from utils.logger import setup_logger  # noqa: E402
 
 # 加载环境变量
 settings = Settings()

@@ -2,7 +2,6 @@ from collections import deque
 from dataclasses import dataclass
 from enum import Enum
 import logging
-import time
 from typing import Callable, Dict, List, Optional, Tuple
 
 import numpy as np

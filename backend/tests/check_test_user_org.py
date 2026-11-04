@@ -4,11 +4,10 @@ import sys
 
 sys.path.insert(0, 'G:\\iMato\\backend')
 
-from models.user import User
-from models.user_organization import UserOrganization
-from sqlalchemy import select
-from sqlalchemy.ext.asyncio import AsyncSession
-from utils.database import get_db_session
+from models.user import User  # noqa: E402
+from models.user_organization import UserOrganization  # noqa: E402
+from sqlalchemy import select  # noqa: E402
+from utils.database import get_db_session  # noqa: E402
 
 
 async def check_user_org():

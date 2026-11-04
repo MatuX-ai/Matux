@@ -5,10 +5,10 @@ import sys
 
 sys.path.insert(0, str(Path(__file__).parent))
 
-import bcrypt
-from models.user import User, UserRole
-from sqlalchemy import select
-from utils.database import AsyncSessionLocal
+import bcrypt  # noqa: E402
+from models.user import User, UserRole  # noqa: E402
+from sqlalchemy import select  # noqa: E402
+from utils.database import AsyncSessionLocal  # noqa: E402
 
 
 async def main():

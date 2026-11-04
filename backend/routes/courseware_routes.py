@@ -14,17 +14,13 @@ from schemas.courseware_closure import (
     BatchNodeCreateResponse,
     ClosureValidationResult,
     CoursewareNodeCreate,
-    CoursewareNodeListResponse,
     CoursewareNodeMove,
     CoursewareNodeResponse,
     CoursewareNodeUpdate,
     CoursewareSubtreeResponse,
-    CoursewareTreeNode,
     HierarchyResponse,
     LevelNodesResponse,
-    MigrationResult,
     NodePath,
-    RollbackResult,
 )
 from services.courseware_service import CoursewareService
 from sqlalchemy.ext.asyncio import AsyncSession

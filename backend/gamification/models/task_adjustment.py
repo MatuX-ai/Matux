@@ -6,7 +6,7 @@
 from dataclasses import dataclass, field
 from datetime import datetime
 import enum
-from typing import Any, Dict, List, Optional
+from typing import Any, Dict, List
 import uuid
 
 

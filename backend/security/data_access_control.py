@@ -305,7 +305,7 @@ class DataAccessControl:
 
                 try:
                     stmt = select(Organization.id).filter(
-                        Organization.is_active == True
+                        Organization.is_active.is_(True)
                     )
                     result = db.execute(stmt)
                     return [row[0] for row in result.fetchall()]

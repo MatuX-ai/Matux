@@ -157,7 +157,7 @@ async def get_service_status(
         total_models = service.db.query(ModelVersion).count()
         active_models = (
             service.db.query(ModelVersion)
-            .filter(ModelVersion.is_active == True)
+            .filter(ModelVersion.is_active.is_(True))
             .count()
         )
 

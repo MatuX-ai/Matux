@@ -4,12 +4,11 @@ Sentinel 熔断器集成
 """
 
 import asyncio
-from collections import defaultdict
 from datetime import datetime, timedelta
 from functools import wraps
 import logging
 import time
-from typing import Any, Callable, Dict, List, Optional
+from typing import Any, Callable, Dict, Optional
 
 from fastapi import Request, Response
 from fastapi.responses import JSONResponse

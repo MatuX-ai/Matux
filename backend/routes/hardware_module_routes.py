@@ -9,7 +9,6 @@ from typing import List, Optional
 from fastapi import APIRouter, Depends, HTTPException, Path, Query
 from middleware.auth import get_current_user
 from models.hardware_module import (
-    DamageLevel,
     HardwareModule,
     HardwareModuleCreate,
     HardwareModuleResponse,
@@ -69,7 +68,7 @@ async def list_hardware_modules(
             query = query.filter(
                 HardwareModule.status == HardwareModuleStatus.AVAILABLE,
                 HardwareModule.quantity_available > 0,
-                HardwareModule.is_active == True,
+                HardwareModule.is_active.is_(True),
             )
 
         # 预加载关联数据

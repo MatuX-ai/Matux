@@ -7,7 +7,6 @@
 import asyncio
 import os
 import sys
-from unittest.mock import AsyncMock, MagicMock, patch
 
 from core.lazy_loader import ModuleActivationError, ModuleLazyLoader
 from core.module_spec import ModuleSpec, ModuleState, ModuleTier

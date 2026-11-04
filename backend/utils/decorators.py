@@ -6,7 +6,7 @@
 import functools
 from functools import wraps
 import logging
-from typing import Any, Callable, Dict, List, Optional, Tuple, Union
+from typing import Callable, List, Optional, Union
 
 from fastapi import Depends, HTTPException, status
 from models.user import User, UserRole

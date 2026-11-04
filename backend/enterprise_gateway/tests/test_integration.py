@@ -74,7 +74,7 @@ class TestEnterpriseAPIIntegration:
         assert response.status_code == 200
 
         introspect_data = response.json()
-        assert introspect_data["active"] == True
+        assert introspect_data["active"] is True
         assert introspect_data["client_id"] == self.valid_client_id
 
     @patch("services.enterprise_oauth_service.get_db")

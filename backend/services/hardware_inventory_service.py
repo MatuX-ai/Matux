@@ -36,7 +36,7 @@ class HardwareInventoryService:
                 HardwareModule.id == module_id,
                 HardwareModule.status == HardwareModuleStatus.AVAILABLE,
                 HardwareModule.quantity_available >= quantity,
-                HardwareModule.is_active == True,
+                HardwareModule.is_active.is_(True),
             )
 
             result = await db.execute(query)

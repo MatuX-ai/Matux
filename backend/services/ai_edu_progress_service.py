@@ -3,7 +3,7 @@ AI-Edu-for-Kids 学习进度追踪服务
 支持学习进度的上报、查询和统计分析
 """
 
-from datetime import datetime, timedelta
+from datetime import datetime
 import logging
 from typing import Any, Dict, List, Optional
 

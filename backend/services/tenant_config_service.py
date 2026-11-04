@@ -116,7 +116,7 @@ class TenantConfigService:
                 .filter(
                     TenantConfig.org_id == org_id,
                     TenantConfig.config_key == config_key,
-                    TenantConfig.is_active == True,
+                    TenantConfig.is_active.is_(True),
                 )
                 .first()
             )
@@ -141,7 +141,7 @@ class TenantConfigService:
         """
         try:
             query = self.db.query(TenantConfig).filter(
-                TenantConfig.org_id == org_id, TenantConfig.is_active == True
+                TenantConfig.org_id == org_id, TenantConfig.is_active.is_(True)
             )
 
             if category:
@@ -373,7 +373,7 @@ class TenantConfigService:
             )
 
             if enabled_only:
-                query = query.filter(TenantFeatureFlag.is_enabled == True)
+                query = query.filter(TenantFeatureFlag.is_enabled.is_(True))
 
             feature_flags = query.order_by(TenantFeatureFlag.feature_name).all()
             return feature_flags
@@ -649,7 +649,7 @@ class TenantConfigService:
 
             active_configs = (
                 self.db.query(TenantConfig)
-                .filter(TenantConfig.org_id == org_id, TenantConfig.is_active == True)
+                .filter(TenantConfig.org_id == org_id, TenantConfig.is_active.is_(True))
                 .count()
             )
 
@@ -664,7 +664,7 @@ class TenantConfigService:
                 self.db.query(TenantFeatureFlag)
                 .filter(
                     TenantFeatureFlag.org_id == org_id,
-                    TenantFeatureFlag.is_enabled == True,
+                    TenantFeatureFlag.is_enabled.is_(True),
                 )
                 .count()
             )

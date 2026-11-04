@@ -5,7 +5,6 @@
 
 from datetime import datetime
 import enum
-from typing import List, Optional
 
 from database import Base
 from sqlalchemy import (
@@ -14,12 +13,10 @@ from sqlalchemy import (
     DateTime,
     Enum,
     Float,
-    ForeignKey,
     Integer,
     String,
     Text,
 )
-from sqlalchemy.orm import relationship
 
 
 class TransactionType(str, enum.Enum):

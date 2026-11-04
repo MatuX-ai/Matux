@@ -7,15 +7,13 @@ from datetime import datetime
 from typing import Optional
 import uuid
 
-from fastapi import APIRouter, Depends, HTTPException
-from sqlalchemy.ext.asyncio import AsyncSession
+from fastapi import APIRouter
+from pydantic import BaseModel
 
 router = APIRouter(prefix="/api/v1/finance", tags=["财务管理"])
 
 
 # ==================== Pydantic 模型 ====================
-
-from pydantic import BaseModel
 
 
 class SalaryCalculateRequest(BaseModel):

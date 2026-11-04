@@ -3,7 +3,6 @@ OpenHydra AI 沙箱环境集成测试
 测试容器管理、Jupyter 环境访问等功能
 """
 
-import asyncio
 
 from config.settings import settings
 from httpx import ASGITransport, AsyncClient

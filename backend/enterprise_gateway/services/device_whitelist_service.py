@@ -53,7 +53,7 @@ class DeviceWhitelistService:
                 db.query(EnterpriseClient)
                 .filter(
                     EnterpriseClient.id == device_request.enterprise_client_id,
-                    EnterpriseClient.is_active == True,
+                    EnterpriseClient.is_active.is_(True),
                 )
                 .first()
             )
@@ -191,7 +191,7 @@ class DeviceWhitelistService:
             if not include_expired:
                 # 只返回有效设备
                 query = query.filter(
-                    DeviceWhitelist.is_approved == True,
+                    DeviceWhitelist.is_approved.is_(True),
                     (DeviceWhitelist.expires_at.is_(None))
                     | (DeviceWhitelist.expires_at > datetime.utcnow()),
                 )

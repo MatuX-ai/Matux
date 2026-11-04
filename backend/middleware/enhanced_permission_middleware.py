@@ -4,7 +4,7 @@
 """
 
 import logging
-from typing import Awaitable, Callable, List, Optional
+from typing import List, Optional
 
 from fastapi import HTTPException, Request, status
 from fastapi.responses import JSONResponse
@@ -37,14 +37,14 @@ class EnhancedPermissionMiddleware(BaseHTTPMiddleware):
         """处理请求的调度方法"""
         import logging
         logger = logging.getLogger(__name__)
-        
+
         # 检查是否需要跳过权限验证
         path = request.url.path
         should_skip = self.should_skip_permission_check(path)
         if should_skip:
             logger.info(f"[Permission] Skipping check for: {path}")
             return await call_next(request)
-        
+
         logger.info(f"[Permission] Checking permissions for: {path}")
         try:
             # 获取当前用户
@@ -161,14 +161,14 @@ class EnhancedPermissionMiddleware(BaseHTTPMiddleware):
                     logger.info(f"[Permission] 用户 {user.id} 使用默认租户 {default_org_id}")
                     TenantContext.set_current_tenant(default_org_id)
                     return {"allowed": True, "reason": "使用用户默认租户"}
-                
+
                 # 对于学习端常见 API（如测验），允许访问（使用默认租户 1）
                 learning_apis = ["/api/v1/exams", "/api/v1/courses", "/api/v1/materials", "/api/v1/progress"]
                 if any(request.url.path.startswith(api) for api in learning_apis):
                     logger.info(f"[Permission] 学习端 API 使用默认租户 1: {request.url.path}")
                     TenantContext.set_current_tenant(1)
                     return {"allowed": True, "reason": "学习端API使用默认租户"}
-                
+
                 return {"allowed": False, "reason": "缺少租户标识"}
 
             return {"allowed": True, "reason": "公共API无需租户验证"}
@@ -214,7 +214,7 @@ class EnhancedPermissionMiddleware(BaseHTTPMiddleware):
                 stmt = (
                     select(Organization)
                     .join(Organization.users)
-                    .filter(Organization.id == org_id, Organization.is_active == True)
+                    .filter(Organization.id == org_id, Organization.is_active.is_(True))
                 )
 
                 result = db.execute(stmt)
@@ -349,7 +349,7 @@ class EnhancedPermissionMiddleware(BaseHTTPMiddleware):
         """从请求中获取当前用户"""
         import logging
         logger = logging.getLogger(__name__)
-        
+
         # 实现JWT解析逻辑
         auth_header = request.headers.get("Authorization")
         if not auth_header or not auth_header.startswith("Bearer "):
@@ -373,10 +373,10 @@ class EnhancedPermissionMiddleware(BaseHTTPMiddleware):
             from models.user import User
             from sqlalchemy import select
             from utils.database import AsyncSessionLocal
-            
+
             async with AsyncSessionLocal() as db:
                 stmt = select(User).filter(
-                    User.username == username, User.is_active == True
+                    User.username == username, User.is_active.is_(True)
                 )
                 result = await db.execute(stmt)
                 user = result.scalar_one_or_none()
@@ -400,12 +400,12 @@ class EnhancedPermissionMiddleware(BaseHTTPMiddleware):
             from models.license import UserLicense
             from sqlalchemy import select
             from utils.database import AsyncSessionLocal
-            
+
             async with AsyncSessionLocal() as db:
                 # 查找用户的第一个有效许可证对应的组织
                 stmt = select(UserLicense.organization_id).filter(
                     UserLicense.user_id == user.id,
-                    UserLicense.is_active == True
+                    UserLicense.is_active.is_(True)
                 ).limit(1)
                 result = await db.execute(stmt)
                 org_id = result.scalar_one_or_none()

@@ -3,13 +3,15 @@
 用于跨机构、跨来源聚合学生的所有课程学习记录
 """
 
-from datetime import datetime
 import enum
 
 from sqlalchemy import Column, DateTime, Enum, Float, ForeignKey, Integer, String, Text
 from sqlalchemy.orm import relationship
 from sqlalchemy.sql import func
 from utils.database import Base
+from typing import Any, Dict, Optional
+
+from pydantic import BaseModel, Field
 
 
 class CourseSource(str, enum.Enum):
@@ -106,10 +108,6 @@ class StudentCourseAggregation(Base):
 
 
 # ============ Pydantic Schemas ============
-
-from typing import Any, Dict, Optional
-
-from pydantic import BaseModel, Field
 
 
 class CourseSyncRequest(BaseModel):

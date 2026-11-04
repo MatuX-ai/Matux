@@ -69,7 +69,7 @@ class BlockchainGatewayAuth:
 
             # 查询用户信息
             stmt = select(User).filter(
-                User.username == username, User.is_active == True
+                User.username == username, User.is_active.is_(True)
             )
             result = await db.execute(stmt)
             user = result.scalar_one_or_none()

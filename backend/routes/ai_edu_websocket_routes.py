@@ -11,6 +11,7 @@ from typing import Dict, List, Optional
 from fastapi import APIRouter, Depends, Query, WebSocket, WebSocketDisconnect
 from models.user import User
 from services.ai_edu_progress_service import AIEduProgressService
+from services.ai_teacher_live_settings import ai_teacher_live_settings  # 【P3-B】
 from sqlalchemy.orm import Session
 from utils.auth_utils import get_current_user_sync  # 使用已实现的版本
 from utils.database import get_sync_db

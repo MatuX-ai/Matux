@@ -11,7 +11,6 @@ from models.payment import PaymentMethod
 from models.subscription import (
     BillingCycle,
     SubscriptionPayment,
-    SubscriptionPlan,
     SubscriptionPlanType,
     SubscriptionStatus,
     UserSubscription,

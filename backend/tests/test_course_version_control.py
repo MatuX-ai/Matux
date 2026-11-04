@@ -8,14 +8,6 @@ from unittest.mock import Mock, patch
 
 import pytest
 from sqlalchemy.orm import Session
-
-# services/course_version_service.py 已从仓库中删除（models/course_version.py 仍在），
-# 待服务层恢复后删除本跳过。
-pytest.skip(
-    "课程版本控制测试依赖已删除的 services.course_version_service",
-    allow_module_level=True,
-)
-
 from models.course import Course
 from models.course_version import (
     BranchCreate,
@@ -27,6 +19,13 @@ from models.course_version import (
 )
 from models.user import User
 from services.course_version_service import CourseVersionService
+
+# services/course_version_service.py 已从仓库中删除（models/course_version.py 仍在），
+# 待服务层恢复后删除本跳过。
+pytest.skip(
+    "课程版本控制测试依赖已删除的 services.course_version_service",
+    allow_module_level=True,
+)
 
 
 class TestCourseVersionControl:
@@ -94,7 +93,7 @@ class TestCourseVersionControl:
         assert result.commit_message == "Initial commit"
         assert result.author_email == "teacher@example.com"
         assert result.branch_name == "main"
-        assert result.is_head == True
+        assert result.is_head is True
 
     def test_get_course_versions(self, version_service, mock_db):
         """测试获取课程版本历史"""
@@ -202,7 +201,7 @@ class TestCourseVersionControl:
         assert result.target_branch == "main"
         assert result.title == "合并新内容到主分支"
         assert result.status == "open"
-        assert result.has_conflicts == False
+        assert result.has_conflicts is False
 
     def test_merge_branches_success(self, version_service, mock_db, mock_user):
         """测试成功合并分支"""
@@ -252,7 +251,7 @@ class TestCourseVersionControl:
         assert result.version_number == 6
         assert result.parent_commit_hash == "target123"
         assert result.branch_name == "main"
-        assert result.is_head == True
+        assert result.is_head is True
 
         # 验证数据库调用
         assert mock_db.add.call_count >= 3  # 至少调用3次add
@@ -292,7 +291,7 @@ class TestCourseVersionControl:
         assert result.commit_message == "回滚到版本3"
         assert result.course_snapshot == {"content": "version 3 content"}
         assert result.branch_name == "main"
-        assert result.is_head == True
+        assert result.is_head is True
 
     def test_compare_versions(self, version_service, mock_db):
         """测试版本比较功能"""

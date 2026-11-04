@@ -16,6 +16,10 @@ from services.ar_vr_mock_service import (
 )
 from sqlalchemy.orm import Session
 from utils.database import get_db
+import json
+
+# WebSocket端点用于实时数据流
+from fastapi import WebSocket
 
 logger = logging.getLogger(__name__)
 
@@ -321,12 +325,6 @@ async def cleanup_sessions(
     except Exception as e:
         logger.error(f"清理会话失败: {e}")
         raise HTTPException(status_code=500, detail=str(e))
-
-
-import json
-
-# WebSocket端点用于实时数据流
-from fastapi import WebSocket
 
 
 @mock_router.websocket("/sessions/{session_id}/ws/sensor-stream")

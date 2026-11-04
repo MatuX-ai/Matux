@@ -145,7 +145,7 @@ class TestLicenseAPI:
         # 验证响应
         assert response.status_code == 200
         data = response.json()
-        assert data["valid"] == True
+        assert data["valid"] is True
         assert data["license_info"]["license_key"] == "LICENSE-VALID-KEY"
 
     @patch("routes.license_routes.LicenseService")

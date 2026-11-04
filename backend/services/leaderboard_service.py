@@ -3,7 +3,6 @@ AI-Edu 积分排行榜服务
 提供积分统计、排行榜查询等功能
 """
 
-from collections import defaultdict
 from datetime import datetime, timedelta
 import logging
 from typing import Any, Dict, List, Optional, Tuple
@@ -17,7 +16,7 @@ from models.leaderboard import (
     UserStatistics,
 )
 from models.user import User
-from sqlalchemy import and_, desc, func, or_
+from sqlalchemy import and_, desc, func
 from sqlalchemy.orm import Session
 
 logger = logging.getLogger(__name__)
@@ -196,7 +195,7 @@ class LeaderboardService:
             .filter(
                 and_(
                     UserAchievement.user_id == user_id,
-                    UserAchievement.is_unlocked == True,
+                    UserAchievement.is_unlocked.is_(True),
                 )
             )
             .count()

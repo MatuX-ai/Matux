@@ -10,14 +10,6 @@ import pytest
 from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker
 from sqlalchemy.pool import StaticPool
-
-# models/course.py 中不存在 CourseCreate，services/course_service.py 已删除，
-# 待课程模型/服务恢复后删除本跳过。
-pytest.skip(
-    "多租户隔离测试依赖已删除的 models.course.CourseCreate / services.course_service",
-    allow_module_level=True,
-)
-
 from database.tenant_aware_session import TenantAwareSession, TenantQueryHelper
 from main import app
 from middleware.tenant_middleware import TenantMiddleware
@@ -27,6 +19,14 @@ from models.user import User, UserRole
 from security.data_access_control import DataAccessControl, DataMasking
 from services.course_service import CourseService
 from utils.tenant_context import TenantContext, with_tenant_context
+
+# models/course.py 中不存在 CourseCreate，services/course_service.py 已删除，
+# 待课程模型/服务恢复后删除本跳过。
+pytest.skip(
+    "多租户隔离测试依赖已删除的 models.course.CourseCreate / services.course_service",
+    allow_module_level=True,
+)
+
 
 # 测试数据库配置
 TEST_DATABASE_URL = "sqlite:///:memory:"
@@ -154,7 +154,7 @@ class TestDataAccessControl:
 
         # 测试正确的租户访问
         with with_tenant_context(1):
-            assert DataAccessControl.validate_tenant_ownership(course) == True
+            assert DataAccessControl.validate_tenant_ownership(course) is True
 
         # 测试错误的租户访问
         with with_tenant_context(2):
@@ -168,15 +168,15 @@ class TestDataAccessControl:
 
         # 管理员应该有所有权限
         with with_tenant_context(1):
-            assert DataAccessControl.check_read_permission(mock_admin, course) == True
-            assert DataAccessControl.check_update_permission(mock_admin, course) == True
-            assert DataAccessControl.check_delete_permission(mock_admin, course) == True
+            assert DataAccessControl.check_read_permission(mock_admin, course) is True
+            assert DataAccessControl.check_update_permission(mock_admin, course) is True
+            assert DataAccessControl.check_delete_permission(mock_admin, course) is True
 
         # 普通用户需要特定权限
         with patch.object(DataAccessControl, "_has_permission", return_value=True):
             with with_tenant_context(1):
                 assert (
-                    DataAccessControl.check_read_permission(mock_user, course) == True
+                    DataAccessControl.check_read_permission(mock_user, course) is True
                 )
 
 

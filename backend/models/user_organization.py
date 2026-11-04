@@ -7,7 +7,7 @@ import enum
 from typing import Optional
 
 from pydantic import BaseModel
-from sqlalchemy import Boolean, Column, DateTime, Enum, ForeignKey, Integer, String
+from sqlalchemy import Boolean, Column, DateTime, Enum, ForeignKey, Integer
 from sqlalchemy.orm import relationship
 from utils.database import Base
 

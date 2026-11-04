@@ -12,7 +12,6 @@ from fastapi import APIRouter, BackgroundTasks, Depends, HTTPException
 from middleware.auth import get_current_active_user
 from models.user import User
 from services.federated_service import FederatedLearningService
-from utils.dependencies import get_current_user_sync
 
 logger = logging.getLogger(__name__)
 

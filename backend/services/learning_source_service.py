@@ -3,7 +3,6 @@
 处理学习来源的创建、查询、更新等业务逻辑
 """
 
-from datetime import date, datetime
 import logging
 from typing import Any, Dict, List, Optional
 
@@ -205,7 +204,7 @@ class LearningSourceService:
         """清除用户的所有主学习来源标记"""
         self.db.query(LearningSource).filter(
             LearningSource.user_id == user_id,
-            LearningSource.is_primary == True,
+            LearningSource.is_primary.is_(True),
         ).update({"is_primary": False})
         self.db.commit()
 

@@ -54,7 +54,7 @@ async def get_current_user(
         # 查询用户
         from sqlalchemy import select
         stmt = select(User).filter(User.username ==
-                                   username, User.is_active == True)
+                                   username, User.is_active.is_(True))
         result = await db.execute(stmt)
         user = result.scalar_one_or_none()
 

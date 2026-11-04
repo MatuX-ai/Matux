@@ -10,15 +10,12 @@ Token 管理服务
 - 成本预估
 """
 
-from datetime import datetime, timedelta
-from decimal import Decimal
+from datetime import datetime
 import logging
 from typing import Any, Dict, List, Optional
 
-from models.user import User
 from models.user_license import (
     TokenPackage,
-    TokenPackageType,
     TokenRechargeRecord,
     TokenUsageRecord,
     UserTokenBalance,
@@ -58,7 +55,7 @@ class TokenService:
             .filter(UserTokenBalance.user_id == user_id)
             .first()
         )
-        
+
         if not balance:
             balance = UserTokenBalance(
                 user_id=user_id,
@@ -70,7 +67,7 @@ class TokenService:
             self.db.commit()
             self.db.refresh(balance)
             logger.info(f"为用户 {user_id} 创建 Token 余额账户")
-        
+
         return balance
 
     def get_user_balance(self, user_id: int) -> Optional[UserTokenBalance]:
@@ -119,16 +116,16 @@ class TokenService:
             .filter(TokenPackage.id == package_id)
             .first()
         )
-        
+
         if not package:
             raise ValueError(f"套餐 {package_id} 不存在")
-        
+
         if not package.is_active:
             raise ValueError(f"套餐 {package.name} 已下架")
-        
+
         # 获取或创建用户余额
         balance = self.get_or_create_user_balance(user_id)
-        
+
         # 创建充值记录
         recharge_record = TokenRechargeRecord(
             user_balance_id=balance.id,
@@ -139,16 +136,16 @@ class TokenService:
             payment_status="pending",
             order_no=order_no,
         )
-        
+
         self.db.add(recharge_record)
         self.db.commit()
-        
+
         logger.info(
             f"用户 {user_id} 购买套餐 {package.name}, "
             f"Token 数量：{package.token_count}, "
             f"金额：{package.price}元，订单号：{order_no}"
         )
-        
+
         return recharge_record
 
     def confirm_payment(self, order_no: str) -> bool:
@@ -166,31 +163,31 @@ class TokenService:
             .filter(TokenRechargeRecord.order_no == order_no)
             .first()
         )
-        
+
         if not recharge_record:
             logger.error(f"充值记录不存在：{order_no}")
             return False
-        
+
         if recharge_record.payment_status == "success":
             logger.warning(f"订单 {order_no} 已经确认过")
             return True
-        
+
         # 更新充值记录状态
         recharge_record.payment_status = "success"
         recharge_record.payment_time = datetime.utcnow()
-        
+
         # 更新用户余额
         balance = recharge_record.user_balance
         balance.total_tokens += recharge_record.token_amount
         balance.remaining_tokens += recharge_record.token_amount
-        
+
         self.db.commit()
-        
+
         logger.info(
             f"订单 {order_no} 支付确认成功，"
             f"用户 {balance.user_id} 增加 {recharge_record.token_amount} Token"
         )
-        
+
         return True
 
     # ==================== Token 消费 ====================
@@ -222,7 +219,7 @@ class TokenService:
             ValueError: 余额不足
         """
         balance = self.get_or_create_user_balance(user_id)
-        
+
         if balance.remaining_tokens < token_amount:
             logger.warning(
                 f"用户 {user_id} Token 余额不足：剩余 {balance.remaining_tokens}, "
@@ -231,11 +228,11 @@ class TokenService:
             raise ValueError(
                 f"Token 余额不足，当前剩余：{balance.remaining_tokens}"
             )
-        
+
         # 扣减余额
         balance.remaining_tokens -= token_amount
         balance.used_tokens += token_amount
-        
+
         # 创建使用记录
         usage_record = TokenUsageRecord(
             user_balance_id=balance.id,
@@ -245,15 +242,15 @@ class TokenService:
             resource_id=resource_id,
             resource_type=resource_type,
         )
-        
+
         self.db.add(usage_record)
         self.db.commit()
-        
+
         logger.info(
             f"用户 {user_id} 消费 {token_amount} Token, "
             f"类型：{usage_type}, 剩余：{balance.remaining_tokens}"
         )
-        
+
         return True
 
     # ==================== 月度赠送 ====================
@@ -277,20 +274,20 @@ class TokenService:
             .filter(UserLicense.user_id == user_id)
             .first()
         )
-        
+
         if not user_license or not user_license.license:
             return 0
-        
+
         # 根据许可证类型确定赠送额度
         license_type = user_license.license.license_type
-        
+
         bonus_map = {
             LicenseType.CLOUD_HOSTED: 1000,  # 云托管版每月赠送 1000 Token
             LicenseType.ENTERPRISE: 5000,    # 企业版每月赠送 5000 Token
             LicenseType.WINDOWS_LOCAL: 0,     # Windows 本地版不赠送
             LicenseType.OPEN_SOURCE: 0,       # 开源版不赠送
         }
-        
+
         return bonus_map.get(license_type, 0)
 
     def claim_monthly_bonus(self, user_id: int) -> bool:
@@ -304,7 +301,7 @@ class TokenService:
             bool: 是否成功领取
         """
         balance = self.get_or_create_user_balance(user_id)
-        
+
         # 检查是否可以领取
         now = datetime.utcnow()
         if balance.last_bonus_date:
@@ -315,27 +312,27 @@ class TokenService:
             ):
                 logger.info(f"用户 {user_id} 本月已领取过赠送 Token")
                 return False
-        
+
         # 计算赠送数量
         bonus_amount = self.get_monthly_bonus_tokens(user_id)
-        
+
         if bonus_amount <= 0:
             logger.info(f"用户 {user_id} 不符合赠送条件")
             return False
-        
+
         # 增加余额
         balance.monthly_bonus_tokens += bonus_amount
         balance.total_tokens += bonus_amount
         balance.remaining_tokens += bonus_amount
         balance.last_bonus_date = now
-        
+
         self.db.commit()
-        
+
         logger.info(
             f"用户 {user_id} 领取月度赠送 Token: {bonus_amount}, "
             f"当前余额：{balance.remaining_tokens}"
         )
-        
+
         return True
 
     # ==================== 统计信息 ====================
@@ -351,7 +348,7 @@ class TokenService:
             Dict: 统计信息字典
         """
         balance = self.get_user_balance(user_id)
-        
+
         if not balance:
             return {
                 "total_tokens": 0,
@@ -360,7 +357,7 @@ class TokenService:
                 "total_recharged": 0,
                 "total_records": 0,
             }
-        
+
         # 统计充值次数和总量
         recharge_stats = (
             self.db.query(
@@ -371,7 +368,7 @@ class TokenService:
             .filter(TokenRechargeRecord.payment_status == "success")
             .first()
         )
-        
+
         # 统计使用记录
         usage_stats = (
             self.db.query(
@@ -381,7 +378,7 @@ class TokenService:
             .filter(TokenUsageRecord.user_balance_id == balance.id)
             .first()
         )
-        
+
         return {
             "total_tokens": balance.total_tokens,
             "used_tokens": balance.used_tokens,
@@ -415,7 +412,7 @@ class TokenService:
             "medium": 150,     # 中等课程
             "complex": 500,    # 复杂课程
         }
-        
+
         return cost_map.get(complexity.lower(), 100)
 
     def estimate_ai_chat_cost(self, text_length: int) -> int:
@@ -450,7 +447,7 @@ class TokenService:
         # 输出部分：每 1 字符约 1 token
         input_tokens = prompt_length // 4
         output_tokens = completion_length
-        
+
         return input_tokens + output_tokens
 
     # ==================== 辅助方法 ====================
@@ -464,7 +461,7 @@ class TokenService:
         """
         return (
             self.db.query(TokenPackage)
-            .filter(TokenPackage.is_active == True)
+            .filter(TokenPackage.is_active.is_(True))
             .all()
         )
 
@@ -502,10 +499,10 @@ class TokenService:
             List[TokenUsageRecord]: 使用记录列表
         """
         balance = self.get_user_balance(user_id)
-        
+
         if not balance:
             return []
-        
+
         return (
             self.db.query(TokenUsageRecord)
             .filter(TokenUsageRecord.user_balance_id == balance.id)

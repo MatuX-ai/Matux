@@ -157,11 +157,11 @@ class AchievementService:
         )
 
         if not include_locked:
-            query = query.filter(UserAchievement.is_unlocked == True)
+            query = query.filter(UserAchievement.is_unlocked.is_(True))
 
         if not include_hidden:
             query = query.filter(
-                or_(Achievement.is_hidden == False, UserAchievement.is_unlocked == True)
+                or_(Achievement.is_hidden.is_(False), UserAchievement.is_unlocked.is_(True))
             )
 
         query = query.order_by(
@@ -336,7 +336,7 @@ class AchievementService:
             self.db.query(Achievement)
             .filter(
                 and_(
-                    Achievement.is_active == True,
+                    Achievement.is_active.is_(True),
                     Achievement.unlock_condition.has_key("metric"),
                     Achievement.unlock_condition["metric"].astext == metric_name,
                 )
@@ -386,7 +386,7 @@ class AchievementService:
     def get_progress_statistics(self, user_id: int) -> Dict[str, Any]:
         """获取用户成就统计信息"""
         total_achievements = (
-            self.db.query(Achievement).filter(Achievement.is_active == True).count()
+            self.db.query(Achievement).filter(Achievement.is_active.is_(True)).count()
         )
 
         unlocked_count = (
@@ -394,7 +394,7 @@ class AchievementService:
             .filter(
                 and_(
                     UserAchievement.user_id == user_id,
-                    UserAchievement.is_unlocked == True,
+                    UserAchievement.is_unlocked.is_(True),
                 )
             )
             .count()
@@ -405,7 +405,7 @@ class AchievementService:
             .filter(
                 and_(
                     UserAchievement.user_id == user_id,
-                    UserAchievement.is_claimed == True,
+                    UserAchievement.is_claimed.is_(True),
                 )
             )
             .count()
@@ -416,7 +416,7 @@ class AchievementService:
         for category in AchievementCategory:
             cat_total = (
                 self.db.query(Achievement)
-                .filter(Achievement.category == category, Achievement.is_active == True)
+                .filter(Achievement.category == category, Achievement.is_active.is_(True))
                 .count()
             )
 
@@ -425,7 +425,7 @@ class AchievementService:
                 .join(UserAchievement.achievement)
                 .filter(
                     UserAchievement.user_id == user_id,
-                    UserAchievement.is_unlocked == True,
+                    UserAchievement.is_unlocked.is_(True),
                     Achievement.category == category,
                 )
                 .count()

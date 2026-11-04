@@ -18,6 +18,15 @@ from typing import Any, Dict, List, Optional
 from fastapi import APIRouter, HTTPException, Query
 from pydantic import BaseModel, Field
 
+from cache.ai_teacher_persistence import (
+    get_memories_repo,
+    get_personas_repo,
+    get_profiles_repo,
+    get_sessions_repo,
+)
+from services.ai_teacher_event_bus import ai_teacher_live_bus  # 【P3-B】
+from services.ai_teacher_live_settings import ai_teacher_live_settings  # 【P3-B】
+
 logger = logging.getLogger(__name__)
 
 router = APIRouter(prefix="/api/v1/ai-teacher", tags=["AI 个性化教师"])

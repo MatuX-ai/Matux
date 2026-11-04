@@ -5,10 +5,8 @@ Hermes Agent 服务模块
 支持持久记忆、自动技能创建和多模型接入
 """
 
-import asyncio
 from enum import Enum
 import json
-import logging
 import socket
 from typing import Any, Dict, List, Optional
 

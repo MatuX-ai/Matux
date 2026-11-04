@@ -347,7 +347,7 @@ class PromptTemplateManager:
                         | (PromptTemplate.description.ilike(f"%{query}%"))
                         | (PromptTemplate.category.ilike(f"%{query}%"))
                     )
-                    .filter(PromptTemplate.is_public == True)
+                    .filter(PromptTemplate.is_public.is_(True))
                     .limit(limit)
                     .all()
                 )
@@ -378,7 +378,7 @@ class PromptTemplateManager:
             with get_sync_db() as db:
                 popular_templates = (
                     db.query(PromptTemplate)
-                    .filter(PromptTemplate.is_public == True)
+                    .filter(PromptTemplate.is_public.is_(True))
                     .order_by(PromptTemplate.usage_count.desc())
                     .limit(limit)
                     .all()
@@ -404,7 +404,7 @@ class PromptTemplateManager:
                 total_count = db.query(PromptTemplate).count()
                 public_count = (
                     db.query(PromptTemplate)
-                    .filter(PromptTemplate.is_public == True)
+                    .filter(PromptTemplate.is_public.is_(True))
                     .count()
                 )
 

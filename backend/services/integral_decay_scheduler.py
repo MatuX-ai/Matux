@@ -2,13 +2,11 @@ import asyncio
 from dataclasses import dataclass
 from datetime import datetime, timedelta
 from enum import Enum
-import json
 import logging
 from typing import Any, Callable, Dict, List, Optional
 
 from apscheduler.schedulers.asyncio import AsyncIOScheduler
 from apscheduler.triggers.cron import CronTrigger
-from apscheduler.triggers.interval import IntervalTrigger
 
 from ..utils.blockchain_client import BlockchainClient
 from .integral_decay_calculator import decay_calculator

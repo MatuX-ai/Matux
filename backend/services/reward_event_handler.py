@@ -3,20 +3,16 @@
 处理来自事件总线的各种奖励事件并执行相应操作
 """
 
-import asyncio
-from datetime import datetime
 import logging
-from typing import Any, Dict, Optional
+from typing import Optional
 
 from gamification.services.rule_engine_service import RuleEngineService
 from services.blockchain.gateway_service import BlockchainGatewayService
 
 from .reward_event_bus import (
     RewardEvent,
-    RewardEventBus,
     RewardEventType,
     get_event_bus,
-    reward_event_handler,
 )
 
 logger = logging.getLogger(__name__)

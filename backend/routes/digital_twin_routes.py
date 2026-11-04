@@ -8,7 +8,6 @@ import json
 import logging
 from typing import Any, Dict, List, Optional
 
-from database.tenant_aware_session import TenantAwareSession
 from fastapi import APIRouter, Depends, HTTPException, WebSocket, WebSocketDisconnect
 from models.user import User
 from pydantic import BaseModel

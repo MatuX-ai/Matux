@@ -250,7 +250,7 @@ class TestPaymentService:
             "ORD20231201001", "user_123", mock_db
         )
 
-        assert result == True
+        assert result is True
         assert mock_order.status == OrderStatus.CANCELLED
         assert mock_order.payment_status == PaymentStatus.CANCELLED
         assert mock_order.cancelled_at is not None
@@ -263,7 +263,7 @@ class TestPaymentService:
 
         result = await payment_service.cancel_order("ORD_NONEXIST", "user_123", mock_db)
 
-        assert result == False
+        assert result is False
 
     async def test_cancel_order_invalid_status(self, payment_service):
         """测试取消状态不正确的订单"""

@@ -5,7 +5,7 @@
 
 from datetime import datetime
 import json
-from typing import Dict, List, Optional
+from typing import Dict, Optional
 
 from models.user import User
 from modules.learning.models import (

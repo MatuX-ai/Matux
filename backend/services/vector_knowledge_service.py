@@ -14,12 +14,11 @@
 """
 
 from datetime import datetime
-import json
 import logging
 import os
 from pathlib import Path
 import pickle
-from typing import Any, Dict, List, Optional, Tuple
+from typing import Any, Dict, List, Optional
 
 logger = logging.getLogger(__name__)
 
@@ -300,7 +299,8 @@ class VectorKnowledgeService:
             stage: 学习阶段 (L1-L4)
         """
         try:
-            import faiss
+            # faiss 为可选依赖，此处 import 仅用于探测其是否可用，名字本身不被引用，故忽略 F401
+            import faiss  # noqa: F401
             import numpy as np
 
             query_embedding = self._embed_text(query)

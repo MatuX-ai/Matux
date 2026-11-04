@@ -1,10 +1,17 @@
 import asyncio
-from datetime import datetime, timedelta
-import json
+from datetime import datetime
 import unittest
-from unittest.mock import AsyncMock, Mock, patch
+from unittest.mock import patch
 
 import pytest
+from services.achievement_badge_system import achievement_system
+from services.complex_gesture_recognizer import complex_gesture_recognizer
+from services.hidden_task_reward_system import hidden_task_system
+from services.integral_decay_calculator import decay_calculator
+
+# 导入被测试的模块
+from services.reward_event_bus import RewardEvent, reward_event_bus
+from services.voice_correction_detector import VoiceCorrectionDetector
 
 # 该模块依赖已删除的 utils/blockchain_client.py（BlockchainClient），
 # 且 services/hidden_task_reward_system.py 仍以 `..` 相对导入引用它；
@@ -13,17 +20,6 @@ pytest.skip(
     "多模态激励集成测试依赖已删除的 utils.blockchain_client",
     allow_module_level=True,
 )
-
-from services.achievement_badge_system import achievement_system
-from services.ar_reward_service import ar_reward_service
-from services.complex_gesture_recognizer import complex_gesture_recognizer
-from services.hidden_task_reward_system import hidden_task_system
-from services.integral_decay_calculator import decay_calculator
-
-# 导入被测试的模块
-from services.reward_event_bus import RewardEvent, reward_event_bus
-from services.voice_correction_detector import VoiceCorrectionDetector
-from services.voice_reward_service import voice_reward_service
 
 
 class TestMultimodalIncentiveIntegration(unittest.TestCase):

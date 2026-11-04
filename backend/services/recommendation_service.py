@@ -4,11 +4,10 @@ AI-Edu 智能推荐服务（精简版）
 """
 
 from collections import defaultdict
-from datetime import datetime, timedelta
+from datetime import datetime
 import logging
 from typing import Any, Dict, List, Optional, Tuple
 
-from models.ai_edu_rewards import AIEduLesson, AIEduModule
 from models.recommendation import (
     CourseFeature,
     LearningStyle,

@@ -7,18 +7,8 @@
 - MatuX 仅保留学生/家长角色基础权限
 """
 
-from datetime import datetime
-from typing import List, Optional
 
-from fastapi import APIRouter, Depends, HTTPException, Query, status
-from models.permission import Permission, Role, UserRoleAssignment
-from models.user import User, UserRole
-from pydantic import BaseModel
-from routes.auth_routes import get_current_user
-from services.permission_service import permission_service
-from sqlalchemy.ext.asyncio import AsyncSession
-from utils.database import get_db
-from utils.decorators import admin_required, require_permission
+from fastapi import APIRouter
 
 router = APIRouter(prefix="/api/v1/permissions", tags=["权限管理"])
 

@@ -9,8 +9,11 @@ import sys
 
 sys.path.insert(0, os.path.join(os.path.dirname(__file__), ".."))
 
-from utils.date_utils import *
-from utils.string_utils import *
+# 通配符导入是本脚本的设计意图（需要使用被导入模块的全部函数），
+# 故行内忽略 F403；F405 报在使用处，无法行内抑制，改由 .flake8 /
+# pyproject.toml 的 per-file-ignores 按文件忽略。
+from utils.date_utils import *  # noqa: E402, F403
+from utils.string_utils import *  # noqa: E402, F403
 
 logger = logging.getLogger(__name__)
 

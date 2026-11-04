@@ -6,7 +6,7 @@ AI 导师路由 - DeepSeek 深度集成
 
 import logging
 import time
-from typing import Any, Dict, List, Optional
+from typing import Any, Dict, Optional
 
 from fastapi import (
     APIRouter,
@@ -32,7 +32,6 @@ from ..models.ai_completion import (
     DeepSeekTutorResponse,
     ModelProvider,
     OptimizationImprovement,
-    ProgrammingLanguage,
 )
 from ..models.user import User
 

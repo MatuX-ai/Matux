@@ -2,7 +2,7 @@
 验证器工厂类
 """
 
-from typing import Any, Dict, List, Optional, Tuple
+from typing import Any, Dict, Optional, Tuple
 
 from .base_validator import (
     BaseValidator,

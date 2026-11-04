@@ -4,17 +4,18 @@ AI-Edu 联动任务 API 路由
 """
 
 import logging
-from typing import Any, Dict, List, Optional
+from typing import Optional
 
 from fastapi import APIRouter, Depends, File, Form, HTTPException, Query, UploadFile
 from models.user import User
 from services.task_orchestration_service import (
-    TaskOrchestrationService,
     get_task_orchestration_service,
 )
 from sqlalchemy.orm import Session
 from utils.database import get_sync_db
 from utils.dependencies import get_current_user_sync
+# 导入 datetime
+from datetime import datetime
 
 logger = logging.getLogger(__name__)
 
@@ -346,7 +347,3 @@ async def register_for_task(
     except Exception as e:
         logger.error(f"报名失败：{e}")
         raise HTTPException(status_code=500, detail=str(e))
-
-
-# 导入 datetime
-from datetime import datetime

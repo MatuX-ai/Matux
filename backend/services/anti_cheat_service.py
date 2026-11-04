@@ -9,7 +9,6 @@ Anti-Cheat Service - 防作弊检测引擎
 5. IP 异常检测
 """
 
-from datetime import datetime, timedelta
 from typing import Optional
 
 from models.exam import (

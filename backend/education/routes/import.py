@@ -11,7 +11,6 @@ from sqlalchemy.orm import Session
 
 from backend.database import get_db
 from backend.education.models.student import ParentInfo, StudentProfile
-from backend.education.schemas.student import StudentProfileCreate
 
 router = APIRouter(prefix="/api/v1/import", tags=["批量导入"])
 

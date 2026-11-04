@@ -2,11 +2,10 @@
 排课模块 Pydantic Schema - 用于请求和响应验证
 """
 
-from datetime import date, time
 from enum import Enum
 from typing import Any, Dict, List, Optional
 
-from pydantic import BaseModel, Field, validator
+from pydantic import BaseModel, Field
 
 
 class RecurrencePattern(str, Enum):

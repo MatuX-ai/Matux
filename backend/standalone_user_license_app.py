@@ -8,13 +8,13 @@ import sys
 
 sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
-from datetime import datetime, timedelta
-import hashlib
-from typing import Optional
+from datetime import datetime, timedelta  # noqa: E402
+import hashlib  # noqa: E402
+from typing import Optional  # noqa: E402
 
-from fastapi import Body, Depends, FastAPI, HTTPException, Path, Query, status
-from fastapi.security import OAuth2PasswordBearer, OAuth2PasswordRequestForm
-from jose import JWTError, jwt
+from fastapi import Body, Depends, FastAPI, HTTPException, Path, Query, status  # noqa: E402
+from fastapi.security import OAuth2PasswordBearer, OAuth2PasswordRequestForm  # noqa: E402
+from jose import JWTError, jwt  # noqa: E402
 
 
 # 简化的模型定义

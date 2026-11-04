@@ -148,7 +148,7 @@ async def list_all_achievements(
         )
 
         total = (
-            service.db.query(Achievement).filter(Achievement.is_active == True).count()
+            service.db.query(Achievement).filter(Achievement.is_active.is_(True)).count()
         )
 
         return {

@@ -232,7 +232,7 @@ class UnifiedAuthService:
 
             stmt = select(UserOrganization.org_id).filter(
                 UserOrganization.user_id == user_id,
-                UserOrganization.is_active == True,
+                UserOrganization.is_active.is_(True),
             )
             result = await db.execute(stmt)
             return [row[0] for row in result.fetchall() if row[0] is not None]
@@ -287,7 +287,7 @@ class UnifiedAuthService:
         stmt = select(UserGuardian).filter(
             UserGuardian.guardian_id == parent_id,
             UserGuardian.student_id == student.id,
-            UserGuardian.is_active == True,
+            UserGuardian.is_active.is_(True),
         )
         result = await db.execute(stmt)
         if result.scalar_one_or_none():
@@ -314,7 +314,7 @@ class UnifiedAuthService:
             .join(User, UserGuardian.student_id == User.id)
             .filter(
                 UserGuardian.guardian_id == parent_id,
-                UserGuardian.is_active == True,
+                UserGuardian.is_active.is_(True),
             )
         )
         result = await db.execute(stmt)
@@ -341,7 +341,7 @@ class UnifiedAuthService:
             .join(User, UserGuardian.guardian_id == User.id)
             .filter(
                 UserGuardian.student_id == student_id,
-                UserGuardian.is_active == True,
+                UserGuardian.is_active.is_(True),
             )
         )
         result = await db.execute(stmt)
@@ -366,7 +366,7 @@ class UnifiedAuthService:
         stmt = select(UserGuardian).filter(
             UserGuardian.guardian_id == parent_id,
             UserGuardian.student_id == student_id,
-            UserGuardian.is_active == True,
+            UserGuardian.is_active.is_(True),
         )
         result = await db.execute(stmt)
         link = result.scalar_one_or_none()

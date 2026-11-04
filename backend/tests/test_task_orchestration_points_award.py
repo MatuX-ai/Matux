@@ -5,14 +5,14 @@
 
 import os
 import sys
-from unittest.mock import MagicMock, Mock, patch
+from unittest.mock import Mock, patch
 
 import pytest
 
 # 添加项目路径
 sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), "..")))
 
-from services.task_orchestration_service import TaskOrchestrationService
+from services.task_orchestration_service import TaskOrchestrationService  # noqa: E402
 
 # ==================== 测试夹具 ====================
 

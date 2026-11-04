@@ -4,12 +4,11 @@ AI-Edu 智能推荐 API 路由
 """
 
 import logging
-from typing import Any, Dict, List, Optional, cast
+from typing import Any, Dict, Optional, cast
 
 from fastapi import APIRouter, Body, Depends, HTTPException, Query
 from models.user import User
 from services.recommendation_service import (
-    RecommendationService,
     get_recommendation_service,
 )
 from sqlalchemy import and_
@@ -364,7 +363,7 @@ async def get_recommendation_statistics(
             .filter(
                 and_(
                     RecommendationRecord.user_id == current_user.id,
-                    RecommendationRecord.user_clicked == True,
+                    RecommendationRecord.user_clicked.is_(True),
                 )
             )
             .count()
@@ -376,7 +375,7 @@ async def get_recommendation_statistics(
             .filter(
                 and_(
                     RecommendationRecord.user_id == current_user.id,
-                    RecommendationRecord.user_completed == True,
+                    RecommendationRecord.user_completed.is_(True),
                 )
             )
             .count()

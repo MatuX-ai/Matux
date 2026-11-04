@@ -21,6 +21,10 @@ from sqlalchemy import (
 )
 from sqlalchemy.orm import relationship
 from utils.database import Base
+from typing import List, Optional
+
+# Pydantic模型用于API请求/响应
+from pydantic import BaseModel, Field
 
 
 class MediaType(str, enum.Enum):
@@ -174,13 +178,6 @@ class MediaTranscodingJob(Base):
     # 关系
     organization = relationship("Organization")
     resource = relationship("MultimediaResource")
-
-
-from datetime import datetime
-from typing import List, Optional
-
-# Pydantic模型用于API请求/响应
-from pydantic import BaseModel, Field
 
 
 class MultimediaResourceCreate(BaseModel):

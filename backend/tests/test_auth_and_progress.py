@@ -1,7 +1,6 @@
 """
 测试用户认证和学习进度API
 """
-import json
 
 import requests
 

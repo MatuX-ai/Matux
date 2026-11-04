@@ -516,7 +516,7 @@ async def get_arvr_recommendations(
     try:
         # 基于流行度和用户兴趣的简单推荐算法
         query = db.query(ARVRContent).filter(
-            ARVRContent.org_id == org_id, ARVRContent.is_active == True
+            ARVRContent.org_id == org_id, ARVRContent.is_active.is_(True)
         )
 
         # 按视图次数排序

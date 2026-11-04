@@ -20,22 +20,21 @@
 """
 
 import asyncio
-from datetime import datetime
 import logging
 from pathlib import Path
 import sys
 import time
-from typing import Any, Dict, List, Optional, Tuple
+from typing import Any, Dict
 
 # 添加项目根目录到路径
 sys.path.insert(0, str(Path(__file__).resolve().parent.parent))
 
-from models.course import Course, CourseLesson
-from models.courseware_clousure import CoursewareClosure, CoursewareNode
-from repositories.courseware_repository import CoursewareRepository
-from sqlalchemy import func, select, text
-from sqlalchemy.ext.asyncio import AsyncSession
-from utils.database import AsyncSessionLocal, engine
+from models.course import Course, CourseLesson  # noqa: E402
+from models.courseware_clousure import CoursewareClosure, CoursewareNode  # noqa: E402
+from repositories.courseware_repository import CoursewareRepository  # noqa: E402
+from sqlalchemy import func, select  # noqa: E402
+from sqlalchemy.ext.asyncio import AsyncSession  # noqa: E402
+from utils.database import AsyncSessionLocal  # noqa: E402
 
 logging.basicConfig(
     level=logging.INFO,
@@ -98,7 +97,7 @@ class ClosureTableMigration:
         """迁移 CourseLesson 数据"""
         # 获取所有活跃课程
         courses_result = await self.session.execute(
-            select(Course).where(Course.is_active == True)
+            select(Course).where(Course.is_active.is_(True))
         )
         courses = courses_result.scalars().all()
         logger.info(f"找到 {len(courses)} 门课程需要迁移")
@@ -183,7 +182,7 @@ class ClosureTableMigration:
         src_lessons = src_lessons_result.scalar() or 0
 
         src_courses_result = await self.session.execute(
-            select(func.count()).select_from(Course).where(Course.is_active == True)
+            select(func.count()).select_from(Course).where(Course.is_active.is_(True))
         )
         src_courses = src_courses_result.scalar() or 0
 

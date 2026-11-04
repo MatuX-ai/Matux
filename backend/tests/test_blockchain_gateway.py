@@ -33,7 +33,7 @@ class TestBlockchainGatewayService:
         """测试服务初始化成功"""
         with patch.object(gateway_service, "_load_client_registry") as mock_load:
             await gateway_service.initialize()
-            assert gateway_service.initialized == True
+            assert gateway_service.initialized is True
             mock_load.assert_called_once()
 
     @pytest.mark.asyncio
@@ -48,7 +48,7 @@ class TestBlockchainGatewayService:
                 result = await gateway_service.health_check()
 
                 assert result["status"] == "healthy"
-                assert result["connected"] == True
+                assert result["connected"] is True
                 assert result["last_block_height"] == 1000
 
     @pytest.mark.asyncio
@@ -60,7 +60,7 @@ class TestBlockchainGatewayService:
             result = await gateway_service.health_check()
 
             assert result["status"] == "degraded"
-            assert result["connected"] == False
+            assert result["connected"] is False
 
     @pytest.mark.asyncio
     async def test_issue_integral_success(self, gateway_service):
@@ -126,7 +126,7 @@ class TestBlockchainGatewayService:
         result = await gateway_service.validate_client_credentials(
             "test_client_1", "test_secret_1"
         )
-        assert result == True
+        assert result is True
 
     @pytest.mark.asyncio
     async def test_validate_client_credentials_failed(self, gateway_service):
@@ -134,7 +134,7 @@ class TestBlockchainGatewayService:
         result = await gateway_service.validate_client_credentials(
             "invalid_client", "wrong_secret"
         )
-        assert result == False
+        assert result is False
 
     @pytest.mark.asyncio
     async def test_generate_access_token_success(self, gateway_service):
@@ -173,7 +173,7 @@ class TestCircuitBreaker:
     async def test_can_execute_closed_state(self, circuit_breaker):
         """测试关闭状态下可以执行"""
         result = await circuit_breaker._can_execute()
-        assert result == True
+        assert result is True
 
     @pytest.mark.asyncio
     async def test_failure_threshold_reached(self, circuit_breaker):
@@ -202,7 +202,7 @@ class TestCircuitBreaker:
         )
 
         result = await circuit_breaker._can_execute()
-        assert result == True
+        assert result is True
         assert circuit_breaker.state == CircuitState.HALF_OPEN
 
     @pytest.mark.asyncio

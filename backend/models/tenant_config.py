@@ -18,6 +18,10 @@ from sqlalchemy import (
 )
 from sqlalchemy.orm import relationship
 from utils.database import Base
+from typing import Optional, Union
+
+# Pydantic模型用于API请求/响应
+from pydantic import BaseModel, Field, validator
 
 
 class TenantConfig(Base):
@@ -140,13 +144,6 @@ class TenantResourceQuota(Base):
             return False
         cu: int = self.current_usage  # type: ignore[assignment]
         return cu >= wt
-
-
-from datetime import datetime
-from typing import Optional, Union
-
-# Pydantic模型用于API请求/响应
-from pydantic import BaseModel, Field, validator
 
 
 class TenantConfigCreate(BaseModel):

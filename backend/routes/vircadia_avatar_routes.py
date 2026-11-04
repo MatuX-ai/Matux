@@ -7,13 +7,11 @@ Vircadia Avatar 管理路由
 import logging
 from typing import Any, Dict, Optional
 
-from fastapi import APIRouter, Depends, HTTPException
-from pydantic import BaseModel, HttpUrl
+from fastapi import APIRouter
+from pydantic import BaseModel
 from services.vircadia_avatar_sync_impl import (
     AvatarMetadataExtractor,
     AvatarURLValidator,
-    extract_avatar_metadata_enhanced,
-    validate_avatar_url_enhanced,
 )
 
 logger = logging.getLogger(__name__)

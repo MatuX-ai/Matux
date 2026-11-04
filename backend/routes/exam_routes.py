@@ -11,7 +11,7 @@ Exam Routes - 测验系统 API 端点
 
 from fastapi import APIRouter, Depends, HTTPException, Query, status
 from middleware.auth import get_current_user
-from models.exam import AttemptStatus, ExamStatus
+from models.exam import ExamStatus
 from models.user import User
 from pydantic import BaseModel, Field
 from services.anti_cheat_service import anti_cheat_service
@@ -255,9 +255,9 @@ async def start_exam(
     """开始考试，返回答题记录"""
     import logging
     logger = logging.getLogger(__name__)
-    
+
     logger.info(f"[START_EXAM] user_id={current_user.id}, exam_id={exam_id}")
-    
+
     try:
         ip_address = None
         if request and hasattr(request, 'client') and request.client:
@@ -282,7 +282,7 @@ async def start_exam(
             status_code=status.HTTP_400_BAD_REQUEST,
             detail=f"开始考试失败：{str(e)}"
         )
-        
+
     if not attempt:
         logger.warning(f"[START_EXAM] Exam not found: exam_id={exam_id}")
         raise HTTPException(

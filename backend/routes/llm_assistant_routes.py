@@ -4,12 +4,11 @@ AI 学习助手 API 路由
 """
 
 import logging
-from typing import Any, Dict, List, Optional
+from typing import Optional
 
 from fastapi import APIRouter, Body, Depends, HTTPException, Query
 from models.user import User
 from services.llm_assistant_service import (
-    LLMAssistantService,
     get_llm_assistant_service,
 )
 from sqlalchemy.orm import Session

@@ -15,9 +15,8 @@ from sqlalchemy.orm import sessionmaker
 sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), "..")))
 sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), "..", "..")))
 
-from database.db import Base
-from models.leaderboard import PointsTransaction, UserPoints, UserStatistics
-from services.leaderboard_service import LeaderboardService, get_leaderboard_service
+from database.db import Base  # noqa: E402
+from services.leaderboard_service import get_leaderboard_service  # noqa: E402
 
 # ==================== 测试夹具 ====================
 

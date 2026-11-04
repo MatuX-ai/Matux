@@ -9,7 +9,7 @@ OAuth Service - 第三方登录集成服务
 4. 查找或创建本地用户
 """
 
-from datetime import datetime, timedelta
+from datetime import datetime
 import json
 import secrets
 from typing import Optional
@@ -20,7 +20,6 @@ import httpx
 from models.oauth_account import OAuthAccount, OAuthProvider
 from models.user import User, UserRole
 from modules.auth.auth_service import (
-    UnifiedAuthService,
     create_access_token,
     create_refresh_token,
     hash_password,
@@ -293,7 +292,7 @@ class OAuthService:
         stmt = select(OAuthAccount).filter(
             OAuthAccount.provider == provider_enum,
             OAuthAccount.provider_account_id == provider_account_id,
-            OAuthAccount.is_active == True,
+            OAuthAccount.is_active.is_(True),
         )
         result = await db.execute(stmt)
         oauth_account = result.scalar_one_or_none()
@@ -419,7 +418,7 @@ class OAuthService:
         stmt = select(OAuthAccount).filter(
             OAuthAccount.provider == provider_enum,
             OAuthAccount.provider_account_id == provider_account_id,
-            OAuthAccount.is_active == True,
+            OAuthAccount.is_active.is_(True),
         )
         result = await db.execute(stmt)
         existing = result.scalar_one_or_none()
@@ -458,7 +457,7 @@ class OAuthService:
         stmt = select(OAuthAccount).filter(
             OAuthAccount.id == oauth_account_id,
             OAuthAccount.user_id == user_id,
-            OAuthAccount.is_active == True,
+            OAuthAccount.is_active.is_(True),
         )
         result = await db.execute(stmt)
         account = result.scalar_one_or_none()
@@ -475,7 +474,7 @@ class OAuthService:
         """获取用户绑定的所有第三方账号"""
         stmt = select(OAuthAccount).filter(
             OAuthAccount.user_id == user_id,
-            OAuthAccount.is_active == True,
+            OAuthAccount.is_active.is_(True),
         )
         result = await db.execute(stmt)
         accounts = result.scalars().all()

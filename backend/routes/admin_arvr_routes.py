@@ -42,7 +42,6 @@ from fastapi import (
 from middleware.auth import get_current_user
 from models.ar_vr_content import (
     ARVRContent,
-    ARVRContentResponse,
     ARVRContentType,
     ARVRContentUpdate,
     ARVRPlatform,

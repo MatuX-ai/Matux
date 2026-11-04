@@ -188,7 +188,7 @@ class ModelUpdateService:
                 self.db.query(ModelVersion)
                 .filter(
                     ModelVersion.model_name == model_name,
-                    ModelVersion.is_active == True,
+                    ModelVersion.is_active.is_(True),
                 )
                 .order_by(ModelVersion.created_at.desc())
                 .first()

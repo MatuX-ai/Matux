@@ -10,9 +10,8 @@ import logging
 from typing import List, Optional, Tuple
 
 from models.courseware_clousure import CoursewareClosure, CoursewareNode
-from sqlalchemy import and_, delete, func, select, text
+from sqlalchemy import and_, delete, func, select
 from sqlalchemy.ext.asyncio import AsyncSession
-from sqlalchemy.orm import selectinload
 
 logger = logging.getLogger(__name__)
 

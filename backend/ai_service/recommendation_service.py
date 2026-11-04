@@ -14,22 +14,6 @@ import numpy as np
 from sklearn.feature_extraction.text import TfidfVectorizer
 from sklearn.metrics.pairwise import cosine_similarity
 from sklearn.neighbors import NearestNeighbors
-
-
-# 临时占位符，避免 NameError
-def monitor_ai_operation(operation_name: str):
-    """AI 操作监控装饰器 (临时占位)"""
-
-    def decorator(func):
-        @wraps(func)
-        async def wrapper(*args, **kwargs):
-            return await func(*args, **kwargs)
-
-        return wrapper
-
-    return decorator
-
-
 from config.transfer_learning_config import settings as tl_settings
 from models.content_store import ContentItem, ContentRating
 from models.recommendation import (
@@ -51,6 +35,21 @@ from .model_compressor import ModelCompressor
 
 # 导入预训练模型相关组件
 from .transfer_learning_engine import TransferLearningEngine
+
+
+# 临时占位符，避免 NameError
+def monitor_ai_operation(operation_name: str):
+    """AI 操作监控装饰器 (临时占位)"""
+
+    def decorator(func):
+        @wraps(func)
+        async def wrapper(*args, **kwargs):
+            return await func(*args, **kwargs)
+
+        return wrapper
+
+    return decorator
+
 
 logger = logging.getLogger(__name__)
 
@@ -424,7 +423,7 @@ class RecommendationEngine:
             content_query = (
                 select(ContentItem)
                 .where(
-                    ContentItem.status == "published", ContentItem.is_featured == True
+                    ContentItem.status == "published", ContentItem.is_featured.is_(True)
                 )
                 .order_by(
                     ContentItem.purchase_count.desc(), ContentItem.rating_score.desc()
@@ -1112,7 +1111,7 @@ class RecommendationEngine:
             # 推荐热门免费内容
             popular_free_query = (
                 select(ContentItem)
-                .where(ContentItem.is_free == True, ContentItem.status == "published")
+                .where(ContentItem.is_free.is_(True), ContentItem.status == "published")
                 .order_by(
                     ContentItem.view_count.desc(), ContentItem.rating_score.desc()
                 )

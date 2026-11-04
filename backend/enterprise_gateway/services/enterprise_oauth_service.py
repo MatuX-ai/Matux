@@ -109,7 +109,7 @@ class EnterpriseOAuthService:
                 db.query(EnterpriseClient)
                 .filter(
                     EnterpriseClient.client_id == client_id,
-                    EnterpriseClient.is_active == True,
+                    EnterpriseClient.is_active.is_(True),
                 )
                 .first()
             )

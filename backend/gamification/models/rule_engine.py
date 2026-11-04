@@ -8,7 +8,7 @@ from datetime import datetime
 import enum
 import json
 import logging
-from typing import Any, Callable, Dict, List, Optional, Union
+from typing import Any, Dict, List, Optional, Union
 
 logger = logging.getLogger(__name__)
 

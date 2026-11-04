@@ -466,7 +466,7 @@ def get_multimedia_statistics(
                 .filter(
                     MultimediaResource.org_id == org_id,
                     MultimediaResource.media_type == media_type,
-                    MultimediaResource.is_active == True,
+                    MultimediaResource.is_active.is_(True),
                 )
                 .count()
             )
@@ -512,7 +512,7 @@ def search_multimedia_resources(
         from sqlalchemy import or_
 
         search_query = service.db.query(MultimediaResource).filter(
-            MultimediaResource.org_id == org_id, MultimediaResource.is_active == True
+            MultimediaResource.org_id == org_id, MultimediaResource.is_active.is_(True)
         )
 
         # 添加搜索条件

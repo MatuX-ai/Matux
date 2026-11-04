@@ -9,33 +9,29 @@ def ms(label):
 
 
 ms("start")
-import sys
+import sys  # noqa: E402
 
 ms(f"sys imported (argv={sys.argv})")
 
 # 模拟 main.py:imports
 ms("importing fastapi...")
-from fastapi import FastAPI
+from fastapi import FastAPI  # noqa: E402
 
 ms("importing config...")
-from config.settings import Settings
+from config.settings import Settings  # noqa: E402
 
 ms("importing models (heavy)...")
 # 跳过实际 import 全部 models，改为只测大块时间
-import importlib
 
-import models
+import models  # noqa: E402
 
 ms(f"models package imported (count={len([n for n in dir(models) if not n.startswith('_')])})")
 
 ms("importing database...")
-from utils.database import AsyncSessionLocal, create_db_and_tables
 
 ms("importing legacy_routes...")
-from legacy_routes import register_all_routes
 
 ms("importing utils init_test_data...")
-from utils.init_test_data import initialize_test_data
 
 ms("imports done")
 

@@ -14,7 +14,6 @@ from backend.education.schemas.student import (
     StudentProfileCreate,
     StudentProfileSchema,
     StudentProfileUpdate,
-    StudentQuery,
 )
 
 router = APIRouter(prefix="/api/v1/students", tags=["学员管理"])

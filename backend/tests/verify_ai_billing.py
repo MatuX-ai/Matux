@@ -34,11 +34,11 @@ def test_token_billing_decorator():
 
         # 测试降级开关
         billing_decorator.disable_billing()
-        assert billing_decorator.billing_enabled == False
+        assert billing_decorator.billing_enabled is False
         print("✅ 降级开关测试通过 (disable)")
 
         billing_decorator.enable_billing()
-        assert billing_decorator.billing_enabled == True
+        assert billing_decorator.billing_enabled is True
         print("✅ 降级开关测试通过 (enable)")
 
         return True
@@ -65,7 +65,7 @@ def test_fallback_config():
         print(f"   - 免费额度：{ai_fallback_config.DAILY_FREE_TOKENS}")
 
         # 测试功能检查
-        assert ai_fallback_config.is_feature_enabled("ai_teacher") == True
+        assert ai_fallback_config.is_feature_enabled("ai_teacher") is True
         print("✅ 功能检查测试通过")
 
         # 测试降级策略

@@ -1,13 +1,10 @@
-import asyncio
 from dataclasses import dataclass
 from datetime import datetime, timedelta
 from enum import Enum
 import logging
-import random
 from typing import Any, Dict, List, Optional
 
 from ..utils.blockchain_client import BlockchainClient
-from .achievement_badge_system import AchievementBadge, achievement_system
 from .reward_event_bus import RewardEvent, reward_event_bus
 
 logger = logging.getLogger(__name__)

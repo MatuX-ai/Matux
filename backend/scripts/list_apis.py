@@ -2,7 +2,6 @@
 # -*- coding: utf-8 -*-
 """从 OpenAPI dump 提取所有 API 路径"""
 import json
-import re
 
 with open(r"G:\iMato\backend\openapi_dump.json", "r", encoding="utf-8") as f:
     spec = json.load(f)

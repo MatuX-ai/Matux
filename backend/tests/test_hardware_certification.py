@@ -84,7 +84,7 @@ class TestHardwareCertificationService:
             status="fail",
             timestamp=datetime.utcnow(),
         )
-        assert self.service._is_critical_test(critical_test) == True
+        assert self.service._is_critical_test(critical_test) is True
 
         # 非关键测试
         normal_test = TestResult(
@@ -95,7 +95,7 @@ class TestHardwareCertificationService:
             status="fail",
             timestamp=datetime.utcnow(),
         )
-        assert self.service._is_critical_test(normal_test) == False
+        assert self.service._is_critical_test(normal_test) is False
 
     def test_verify_certification_success(self):
         """测试认证成功场景"""
@@ -263,10 +263,10 @@ class TestHardwareCertificationService:
         assert response.status == CertificationStatus.CERTIFIED
 
         # 查询认证状态应该返回True
-        assert self.service.is_certified("HW_CERT_TEST") == True
+        assert self.service.is_certified("HW_CERT_TEST") is True
 
         # 查询不存在的硬件应该返回False
-        assert self.service.is_certified("NON_EXISTENT_HW") == False
+        assert self.service.is_certified("NON_EXISTENT_HW") is False
 
 
 class TestBadgeGenerator:

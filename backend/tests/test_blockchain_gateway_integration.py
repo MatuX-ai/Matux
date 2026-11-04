@@ -53,7 +53,7 @@ class TestBlockchainGatewayAPI:
             data = response.json()
             assert data["status"] == "healthy"
             assert data["service"] == "Blockchain Gateway"
-            assert data["blockchain_connected"] == True
+            assert data["blockchain_connected"] is True
 
     def test_issue_integral_success(self, mock_jwt_token, mock_education_user):
         """测试积分发行成功"""

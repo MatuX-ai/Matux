@@ -259,13 +259,13 @@ class TestModelUpdateService:
 
         # 测试验证通过的情况
         result = await service.validate_model_update(1, "expected_hash_value")
-        assert result["is_valid"] == True
+        assert result["is_valid"] is True
         assert result["expected_hash"] == "expected_hash_value"
         assert result["received_hash"] == "expected_hash_value"
 
         # 测试验证失败的情况
         result = await service.validate_model_update(1, "different_hash_value")
-        assert result["is_valid"] == False
+        assert result["is_valid"] is False
         assert result["received_hash"] == "different_hash_value"
 
 
@@ -309,7 +309,7 @@ class TestModelUpdateIntegration:
                 model_id, upload_result["file_hash"]
             )
 
-            assert validation_result["is_valid"] == True
+            assert validation_result["is_valid"] is True
             assert len(transfer_info["chunks"]) > 0
             assert transfer_info["total_size"] > 0
 

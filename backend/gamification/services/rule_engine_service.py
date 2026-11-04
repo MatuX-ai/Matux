@@ -5,12 +5,12 @@
 
 import asyncio
 from collections import defaultdict
-from datetime import datetime, timedelta
+from datetime import datetime
 import json
 import logging
 import os
 import sys
-from typing import Any, Dict, List, Optional, Set
+from typing import Any, Dict, List, Optional
 
 # 添加项目根目录到路径
 project_root = os.path.dirname(
@@ -18,18 +18,14 @@ project_root = os.path.dirname(
 )
 sys.path.insert(0, project_root)
 
-from gamification.models.difficulty_level import DifficultyLevel
-from gamification.models.rule_engine import (
+from gamification.models.rule_engine import (  # noqa: E402
     PREDEFINED_RULE_TEMPLATES,
     GamificationRule,
-    RuleActionType,
     RuleConditionType,
     RuleEngineConfig,
     RuleExecutionContext,
 )
-from gamification.models.task_adjustment import (
-    AdjustmentReason,
-    AdjustmentType,
+from gamification.models.task_adjustment import (  # noqa: E402
     StreakCounter,
 )
 

@@ -12,8 +12,8 @@ import sys
 # 添加项目路径
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 
-from config.settings import Settings
-from models.hardware_module import (
+from config.settings import Settings  # noqa: E402
+from models.hardware_module import (  # noqa: E402
     Base,
     DamageLevel,
     HardwareModule,
@@ -21,11 +21,11 @@ from models.hardware_module import (
     ModuleRentalRecord,
     ModuleRentalStatus,
 )
-from models.user_license import UserLicense
-from services.hardware_inventory_service import hardware_inventory_service
-from sqlalchemy import select
-from sqlalchemy.ext.asyncio import AsyncSession, create_async_engine
-from sqlalchemy.orm import sessionmaker
+from models.user_license import UserLicense  # noqa: E402
+from services.hardware_inventory_service import hardware_inventory_service  # noqa: E402
+from sqlalchemy import select  # noqa: E402
+from sqlalchemy.ext.asyncio import AsyncSession, create_async_engine  # noqa: E402
+from sqlalchemy.orm import sessionmaker  # noqa: E402
 
 
 class HardwareRentalBacktest:

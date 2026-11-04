@@ -3,7 +3,6 @@ AI-Edu 成就系统单元测试
 测试覆盖：成就解锁逻辑、CRUD 操作、用户成就关联
 """
 
-from datetime import datetime, timedelta
 import os
 import sys
 
@@ -14,14 +13,8 @@ from sqlalchemy.orm import sessionmaker
 # 添加项目路径
 sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), "..")))
 
-from database.db import Base
-from models.achievement import (
-    Achievement,
-    AchievementCategory,
-    AchievementType,
-    UserAchievement,
-)
-from services.achievement_service import AchievementService, get_achievement_service
+from database.db import Base  # noqa: E402
+from services.achievement_service import get_achievement_service  # noqa: E402
 
 # ==================== 测试夹具 ====================
 

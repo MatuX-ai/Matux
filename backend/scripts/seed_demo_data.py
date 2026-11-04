@@ -25,10 +25,10 @@ test_student 冷启动数据脚本
 """
 
 import asyncio
-from datetime import date, datetime, timedelta, timezone
+from datetime import date, datetime, timedelta
 import logging
 import random
-from typing import Any, Dict, List, Optional
+from typing import Any, Dict, List
 
 from sqlalchemy import func, select
 from sqlalchemy.exc import SQLAlchemyError

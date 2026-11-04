@@ -185,9 +185,9 @@ class TestDalleImageGenerator:
 
     def test_is_valid_size(self, dalle_generator):
         """测试图像尺寸验证"""
-        assert dalle_generator._is_valid_size("1024x1024") == True
-        assert dalle_generator._is_valid_size("1024x1792") == True
-        assert dalle_generator._is_valid_size("invalid") == False
+        assert dalle_generator._is_valid_size("1024x1024") is True
+        assert dalle_generator._is_valid_size("1024x1792") is True
+        assert dalle_generator._is_valid_size("invalid") is False
 
 
 class TestBusinessEvaluator:

@@ -9,10 +9,9 @@ Vircadia Avatar 系统集成测试套件
 """
 
 import asyncio
-import json
 from pathlib import Path
 import time
-from typing import Any, Dict, List, Optional
+from typing import List
 
 import pytest
 

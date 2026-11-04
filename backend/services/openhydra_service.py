@@ -3,9 +3,8 @@ OpenHydra AI 沙箱环境服务
 提供容器生命周期管理、用户认证集成、Jupyter 环境管理等功能
 """
 
-import asyncio
 from dataclasses import dataclass
-from datetime import datetime, timedelta
+from datetime import datetime
 import logging
 from typing import Any, Dict, List, Optional
 

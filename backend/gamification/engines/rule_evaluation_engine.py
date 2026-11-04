@@ -3,10 +3,9 @@
 实现规则条件评估、决策树执行等核心逻辑
 """
 
-import asyncio
 from datetime import datetime, timedelta
 import logging
-from typing import Any, Dict, List, Optional, Set
+from typing import Any, Dict, List, Optional
 
 from ..models.rule_engine import (
     GamificationRule,
