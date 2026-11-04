@@ -4,7 +4,7 @@
 """
 
 import asyncio
-from datetime import date, datetime
+from datetime import date
 import logging
 
 from models.license import Organization
@@ -15,7 +15,6 @@ from models.user_organization import (
     UserOrganizationStatus,
 )
 from sqlalchemy import select
-from sqlalchemy.ext.asyncio import AsyncSession
 from utils.database import AsyncSessionLocal
 
 logging.basicConfig(level=logging.INFO)

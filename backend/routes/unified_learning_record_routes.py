@@ -4,17 +4,15 @@
 """
 
 import logging
-from typing import List, Optional
+from typing import Optional
 
 from fastapi import APIRouter, Body, Depends, HTTPException, Path, Query
 from models.unified_learning_record import (
     LearningRecordStatus,
-    UnifiedLearningRecord,
     UnifiedLearningRecordCreate,
     UnifiedLearningRecordListResponse,
     UnifiedLearningRecordResponse,
     UnifiedLearningRecordUpdate,
-    UnifiedProgressStats,
 )
 from models.user import User
 from services.unified_learning_record_service import UnifiedLearningRecordService

@@ -4,7 +4,7 @@ AI 功能降级开关配置
 """
 
 import os
-from typing import Dict, Set
+from typing import Dict
 
 
 class AIFallbackConfig:

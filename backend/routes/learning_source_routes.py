@@ -4,11 +4,10 @@
 """
 
 import logging
-from typing import List, Optional
+from typing import Optional
 
 from fastapi import APIRouter, Body, Depends, HTTPException, Path, Query
 from models.learning_source import (
-    LearningSource,
     LearningSourceCreate,
     LearningSourceListResponse,
     LearningSourceResponse,

@@ -14,7 +14,7 @@ import importlib
 import logging
 from pathlib import Path
 import time
-from typing import Any, Callable, Dict, Optional
+from typing import Any, Dict, Optional
 import uuid
 
 logger = logging.getLogger(__name__)

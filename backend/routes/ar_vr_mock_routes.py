@@ -4,10 +4,13 @@ AR/VR Mock接口API路由
 """
 
 import asyncio
+from datetime import datetime
+import json
 import logging
 from typing import Any, Dict, List, Optional
 
-from fastapi import APIRouter, Body, Depends, HTTPException, Query
+# WebSocket端点用于实时数据流
+from fastapi import APIRouter, Body, Depends, HTTPException, Query, WebSocket
 from services.ar_vr_mock_service import (
     MOCK_SCENARIOS,
     ARVRMockOrchestrator,
@@ -320,12 +323,6 @@ async def cleanup_sessions(
     except Exception as e:
         logger.error(f"清理会话失败: {e}")
         raise HTTPException(status_code=500, detail=str(e))
-
-
-import json
-
-# WebSocket端点用于实时数据流
-from fastapi import WebSocket
 
 
 @mock_router.websocket("/sessions/{session_id}/ws/sensor-stream")

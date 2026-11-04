@@ -15,12 +15,16 @@ import sys
 # Add backend directory to path
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 
-from datetime import datetime
+from datetime import datetime  # noqa: E402
 
-from config.settings import settings
-from models.ar_vr_content import ARVRContent, ARVRContentType, ARVRPlatform
-from sqlalchemy import create_engine
-from sqlalchemy.orm import sessionmaker
+from config.settings import settings  # noqa: E402
+from models.ar_vr_content import (  # noqa: E402
+    ARVRContent,
+    ARVRContentType,
+    ARVRPlatform,
+)
+from sqlalchemy import create_engine  # noqa: E402
+from sqlalchemy.orm import sessionmaker  # noqa: E402
 
 
 def seed():

@@ -4,6 +4,8 @@
 
 from unittest.mock import AsyncMock, MagicMock, patch
 
+from ai_service.recommendation_service import RecommendationEngine
+from models.recommendation import CourseFeature, LearningRecord, UserLearningProfile
 import pytest
 
 # models/recommendation.py 中的 LearningRecord 已被 UserLearningProfile 取代，
@@ -13,9 +15,6 @@ pytest.skip(
     "推荐服务测试依赖已被移除的 models.recommendation.LearningRecord",
     allow_module_level=True,
 )
-
-from ai_service.recommendation_service import RecommendationEngine
-from models.recommendation import CourseFeature, LearningRecord, UserLearningProfile
 
 
 @pytest.fixture
@@ -359,7 +358,7 @@ class TestRecommendationEngine:
             patch("builtins.open", MagicMock()),
         ):
             result = recommendation_engine.load_model()
-            assert result == True
+            assert result is True
 
 
 @pytest.mark.asyncio

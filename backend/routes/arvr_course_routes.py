@@ -244,7 +244,7 @@ async def list_arvr_courses(
         DEFAULT_ORG_ID = 1
         stmt = (
             select(ARVRContent)
-            .where(ARVRContent.org_id == DEFAULT_ORG_ID, ARVRContent.is_active == True)
+            .where(ARVRContent.org_id == DEFAULT_ORG_ID, ARVRContent.is_active.is_(True))
             .order_by(ARVRContent.created_at.desc())
             .offset(skip)
             .limit(limit)

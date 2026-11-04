@@ -67,8 +67,8 @@ def test_basic_functionality():
         test_checksum = hashlib.md5(test_random.encode()).hexdigest()[:4].upper()
         valid_key = f"LICENSE-{test_random}-{test_checksum}"
 
-        assert validate_license_key(valid_key) == True
-        assert validate_license_key("INVALID-KEY") == False
+        assert validate_license_key(valid_key) is True
+        assert validate_license_key("INVALID-KEY") is False
 
         print(f"  ✅ 许可证密钥验证成功")
     except Exception as e:

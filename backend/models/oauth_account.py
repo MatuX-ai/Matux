@@ -5,7 +5,6 @@ OAuth Account Model - 第三方登录账户关联
 支持多账号绑定、解绑、主账户标识
 """
 
-from datetime import datetime
 import enum
 
 from sqlalchemy import (

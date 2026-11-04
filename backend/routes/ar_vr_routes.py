@@ -35,6 +35,7 @@ from models.ar_vr_content import (
 from models.user import User
 from services.ar_physics_service import ARPhysicsService
 from services.ar_vr_content_service import ARVRContentService
+from sqlalchemy import func
 from sqlalchemy.orm import Session
 from utils.dependencies import get_current_user_sync, get_sync_db
 
@@ -515,7 +516,7 @@ async def get_arvr_recommendations(
     try:
         # 基于流行度和用户兴趣的简单推荐算法
         query = db.query(ARVRContent).filter(
-            ARVRContent.org_id == org_id, ARVRContent.is_active == True
+            ARVRContent.org_id == org_id, ARVRContent.is_active.is_(True)
         )
 
         # 按视图次数排序

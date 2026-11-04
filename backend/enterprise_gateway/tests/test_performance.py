@@ -4,6 +4,7 @@
 """
 
 from concurrent.futures import ThreadPoolExecutor
+import logging
 import statistics
 import time
 from unittest.mock import Mock, patch
@@ -11,6 +12,8 @@ from unittest.mock import Mock, patch
 from fastapi.testclient import TestClient
 from main import app
 import pytest
+
+logger = logging.getLogger(__name__)
 
 client = TestClient(app)
 

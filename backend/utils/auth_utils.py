@@ -57,7 +57,7 @@ def get_current_user_sync(
 
     try:
         # 查询用户
-        stmt = select(User).filter(User.username == username, User.is_active == True)
+        stmt = select(User).filter(User.username == username, User.is_active.is_(True))
         result = db.execute(stmt)
         user = result.scalar_one_or_none()
 

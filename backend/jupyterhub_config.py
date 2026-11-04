@@ -3,7 +3,6 @@ JupyterHub 配置文件
 用于 OpenHydra 集成测试
 """
 
-import os
 
 import docker
 

@@ -1,7 +1,15 @@
 from datetime import datetime
 from unittest.mock import AsyncMock, MagicMock, patch
 
+from ai_service.completion_memory import CompletionMemory
+from models.ai_completion import (
+    CompletionRequest,
+    CompletionSuggestion,
+    ModelProvider,
+    ProgrammingLanguage,
+)
 import pytest
+from services.code_completion_service import CodeCompletionService
 
 # 该模块依赖的生产代码已失效：
 #   - ai_service/completion_memory.py 依赖 langchain.memory（当前环境 langchain 1.x 已移除）
@@ -13,15 +21,6 @@ pytest.skip(
     "代码补全测试依赖已失效的 ai_service.completion_memory / services.code_completion_service",
     allow_module_level=True,
 )
-
-from ai_service.completion_memory import CompletionMemory
-from models.ai_completion import (
-    CompletionRequest,
-    CompletionSuggestion,
-    ModelProvider,
-    ProgrammingLanguage,
-)
-from services.code_completion_service import CodeCompletionService
 
 
 class TestCodeCompletionService:

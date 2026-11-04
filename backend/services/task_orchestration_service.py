@@ -4,6 +4,7 @@ AI-Edu 联动任务编排服务
 支持智能温室监控系统等综合学习任务
 """
 
+import asyncio
 from datetime import datetime
 import json
 import logging

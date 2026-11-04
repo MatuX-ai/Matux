@@ -10,11 +10,10 @@ import logging
 from typing import Any, Dict, List, Optional
 
 from services.blockchain.gateway_service import BlockchainGatewayService
-from services.reward_event_bus import RewardEventBus, RewardEventType, get_event_bus
+from services.reward_event_bus import RewardEventType, get_event_bus
 from services.voice_correction_detector import (
     CorrectionType,
     VoiceCorrectionDetector,
-    VoiceCorrectionResult,
 )
 
 logger = logging.getLogger(__name__)

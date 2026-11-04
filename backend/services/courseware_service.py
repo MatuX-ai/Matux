@@ -11,7 +11,7 @@
 
 from datetime import datetime
 import logging
-from typing import Any, Dict, List, Optional
+from typing import Dict, List, Optional
 
 from repositories.courseware_repository import CoursewareRepository
 from schemas.courseware_closure import (

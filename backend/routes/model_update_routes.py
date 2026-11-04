@@ -2,7 +2,9 @@
 AI模型热更新API路由
 """
 
+from datetime import datetime
 import logging
+import os
 
 from fastapi import APIRouter, Depends, File, Form, HTTPException, Query, UploadFile
 from models.model_version import ModelVersion
@@ -155,7 +157,7 @@ async def get_service_status(
         total_models = service.db.query(ModelVersion).count()
         active_models = (
             service.db.query(ModelVersion)
-            .filter(ModelVersion.is_active == True)
+            .filter(ModelVersion.is_active.is_(True))
             .count()
         )
 

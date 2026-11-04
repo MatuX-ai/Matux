@@ -13,9 +13,9 @@ import sys
 # 添加项目路径
 sys.path.insert(0, os.path.join(os.path.dirname(__file__), ".."))
 
-from services.blockchain.fallback_handler import circuit_breaker_fallback
-from services.blockchain.gateway_service import blockchain_gateway_service
-from utils.circuit_breaker import CircuitBreaker
+from services.blockchain.fallback_handler import circuit_breaker_fallback  # noqa: E402
+from services.blockchain.gateway_service import blockchain_gateway_service  # noqa: E402
+from utils.circuit_breaker import CircuitBreaker  # noqa: E402
 
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)

@@ -8,7 +8,6 @@
 import logging
 from typing import Any, Dict
 
-from starlette.requests import Request
 from starlette.responses import JSONResponse
 from starlette.types import ASGIApp, Receive, Scope, Send
 

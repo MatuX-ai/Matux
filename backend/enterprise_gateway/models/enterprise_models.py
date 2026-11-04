@@ -4,8 +4,12 @@
 """
 
 from datetime import datetime
+from typing import Optional
 
 from passlib.context import CryptContext
+
+# 请求模型定义
+from pydantic import BaseModel
 from sqlalchemy import (
     JSON,
     Boolean,
@@ -195,12 +199,6 @@ class EnterpriseAPILog(Base):
             "ip_address": self.ip_address,
             "timestamp": self.timestamp.isoformat() if self.timestamp else None,
         }
-
-
-from typing import Optional
-
-# 请求模型定义
-from pydantic import BaseModel
 
 
 class EnterpriseClientCreate(BaseModel):

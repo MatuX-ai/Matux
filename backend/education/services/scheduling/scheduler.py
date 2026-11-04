@@ -6,7 +6,7 @@
 """
 
 import logging
-from typing import Dict, List, Optional, Tuple
+from typing import Dict, List
 
 from .conflict_detector import ConflictDetector
 from .genetic_algorithm import GeneticSchedulingAlgorithm

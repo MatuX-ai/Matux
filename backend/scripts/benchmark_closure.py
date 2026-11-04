@@ -28,15 +28,15 @@ from pathlib import Path
 import random
 import sys
 import time
-from typing import Any, Dict, List, Optional, Tuple
+from typing import Any, Dict, List
 
 sys.path.insert(0, str(Path(__file__).resolve().parent.parent))
 
-from models.courseware_clousure import CoursewareClosure, CoursewareNode
-from repositories.courseware_repository import CoursewareRepository
-from sqlalchemy import func, select, text
-from sqlalchemy.ext.asyncio import AsyncSession
-from utils.database import AsyncSessionLocal, engine
+from models.courseware_clousure import CoursewareClosure  # noqa: E402
+from repositories.courseware_repository import CoursewareRepository  # noqa: E402
+from sqlalchemy import func, select, text  # noqa: E402
+from sqlalchemy.ext.asyncio import AsyncSession  # noqa: E402
+from utils.database import AsyncSessionLocal  # noqa: E402
 
 logging.basicConfig(
     level=logging.INFO,

@@ -3,7 +3,6 @@
 """最终数据汇总报告 - 用于生成 UI_UPGRADE_AND_SEED_REPORT"""
 import json
 import sqlite3
-import sys
 
 DB = "ai_service.db"
 

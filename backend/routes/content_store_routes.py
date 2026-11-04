@@ -248,7 +248,7 @@ async def get_categories(
                 ContentCategory.category_id == content_count_query.c.category_id,
             ).where(content_count_query.c.content_count > 0)
 
-        query = query.where(ContentCategory.is_active == True)
+        query = query.where(ContentCategory.is_active.is_(True))
         query = query.order_by(ContentCategory.sort_order, ContentCategory.name)
 
         result = await db.execute(query)

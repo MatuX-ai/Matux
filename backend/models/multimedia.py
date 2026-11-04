@@ -5,8 +5,10 @@
 
 from datetime import datetime
 import enum
-from typing import Any, Dict, Optional
+from typing import Any, Dict, List, Optional
 
+# Pydantic模型用于API请求/响应
+from pydantic import BaseModel, Field
 from sqlalchemy import (
     JSON,
     Boolean,
@@ -174,13 +176,6 @@ class MediaTranscodingJob(Base):
     # 关系
     organization = relationship("Organization")
     resource = relationship("MultimediaResource")
-
-
-from datetime import datetime
-from typing import List, Optional
-
-# Pydantic模型用于API请求/响应
-from pydantic import BaseModel, Field
 
 
 class MultimediaResourceCreate(BaseModel):

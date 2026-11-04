@@ -7,7 +7,6 @@ iMato AI Service 启动脚本
 import logging
 import os
 from pathlib import Path
-import platform
 import subprocess
 import sys
 import time

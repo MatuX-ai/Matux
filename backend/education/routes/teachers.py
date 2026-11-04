@@ -2,9 +2,8 @@
 教师管理 API 路由
 """
 
-from typing import List
 
-from fastapi import APIRouter, Depends, HTTPException, status
+from fastapi import APIRouter, HTTPException
 
 router = APIRouter(prefix='/api/v1/teachers', tags=['teachers'])
 

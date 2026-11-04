@@ -5,8 +5,11 @@
 
 from datetime import datetime
 import enum
-from typing import Any, Dict, Optional
 
+# Pydantic模型用于API请求/响应
+from typing import Any, Dict, List, Optional
+
+from pydantic import BaseModel, Field
 from sqlalchemy import (
     JSON,
     Boolean,
@@ -307,13 +310,6 @@ class PointConversionRule(Base):
         if points <= 0:
             raise ValueError("所需积分数必须大于0")
         return points
-
-
-# Pydantic模型用于API请求/响应
-from datetime import datetime
-from typing import List, Optional
-
-from pydantic import BaseModel, Field
 
 
 class SponsorshipCreate(BaseModel):

@@ -7,6 +7,9 @@ from datetime import datetime
 from typing import Optional
 
 from fastapi import APIRouter, HTTPException, Query
+
+# 导入Response用于返回SVG内容
+from fastapi.responses import Response
 from models.hardware_certification import (
     BadgeConfig,
     BadgeStyle,
@@ -280,7 +283,3 @@ async def get_certification_statistics():
     except Exception as e:
         logger.error(f"获取认证统计失败: {str(e)}")
         raise HTTPException(status_code=500, detail=f"获取认证统计失败: {str(e)}")
-
-
-# 导入Response用于返回SVG内容
-from fastapi.responses import Response

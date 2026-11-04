@@ -32,15 +32,15 @@ def _factory(module_path: str, attr_name: str = "router"):
 
     def _create_router():
         nonlocal _cached_router, _load_attempts
-        
+
         # 返回缓存的 router
         if _cached_router is not None:
             return _cached_router
-        
+
         import importlib
         import logging
         logger = logging.getLogger(__name__)
-        
+
         while _load_attempts < _max_attempts:
             try:
                 mod = importlib.import_module(module_path)
@@ -61,7 +61,7 @@ def _factory(module_path: str, attr_name: str = "router"):
                     f"Attempt {_load_attempts}/{_max_attempts} failed for "
                     f"{module_path}.{attr_name}: {e}. Retrying..."
                 )
-    
+
     return _create_router
 
 

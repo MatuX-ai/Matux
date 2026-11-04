@@ -3,8 +3,6 @@ AI-Edu AI 推荐系统单元测试
 测试覆盖：推荐算法、用户画像、冷启动、反馈循环
 """
 
-from datetime import datetime, timedelta
-import json
 import os
 import sys
 
@@ -15,17 +13,10 @@ from sqlalchemy.orm import sessionmaker
 # 添加项目路径
 sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), "..")))
 
-from database.db import Base
-from models.recommendation import (
-    CourseFeature,
-    LearningStyle,
-    RecommendationRecord,
-    UserLearningProfile,
-)
-from services.recommendation_service import (
-    RecommendationService,
+from services.recommendation_service import (  # noqa: E402
     get_recommendation_service,
 )
+from utils.database import Base  # noqa: E402
 
 # ==================== 测试夹具 ====================
 

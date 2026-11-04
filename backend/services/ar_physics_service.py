@@ -3,6 +3,7 @@ AR模型与物理引擎交互服务
 支持AR场景中的物理仿真和交互逻辑
 """
 
+import asyncio
 from datetime import datetime
 import logging
 import math

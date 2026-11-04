@@ -6,8 +6,8 @@ import sys
 
 sys.path.insert(0, '.')
 
-from config.settings import settings
-from sqlalchemy import create_engine, inspect
+from config.settings import settings  # noqa: E402
+from sqlalchemy import create_engine, inspect  # noqa: E402
 
 
 def verify_materials_table():

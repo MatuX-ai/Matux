@@ -3,13 +3,14 @@ AI-Edu 联动任务 API 路由
 提供跨平台任务的提交、评测和排行榜功能
 """
 
+# 导入 datetime
+from datetime import datetime
 import logging
-from typing import Any, Dict, List, Optional
+from typing import Optional
 
 from fastapi import APIRouter, Depends, File, Form, HTTPException, Query, UploadFile
 from models.user import User
 from services.task_orchestration_service import (
-    TaskOrchestrationService,
     get_task_orchestration_service,
 )
 from sqlalchemy.orm import Session
@@ -346,7 +347,3 @@ async def register_for_task(
     except Exception as e:
         logger.error(f"报名失败：{e}")
         raise HTTPException(status_code=500, detail=str(e))
-
-
-# 导入 datetime
-from datetime import datetime

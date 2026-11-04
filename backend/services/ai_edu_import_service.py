@@ -6,10 +6,9 @@ AI-Edu-for-Kids 课程资源导入服务
 from datetime import datetime
 import json
 import logging
-import os
 from pathlib import Path
 import shutil
-from typing import Any, Dict, List, Optional
+from typing import Any, Dict
 
 from models.ai_edu_rewards import AIEduLesson, AIEduModule, AIEduRewardRule
 from sqlalchemy.orm import Session

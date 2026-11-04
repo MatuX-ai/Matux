@@ -3,15 +3,15 @@
 跨来源汇总学生的学习进度、成绩和活动记录
 """
 
-from datetime import date, datetime
+from datetime import datetime
 import enum
 from typing import Any, Dict, Optional
 
+from pydantic import BaseModel, Field
 from sqlalchemy import (
     JSON,
     Boolean,
     Column,
-    Date,
     DateTime,
     Enum,
     Float,
@@ -46,50 +46,50 @@ class UnifiedLearningRecord(Base):
     __tablename__ = "unified_learning_records"
 
     id = Column(Integer, primary_key=True, index=True)
-    
+
     # 用户ID
     user_id = Column(Integer, ForeignKey("users.id"), nullable=False, index=True)
-    
+
     # 课程ID（可选，某些学习活动可能没有课程）
     course_id = Column(Integer, ForeignKey("courses.id"), nullable=True, index=True)
-    
+
     # 学习来源ID（关联到LearningSource）
     learning_source_id = Column(Integer, ForeignKey("learning_sources.id"), nullable=False, index=True)
-    
+
     # 原始选课记录ID（可选，用于追溯原始选课）
     enrollment_id = Column(Integer, ForeignKey("course_enrollments.id"), nullable=True, index=True)
-    
+
     # 学习记录状态
     status = Column(Enum(LearningRecordStatus), default=LearningRecordStatus.NOT_STARTED, index=True)
-    
+
     # 学习进度（0-100）
     progress_percentage = Column(Float, default=0.0, index=True)
-    
+
     # 学习时长（分钟）
     total_time_minutes = Column(Integer, default=0)
-    
+
     # 成绩
     score = Column(Float, nullable=True)
     max_score = Column(Float, default=100.0)
-    
+
     # 成绩等级
     grade_letter = Column(String(5), nullable=True)
-    
+
     # 完成信息
     completion_date = Column(DateTime, nullable=True)
     certificate_url = Column(String(500), nullable=True)
-    
+
     # 学习活动详情（JSON格式）
     activity_detail = Column(JSON, default=dict)
-    
+
     # 备注
     notes = Column(Text, nullable=True)
-    
+
     # 系统字段
     is_active = Column(Boolean, default=True)
     created_at = Column(DateTime, default=datetime.utcnow)
     updated_at = Column(DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
-    
+
     # 关联关系
     user = relationship("User", back_populates="unified_learning_records")
     course = relationship("Course", back_populates="unified_learning_records")
@@ -101,7 +101,7 @@ class UnifiedLearningRecord(Base):
 
 
 # 在User模型中添加反向关系
-from models.user import User
+from models.user import User  # noqa: E402
 
 User.unified_learning_records = relationship(
     "UnifiedLearningRecord",
@@ -111,7 +111,7 @@ User.unified_learning_records = relationship(
 
 
 # 在Course模型中添加反向关系
-from models.course import Course
+from models.course import Course  # noqa: E402
 
 Course.unified_learning_records = relationship(
     "UnifiedLearningRecord",
@@ -122,12 +122,10 @@ Course.unified_learning_records = relationship(
 
 # ============ Pydantic Schema ============
 
-from pydantic import BaseModel, Field
-
 
 class UnifiedLearningRecordCreate(BaseModel):
     """创建统一学习记录的请求模型"""
-    
+
     user_id: int = Field(..., description="用户ID")
     course_id: Optional[int] = Field(None, description="课程ID")
     learning_source_id: int = Field(..., description="学习来源ID")
@@ -144,7 +142,7 @@ class UnifiedLearningRecordCreate(BaseModel):
 
 class UnifiedLearningRecordUpdate(BaseModel):
     """更新统一学习记录的请求模型"""
-    
+
     course_id: Optional[int] = Field(None, description="课程ID")
     learning_source_id: Optional[int] = Field(None, description="学习来源ID")
     enrollment_id: Optional[int] = Field(None, description="原始选课记录ID")
@@ -163,7 +161,7 @@ class UnifiedLearningRecordUpdate(BaseModel):
 
 class UnifiedLearningRecordResponse(BaseModel):
     """统一学习记录响应模型"""
-    
+
     id: int
     user_id: int
     course_id: Optional[int]
@@ -188,14 +186,14 @@ class UnifiedLearningRecordResponse(BaseModel):
 
 class UnifiedLearningRecordListResponse(BaseModel):
     """统一学习记录列表响应模型"""
-    
+
     total: int = Field(..., description="总数")
     items: list[UnifiedLearningRecordResponse] = Field(..., description="记录列表")
 
 
 class UnifiedProgressStats(BaseModel):
     """跨来源学习进度统计"""
-    
+
     total_courses: int = Field(..., description="总课程数")
     completed_courses: int = Field(..., description="已完成课程数")
     in_progress_courses: int = Field(..., description="进行中课程数")

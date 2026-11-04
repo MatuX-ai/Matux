@@ -9,7 +9,6 @@ from typing import List, Optional
 from fastapi import APIRouter, Depends, HTTPException, Query
 from models.user import User
 from services.collaboration_service import (
-    CollaborationService,
     get_collaboration_service,
 )
 from sqlalchemy.orm import Session

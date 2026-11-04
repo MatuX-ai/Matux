@@ -17,6 +17,7 @@ from models.multimedia import (
     VideoStatus,
 )
 from services.multimedia_service import StorageConfig
+from sqlalchemy import and_
 from sqlalchemy.orm import Session
 from utils.database import get_db
 
@@ -499,7 +500,7 @@ def cleanup_old_files(days_old: int = 30) -> Dict[str, Any]:
             .filter(
                 and_(
                     MultimediaResource.created_at < cutoff_date,
-                    MultimediaResource.is_active == False,
+                    MultimediaResource.is_active.is_(False),
                 )
             )
             .all()

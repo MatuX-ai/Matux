@@ -10,10 +10,31 @@ import os
 import pickle
 from typing import Any, Dict, List
 
+from config.transfer_learning_config import settings as tl_settings
+from models.content_store import ContentItem, ContentRating
+from models.recommendation import (
+    CourseFeature,
+    LearningRecord,
+    RecommendationFeedback,
+    UserLearningProfile,
+)
+from models.subscription import SubscriptionStatus, UserSubscription
 import numpy as np
 from sklearn.feature_extraction.text import TfidfVectorizer
 from sklearn.metrics.pairwise import cosine_similarity
 from sklearn.neighbors import NearestNeighbors
+from sqlalchemy import select
+from sqlalchemy.ext.asyncio import AsyncSession
+
+from .difficulty_calculator import DifficultyCalculator
+from .knowledge_graph_manager import KnowledgeGraphManager
+
+# 导入新增的自适应学习功能
+from .markov_analyzer import MarkovChainAnalyzer
+from .model_compressor import ModelCompressor
+
+# 导入预训练模型相关组件
+from .transfer_learning_engine import TransferLearningEngine
 
 
 # 临时占位符，避免 NameError
@@ -29,25 +50,6 @@ def monitor_ai_operation(operation_name: str):
 
     return decorator
 
-
-from config.transfer_learning_config import settings as tl_settings
-from models.content_store import ContentItem, ContentRating
-from models.recommendation import (
-    CourseFeature,
-)
-from models.subscription import SubscriptionStatus, UserSubscription
-from sqlalchemy import select
-from sqlalchemy.ext.asyncio import AsyncSession
-
-from .difficulty_calculator import DifficultyCalculator
-from .knowledge_graph_manager import KnowledgeGraphManager
-
-# 导入新增的自适应学习功能
-from .markov_analyzer import MarkovChainAnalyzer
-from .model_compressor import ModelCompressor
-
-# 导入预训练模型相关组件
-from .transfer_learning_engine import TransferLearningEngine
 
 logger = logging.getLogger(__name__)
 
@@ -421,7 +423,7 @@ class RecommendationEngine:
             content_query = (
                 select(ContentItem)
                 .where(
-                    ContentItem.status == "published", ContentItem.is_featured == True
+                    ContentItem.status == "published", ContentItem.is_featured.is_(True)
                 )
                 .order_by(
                     ContentItem.purchase_count.desc(), ContentItem.rating_score.desc()
@@ -658,7 +660,6 @@ class RecommendationEngine:
         """为预训练模型提取用户特征"""
         try:
             # 获取用户基本信息
-            from models.recommendation import LearningRecord, UserLearningProfile
             import numpy as np
 
             # 获取用户画像
@@ -721,39 +722,6 @@ class RecommendationEngine:
             import numpy as np
 
             return np.random.rand(1, 20)
-
-        recommendations = []
-
-        try:
-            # 协同过滤推荐
-            cf_recs = await self._collaborative_filtering_recommendations(
-                user_id, num_recommendations * 2
-            )
-
-            # 内容推荐
-            content_recs = await self._content_based_recommendations(
-                user_id, num_recommendations * 2
-            )
-
-            # 混合推荐结果
-            recommendations = self._hybrid_recommendations(
-                cf_recs, content_recs, num_recommendations
-            )
-
-            # 过滤已学过的课程
-            recommendations = await self._filter_completed_courses(
-                user_id, recommendations, db
-            )
-
-            # 添加多样性
-            recommendations = self._add_diversity(recommendations)
-
-        except Exception as e:
-            logger.error(f"获取推荐失败: {e}")
-            # 返回热门课程作为后备方案
-            recommendations = await self._get_popular_courses(num_recommendations, db)
-
-        return recommendations[:num_recommendations]
 
     async def _collaborative_filtering_recommendations(
         self, user_id: str, num_candidates: int
@@ -992,7 +960,7 @@ class RecommendationEngine:
         result = await db.execute(
             select(LearningRecord)
             .where(LearningRecord.user_id == profile.user_id)
-            .order_by(LearningRecord.created_at.desc())
+            .order_by(LearningRecord.timestamp.desc())
             .limit(50)  # 最近50条记录
         )
         recent_records = result.scalars().all()
@@ -1143,7 +1111,7 @@ class RecommendationEngine:
             # 推荐热门免费内容
             popular_free_query = (
                 select(ContentItem)
-                .where(ContentItem.is_free == True, ContentItem.status == "published")
+                .where(ContentItem.is_free.is_(True), ContentItem.status == "published")
                 .order_by(
                     ContentItem.view_count.desc(), ContentItem.rating_score.desc()
                 )

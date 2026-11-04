@@ -14,6 +14,7 @@ from sqlalchemy import (
     Numeric,
     String,
     Text,
+    Time,
 )
 from sqlalchemy.orm import relationship
 

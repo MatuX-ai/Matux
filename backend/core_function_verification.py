@@ -12,8 +12,8 @@ import sys
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 
 # 导入核心组件
-from models.hardware_module import HardwareModule, ModuleRentalRecord
-from services.hardware_inventory_service import HardwareInventoryService
+from models.hardware_module import HardwareModule, ModuleRentalRecord  # noqa: E402
+from services.hardware_inventory_service import HardwareInventoryService  # noqa: E402
 
 
 def test_hardware_module_model():

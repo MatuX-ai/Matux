@@ -47,7 +47,7 @@ class TestLicenseService:
             license_service, "_validate_license_key_format", return_value=True
         ):
             result = license_service._validate_license_key_format(test_key)
-            assert result == True
+            assert result is True
 
     def test_validate_license_key_format_invalid(self, license_service):
         """测试无效许可证密钥格式验证"""
@@ -60,7 +60,7 @@ class TestLicenseService:
 
         for invalid_key in invalid_keys:
             result = license_service._validate_license_key_format(invalid_key)
-            assert result == False
+            assert result is False
 
     @patch("services.license_service.datetime")
     def test_create_organization_success(self, mock_datetime, license_service, mock_db):
@@ -189,7 +189,7 @@ class TestLicenseService:
         result = license_service.validate_license("LICENSE-VALID-KEY")
 
         # 验证结果
-        assert result["is_valid"] == True
+        assert result["is_valid"] is True
         assert result["license_info"] == cached_license
         mock_get_license.assert_called_once_with("LICENSE-VALID-KEY")
         mock_db.query.assert_not_called()  # 不应该查询数据库
@@ -221,7 +221,7 @@ class TestLicenseService:
         result = license_service.validate_license("LICENSE-DB-VALID")
 
         # 验证结果
-        assert result["is_valid"] == True
+        assert result["is_valid"] is True
         assert result["license_info"] is not None
         assert result["license_info"]["license_key"] == "LICENSE-DB-VALID"
 
@@ -233,7 +233,7 @@ class TestLicenseService:
 
             result = license_service.validate_license("LICENSE-NOT-EXIST")
 
-            assert result["is_valid"] == False
+            assert result["is_valid"] is False
             assert result["error"] == "许可证不存在"
 
     def test_validate_license_expired(self, license_service, mock_db):
@@ -252,7 +252,7 @@ class TestLicenseService:
 
             result = license_service.validate_license("LICENSE-EXPIRED")
 
-            assert result["is_valid"] == False
+            assert result["is_valid"] is False
             assert result["error"] == "许可证已过期"
             # 验证状态被更新
             assert mock_license.status == LicenseStatus.EXPIRED
@@ -272,9 +272,9 @@ class TestLicenseService:
             result = license_service.revoke_license("LICENSE-TO-REVOKE")
 
             # 验证结果
-            assert result == True
+            assert result is True
             assert mock_license.status == LicenseStatus.REVOKED
-            assert mock_license.is_active == False
+            assert mock_license.is_active is False
             mock_db.commit.assert_called_once()
             mock_delete_license.assert_called_once_with("LICENSE-TO-REVOKE")
 
@@ -285,7 +285,7 @@ class TestLicenseService:
 
         result = license_service.revoke_license("LICENSE-NOT-EXIST")
 
-        assert result == False
+        assert result is False
         mock_db.commit.assert_not_called()
 
 

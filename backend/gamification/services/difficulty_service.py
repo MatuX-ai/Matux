@@ -3,8 +3,7 @@
 提供难度评估、等级管理和用户档案维护功能
 """
 
-from dataclasses import asdict
-from datetime import datetime, timedelta
+from datetime import datetime
 import logging
 import os
 import sys
@@ -16,14 +15,14 @@ project_root = os.path.dirname(
 )
 sys.path.insert(0, project_root)
 
-from gamification.models.difficulty_level import (
+from gamification.models.difficulty_level import (  # noqa: E402
     DebuggingSession,
     DifficultyCalculator,
     DifficultyLevel,
     HardwareOperationMetric,
     TaskPerformanceMetrics,
 )
-from gamification.models.task_adjustment import (
+from gamification.models.task_adjustment import (  # noqa: E402
     AdjustmentReason,
     AdjustmentType,
     DifficultyAdjustment,

@@ -1,0 +1,57 @@
+[flake8]
+# 仓库唯一的 flake8 配置源。
+# flake8 只识别 setup.cfg / tox.ini / .flake8，不读取 pyproject.toml 的 [tool.flake8]，
+# 因此本文件必须放在仓库根，且 CI 需从仓库根执行 flake8。
+max-line-length = 88
+max-complexity = 10
+select = E,W,F,C,B
+extend-ignore =
+    E203,
+    E501,
+    W503,
+    B008
+exclude =
+    .git,
+    __pycache__,
+    dist,
+    build,
+    release,
+    tmp,
+    notebooks,
+    .venv,
+    venv,
+    marketing_api/venv,
+    migrations,
+    alembic
+# per-file-ignores 的文件名一旦含有目录分隔符，flake8 会按“执行目录(CWD)”
+# 将其转成绝对路径（flake8/style_guide.py -> utils.normalize_path），
+# 于是同一份配置在 "仓库根执行 flake8 backend/"（CI）与 "backend/ 下执行 flake8 ."
+# （本地）两种方式下行为不一致：前者要求 backend/xxx.py，后者要求 xxx.py。
+# 因此本节一律使用不含分隔符的 basename 形式，走 flake8 的 basename 匹配分支，
+# 与执行目录无关。前提是 basename 在 flake8 扫描范围内唯一（下方清单均唯一）。
+#
+# 注：bandit 的 S 系列不在 select = E,W,F,C,B 范围内，故此处不再列出 S 规则。
+per-file-ignores =
+    # __init__.py 的 import 用于对外 re-export，不能删除
+    __init__.py:F401
+    # test_shared_utils.py 用通配符导入（脚本需要被导入模块的全部函数）。
+    # F405 报在使用处而非 import 行，行内 noqa 无法抑制，故按文件忽略。
+    test_shared_utils.py:F405
+    # 以下文件的 W293（空白行上的行尾空白）经 AST 校验全部落在多行字符串内部
+    # （prompt 模板 / SVG 模板 / docstring）。物理行去空白会改变运行时的
+    # 字符串内容，因此按文件忽略；ruff 侧在 pyproject.toml 同步同一份清单。
+    token_service.py:W293
+    admin_settings_service.py:W293
+    creativity_engine.py:W293
+    idea_scorer.py:W293
+    user_license_service.py:W293
+    task_orchestration_service.py:W293
+    test_task_orchestration_hardware.py:W293
+    badge_generator.py:W293
+    payment_service.py:W293
+    business_evaluator.py:W293
+    enhanced_permission_middleware.py:W293
+    admin_settings_routes.py:W293
+    performance_optimizer.py:W293
+    plugin_manager.py:W293
+    ai_routes.py:W293

@@ -5,8 +5,10 @@ AI-Edu-for-Kids 课程奖励数据模型
 
 from datetime import datetime
 import enum
-from typing import Any, Dict, List, Optional
+from typing import Any, Dict, Optional
 
+# 响应模型
+from pydantic import BaseModel, Field
 from sqlalchemy import (
     JSON,
     Boolean,
@@ -19,7 +21,7 @@ from sqlalchemy import (
     String,
     Text,
 )
-from sqlalchemy.orm import relationship, validates
+from sqlalchemy.orm import relationship
 from utils.database import Base
 
 
@@ -371,12 +373,6 @@ class AIEduStreakCounter(Base):
     # 时间戳
     created_at = Column(DateTime, default=datetime.utcnow)
     updated_at = Column(DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
-
-
-from typing import Any, Dict, List, Optional
-
-# 响应模型
-from pydantic import BaseModel, Field
 
 
 class RewardCalculationRequest(BaseModel):

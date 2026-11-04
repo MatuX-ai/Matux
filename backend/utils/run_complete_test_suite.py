@@ -7,7 +7,7 @@
 import os
 import sys
 import time
-from typing import Any, Dict, List
+from typing import Any, Dict
 
 # 添加项目路径
 sys.path.insert(0, os.path.join(os.path.dirname(__file__), ".."))
@@ -69,8 +69,8 @@ class TestSuiteRunner:
         from utils.string_utils import capitalize, is_empty, random_string
 
         # 字符串工具测试
-        assert is_empty("") == True, "空字符串判断失败"
-        assert is_empty("hello") == False, "非空字符串判断失败"
+        assert is_empty("") is True, "空字符串判断失败"
+        assert is_empty("hello") is False, "非空字符串判断失败"
         assert capitalize("hello") == "Hello", "首字母大写失败"
         rand_str = random_string(8)
         assert len(rand_str) == 8, "随机字符串长度错误"
@@ -81,8 +81,8 @@ class TestSuiteRunner:
         now = datetime.now()
         formatted = format_date(now, "%Y-%m-%d")
         assert len(formatted) == 10, "日期格式化失败"
-        assert is_leap_year(2024) == True, "闰年判断失败"
-        assert is_leap_year(2023) == False, "非闰年判断失败"
+        assert is_leap_year(2024) is True, "闰年判断失败"
+        assert is_leap_year(2023) is False, "非闰年判断失败"
 
         return {"string_utils": "PASSED", "date_utils": "PASSED"}
 
@@ -128,14 +128,14 @@ class TestSuiteRunner:
             return len(password) >= 8
 
         # 测试有效数据
-        assert validate_email("test@example.com") == True, "有效邮箱验证失败"
-        assert validate_username("testuser") == True, "有效用户名验证失败"
-        assert validate_password("password123") == True, "有效密码验证失败"
+        assert validate_email("test@example.com") is True, "有效邮箱验证失败"
+        assert validate_username("testuser") is True, "有效用户名验证失败"
+        assert validate_password("password123") is True, "有效密码验证失败"
 
         # 测试无效数据
-        assert validate_email("invalid") == False, "无效邮箱应该被拒绝"
-        assert validate_username("ab") == False, "短用户名应该被拒绝"
-        assert validate_password("short") == False, "短密码应该被拒绝"
+        assert validate_email("invalid") is False, "无效邮箱应该被拒绝"
+        assert validate_username("ab") is False, "短用户名应该被拒绝"
+        assert validate_password("short") is False, "短密码应该被拒绝"
 
         return {"validators": "PASSED"}
 

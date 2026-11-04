@@ -5,7 +5,6 @@ Admin 后台全局设置 API 路由
 """
 
 import logging
-from typing import Any, Dict
 
 from fastapi import APIRouter, Body, HTTPException, status
 from models.admin_settings_models import (
@@ -57,7 +56,7 @@ async def get_global_settings() -> ApiSettingsResponse:
     """
     try:
         settings = await admin_settings_service.get_settings()
-        
+
         return ApiSettingsResponse(
             success=True,
             message="设置加载成功",
@@ -129,7 +128,7 @@ async def save_global_settings(
     try:
         # 保存设置
         success = await admin_settings_service.save_settings(settings)
-        
+
         if success:
             return ApiSettingsResponse(
                 success=True,
@@ -144,7 +143,7 @@ async def save_global_settings(
                 data=None,
                 error="保存设置失败"
             )
-            
+
     except Exception as e:
         logger.error(f"保存全局设置失败：{e}")
         raise HTTPException(
@@ -399,29 +398,29 @@ async def test_celery(
     try:
         # TODO: 实现 Celery 连接测试
         # 需要检查 Redis 或 RabbitMQ 连接
-        
+
         if not config.enabled:
             return TestConnectionResponse(
                 success=False,
                 message="Celery 服务未启用",
                 responseTime=0
             )
-        
+
         # 简单测试：检查 Broker URL 是否可达
         import asyncio
         import time
         from urllib.parse import urlparse
-        
+
         start_time = time.time()
-        
+
         # 解析 Broker URL
         parsed = urlparse(config.brokerUrl)
-        
+
         if parsed.scheme == "redis":
             # Redis Broker
             try:
                 import redis
-                
+
                 redis_client = redis.Redis(
                     host=parsed.hostname or "localhost",
                     port=parsed.port or 6379,
@@ -429,7 +428,7 @@ async def test_celery(
                     db=int(parsed.path.strip('/') or 0),
                     socket_timeout=5
                 )
-                
+
                 # Ping 测试
                 if redis_client.ping():
                     response_time = int((time.time() - start_time) * 1000)
@@ -438,7 +437,7 @@ async def test_celery(
                         message="Celery Redis Broker 连接成功",
                         responseTime=response_time
                     )
-                    
+
             except ImportError:
                 return TestConnectionResponse(
                     success=False,
@@ -457,7 +456,7 @@ async def test_celery(
                 message=f"暂不支持的 Broker 类型：{parsed.scheme}",
                 responseTime=int((time.time() - start_time) * 1000)
             )
-            
+
     except Exception as e:
         logger.error(f"测试 Celery 连接失败：{e}")
         return TestConnectionResponse(

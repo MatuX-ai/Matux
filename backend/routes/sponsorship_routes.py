@@ -22,6 +22,7 @@ from models.sponsorship import (
 )
 from models.user import User
 from services.sponsorship_service import SponsorshipService, get_sponsorship_service
+from sqlalchemy import and_
 from sqlalchemy.orm import Session
 from utils.database import get_db
 

@@ -544,7 +544,7 @@ async def read_users_me(
         from models.user_organization import UserOrganization
         stmt = select(UserOrganization).where(
             UserOrganization.user_id == current_user.id,
-            UserOrganization.is_primary == True,
+            UserOrganization.is_primary.is_(True),
             UserOrganization.status == "active"
         )
         result = await db.execute(stmt)

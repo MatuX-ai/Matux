@@ -4,7 +4,7 @@
 """
 
 import asyncio
-from datetime import datetime, timedelta
+from datetime import datetime
 import logging
 import os
 import random
@@ -17,10 +17,9 @@ project_root = os.path.dirname(
 )
 sys.path.insert(0, project_root)
 
-from gamification.models.difficulty_level import DifficultyLevel, TaskPerformanceMetrics
-from gamification.models.task_adjustment import UserTaskHistory
-from gamification.services.difficulty_service import DifficultyService
-from gamification.services.rule_engine_service import RuleEngineService
+from gamification.models.difficulty_level import TaskPerformanceMetrics  # noqa: E402
+from gamification.services.difficulty_service import DifficultyService  # noqa: E402
+from gamification.services.rule_engine_service import RuleEngineService  # noqa: E402
 
 logger = logging.getLogger(__name__)
 

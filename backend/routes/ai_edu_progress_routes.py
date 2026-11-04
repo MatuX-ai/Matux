@@ -3,9 +3,8 @@ AI-Edu-for-Kids 学习进度 API 路由
 """
 
 import logging
-from typing import List, Optional
+from typing import Optional
 
-from database.db import Base
 from fastapi import APIRouter, Depends, HTTPException, Query
 from models.user import User
 from services.ai_edu_progress_service import (

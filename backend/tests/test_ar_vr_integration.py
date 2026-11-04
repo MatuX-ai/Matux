@@ -11,18 +11,18 @@ import unittest
 from unittest.mock import Mock, patch
 
 import pytest
+from sqlalchemy.orm import Session
 
 # aiortc 是可选依赖（未列入 requirements.txt），
 # services/web_rtc_sensor_service.py 导入它，缺失时跳过整个模块。
 pytest.importorskip("aiortc")
 
-from sqlalchemy.orm import Session
 
 # 添加项目路径
 sys.path.insert(0, os.path.join(os.path.dirname(__file__), ".."))
 
 # 导入模型
-from models.ar_vr_content import (
+from models.ar_vr_content import (  # noqa: E402
     ARVRContent,
     ARVRContentType,
     ARVRPlatform,
@@ -32,12 +32,15 @@ from models.ar_vr_content import (
 )
 
 # 导入路由
-from routes.ar_vr_routes import router
-from services.ar_physics_service import ARPhysicsService
+from routes.ar_vr_routes import router  # noqa: E402
+from services.ar_physics_service import ARPhysicsService  # noqa: E402
 
 # 导入服务
-from services.ar_vr_content_service import ARVRContentService
-from services.web_rtc_sensor_service import WebRTCManager, WebRTCSensorDataStream
+from services.ar_vr_content_service import ARVRContentService  # noqa: E402
+from services.web_rtc_sensor_service import (  # noqa: E402
+    WebRTCManager,
+    WebRTCSensorDataStream,
+)
 
 
 class TestARVRModels(unittest.TestCase):

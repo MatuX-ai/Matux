@@ -4,11 +4,14 @@ Token 服务核心功能单元测试
 """
 
 from datetime import datetime, timedelta
-from decimal import Decimal
-from unittest.mock import AsyncMock, MagicMock, Mock, patch
+from unittest.mock import Mock
 
+from models.token_models import TokenTransaction, TransactionType
+from models.user import User
 import pytest
-from sqlalchemy.ext.asyncio import AsyncSession
+
+# 假设的导入路径（根据实际项目结构调整）
+from services.token_service import TokenPackage, TokenService
 from sqlalchemy.orm import Session
 
 # models/token_models.py 已删除：TokenTransaction / TokenType 随
@@ -19,12 +22,6 @@ pytest.skip(
     "Token 服务测试依赖已删除的 models.token_models",
     allow_module_level=True,
 )
-
-from models.token_models import TokenTransaction, TokenType, TransactionType
-from models.user import User
-
-# 假设的导入路径（根据实际项目结构调整）
-from services.token_service import TokenPackage, TokenService
 
 
 class TestTokenServiceBasic:
@@ -161,7 +158,7 @@ class TestTokenDeduction:
             description="AI 聊天消耗"
         )
 
-        assert result.success == True
+        assert result.success is True
         assert result.deducted_amount == 100
         assert result.remaining_balance == 900
 
@@ -294,7 +291,7 @@ class TestTokenPackagePurchase:
         # 执行购买
         result = await token_service.purchase_package(user_id, package_id)
 
-        assert result.success == True
+        assert result.success is True
         assert result.tokens_added == 500
         assert result.new_balance == 580  # 80 + 500
 
@@ -342,7 +339,7 @@ class TestMonthlyBonusTokens:
         # 执行领取
         result = await token_service.claim_monthly_bonus(user_id)
 
-        assert result.success == True
+        assert result.success is True
         assert result.bonus_amount > 0
         assert "claimed" in result.message.lower() or "领取" in result.message
 
@@ -358,7 +355,7 @@ class TestMonthlyBonusTokens:
 
         result = await token_service.claim_monthly_bonus(user_id)
 
-        assert result.success == False
+        assert result.success is False
         assert "already claimed" in str(result).lower() or "已领取" in str(result)
 
     @pytest.mark.asyncio
@@ -374,7 +371,7 @@ class TestMonthlyBonusTokens:
 
         result = await token_service.claim_monthly_bonus(user_id)
 
-        assert result.success == False
+        assert result.success is False
         assert "ineligible" in str(result).lower() or "不符合条件" in str(result)
 
 

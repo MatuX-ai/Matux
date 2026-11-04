@@ -8,6 +8,7 @@ import logging
 import time
 from typing import Any, Dict, List, Optional
 
+from celery import Task as BaseTask
 from celery.exceptions import SoftTimeLimitExceeded, TimeLimitExceeded
 from prometheus_client import Counter, Enum as PromEnum, Gauge, Histogram
 
@@ -411,9 +412,6 @@ def task_circuit_breaker(
         return wrapper
 
     return decorator
-
-
-from celery import Task as BaseTask
 
 
 class CircuitBreakerTask(BaseTask):

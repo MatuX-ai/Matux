@@ -9,7 +9,6 @@ from typing import List, Optional
 from fastapi import APIRouter, Depends, HTTPException, Path, Query
 from middleware.auth import get_current_user
 from models.hardware_module import (
-    DamageLevel,
     HardwareModule,
     HardwareModuleCreate,
     HardwareModuleResponse,
@@ -69,7 +68,7 @@ async def list_hardware_modules(
             query = query.filter(
                 HardwareModule.status == HardwareModuleStatus.AVAILABLE,
                 HardwareModule.quantity_available > 0,
-                HardwareModule.is_active == True,
+                HardwareModule.is_active.is_(True),
             )
 
         # 预加载关联数据
@@ -473,7 +472,7 @@ async def get_user_rental_history(
         result = await db.execute(query)
         rentals = result.scalars().all()
 
-        return [ModuleRentalRecordResponse.from_orm(rental) for rent in rentals]
+        return [ModuleRentalRecordResponse.from_orm(rent) for rent in rentals]
 
     except Exception as e:
         logger.error(f"获取租赁历史失败: {str(e)}")

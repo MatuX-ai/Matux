@@ -4,7 +4,7 @@
 
 import calendar
 from datetime import datetime, timedelta
-from typing import Optional, Union
+from typing import Union
 
 
 def format_date(

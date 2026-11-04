@@ -3,8 +3,7 @@
 测试基于许可证类型的功能访问限制
 """
 
-from datetime import datetime, timedelta
-from unittest.mock import AsyncMock, MagicMock, Mock
+from unittest.mock import Mock
 
 from fastapi import HTTPException
 from middleware.license_permission import (
@@ -14,7 +13,7 @@ from middleware.license_permission import (
     require_feature,
     require_license_type,
 )
-from models.license import License, LicenseStatus, LicenseType
+from models.license import LicenseStatus, LicenseType
 import pytest
 
 
@@ -40,7 +39,7 @@ class TestLicensePermissionService:
             LicenseType.WINDOWS_LOCAL
         )
 
-        assert result["allowed"] == True
+        assert result["allowed"] is True
         assert result["reason"] == "权限验证通过"
         assert result["upgrade_suggestion"] == ""
 
@@ -52,7 +51,7 @@ class TestLicensePermissionService:
             LicenseType.OPEN_SOURCE
         )
 
-        assert result["allowed"] == False
+        assert result["allowed"] is False
         assert "不支持" in result["reason"]
         assert "升级" in result["upgrade_suggestion"]
 
@@ -63,14 +62,14 @@ class TestLicensePermissionService:
             "cloud_sync",
             LicenseType.CLOUD_HOSTED
         )
-        assert result["allowed"] == True
+        assert result["allowed"] is True
 
         # Windows 本地版不能访问云端同步
         result = service.check_feature_permission(
             "cloud_sync",
             LicenseType.WINDOWS_LOCAL
         )
-        assert result["allowed"] == False
+        assert result["allowed"] is False
 
     def test_check_feature_permission_offline_mode(self, service):
         """测试离线模式功能权限"""
@@ -79,21 +78,21 @@ class TestLicensePermissionService:
             "offline_mode",
             LicenseType.WINDOWS_LOCAL
         )
-        assert result["allowed"] == True
+        assert result["allowed"] is True
 
         # 云托管版不能访问离线模式
         result = service.check_feature_permission(
             "offline_mode",
             LicenseType.CLOUD_HOSTED
         )
-        assert result["allowed"] == False
+        assert result["allowed"] is False
 
         # 企业版可以访问离线模式
         result = service.check_feature_permission(
             "offline_mode",
             LicenseType.ENTERPRISE
         )
-        assert result["allowed"] == True
+        assert result["allowed"] is True
 
     def test_undefined_feature_default_allowed(self, service):
         """测试未定义功能默认允许"""
@@ -102,7 +101,7 @@ class TestLicensePermissionService:
             LicenseType.OPEN_SOURCE
         )
 
-        assert result["allowed"] == True
+        assert result["allowed"] is True
         assert "未设置权限限制" in result["reason"]
 
     def test_upgrade_suggestions_exist(self):
@@ -142,7 +141,7 @@ class TestRequireLicenseTypeDecorator:
                 current_user=mock_user,
                 db=mock_db
             )
-            assert result["success"] == True
+            assert result["success"] is True
         except HTTPException as e:
             pytest.fail(f"Unexpected HTTPException: {e}")
 
@@ -261,7 +260,7 @@ class TestRequireFeatureDecorator:
                 current_user=mock_user,
                 db=mock_db
             )
-            assert result["success"] == True
+            assert result["success"] is True
         except HTTPException as e:
             pytest.fail(f"Unexpected HTTPException: {e}")
 

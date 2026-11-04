@@ -8,7 +8,6 @@ from datetime import datetime
 import json
 from pathlib import Path
 import time
-from typing import Any, Dict, List
 
 
 class MicroCourseBacktest:
@@ -124,7 +123,7 @@ class MicroCourseBacktest:
         }
 
         # 验证结果
-        assert mock_result["success"] == True, "转换失败"
+        assert mock_result["success"] is True, "转换失败"
         assert "micro_course" in mock_result["data"], "缺少微课程数据"
         assert "levels" in mock_result["data"]["micro_course"], "缺少关卡配置"
         assert len(mock_result["data"]["micro_course"]["levels"]) >= 3, "关卡数量不足"
@@ -194,7 +193,7 @@ class LLMAssistantBacktest:
             responses.append(mock_response)
 
             # 验证
-            assert mock_response["success"] == True, "对话失败"
+            assert mock_response["success"] is True, "对话失败"
             assert "reply" in mock_response["data"], "缺少回复内容"
             assert len(mock_response["data"]["reply"]) > 0, "回复为空"
             assert mock_response["data"]["inference_time_ms"] < 3000, "响应时间过长"

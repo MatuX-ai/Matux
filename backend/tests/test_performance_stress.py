@@ -1,24 +1,16 @@
 import asyncio
-from concurrent.futures import ThreadPoolExecutor
-from datetime import datetime, timedelta
+from datetime import datetime
 import json
 import logging
 import statistics
-import threading
 import time
 import tracemalloc
 from typing import Any, Dict, List
 
-import psutil
+# 用于mock的装饰器
+from unittest.mock import patch
+
 import pytest
-
-# 该模块依赖已删除的 utils/blockchain_client.py（BlockchainClient），
-# 待区块链客户端重新实现后删除本跳过。
-pytest.skip(
-    "性能压测依赖已删除的 utils.blockchain_client",
-    allow_module_level=True,
-)
-
 from services.complex_gesture_recognizer import (
     GesturePoint,
     complex_gesture_recognizer,
@@ -29,6 +21,14 @@ from services.integral_decay_calculator import decay_calculator
 from services.reward_event_bus import RewardEvent, reward_event_bus
 from services.voice_correction_detector import VoiceCorrectionDetector
 from utils.blockchain_client import BlockchainClient
+
+# 该模块依赖已删除的 utils/blockchain_client.py（BlockchainClient），
+# 待区块链客户端重新实现后删除本跳过。
+pytest.skip(
+    "性能压测依赖已删除的 utils.blockchain_client",
+    allow_module_level=True,
+)
+
 
 logger = logging.getLogger(__name__)
 
@@ -507,10 +507,6 @@ class StressTestRunner:
                 1 for r in results if r.get("success_rate", 0) < 0.95
             ),
         }
-
-
-# 用于mock的装饰器
-from unittest.mock import patch
 
 
 async def main():

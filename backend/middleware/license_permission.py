@@ -5,7 +5,7 @@
 
 from datetime import datetime
 from functools import wraps
-from typing import Any, Callable, Dict, List, Optional
+from typing import Any, Callable, Dict, Optional
 
 from fastapi import Depends, HTTPException, status
 from middleware.auth import get_current_user
@@ -207,7 +207,7 @@ class LicensePermissionService:
         """
         license_row = self.db.query(UserLicense).filter(
             UserLicense.user_id == user_id,
-            UserLicense.is_active == True,
+            UserLicense.is_active.is_(True),
         ).first()
 
         return license_row

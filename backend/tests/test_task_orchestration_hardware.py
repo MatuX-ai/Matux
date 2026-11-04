@@ -18,7 +18,7 @@ BACKEND-P1-008: 硬件连接验证单元测试
 
 import os
 import sys
-from unittest.mock import AsyncMock, MagicMock, Mock, patch
+from unittest.mock import Mock, patch
 
 import pytest
 

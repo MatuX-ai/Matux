@@ -16,14 +16,6 @@ from sqlalchemy import (
 )
 from sqlalchemy.orm import relationship
 
-# 前向声明，避免循环导入
-type Course = 'Course'
-type Teacher = 'Teacher'
-type Classroom = 'Classroom'
-type Class = 'Class'
-type Attendance = 'Attendance'
-type User = 'User'
-
 
 class CourseSchedule(Base):
     """课程排课表 - 核心排课数据模型"""

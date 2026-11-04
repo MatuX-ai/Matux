@@ -5,7 +5,6 @@ Exam Models - 测验系统数据模型
 支持多种题型（单选、多选、判断、简答、编程题）
 """
 
-from datetime import datetime
 import enum
 
 from sqlalchemy import (

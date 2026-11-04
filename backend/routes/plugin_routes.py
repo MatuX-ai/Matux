@@ -13,7 +13,6 @@
 路由前缀: /api/v1/plugins
 """
 
-from datetime import datetime
 import json
 import logging
 import os
@@ -21,12 +20,10 @@ from typing import Any, Dict, List, Optional
 
 from core.plugin_manager import (
     PluginInfo,
-    PluginLoadResult,
     PluginManager,
     get_plugin_manager,
 )
 from fastapi import APIRouter, BackgroundTasks, Depends, HTTPException, Query
-from fastapi.responses import JSONResponse
 from pydantic import BaseModel, Field
 
 # ==================== 配置 ====================

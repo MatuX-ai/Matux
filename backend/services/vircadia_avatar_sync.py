@@ -7,7 +7,6 @@ Vircadia Avatar 同步服务
 @date: 2026-03-03
 """
 
-import asyncio
 from datetime import datetime
 import logging
 from typing import Any, Dict, Optional
@@ -16,7 +15,6 @@ import aiohttp
 
 from ..models.vircadia_avatar import (
     AvatarMetadata,
-    AvatarSyncRequest,
     AvatarSyncResponse,
     ReadyPlayerMeAvatar,
     VircadiaUserMapping,

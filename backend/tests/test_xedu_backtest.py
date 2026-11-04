@@ -8,7 +8,6 @@ XEdu 工具链功能回测脚本
 - XEduLLM 对话助手
 """
 
-import asyncio
 from datetime import datetime
 import json
 from pathlib import Path

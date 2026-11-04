@@ -5,12 +5,9 @@ AI-Edu 代码沙箱服务 - Docker 容器隔离实现
 
 from dataclasses import dataclass
 from datetime import datetime
-import io
-import json
 import logging
-import tarfile
 import time
-from typing import Any, Dict, Optional
+from typing import Optional
 
 import docker
 

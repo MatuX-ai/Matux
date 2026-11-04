@@ -1,8 +1,6 @@
-import base64
 from datetime import datetime
-from io import BytesIO
 import logging
-from typing import Any, Dict, List, Optional
+from typing import Any, Dict, Optional
 
 import cv2
 from fastapi import (

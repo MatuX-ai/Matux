@@ -79,7 +79,7 @@ def test_license_key_validation():
     )
     valid_key = f"LICENSE-ABCDEF1234567890GHIJKL-{manual_checksum}"
 
-    assert validate_license_key_format(valid_key) == True
+    assert validate_license_key_format(valid_key) is True
     print(f"✅ 有效密钥验证通过: {valid_key}")
 
     # 测试无效密钥
@@ -91,7 +91,7 @@ def test_license_key_validation():
     ]
 
     for invalid_key in invalid_keys:
-        assert validate_license_key_format(invalid_key) == False
+        assert validate_license_key_format(invalid_key) is False
         print(f"✅ 无效密钥检测通过: {invalid_key}")
 
     print("✅ 许可证密钥验证测试通过")

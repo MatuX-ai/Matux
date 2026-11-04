@@ -477,7 +477,7 @@ class CollaborativeEditorService:
             .filter(
                 DocumentSession.document_id == document_id,
                 DocumentSession.user_id == current_user.id,
-                DocumentSession.is_active == True,
+                DocumentSession.is_active.is_(True),
             )
             .first()
         )
@@ -513,7 +513,7 @@ class CollaborativeEditorService:
             self.db.query(DocumentSession)
             .filter(
                 DocumentSession.session_id == session_id,
-                DocumentSession.is_active == True,
+                DocumentSession.is_active.is_(True),
             )
             .first()
         )
@@ -556,7 +556,7 @@ class CollaborativeEditorService:
             self.db.query(DocumentSession)
             .filter(
                 DocumentSession.document_id == document_id,
-                DocumentSession.is_active == True,
+                DocumentSession.is_active.is_(True),
             )
             .all()
         )

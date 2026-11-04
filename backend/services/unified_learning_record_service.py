@@ -3,7 +3,7 @@
 处理跨来源学习记录的创建、查询、统计等业务逻辑
 """
 
-from datetime import date, datetime
+from datetime import datetime
 import logging
 from typing import Any, Dict, List, Optional
 
@@ -13,11 +13,9 @@ from models.unified_learning_record import (
     LearningRecordStatus,
     UnifiedLearningRecord,
     UnifiedLearningRecordCreate,
-    UnifiedLearningRecordResponse,
     UnifiedLearningRecordUpdate,
 )
 from models.user import User
-from sqlalchemy import func
 from sqlalchemy.orm import Session, joinedload
 
 logger = logging.getLogger(__name__)

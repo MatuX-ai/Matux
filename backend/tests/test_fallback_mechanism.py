@@ -5,8 +5,7 @@
 
 import asyncio
 from datetime import datetime
-from typing import Any, Dict
-from unittest.mock import AsyncMock, Mock, patch
+from unittest.mock import AsyncMock
 
 from middleware.circuit_breaker import (
     CircuitBreaker,
@@ -34,7 +33,7 @@ class TestFallbackStrategies:
         """测试默认降级返回有效响应"""
         result = await default_fallback_response()
 
-        assert result["fallback"] == True
+        assert result["fallback"] is True
         assert "message" in result
         assert "timestamp" in result
         assert isinstance(result["timestamp"], str)
@@ -93,7 +92,7 @@ class TestFallbackWithCircuitBreaker:
 
         result = await breaker.call(failing_func)
 
-        assert result["fallback"] == True
+        assert result["fallback"] is True
         assert result["strategy"] == "custom"
 
     @pytest.mark.asyncio
@@ -120,7 +119,7 @@ class TestFallbackWithCircuitBreaker:
 
         result = await breaker.call(normal_func)
 
-        assert result["fallback"] == True
+        assert result["fallback"] is True
         assert breaker.total_fallbacks >= 1
 
     @pytest.mark.asyncio
@@ -214,7 +213,7 @@ class TestAdvancedFallbackScenarios:
 
         result = await breaker.call(failing_service)
 
-        assert result["success"] == True
+        assert result["success"] is True
         assert result["retries"] == max_retries
 
     @pytest.mark.asyncio
@@ -373,7 +372,7 @@ class TestFallbackPerformance:
         results = await asyncio.gather(*tasks)
 
         assert len(results) == 10
-        assert all(r["fallback"] == True for r in results)
+        assert all(r["fallback"] is True for r in results)
         assert call_count == 10  # 每次都调用降级函数
 
 
@@ -430,7 +429,7 @@ class TestFallbackErrorHandling:
 
         result = await breaker.call(failing_service)
 
-        assert result["partial"] == True
+        assert result["partial"] is True
         assert result["attempt"] == 2
 
 

@@ -24,7 +24,7 @@ from sqlalchemy.orm import relationship
 from utils.database import Base
 
 if TYPE_CHECKING:
-    from .license import Organization
+    pass
 
 
 class ARVRContentType(str, enum.Enum):

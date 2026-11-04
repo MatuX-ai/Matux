@@ -1,11 +1,9 @@
-import asyncio
 from dataclasses import dataclass
 from datetime import datetime, timedelta
 from email.mime.multipart import MIMEMultipart
 from email.mime.text import MIMEText
 from enum import Enum
 import logging
-import smtplib
 from typing import Any, Dict, List, Optional
 
 from .integral_decay_calculator import decay_calculator

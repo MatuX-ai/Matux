@@ -2,6 +2,8 @@
 支付服务核心实现
 """
 
+# 导入asyncio用于sleep
+import asyncio
 from datetime import datetime
 import logging
 from typing import Any, Dict, List, Optional
@@ -9,7 +11,7 @@ import uuid
 
 from models.payment import Order, OrderStatus, Payment, PaymentMethod, PaymentStatus
 from models.user import User
-from models.user_license import TokenPackage, TokenRechargeRecord, UserTokenBalance
+from models.user_license import TokenPackage, TokenRechargeRecord
 from sqlalchemy import func, select
 from sqlalchemy.ext.asyncio import AsyncSession
 
@@ -52,16 +54,16 @@ class PaymentService:
                 select(TokenPackage).where(TokenPackage.id == package_id)
             )
             package = result.scalar_one_or_none()
-            
+
             if not package:
                 raise ValueError(f"套餐 {package_id} 不存在")
-            
+
             if not package.is_active:
                 raise ValueError(f"套餐 {package.name} 已下架")
-            
+
             # 生成订单 ID
             order_id = f"TKN{datetime.now().strftime('%Y%m%d%H%M%S')}{uuid.uuid4().hex[:8].upper()}"
-            
+
             # 创建订单，使用 metadata 存储 Token 套餐信息
             order = Order(
                 order_id=order_id,
@@ -82,11 +84,11 @@ class PaymentService:
                 },
                 note=f"购买 Token 套餐：{package.name}",
             )
-            
+
             db.add(order)
             await db.commit()
             await db.refresh(order)
-            
+
             logger.info(
                 f"Token 订单创建成功：{order_id}, "
                 f"套餐：{package.name}, "
@@ -94,12 +96,12 @@ class PaymentService:
                 f"金额：{package.price}元"
             )
             return order
-            
+
         except Exception as e:
             await db.rollback()
             logger.error(f"创建 Token 订单失败：{e}")
             raise
-    
+
     async def confirm_token_payment(
         self,
         order_id: str,
@@ -122,13 +124,13 @@ class PaymentService:
             # 获取订单信息
             result = await db.execute(select(Order).where(Order.order_id == order_id))
             order = result.scalar_one_or_none()
-            
+
             if not order:
                 raise ValueError(f"订单不存在：{order_id}")
-            
+
             if not order.metadata or order.metadata.get("token_package_id") is None:
                 raise ValueError("该订单不是 Token 订单")
-            
+
             if not payment_success:
                 # 支付失败，更新订单状态
                 order.status = OrderStatus.CANCELLED
@@ -136,25 +138,25 @@ class PaymentService:
                 await db.commit()
                 logger.warning(f"Token 订单支付失败：{order_id}")
                 return False
-            
+
             # 导入 Token 服务
             from services.token_service import TokenService
             token_service = TokenService(db)
-            
+
             # 获取套餐信息
             package_result = await db.execute(
                 select(TokenPackage).where(TokenPackage.id == order.metadata["token_package_id"])
             )
             package = package_result.scalar_one_or_none()
-            
+
             if not package:
                 raise ValueError("套餐不存在")
-            
+
             # 发放 Token
             balance = token_service.get_or_create_user_balance(order.user_id)
             balance.total_tokens += package.token_count
             balance.remaining_tokens += package.token_count
-            
+
             # 创建充值记录
             recharge_record = TokenRechargeRecord(
                 user_balance_id=balance.id,
@@ -166,27 +168,27 @@ class PaymentService:
                 order_no=order.order_id,
                 payment_time=datetime.utcnow(),
             )
-            
+
             db.add(recharge_record)
-            
+
             # 更新订单状态
             order.status = OrderStatus.COMPLETED
             order.payment_status = PaymentStatus.SUCCESS
             order.paid_amount = order.total_amount
-            
+
             await db.commit()
-            
+
             logger.info(
                 f"Token 订单支付确认成功：{order_id}, "
                 f"用户 {order.user_id} 获得 {package.token_count} Token"
             )
             return True
-            
+
         except Exception as e:
             await db.rollback()
             logger.error(f"确认 Token 支付失败：{e}")
             raise
-    
+
     async def create_order(
         self,
         user_id: str,
@@ -536,7 +538,3 @@ class PaymentService:
         except Exception as e:
             logger.error(f"获取支付统计失败: {e}")
             raise
-
-
-# 导入asyncio用于sleep
-import asyncio

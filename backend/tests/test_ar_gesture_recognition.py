@@ -17,6 +17,7 @@ try:
     from xr_modules.ar_gesture_recognition.hand_tracker import HandTracker
     from xr_modules.ar_gesture_recognition.models import (
         ARGestureConfig,
+        GestureEvent,
         GestureRecognitionResult,
         GestureType,
         HandDetectionResult,

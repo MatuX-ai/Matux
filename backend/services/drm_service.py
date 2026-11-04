@@ -205,7 +205,7 @@ class DRMService:
             access_grant_query = select(ContentAccessGrant).where(
                 ContentAccessGrant.user_id == user_id,
                 ContentAccessGrant.content_id == content_id,
-                ContentAccessGrant.is_revoked == False,
+                ContentAccessGrant.is_revoked.is_(False),
             )
             access_result = await db.execute(access_grant_query)
             access_grant = access_result.scalar_one_or_none()

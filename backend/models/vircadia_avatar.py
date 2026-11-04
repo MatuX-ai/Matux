@@ -10,7 +10,7 @@ Vircadia Avatar 数据模型
 from datetime import datetime
 from typing import Any, Dict, Optional
 
-from pydantic import BaseModel, EmailStr, Field
+from pydantic import BaseModel, Field
 
 
 class VircadiaUserMapping(BaseModel):

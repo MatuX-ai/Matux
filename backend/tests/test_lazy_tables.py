@@ -6,7 +6,7 @@
 
 import os
 import sys
-from unittest.mock import AsyncMock, MagicMock, patch
+from unittest.mock import AsyncMock, patch
 
 from core.lazy_tables import LazyTableManager
 import pytest

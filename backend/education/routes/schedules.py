@@ -3,9 +3,9 @@
 """
 
 import logging
-from typing import Dict, List
+from typing import List
 
-from fastapi import APIRouter, Depends, HTTPException, status
+from fastapi import APIRouter, HTTPException, status
 
 from ..schemas.schedule_schema import (
     CourseScheduleResponse,

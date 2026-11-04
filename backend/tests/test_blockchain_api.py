@@ -35,7 +35,7 @@ class TestBlockchainAPI:
             assert response.status_code == 200
             data = response.json()
             assert data["status"] == "healthy"
-            assert data["initialized"] == True
+            assert data["initialized"] is True
 
     def test_issue_certificate_success(self):
         """测试成功颁发证书"""
@@ -54,7 +54,7 @@ class TestBlockchainAPI:
 
             assert response.status_code == 200
             data = response.json()
-            assert data["success"] == True
+            assert data["success"] is True
             assert data["data"]["transactionId"] == "tx_123456"
             assert "certificateId" in data["data"]
 
@@ -115,7 +115,7 @@ class TestBlockchainAPI:
 
             assert response.status_code == 200
             data = response.json()
-            assert data["success"] == True
+            assert data["success"] is True
             assert data["data"]["transactionId"] == "tx_789012"
 
     def test_get_certificates_by_holder(self):
@@ -162,7 +162,7 @@ class TestBlockchainAPI:
 
             assert response.status_code == 200
             data = response.json()
-            assert data["success"] == True
+            assert data["success"] is True
             assert data["data"]["requestId"] == "req_345678"
 
     def test_approve_request(self):
@@ -178,7 +178,7 @@ class TestBlockchainAPI:
 
             assert response.status_code == 200
             data = response.json()
-            assert data["success"] == True
+            assert data["success"] is True
             assert data["data"]["transactionId"] == "tx_999999"
 
     def test_reject_request(self):
@@ -194,7 +194,7 @@ class TestBlockchainAPI:
 
             assert response.status_code == 200
             data = response.json()
-            assert data["success"] == True
+            assert data["success"] is True
             assert data["data"]["transactionId"] == "tx_888888"
 
     def test_get_pending_requests(self):
@@ -233,8 +233,8 @@ class TestBlockchainAPI:
 
             assert response.status_code == 200
             data = response.json()
-            assert data["success"] == True
-            assert data["data"]["valid"] == True
+            assert data["success"] is True
+            assert data["data"]["valid"] is True
 
     def test_verify_certificate_endpoint_invalid(self):
         """测试证书验证端点（无效证书）"""
@@ -245,8 +245,8 @@ class TestBlockchainAPI:
 
             assert response.status_code == 200  # 注意：验证端点总是返回200
             data = response.json()
-            assert data["success"] == False
-            assert data["data"]["valid"] == False
+            assert data["success"] is False
+            assert data["data"]["valid"] is False
             assert "已撤销" in data["message"]
 
 

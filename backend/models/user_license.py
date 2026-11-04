@@ -3,7 +3,6 @@
 """
 
 from datetime import datetime
-from decimal import Decimal
 from enum import Enum
 from typing import Optional
 
@@ -13,14 +12,13 @@ from sqlalchemy import (
     Column,
     DateTime,
     Enum as SAEnum,
-    Float,
     ForeignKey,
     Integer,
     Numeric,
     String,
     Text,
 )
-from sqlalchemy.orm import backref, relationship
+from sqlalchemy.orm import relationship
 from utils.database import Base
 
 

@@ -13,7 +13,6 @@ Closure Table 优势：
 """
 
 from datetime import datetime
-from typing import List, Optional
 
 from sqlalchemy import (
     JSON,

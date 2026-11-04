@@ -4,8 +4,7 @@ Exam Service - 测验业务逻辑服务
 提供测验的 CRUD 操作、随机抽题、自动评分、成绩分析等功能
 """
 
-from datetime import datetime, timedelta
-import random
+from datetime import datetime
 from typing import Optional
 
 from models.exam import (
@@ -17,8 +16,7 @@ from models.exam import (
     Question,
     QuestionType,
 )
-from models.user import User
-from sqlalchemy import func, select, update
+from sqlalchemy import func, select
 from sqlalchemy.ext.asyncio import AsyncSession
 
 
@@ -176,7 +174,7 @@ class ExamService:
         """获取测验的所有题目"""
         stmt = (
             select(Question)
-            .filter(Question.exam_id == exam_id, Question.is_active == True)
+            .filter(Question.exam_id == exam_id, Question.is_active.is_(True))
             .order_by(Question.order_index)
         )
         result = await db.execute(stmt)

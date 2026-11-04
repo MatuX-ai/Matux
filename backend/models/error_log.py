@@ -12,7 +12,6 @@
 4. 索引: org_id、user_id、log_type、occurred_at、log_format
 """
 
-from datetime import datetime
 from typing import Any, Dict, Optional
 
 from pydantic import BaseModel, Field

@@ -1,5 +1,4 @@
 """测试 start_exam API 端点"""
-import json
 
 import requests
 
@@ -22,7 +21,7 @@ def get_token():
 def test_start_exam(token):
     """测试 start_exam API"""
     headers = {"Authorization": f"Bearer {token}"}
-    
+
     # 先获取测验列表
     print("=== 获取测验列表 ===")
     response = requests.get(f"{BASE_URL}/api/v1/exams", headers=headers)
@@ -33,7 +32,7 @@ def test_start_exam(token):
         print(f"测验数量: {len(exams)}")
         for exam in exams:
             print(f"  - ID={exam['id']}, title={exam['title']}, status={exam['status']}")
-        
+
         if exams:
             # 测试开始第一个已发布的测验
             exam_id = exams[0]["id"]
@@ -45,7 +44,7 @@ def test_start_exam(token):
             )
             print(f"状态码: {response.status_code}")
             print(f"响应: {response.text}")
-            
+
             if response.status_code == 200:
                 data = response.json()
                 print(f"成功! attempt_id={data.get('attempt_id')}")

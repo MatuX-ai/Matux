@@ -4,13 +4,11 @@
 提供高级的注册表管理功能，包括配置驱动注册、健康检查、迁移管理等
 """
 
-import asyncio
 import logging
 from typing import Any, Dict, List, Optional
 
 from .module_registry import (
     DatabaseModule,
-    DatabaseModuleRegistry,
     ModuleMetadata,
     get_database_registry,
 )

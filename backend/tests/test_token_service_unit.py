@@ -3,7 +3,7 @@ Token 服务单元测试
 测试 Token 管理的核心业务逻辑
 """
 
-from datetime import datetime, timedelta
+from datetime import datetime
 
 # 使用 SQLite 内存数据库进行测试
 from config.settings import Settings

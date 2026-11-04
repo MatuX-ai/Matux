@@ -15,7 +15,6 @@ from ..models.rule_engine import (
     RuleActionType,
     RuleCondition,
     RuleConditionType,
-    RuleEngineConfig,
     RuleOperator,
 )
 from ..services.rule_engine_service import RuleEngineService

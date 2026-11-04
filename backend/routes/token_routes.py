@@ -6,7 +6,7 @@ Token 管理 API 路由
 import logging
 from typing import Optional, cast
 
-from fastapi import APIRouter, Body, Depends, HTTPException, Query
+from fastapi import APIRouter, Depends, HTTPException, Query
 from models.token_schemas import (
     CostEstimateRequest,
     CostEstimateResponse,
@@ -19,7 +19,6 @@ from models.token_schemas import (
     UserBalanceResponse,
 )
 from models.user import User
-from pydantic import BaseModel
 from services.token_service import TokenService
 from sqlalchemy.orm import Session
 from utils.database import get_sync_db

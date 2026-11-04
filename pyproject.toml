@@ -23,20 +23,17 @@ classifiers = [
 
 [project.optional-dependencies]
 dev = [
-    "black>=23.0.0",
-    "isort>=5.12.0",
-    "flake8>=6.0.0",
-    "flake8-bugbear>=23.0.0",
-    "flake8-comprehensions>=3.12.0",
-    "flake8-docstrings>=1.7.0",
-    "flake8-import-order>=0.18.2",
-    "flake8-print>=5.0.0",
-    "flake8-quotes>=3.3.0",
-    "mypy>=1.0.0",
-    "pytest>=7.0.0",
-    "pytest-cov>=4.0.0",
-    "pytest-asyncio>=0.21.0",
-    "pre-commit>=3.0.0",
+    "black==26.10.1",
+    "isort==9.0.2",
+    "flake8==7.5.0",
+    "flake8-bugbear==26.10.27",
+    "flake8-comprehensions==3.17.0",
+    "ruff==0.17.3",
+    "mypy==2.4.1",
+    "pytest==9.2.0",
+    "pytest-cov==7.1.0",
+    "pytest-asyncio==1.4.1.post1",
+    "pre-commit==4.7.0",
 ]
 
 [tool.black]
@@ -84,40 +81,62 @@ no_lines_before = ["LOCALFOLDER"]
 force_sort_within_sections = true
 combine_as_imports = true
 
-[tool.flake8]
-max-line-length = 88
-max-complexity = 10
-select = [
-    "E",      # pycodestyle errors
-    "W",      # pycodestyle warnings
-    "F",      # pyflakes
-    "I",      # isort
-    "C",      # mccabe
-    "B",      # flake8-bugbear
-    "Q",      # flake8-quotes
-    "T20",    # flake8-print
+# =============================================================================
+# ruff 配置说明
+# =============================================================================
+# ruff 与 flake8 各司其职，配置必须同步：
+#   - flake8：CI 门禁的唯一执行者，配置在仓库根 .flake8（flake8 不读取本文件）
+#   - ruff：批量机械修复（--fix）的执行者，配置在本文件的 [tool.ruff]
+# 排除项 / 忽略项 / per-file-ignores 三者保持一致，避免两条工具互相打架。
+#
+# target-version 必须显式声明：ruff 默认按 py38 解析，会把
+# "with (a, b):" 这类 Python 3.9+ 合法语法误报为 invalid-syntax。
+[tool.ruff]
+target-version = "py311"
+line-length = 88
+extend-exclude = [
+    "backend/venv",
+    "backend/.venv",
+    "backend/marketing_api/venv",
+    "backend/notebooks",
+    "backend/migrations",
+    "backend/alembic",
+    "backend/__pycache__",
 ]
-extend-ignore = [
-    "E203",   # whitespace before ':'
-    "E501",   # line too long (handled by black)
-    "W503",   # line break before binary operator
-    "C901",   # function is too complex (handled separately)
-]
-exclude = [
-    ".git",
-    "__pycache__",
-    "dist",
-    "build",
-    ".venv",
-    "venv",
-    "migrations",
-    "alembic",
-]
-per-file-ignores = [
-    "__init__.py:F401",           # imported but unused in __init__.py
-    "tests/*:S101,T201",          # asserts and prints in tests
-    "*/conftest.py:S101",         # asserts in conftest
-]
+
+[tool.ruff.lint]
+select = ["E", "W", "F", "C", "B"]
+# 注：W503（line break before binary operator）在 ruff 中不存在，故不列入；
+# E501 由 line-length 统一控制，B008 为 FastAPI Depends 惯用法。
+ignore = ["E203", "E501", "B008"]
+
+[tool.ruff.lint.per-file-ignores]
+# __init__.py 中的 import 用于对外 re-export，不能删除
+"backend/**/__init__.py" = ["F401"]
+# test_shared_utils.py 用通配符导入（脚本需要被导入模块的全部函数），
+# F405 报在使用处而非 import 行，行内 noqa 无法抑制，故按文件忽略。
+"backend/utils/test_shared_utils.py" = ["F405"]
+# 与根目录 .flake8 的 per-file-ignores 保持同一份清单：
+# 这些文件的 W293（空白行上的行尾空白）全部落在多行字符串内部
+# （prompt 模板 / SVG 模板 / docstring），物理行去空白会改变运行时的
+# 字符串内容，因此按文件忽略。
+# ruff 的 glob 相对于本文件所在目录（仓库根），因此使用完整相对路径；
+# 而 flake8 侧的同名 pattern 必须是 basename 形式（flake8 按 CWD 绝对化）。
+"backend/services/token_service.py" = ["W293"]
+"backend/services/admin_settings_service.py" = ["W293"]
+"backend/ai_service/creativity_engine.py" = ["W293"]
+"backend/ai_service/idea_scorer.py" = ["W293"]
+"backend/services/user_license_service.py" = ["W293"]
+"backend/services/task_orchestration_service.py" = ["W293"]
+"backend/tests/test_task_orchestration_hardware.py" = ["W293"]
+"backend/services/badge_generator.py" = ["W293"]
+"backend/services/payment_service.py" = ["W293"]
+"backend/ai_service/business_evaluator.py" = ["W293"]
+"backend/middleware/enhanced_permission_middleware.py" = ["W293"]
+"backend/routes/admin_settings_routes.py" = ["W293"]
+"backend/ai_service/performance_optimizer.py" = ["W293"]
+"backend/core/plugin_manager.py" = ["W293"]
+"backend/routes/ai_routes.py" = ["W293"]
 
 [tool.mypy]
 python_version = "3.8"
