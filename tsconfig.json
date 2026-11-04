@@ -47,7 +47,8 @@
     "node_modules/echarts/**",
     "node_modules/ng2-charts/**",
     "edu-proto/**",
-    "edu-proto-clean/**"
+    "edu-proto-clean/**",
+    "proto/**"
   ],
   "angularCompilerOptions": {
     "enableI18nLegacyMessageIdFormat": false,

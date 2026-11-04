@@ -271,8 +271,8 @@ function validateManifest(manifest: Manifest): ValidationResult {
   }
   
   // 9. 分类验证
-  if (manifest.categories && manifest.categories.length > 0) {
-    for (const cat of manifest.categories) {
+  if (manifest['categories'] && manifest['categories'].length > 0) {
+    for (const cat of manifest['categories']) {
       if (!VALID_CATEGORIES.includes(cat)) {
         warnings.push(`未知分类: ${cat} (有效值: ${VALID_CATEGORIES.join(', ')})`);
       }
@@ -280,19 +280,19 @@ function validateManifest(manifest: Manifest): ValidationResult {
   }
   
   // 10. 推荐检查
-  if (!manifest.icon) {
+  if (!manifest['icon']) {
     warnings.push('建议提供 icon.png (256x256)');
   }
   
-  if (!manifest.keywords || manifest.keywords.length === 0) {
+  if (!manifest['keywords'] || manifest['keywords'].length === 0) {
     warnings.push('建议提供 keywords 以提高搜索可见性');
   }
   
-  if (!manifest.homepage) {
+  if (!manifest['homepage']) {
     warnings.push('建议提供 homepage URL');
   }
   
-  if (!manifest.repository) {
+  if (!manifest['repository']) {
     warnings.push('建议提供 repository 信息');
   }
   
@@ -404,10 +404,10 @@ function validatePluginFiles(pluginDir: string, manifest: Manifest): ValidationR
   }
   
   // 4. 检查图标
-  if (manifest.icon) {
-    const iconPath = path.join(pluginDir, manifest.icon);
+  if (manifest['icon']) {
+    const iconPath = path.join(pluginDir, manifest['icon']);
     if (!fs.existsSync(iconPath)) {
-      warnings.push(`图标文件不存在: ${manifest.icon}`);
+      warnings.push(`图标文件不存在: ${manifest['icon']}`);
     }
   }
   
