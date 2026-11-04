@@ -1158,6 +1158,7 @@ const buttonStyle = {
 - CSSNano 优化压缩
 - Autoprefixer 浏览器前缀
 - Source Maps 开发调试
+- Python lint 机械修复：`scripts/lint_autofix.sh`（Windows 用 `scripts/lint_autofix.ps1`）——各任务线提交前自行运行此脚本
 
 ### 📚 文档资源
 
