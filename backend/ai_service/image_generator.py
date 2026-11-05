@@ -8,7 +8,7 @@ import base64
 import io
 import logging
 import time
-from typing import Any, Dict, List
+from typing import Any, Dict, List, Optional
 
 from PIL import Image  # type: ignore[import-untyped]
 from config.settings import settings
@@ -362,4 +362,20 @@ class DalleImageGenerator:
         }
 
 
+class _LazyDalleImageGenerator:
+    """懒加载代理：首次调用时才实例化，避免启动时因缺少 OPENAI_API_KEY 校验失败"""
+
+    def __init__(self) -> None:
+        self._impl: Optional[DalleImageGenerator] = None
+
+    def _get_impl(self) -> DalleImageGenerator:
+        if self._impl is None:
+            self._impl = DalleImageGenerator()
+        return self._impl
+
+    def __getattr__(self, name: str) -> Any:
+        return getattr(self._get_impl(), name)
+
+
 # 创建全局实例（按需实例化，避免启动时验证配置）
+dalle_generator = _LazyDalleImageGenerator()
