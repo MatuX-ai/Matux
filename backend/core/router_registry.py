@@ -779,19 +779,36 @@ class RouterRegistrationReport:
 
 
 class RouterRegistrationError(RuntimeError):
-    """L0 致命错误：strict=True 时抛出，携带完整失败清单。"""
+    """L0 致命错误：strict=True 时抛出，携带完整失败清单。
 
-    def __init__(
-        self,
+    兼容性说明：__init__ 只接受 *args 并原样透传给 super().__init__()，
+    以保证 pickle / copy.copy() 可用（flake8-bugbear B042）。
+    失败清单与 mode 由 from_failures() 填充到实例属性上。
+    """
+
+    #: 失败清单（由 from_failures 填充）
+    failures: Sequence[Dict[str, str]] = ()
+    #: 注册模式（由 from_failures 填充）
+    mode: str = MODE_LEGACY
+
+    def __init__(self, *args):
+        super().__init__(*args)
+
+    @classmethod
+    def from_failures(
+        cls,
         failures: Sequence[Dict[str, str]],
         mode: str = MODE_LEGACY,
-    ):
-        self.failures = list(failures)
-        self.mode = mode
+    ) -> "RouterRegistrationError":
+        """按失败清单构造异常，消息包含每一项的模块与原因。"""
+        items = list(failures)
         detail = "; ".join(
-            f"{item.get('module')}: {item.get('error')}" for item in self.failures
+            f"{item.get('module')}: {item.get('error')}" for item in items
         )
-        super().__init__(f"路由注册失败（mode={mode}，共 {len(self.failures)} 项）：{detail}")
+        error = cls(f"路由注册失败（mode={mode}，共 {len(items)} 项）：{detail}")
+        error.failures = items
+        error.mode = mode
+        return error
 
 
 # ==================== 内部工具 ====================
@@ -1030,7 +1047,7 @@ def register_all_routers(
 
     # --- L0 致命：收集完全部失败后再抛，保证错误信息含完整清单 ---
     if strict and report.failed:
-        raise RouterRegistrationError(report.failed, mode=mode)
+        raise RouterRegistrationError.from_failures(report.failed, mode=mode)
 
     if report.failed or report.disabled:
         logger.warning(

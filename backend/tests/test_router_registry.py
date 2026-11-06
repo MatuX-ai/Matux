@@ -325,6 +325,16 @@ class TestFailureStrategy:
         assert failed_modules == {"routes.ai_routes", "routes.exam_routes"}
         assert "路由注册失败" in str(excinfo.value)
 
+    def test_error_carries_failure_list_and_mode(self):
+        """异常实例携带失败清单与 mode（from_failures 工厂）。"""
+        error = RouterRegistrationError.from_failures(
+            [{"module": "routes.ai_routes", "error": "ImportError: boom"}],
+            mode=MODE_LAZY,
+        )
+        assert error.mode == MODE_LAZY
+        assert error.failures[0]["module"] == "routes.ai_routes"
+        assert "routes.ai_routes" in str(error)
+
     def test_l2_circuit_breaker_disables_failing_module(
         self, mock_app, isolated_logs, monkeypatch
     ):
