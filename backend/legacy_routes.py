@@ -67,6 +67,7 @@ def register_all_routes(app):
     from routes import ai_edu_websocket_routes  # AI 教育 WebSocket 路由
     from routes import ai_tutor_routes  # AI 导师路由 (DeepSeek深度集成)
     from routes import error_log_routes  # 错误日志收集（前端兼容路径）
+    from routes import gamification_websocket_routes  # 【P3-A-2】游戏化 WebSocket
     from routes import learning_source_routes  # 路由已有 /api/v1 前缀
     from routes import opensciedu_routes  # OpenSciEDU 公共课程
     from routes import org_error_log_routes  # 组织级错误日志收集
@@ -128,6 +129,9 @@ def register_all_routes(app):
     app.include_router(ai_tutor_routes.router, tags=["AI编程导师"])
     app.include_router(ai_edu_websocket_routes.router,
                        tags=["AI 教育 WebSocket"])
+    # 【P3-A-2】游戏化 WebSocket 路由
+    app.include_router(gamification_websocket_routes.router,
+                       tags=["P3-A 游戏化 WebSocket"])
     app.include_router(ai_teacher_routes.router, tags=["AI 个性化教师"])
     app.include_router(vector_knowledge_routes.router, tags=["向量知识库"])
     app.include_router(local_knowledge_graph_routes.router, tags=["本地知识图谱"])

@@ -155,6 +155,7 @@ backend/routes/courseware_routes.py:W292:1
 backend/routes/creativity_routes.py:C901:1
 backend/routes/device_profile_routes.py:W504:1
 backend/routes/exam_routes.py:F541:1
+backend/routes/gamification_websocket_routes.py:C901:1
 backend/routes/hardware_alert_routes.py:B007:1
 backend/routes/hardware_alert_routes.py:F824:4
 backend/routes/hardware_module_routes.py:C901:1
@@ -239,6 +240,7 @@ backend/services/esp32_serial_service.py:B014:1
 backend/services/exam_service.py:C901:1
 backend/services/exam_service.py:F541:6
 backend/services/exam_service.py:W504:1
+backend/services/gamification_event_bus.py:C901:1
 backend/services/hardware_certification_service.py:C401:2
 backend/services/hidden_task_reward_system.py:B007:1
 backend/services/hidden_task_reward_system.py:F841:2

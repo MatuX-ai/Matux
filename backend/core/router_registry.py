@@ -16,24 +16,23 @@ ROUTER_TABLE 的 61 条口径（必须写进注释，否则下一个人又会数
 
     注：61 条按**模块**建表，share_routes 一条携带两个 router 对象，
         因此展开后的 include_router 调用数为 62
-        （share_routes 当前为 pending_integration，实际注册 57 次）。
+        （share_routes 当前为 pending_integration，实际注册 58 次）。
 
 生成方式（设计文档 §4.1 方案 C）：一次性脚本 AST 解析 legacy_routes.py +
 main_ai_edu.py 产出候选 -> 人工核对 -> 固化为静态表 -> CI 反向校验。
 本文件中的 module_path / router_attr / prefix / tags 全部来自 AST 实测值，
 不手写。
 
-白名单（issue #26 拍板，PR #27 commit 2 修正为 4 项）::
+白名单（issue #26 拍板，PR #27 commit 2 修正为 4 项，PR-E 修正为 3 项）::
 
     routes.ai_teacher_routes          依赖 backend/cache/ 未入库
     routes.ai_edu_websocket_routes    依赖 services/ai_teacher_live_settings.py 未入库
     routes.share_routes               模块在 WIP 树中存在，origin/main 尚未入库
-    routes.gamification_websocket_routes  模块在 WIP 树中存在，origin/main 尚未入库
 
     # pending_integration: 模块在 WIP 树中存在，origin/main 尚未入库
     # 移除条件：WIP 作者提交后，status 改回 active
 
-    四者标记 status="pending_integration"：register_all_routers 遇到时
+    三者标记 status="pending_integration"：register_all_routers 遇到时
     logger.warning + 跳过 + 记录到 logs/router_registration_report.json。
     对应 WIP 提交后把 status 改回 active，白名单即自动清空。
 
@@ -650,9 +649,8 @@ ROUTER_TABLE: Tuple[RouterSpec, ...] = (
         router_attr=("router",),
         prefix="",
         tags=("P3-A 游戏化 WebSocket",),
-        status="pending_integration",
+        status="active",
         mode="legacy",
-        note="模块在 WIP 树中存在，origin/main 尚未入库（issue #26）",
     ),
     RouterSpec(
         name="share",
