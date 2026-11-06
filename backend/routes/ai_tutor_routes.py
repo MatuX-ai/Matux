@@ -8,22 +8,20 @@ import logging
 import time
 from typing import Any, Dict, Optional
 
+from ai_service.ai_manager import AIManager
+from ai_service.hermes_agent_service import get_hermes_service
+from ai_service.hermes_mcp_tools import get_ai_tutor_tools
+from ai_service.models import CodeGenerationRequest
 from fastapi import (
     APIRouter,
     Depends,
     HTTPException,
 )
-from pydantic import BaseModel, Field
-
-from ..ai_service.ai_manager import AIManager
-from ..ai_service.hermes_agent_service import get_hermes_service
-from ..ai_service.hermes_mcp_tools import get_ai_tutor_tools
-from ..middleware.permission_middleware import get_current_user
-from ..models.ai_completion import (
+from middleware.auth import get_current_user
+from models.ai_completion import (
     CodeComplexity,
     CodeElement,
     CodeExample,
-    CodeGenerationRequest,
     DeepSeekExplainRequest,
     DeepSeekExplainResponse,
     DeepSeekOptimizeRequest,
@@ -33,7 +31,8 @@ from ..models.ai_completion import (
     ModelProvider,
     OptimizationImprovement,
 )
-from ..models.user import User
+from models.user import User
+from pydantic import BaseModel, Field
 
 logger = logging.getLogger(__name__)
 
