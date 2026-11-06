@@ -160,6 +160,16 @@ export class AiEduWebSocketService implements OnDestroy {
       return;
     }
 
+    // 【NaN 防御】userId/orgId 非法时直接放弃连接，避免 URL 拼出 /progress/NaN 路径。
+    if (!Number.isFinite(userId) || userId <= 0) {
+      console.warn('[WebSocket] 非法 userId，跳过连接:', userId);
+      return;
+    }
+    if (!Number.isFinite(orgId) || orgId <= 0) {
+      console.warn('[WebSocket] 非法 orgId，跳过连接:', orgId);
+      return;
+    }
+
     this.currentUserId = userId;
     this.currentOrgId = orgId;
 

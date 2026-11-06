@@ -255,6 +255,13 @@ export class StudentDashboardDataService implements OnDestroy {
 
         const userIdStr = String(user.id);
         const userIdNum = Number(userIdStr);
+        // 【NaN 防御】user.id 为非数字字符串（如 "test-user"）时 Number() 得到 NaN，
+        // 若继续传递会把 NaN 拼进 WebSocket URL 与后端请求路径。此处降级到 mock 快照，
+        // 不建立 WS 连接（不改变调用方契约：仍然会 emit 一个快照）。
+        if (!Number.isFinite(userIdNum) || userIdNum <= 0) {
+          console.warn('[student-dashboard-data] 非法 userId，跳过 WS 连接', user.id);
+          return this.buildSnapshotFromMock(user);
+        }
         return this.buildSnapshotFromApi(user, userIdStr, userIdNum);
       }),
       catchError((error) => {
@@ -526,6 +533,11 @@ export class StudentDashboardDataService implements OnDestroy {
    * 连接 WebSocket 监听进度更新
    */
   private connectWebSocket(userIdNum: number): void {
+    // 【NaN 防御】兜底：非法 userId 不建立 WS 连接，避免 URL 出现 /progress/NaN。
+    if (!Number.isFinite(userIdNum) || userIdNum <= 0) {
+      console.warn('[student-dashboard-data] 非法 userId，跳过 WS 连接', userIdNum);
+      return;
+    }
     if (this.wsConnected) {
       return;
     }

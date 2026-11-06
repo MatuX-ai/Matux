@@ -218,8 +218,16 @@ export class ARVRCoursePlayerComponent implements OnInit, AfterViewInit, OnDestr
       );
       if (!cached) return null;
       // 兼容存储格式：可能字段是 id 字符串而非 number
+      // 【NaN 防御】parseInt 对非法字符串会得到 NaN，若直接写回将污染课程对象
+      //   （后续拼接 URL 会变成 /arvr-courses/NaN）。这里丢弃非法缓存并返回 null，
+      //   由调用方降级到 HTTP 路径。
+      const parsedId = typeof cached.id === 'string' ? parseInt(cached.id, 10) : cached.id;
+      if (typeof parsedId === 'number' && !Number.isFinite(parsedId)) {
+        console.warn('[ARVRPlayer] 缓存课程 id 非法，已忽略:', cached.id);
+        return null;
+      }
       return {
-        id: typeof cached.id === 'string' ? parseInt(cached.id, 10) : cached.id,
+        id: parsedId,
         title: cached.title,
         description: cached.description,
         model_url: cached.model_url,

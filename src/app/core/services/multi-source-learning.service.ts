@@ -5,7 +5,7 @@
 
 import { HttpClient, HttpParams } from '@angular/common/http';
 import { Injectable } from '@angular/core';
-import { Observable, of } from 'rxjs';
+import { Observable, of, throwError } from 'rxjs';
 import { catchError } from 'rxjs/operators';
 
 import {
@@ -433,6 +433,10 @@ export class MultiSourceLearningService {
       params = params.set('include_inactive', 'true');
     }
 
+    // 【NaN 防御】userId 非法时禁止拼接，避免请求打到 /user/NaN 路径。
+    if (!Number.isFinite(userId) || userId <= 0) {
+      return throwError(() => new Error(`非法 userId: ${userId}`));
+    }
     const url = `${this.API_BASE}/learning-sources/user/${userId}`;
     return this.http.get<LearningSourceListResponse>(url, { params });
   }
@@ -457,6 +461,10 @@ export class MultiSourceLearningService {
    * 获取用户学习来源统计
    */
   getUserLearningSourceStats(userId: number): Observable<LearningSourceStats> {
+    // 【NaN 防御】userId 非法时禁止拼接，避免请求打到 /user/NaN 路径。
+    if (!Number.isFinite(userId) || userId <= 0) {
+      return throwError(() => new Error(`非法 userId: ${userId}`));
+    }
     const url = `${this.API_BASE}/learning-sources/user/${userId}/stats`;
     return this.http.get<LearningSourceStats>(url);
   }
@@ -501,6 +509,10 @@ export class MultiSourceLearningService {
       params = params.set('include_inactive', 'true');
     }
 
+    // 【NaN 防御】userId 非法时禁止拼接，避免请求打到 /user/NaN 路径。
+    if (!Number.isFinite(userId) || userId <= 0) {
+      return throwError(() => new Error(`非法 userId: ${userId}`));
+    }
     const url = `${this.API_BASE}/user-organizations/user/${userId}`;
     return this.http.get<UserOrganizationListResponse>(url, { params });
   }
@@ -550,6 +562,13 @@ export class MultiSourceLearningService {
    * 设置用户主组织
    */
   setPrimaryOrganization(userId: number, orgId: number): Observable<UserOrganization> {
+    // 【NaN 防御】userId/orgId 非法时禁止拼接，避免请求打到 /user/NaN 路径。
+    if (!Number.isFinite(userId) || userId <= 0) {
+      return throwError(() => new Error(`非法 userId: ${userId}`));
+    }
+    if (!Number.isFinite(orgId) || orgId <= 0) {
+      return throwError(() => new Error(`非法 orgId: ${orgId}`));
+    }
     const url = `${this.API_BASE}/user-organizations/user/${userId}/set-primary/${orgId}`;
     return this.http.post<UserOrganization>(url, {});
   }
@@ -558,6 +577,10 @@ export class MultiSourceLearningService {
    * 获取用户主组织
    */
   getUserPrimaryOrganization(userId: number): Observable<UserOrganization> {
+    // 【NaN 防御】userId 非法时禁止拼接，避免请求打到 /user/NaN 路径。
+    if (!Number.isFinite(userId) || userId <= 0) {
+      return throwError(() => new Error(`非法 userId: ${userId}`));
+    }
     const url = `${this.API_BASE}/user-organizations/user/${userId}/primary`;
     return this.http.get<UserOrganization>(url);
   }
@@ -566,6 +589,10 @@ export class MultiSourceLearningService {
    * 获取用户组织统计
    */
   getUserOrganizationStats(userId: number): Observable<UserOrganizationStats> {
+    // 【NaN 防御】userId 非法时禁止拼接，避免请求打到 /user/NaN 路径。
+    if (!Number.isFinite(userId) || userId <= 0) {
+      return throwError(() => new Error(`非法 userId: ${userId}`));
+    }
     const url = `${this.API_BASE}/user-organizations/user/${userId}/stats`;
     return this.http.get<UserOrganizationStats>(url);
   }
@@ -612,6 +639,10 @@ export class MultiSourceLearningService {
       params = params.set('status', options.status);
     }
 
+    // 【NaN 防御】userId 非法时禁止拼接，避免请求打到 /user/NaN 路径。
+    if (!Number.isFinite(userId) || userId <= 0) {
+      return throwError(() => new Error(`非法 userId: ${userId}`));
+    }
     const url = `${this.API_BASE}/unified-learning-records/user/${userId}`;
     return this.http.get<UnifiedLearningRecordListResponse>(url, { params });
   }
@@ -639,6 +670,10 @@ export class MultiSourceLearningService {
    * 获取用户跨来源学习进度统计
    */
   getUserUnifiedProgress(userId: number): Observable<UnifiedProgressStats> {
+    // 【NaN 防御】userId 非法时禁止拼接，避免请求打到 /user/NaN 路径。
+    if (!Number.isFinite(userId) || userId <= 0) {
+      return throwError(() => new Error(`非法 userId: ${userId}`));
+    }
     const url = `${this.API_BASE}/unified-learning/progress/${userId}`;
     return this.http.get<UnifiedProgressStats>(url);
   }

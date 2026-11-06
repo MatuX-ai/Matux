@@ -380,6 +380,20 @@ export class OpenSciEDUService {
    * 降级策略: API → IndexedDB 缓存 → Mock 数据
    */
   getCourseDetail(courseId: string): Observable<CourseDetail | null> {
+    // 【NaN 防御】courseId 非法时直接走 mock 降级，避免请求打到 /courses/NaN 路径。
+    // courseId 允许为非数字 slug，因此只拦截空值、NaN/undefined/null 字面量
+    // 以及数值溢出为 Infinity 的数字字面量。
+    const normalizedCourseId = (courseId ?? '').trim();
+    const numericCourseId = Number(normalizedCourseId);
+    const isNumericCourseId = /^[+-]?\d+(?:\.\d+)?(?:[eE][+-]?\d+)?$/.test(normalizedCourseId);
+    const isInvalidCourseId =
+      !normalizedCourseId ||
+      /^(nan|undefined|null)$/i.test(normalizedCourseId) ||
+      (isNumericCourseId && !Number.isFinite(numericCourseId));
+    if (isInvalidCourseId) {
+      return this.createMockServiceInstance().getCourseDetail(courseId);
+    }
+
     if (this.apiAvailable === false) {
       // 先尝试 IndexedDB 缓存，再降级到 Mock
       return this.cacheGet(`course_detail_${courseId}`).pipe(

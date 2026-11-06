@@ -17,7 +17,7 @@
 
 import { HttpClient } from '@angular/common/http';
 import { Injectable } from '@angular/core';
-import { BehaviorSubject, Observable, of } from 'rxjs';
+import { BehaviorSubject, Observable, of, throwError } from 'rxjs';
 import { catchError, switchMap, tap, timeout } from 'rxjs/operators';
 
 /**
@@ -93,10 +93,40 @@ export class AITeacherService {
     private emotionCompanion: EmotionalCompanionService
   ) {}
 
+  // ==================== 【NaN 防御】工具方法 ====================
+
+  /**
+   * userId 合法性判定。
+   *
+   * userId 为 string 类型（可能是用户名，如 "test-user"），因此只拦截三类脏值：
+   * 空值、Number(x) 为 NaN 的字面量（NaN / undefined / null），以及数值溢出为 Infinity 的数字字面量。
+   */
+  private isInvalidUserId(userId: string): boolean {
+    const normalized = (userId ?? '').trim();
+    if (!normalized || /^(nan|undefined|null)$/i.test(normalized)) {
+      return true;
+    }
+    return (
+      /^[+-]?\d+(?:\.\d+)?(?:[eE][+-]?\d+)?$/.test(normalized) &&
+      !Number.isFinite(Number(normalized))
+    );
+  }
+
+  /**
+   * 非法 userId 的统一错误流：保持 Observable 契约，调用方的 catchError 仍可正常兜底。
+   */
+  private invalidUserId<T>(userId: string): Observable<T> {
+    return throwError(() => new Error(`非法 userId: ${userId}`));
+  }
+
   // ==================== 学习画像 ====================
 
   /** 获取学生学习画像 */
   getProfile(userId: string): Observable<StudentLearningProfile> {
+    // 【NaN 防御】userId 非法时禁止拼接，避免请求打到 /profile/NaN 路径。
+    if (this.isInvalidUserId(userId)) {
+      return this.invalidUserId(userId);
+    }
     return this.http.get<StudentLearningProfile>(`${this.API_BASE}/profile/${userId}`).pipe(
       // 【P1 修复】统一 8s 超时兑底，跳进 catchError → mock。
       timeout(AI_TEACHER_HTTP_TIMEOUT_MS),
@@ -115,6 +145,10 @@ export class AITeacherService {
     userId: string,
     update: LearningProfileUpdateRequest
   ): Observable<StudentLearningProfile> {
+    // 【NaN 防御】userId 非法时禁止拼接，避免请求打到 /profile/NaN 路径。
+    if (this.isInvalidUserId(userId)) {
+      return this.invalidUserId(userId);
+    }
     return this.http
       .patch<StudentLearningProfile>(`${this.API_BASE}/profile/${userId}`, update)
       .pipe(
@@ -171,6 +205,10 @@ export class AITeacherService {
 
   /** 获取长期记忆 */
   getLongTermMemories(userId: string, query?: string): Observable<LongTermMemory[]> {
+    // 【NaN 防御】userId 非法时禁止拼接，避免请求打到 /memory/NaN 路径。
+    if (this.isInvalidUserId(userId)) {
+      return this.invalidUserId(userId);
+    }
     const params: Record<string, string> = query ? { query } : {};
     return this.http
       .get<LongTermMemory[]>(`${this.API_BASE}/memory/${userId}/long-term`, { params })
@@ -182,6 +220,10 @@ export class AITeacherService {
     userId: string,
     memory: Omit<LongTermMemory, 'id' | 'createdAt' | 'accessCount' | 'lastAccessedAt'>
   ): Observable<LongTermMemory> {
+    // 【NaN 防御】userId 非法时禁止拼接，避免请求打到 /memory/NaN 路径。
+    if (this.isInvalidUserId(userId)) {
+      return this.invalidUserId(userId);
+    }
     return this.http
       .post<LongTermMemory>(`${this.API_BASE}/memory/${userId}/long-term`, memory)
       .pipe(
@@ -199,6 +241,10 @@ export class AITeacherService {
 
   /** 获取/创建会话记忆 */
   getOrCreateSession(userId: string): Observable<SessionMemory> {
+    // 【NaN 防御】userId 非法时禁止拼接，避免请求打到 /session/NaN 路径。
+    if (this.isInvalidUserId(userId)) {
+      return this.invalidUserId(userId);
+    }
     const existing = this.sessionSubject.value;
     if (existing && existing.userId === userId) {
       return of(existing);
@@ -348,6 +394,10 @@ export class AITeacherService {
 
   /** 获取成长轨迹 */
   getGrowthTrajectory(userId: string, months: number = 6): Observable<GrowthTrajectory> {
+    // 【NaN 防御】userId 非法时禁止拼接，避免请求打到 /growth/NaN 路径。
+    if (this.isInvalidUserId(userId)) {
+      return this.invalidUserId(userId);
+    }
     return this.http
       .get<GrowthTrajectory>(`${this.API_BASE}/growth/${userId}`, { params: { months } })
       .pipe(
@@ -366,6 +416,10 @@ export class AITeacherService {
 
   /** 获取教学建议 */
   getTeachingSuggestions(userId: string): Observable<TeachingSuggestion[]> {
+    // 【NaN 防御】userId 非法时禁止拼接，避免请求打到 /suggestions/NaN 路径。
+    if (this.isInvalidUserId(userId)) {
+      return this.invalidUserId(userId);
+    }
     return this.http.get<TeachingSuggestion[]>(`${this.API_BASE}/suggestions/${userId}`).pipe(
       // 【P1 修复】统一超时兑底 → mock
       timeout(AI_TEACHER_HTTP_TIMEOUT_MS),
@@ -380,6 +434,10 @@ export class AITeacherService {
 
   /** 获取每日学习建议 */
   getDailySuggestion(userId: string): Observable<DailyLearningSuggestion> {
+    // 【NaN 防御】userId 非法时禁止拼接，避免请求打到 /daily-suggestion/NaN 路径。
+    if (this.isInvalidUserId(userId)) {
+      return this.invalidUserId(userId);
+    }
     return this.http
       .get<DailyLearningSuggestion>(`${this.API_BASE}/daily-suggestion/${userId}`)
       .pipe(
@@ -634,6 +692,10 @@ export class AITeacherService {
    * 获取主动教学建议（结合API和本地诊断）
    */
   getActiveTeachingSuggestions(userId: string): Observable<TeachingSuggestion[]> {
+    // 【NaN 防御】userId 非法时禁止拼接，避免请求打到 /active-suggestions/NaN 路径。
+    if (this.isInvalidUserId(userId)) {
+      return this.invalidUserId(userId);
+    }
     const profile = this.profileSubject.value;
     const knowledgeState = this.knowledgeStateSubject.value;
 
@@ -667,6 +729,10 @@ export class AITeacherService {
 
   /** 获取知识状态 */
   getKnowledgeState(userId: string): Observable<KnowledgeStateItem[]> {
+    // 【NaN 防御】userId 非法时禁止拼接，避免请求打到 /knowledge-state/NaN 路径。
+    if (this.isInvalidUserId(userId)) {
+      return this.invalidUserId(userId);
+    }
     return this.http.get<KnowledgeStateItem[]>(`${this.API_BASE}/knowledge-state/${userId}`).pipe(
       tap((state) => this.knowledgeStateSubject.next(state)),
       catchError(() => {
@@ -681,6 +747,10 @@ export class AITeacherService {
 
   /** 获取人格配置 */
   getPersona(userId: string): Observable<TeacherPersona> {
+    // 【NaN 防御】userId 非法时禁止拼接，避免请求打到 /persona/NaN 路径。
+    if (this.isInvalidUserId(userId)) {
+      return this.invalidUserId(userId);
+    }
     return this.http.get<TeacherPersona>(`${this.API_BASE}/persona/${userId}`).pipe(
       tap((persona) => this.personaSubject.next(persona)),
       catchError(() => of(this.personaSubject.value))
@@ -689,6 +759,10 @@ export class AITeacherService {
 
   /** 更新人格配置 */
   updatePersona(userId: string, persona: Partial<TeacherPersona>): Observable<TeacherPersona> {
+    // 【NaN 防御】userId 非法时禁止拼接，避免请求打到 /persona/NaN 路径。
+    if (this.isInvalidUserId(userId)) {
+      return this.invalidUserId(userId);
+    }
     const updated = { ...this.personaSubject.value, ...persona };
     this.personaSubject.next(updated);
     return this.http
@@ -698,6 +772,10 @@ export class AITeacherService {
 
   /** 重置AI教师记忆 */
   resetMemory(userId: string): Observable<{ success: boolean }> {
+    // 【NaN 防御】userId 非法时禁止拼接，避免请求打到 /memory/NaN 路径。
+    if (this.isInvalidUserId(userId)) {
+      return this.invalidUserId(userId);
+    }
     this.sessionSubject.next(null);
     return this.http
       .delete<{ success: boolean }>(`${this.API_BASE}/memory/${userId}`)
