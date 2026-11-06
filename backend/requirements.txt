@@ -22,6 +22,7 @@ openpyxl==3.1.2
 xlrd==2.0.1
 # 许可证管理系统依赖
 redis==5.0.1
+aiosqlite==0.22.1
 sqlalchemy==2.0.23
 alembic==1.12.1
 pyjwt==2.8.0
@@ -34,7 +35,9 @@ pillow==10.2.0
 python-magic==0.4.27
 
 # 文档处理依赖
-pdfminer.six==20231228
+PyMuPDF==1.27.2.2
+beautifulsoup4==4.14.3
+reportlab==4.2.5
 python-docx==0.8.11
 python-pptx==0.6.23
 markdown==3.5.2
