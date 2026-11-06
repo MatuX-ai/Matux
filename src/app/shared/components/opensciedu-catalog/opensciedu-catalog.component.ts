@@ -128,6 +128,8 @@ export class OpenscieduCatalogComponent implements OnInit, OnDestroy {
       .subscribe({
         next: (categories) => {
           this.categories = categories;
+          // 【CD 防御】异步回调后显式标记检查，避免将来迁回 zoneless 时视图不刷新。
+          this.cdr.markForCheck();
         },
         error: (err) => {
           console.error('加载分类失败:', err);
@@ -136,9 +138,11 @@ export class OpenscieduCatalogComponent implements OnInit, OnDestroy {
           mock.getCategories().subscribe({
             next: (fallbackCategories: CourseCategory[]) => {
               this.categories = fallbackCategories;
+              this.cdr.markForCheck();
             },
             error: () => {
               this.categories = [];
+              this.cdr.markForCheck();
             },
           });
         },
@@ -189,11 +193,15 @@ export class OpenscieduCatalogComponent implements OnInit, OnDestroy {
           }
           this.isLoading = false;
           console.log('[OpenSciEDU Catalog] isLoading 设置为 false');
+          // 【CD 防御】课程数据到位后显式标记检查，避免将来迁回 zoneless 时视图不刷新。
+          this.cdr.markForCheck();
         },
         error: (err) => {
           console.error('[OpenSciEDU Catalog] 加载失败:', err);
           this.error = '加载课程失败，请稍后重试';
           this.isLoading = false;
+          // 【CD 防御】错误态同样需要刷新，否则 spinner 会一直转。
+          this.cdr.markForCheck();
         },
         // 【P2-3 修复】complete 是服务中 mock fallback 返回 of(...) 后会自然 complete，
         //   这不影响状态。
@@ -274,11 +282,13 @@ export class OpenscieduCatalogComponent implements OnInit, OnDestroy {
           this.totalCourses = response.total;
           this.hasNextPage = response.courses.length >= this.pageSize;
           this.isLoading = false;
+          this.cdr.markForCheck();
         },
         error: (err) => {
           this.error = '搜索失败，请稍后重试';
           this.isLoading = false;
           console.error('搜索失败:', err);
+          this.cdr.markForCheck();
         },
       });
   }

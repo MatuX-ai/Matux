@@ -218,6 +218,15 @@ export class DigitalTwinLabComponent implements OnInit, OnDestroy {
   }
 
   private loadSession(): void {
+    // 【防御】sessionId 缺失时禁止拼接，避免请求打到 /digital-twin/sessions//participants
+    // 这类非法路径（后端返回 404，错误信息也无法定位真正原因）。
+    if (!this.sessionId) {
+      console.warn('[DigitalTwinLab] sessionId 缺失，跳过会话加载');
+      this.errorMessage = '会话 ID 缺失';
+      this.isLoading = false;
+      this.cdr.markForCheck();
+      return;
+    }
     this.http
       .get<SessionInfo>(`${this.baseUrl}/digital-twin/sessions/${this.sessionId}`)
       .subscribe({
@@ -372,6 +381,15 @@ export class DigitalTwinLabComponent implements OnInit, OnDestroy {
     }
 
     this.websocketState = this.wsReconnectAttempts > 0 ? 'reconnecting' : 'connecting';
+
+    // 【防御】sessionId 缺失时禁止拼接，避免 WS 连接到 /ws/session/?user_id=... 非法路径。
+    if (!this.sessionId) {
+      console.warn('[DigitalTwinLab] sessionId 缺失，跳过 WebSocket 连接');
+      this.websocketState = 'failed';
+      this.isConnected = false;
+      this.cdr.markForCheck();
+      return;
+    }
 
     const wsUrl = `ws://${window.location.host}/api/v1/digital-twin/ws/session/${this.sessionId}?user_id=user_${Math.random()}`;
 
@@ -632,6 +650,10 @@ export class DigitalTwinLabComponent implements OnInit, OnDestroy {
 
   // 获取会话信息
   getSessionDetails(): void {
+    // 【防御】sessionId 缺失时禁止拼接，避免请求打到 /participants 空路径。
+    if (!this.sessionId) {
+      return;
+    }
     this.http
       .get<{
         participant_count: number;

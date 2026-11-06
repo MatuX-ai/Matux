@@ -1,5 +1,5 @@
 import { HTTP_INTERCEPTORS, HttpClientModule } from '@angular/common/http';
-import { NgModule } from '@angular/core';
+import { NgModule, provideZoneChangeDetection } from '@angular/core';
 import { ReactiveFormsModule } from '@angular/forms';
 import { MatButtonModule } from '@angular/material/button';
 import { MatCardModule } from '@angular/material/card';
@@ -71,6 +71,9 @@ import { AppRoutingModule } from './app-routing.module';
     }),
   ],
   providers: [
+    // 【CD 止血】Angular 21 默认注入 zoneless CD，zone 时代写法（subscribe 回调直接改字段）
+    // 不会触发变更检测。此处显式恢复 zone 驱动 CD，后续再按 Issue G 的四阶段迁移回 zoneless。
+    provideZoneChangeDetection({ eventCoalescing: true, runCoalescing: true }),
     {
       provide: HTTP_INTERCEPTORS,
       useClass: HttpAuthInterceptor,

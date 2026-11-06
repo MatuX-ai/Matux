@@ -152,6 +152,10 @@ export class CollaborativeEditorComponent implements OnInit, OnDestroy {
   ) {}
 
   ngOnInit(): void {
+    // 【防御】userId 若为 NaN / Infinity，不应被拼接进任何请求路径。
+    if (typeof this.userId === 'number' && !Number.isFinite(this.userId)) {
+      console.warn('[CollaborativeEditor] userId 非法:', this.userId);
+    }
     this.loadDocument();
     this.setupAutoSync();
   }
@@ -169,7 +173,18 @@ export class CollaborativeEditorComponent implements OnInit, OnDestroy {
   }
 
   loadDocument(): void {
-    if (!this.documentId || !this.orgId || !this.courseId) {
+    // 【防御】原有的 `!x` 判断拦不住 Infinity（NaN 为 falsy 能被拦下），
+    // 会拼出 /org/Infinity/courses/NaN 这类非法路径，因此改用 Number.isFinite。
+    if (
+      !Number.isFinite(this.documentId) ||
+      !Number.isFinite(this.orgId) ||
+      !Number.isFinite(this.courseId)
+    ) {
+      console.warn('[CollaborativeEditor] 文档/组织/课程 id 非法，跳过加载', {
+        documentId: this.documentId,
+        orgId: this.orgId,
+        courseId: this.courseId,
+      });
       return;
     }
 

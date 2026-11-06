@@ -19,12 +19,30 @@ const SALT_LEN = 16;
 const IV_LEN = 12;
 
 /**
+ * 非法 userId 字面量：这些字符串通常是 Number(x) 得到 NaN 之后的字符串化产物。
+ */
+const INVALID_USER_ID_LITERALS = new Set(['nan', 'undefined', 'null']);
+
+/**
  * 从用户标识派生加密密钥
  *
  * 使用 userId 作为密钥派生材料，确保不同用户密钥不同
  * 注意：这主要防御被动读取，不防御主动 XSS
  */
 async function deriveKey(userId: string): Promise<CryptoKey> {
+  // 【NaN 防御】userId 非法时盐值会静默退化为固定字符串，导致不同用户派生出同一密钥
+  //   → 静默数据错乱（比 404 更危险）。此处直接拒绝，避免脏数据进入加解密链路。
+  const normalizedUserId = (userId ?? '').trim();
+  const numericUserId = Number(normalizedUserId);
+  const isNumericLiteral = /^[+-]?\d+(?:\.\d+)?(?:[eE][+-]?\d+)?$/.test(normalizedUserId);
+  const isInvalidUserId =
+    !normalizedUserId ||
+    INVALID_USER_ID_LITERALS.has(normalizedUserId.toLowerCase()) ||
+    (isNumericLiteral && !Number.isFinite(numericUserId));
+  if (isInvalidUserId) {
+    throw new Error('非法 userId，无法派生盐值');
+  }
+
   const enc = new TextEncoder();
   const keyMaterial = await crypto.subtle.importKey('raw', enc.encode(userId), DERIVE_ALG, false, [
     'deriveKey',
