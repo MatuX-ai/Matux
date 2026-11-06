@@ -561,10 +561,6 @@ class TestEntryIntegration:
 class TestEntryWiring:
     """T4：入口必须通过 register_all_routers 接线（替代旧的「源码 include_router 列表」断言）。"""
 
-    @pytest.mark.xfail(
-        reason="PR-C1 阶段入口尚未收敛到 register_all_routers；PR-B commit 4（4a）落地后取消本 xfail",
-        strict=True,
-    )
     def test_t4_main_ai_edu_uses_register_all_routers(self):
         """T4：main_ai_edu.py 必须调用 register_all_routers(mode=...)。"""
         source = (BACKEND_DIR / "main_ai_edu.py").read_text(encoding="utf-8")
@@ -576,7 +572,7 @@ class TestEntryWiring:
         )
 
     @pytest.mark.xfail(
-        reason="PR-C1 阶段入口尚未收敛到 register_all_routers；PR-B commit 4（4a）落地后取消本 xfail",
+        reason="PR-C1 阶段入口尚未收敛到 register_all_routers；main.py 属 4b 范围，4b 落地后取消本 xfail",
         strict=True,
     )
     def test_t4_main_uses_register_all_routers(self):

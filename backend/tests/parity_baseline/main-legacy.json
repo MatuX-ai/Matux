@@ -1,7 +1,7 @@
 {
   "entry": "main_legacy",
-  "generated_from_commit": "9172c0a35d8398bab3e2ddac2a12205801f3165f",
-  "source": "git archive origin/main backend/ (LF, no CRLF)",
+  "generated_from_commit": "c0c49f00857a04fcb62573b1382b79abf013ac56",
+  "source": "git archive fix/main-edu-router-registry-20261106 backend/ (LF, no CRLF)",
   "stubs_injected": [
     "services.ai_teacher_live_settings",
     "services.ai_teacher_event_bus",
