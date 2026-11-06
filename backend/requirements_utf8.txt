@@ -21,6 +21,7 @@ openpyxl==3.1.2
 xlrd==2.0.1
 # 许可证管理系统依赖
 redis==5.0.1
+aiosqlite==0.22.1
 sqlalchemy==2.0.23
 alembic==1.12.1
 pyjwt==2.8.0
