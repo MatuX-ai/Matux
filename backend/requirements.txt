@@ -48,6 +48,10 @@ trimesh==4.0.8
 numpy-stl==3.1.0
 pygltflib==1.16.2
 
+# AR/VR 手势识别与系统资源监控依赖
+opencv-python-headless==4.10.0.84  # cv2：AR 手势识别模块（headless 版不依赖 GUI 动态库）
+psutil==5.9.8  # CPU/内存等系统资源采集
+
 # AI代码补全系统依赖
 langchain==0.1.20
 langchain-community==0.0.38

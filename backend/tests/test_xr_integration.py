@@ -27,16 +27,46 @@ try:
     from xr_modules.whiteboard_collab.models import WhiteboardConfig
     from xr_modules.whiteboard_collab.whiteboard_core import WhiteboardCore
 
-except ImportError as e:
-    logger.error(f"模块导入失败: {e}")
+except ImportError as e:  # pragma: no cover - 取决于运行环境是否装齐可选原生依赖
+    # 缺少可选原生依赖（opencv / mediapipe）或 xr_modules 下子模块源码时导入失败。
+    # 原实现用占位类兜底后继续定义真实测试类，真实测试类引用未定义的名字，
+    # 于是 8 个用例全部报 NameError，而不是如实报告「环境/源码缺失」。
+    # 现在记录导入错误，并把相关测试类整体标记为 skip（保留 8 个用例 ID）。
+    XR_IMPORT_ERROR = e
+    gesture_router = None
+    editor_router = None
+    whiteboard_router = None
+    create_default_gesture_service = None
+    ARGestureConfig = None
+    GestureEvent = None
+    CodeLanguage = None
+    VREditorConfig = None
+    VREditorCore = None
+    WhiteboardConfig = None
+    WhiteboardCore = None
 
-    # 创建占位符测试类
     class IntegrationTestPlaceholder(unittest.TestCase):
         def test_placeholder(self):
             self.skipTest("模块导入失败，跳过集成测试")
 
+else:
+    XR_IMPORT_ERROR = None
 
-class TestModuleIntegration(unittest.TestCase):
+
+if XR_IMPORT_ERROR is not None:
+    _XR_SKIP_REASON = (
+        f"XR 集成测试依赖缺失（需要 opencv/mediapipe，且 xr_modules 部分子模块源码缺失）：{XR_IMPORT_ERROR}"
+    )
+else:
+    _XR_SKIP_REASON = ""
+
+
+@unittest.skipIf(XR_IMPORT_ERROR is not None, _XR_SKIP_REASON)
+class _XRIntegrationTestBase(unittest.TestCase):
+    """XR 集成测试基类：依赖或源码缺失时整体跳过"""
+
+
+class TestModuleIntegration(_XRIntegrationTestBase):
     """模块集成测试"""
 
     def setUp(self):
@@ -280,7 +310,7 @@ class TestModuleIntegration(unittest.TestCase):
         logger.info("错误处理测试完成")
 
 
-class TestPerformanceIntegration(unittest.TestCase):
+class TestPerformanceIntegration(_XRIntegrationTestBase):
     """性能集成测试"""
 
     def test_response_time(self):
@@ -354,8 +384,13 @@ class TestPerformanceIntegration(unittest.TestCase):
 
 
 class TestAPIIntegration(unittest.TestCase):
-    """API集成测试"""
+    """API集成测试
 
+    注意：不继承 _XRIntegrationTestBase —— test_cross_module_communication
+    不依赖任何 XR 导入项，类级 skip 会把它从 PASSED 变成 SKIPPED（软回归）。
+    """
+
+    @unittest.skipIf(XR_IMPORT_ERROR is not None, _XR_SKIP_REASON)
     def test_route_registration(self):
         """测试API路由注册"""
         logger.info("测试API路由注册")

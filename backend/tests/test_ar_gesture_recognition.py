@@ -24,16 +24,42 @@ try:
         HandLandmark,
         HandSide,
     )
-except ImportError as e:
-    print(f"导入测试模块失败: {e}")
+except ImportError as e:  # pragma: no cover - 取决于运行环境是否装齐可选原生依赖
+    # 缺少可选原生依赖（mediapipe / opencv）时导入失败。
+    # 原实现用占位类兜底后继续定义真实测试类，真实测试类引用未定义的名字，
+    # 于是 19 个用例全部报 NameError，而不是如实报告「环境缺失」。
+    # 现在记录导入错误，并把相关测试类整体标记为 skip（保留 19 个用例 ID）。
+    XR_IMPORT_ERROR = e
+    ARGestureService = None
+    GestureDetector = None
+    GestureMapper = None
+    GestureProcessor = None
+    HandTracker = None
+    ARGestureConfig = None
+    GestureEvent = None
+    GestureRecognitionResult = None
+    GestureType = None
+    HandDetectionResult = None
+    HandLandmark = None
+    HandSide = None
 
-    # 创建占位符类用于测试
     class PlaceholderTest(unittest.TestCase):
         def test_placeholder(self):
-            self.skipTest("模块导入失败，跳过测试")
+            self.skipTest("模块导入失败，跳过单元测试")
+
+else:
+    XR_IMPORT_ERROR = None
 
 
-class TestModels(unittest.TestCase):
+@unittest.skipIf(
+    XR_IMPORT_ERROR is not None,
+    f"AR 手势识别可选原生依赖缺失（需要 mediapipe<1.0 与 opencv）：{XR_IMPORT_ERROR}",
+)
+class _XRGestureTestBase(unittest.TestCase):
+    """AR 手势识别测试基类：可选原生依赖缺失时整体跳过"""
+
+
+class TestModels(_XRGestureTestBase):
     """测试数据模型"""
 
     def test_gesture_type_enum(self):
@@ -58,7 +84,7 @@ class TestModels(unittest.TestCase):
         self.assertTrue(config.enable_multi_hand)
 
 
-class TestHandTracker(unittest.TestCase):
+class TestHandTracker(_XRGestureTestBase):
     """测试手部追踪器"""
 
     def setUp(self):
@@ -99,7 +125,7 @@ class TestHandTracker(unittest.TestCase):
         self.assertEqual(landmarks[0].x, 0.5)
 
 
-class TestGestureDetector(unittest.TestCase):
+class TestGestureDetector(_XRGestureTestBase):
     """测试手势检测器"""
 
     def setUp(self):
@@ -146,7 +172,7 @@ class TestGestureDetector(unittest.TestCase):
         self.assertIsInstance(finger_states, dict)
 
 
-class TestGestureProcessor(unittest.TestCase):
+class TestGestureProcessor(_XRGestureTestBase):
     """测试手势处理器"""
 
     def setUp(self):
@@ -225,7 +251,7 @@ class TestGestureProcessor(unittest.TestCase):
         self.assertIsNone(event2)  # 应该被过滤
 
 
-class TestGestureMapper(unittest.TestCase):
+class TestGestureMapper(_XRGestureTestBase):
     """测试手势映射器"""
 
     def setUp(self):
@@ -285,7 +311,7 @@ class TestGestureMapper(unittest.TestCase):
         )
 
 
-class TestARGestureService(unittest.TestCase):
+class TestARGestureService(_XRGestureTestBase):
     """测试AR手势识别服务"""
 
     def setUp(self):
