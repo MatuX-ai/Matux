@@ -1,7 +1,7 @@
 """core/router_registry.py 单元测试（PR-B commit 1）。
 
 覆盖范围：
-- ROUTER_TABLE 静态表结构约束（61 条 / 2 条白名单 / 唯一性 / 合法性）
+- ROUTER_TABLE 静态表结构约束（61 条 / 4 条白名单 / 唯一性 / 合法性）
 - register_all_routers 正常路径（mock app 记录 include_router 调用）
 - 三级失败策略：L0 致命 / L1 降级 / L2 熔断
 - 条件开关与白名单的跳过语义
@@ -114,16 +114,16 @@ class TestRouterTable:
         """总表必须是 61 条（issue #21 的并集口径）。"""
         assert len(ROUTER_TABLE) == 61
 
-    def test_pending_integration_count_is_2(self):
-        """白名单恰好 2 项（issue #26 拍板）。"""
+    def test_pending_integration_count_is_4(self):
+        """白名单恰好 4 项（issue #26 拍板 + PR #27 commit 2 修正）。"""
         pending = [
             spec for spec in ROUTER_TABLE if spec.status == STATUS_PENDING_INTEGRATION
         ]
-        assert len(pending) == 2
+        assert len(pending) == 4
 
-    def test_active_count_is_59(self):
-        """其余 59 项为 active。"""
-        assert len(active_specs()) == 59
+    def test_active_count_is_57(self):
+        """其余 57 项为 active。"""
+        assert len(active_specs()) == 57
 
     def test_names_are_unique(self):
         names = [spec.name for spec in ROUTER_TABLE]
@@ -138,10 +138,12 @@ class TestRouterTable:
         assert len(set(keys)) == len(keys)
 
     def test_whitelist_matches_issue26(self):
-        """白名单内容与 issue #26 的拍板完全一致。"""
+        """白名单内容与 issue #26 拍板 + commit 2 修正完全一致（4 项）。"""
         assert set(pending_integration_modules()) == {
             "routes.ai_teacher_routes",
             "routes.ai_edu_websocket_routes",
+            "routes.share_routes",
+            "routes.gamification_websocket_routes",
         }
 
     def test_pending_specs_carry_note(self):
@@ -192,11 +194,11 @@ class TestRegisterAllRouters:
         report = register_all_routers(mock_app)
 
         assert report.total == 61
-        assert len(report.succeeded) == 59
+        assert len(report.succeeded) == 57
         assert not report.failed
         assert not report.disabled
-        # share_routes 贡献 2 个 router 对象 -> 60 次 include_router
-        assert len(mock_app.calls) == 60
+        # share_routes 已转 pending_integration -> 57 次 include_router
+        assert len(mock_app.calls) == 57
 
     def test_pending_specs_are_skipped_with_warning(
         self, mock_app, stub_import, isolated_logs, conditions_on, caplog
@@ -204,13 +206,15 @@ class TestRegisterAllRouters:
         with caplog.at_level(logging.WARNING, logger="core.router_registry"):
             report = register_all_routers(mock_app)
 
-        assert len(report.skipped) == 2
+        assert len(report.skipped) == 4
         skipped_modules = {item["module"] for item in report.skipped}
         assert skipped_modules == set(pending_integration_modules())
         assert "待集成" in caplog.text
         # 白名单模块不得被注册
         assert "routes.ai_teacher_routes" not in mock_app.modules()
         assert "routes.ai_edu_websocket_routes" not in mock_app.modules()
+        assert "routes.share_routes" not in mock_app.modules()
+        assert "routes.gamification_websocket_routes" not in mock_app.modules()
 
     def test_condition_disabled_is_skipped(
         self, mock_app, stub_import, isolated_logs, monkeypatch
@@ -219,8 +223,8 @@ class TestRegisterAllRouters:
 
         report = register_all_routers(mock_app)
 
-        # 2 条白名单 + 4 条条件未启用
-        assert len(report.skipped) == 6
+        # 4 条白名单 + 4 条条件未启用
+        assert len(report.skipped) == 8
         reasons = {item["reason"] for item in report.skipped}
         assert any(reason.endswith("=False") for reason in reasons)
 
@@ -239,7 +243,7 @@ class TestRegisterAllRouters:
         report = register_all_routers(mock_app, exclude=["auth"])
 
         assert "routes.auth_routes" not in mock_app.modules()
-        assert len(report.succeeded) == 58
+        assert len(report.succeeded) == 56
 
     def test_lazy_mode_only_registers_lazy_and_both(
         self, mock_app, stub_import, isolated_logs, conditions_on
@@ -283,7 +287,7 @@ class TestFailureStrategy:
         assert report.failed[0]["module"] == "routes.ai_routes"
         assert "ImportError" in report.failed[0]["error"]
         # 其余条目照常注册
-        assert len(report.succeeded) == 58
+        assert len(report.succeeded) == 56
         assert "路由注册失败" in caplog.text
 
     def test_l1_failure_counter_is_persisted(
@@ -370,9 +374,9 @@ class TestFailureStrategy:
         data = json.loads(report_path.read_text(encoding="utf-8"))
         assert data["mode"] == MODE_LEGACY
         assert data["total"] == 61
-        assert data["succeeded"] == 59
+        assert data["succeeded"] == 57
         assert data["failed"] == []
-        assert len(data["skipped"]) == 2
+        assert len(data["skipped"]) == 4
         assert "generated_at" in data
         assert "duration_ms" in data
 
@@ -399,7 +403,8 @@ def test_active_specs_with_source_file_import_successfully():
 
     判定规则不含硬编码名单：仅当模块源文件确实存在于 backend/ 下时才要求
     导入成功。尚未入库的模块（share_routes、gamification_websocket_routes）
-    会被跳过 —— 它们随 WIP 提交入库后自动纳入本用例的校验范围。
+    已标记 pending_integration，不在 active_specs() 内 —— 它们随 WIP 提交
+    入库并把 status 改回 active 后自动纳入本用例的校验范围。
     """
     checked = 0
     for spec in active_specs():
