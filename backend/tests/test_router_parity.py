@@ -117,6 +117,15 @@ MODE_SCOPE = {
     MODE_LAZY: (MODE_LAZY, MODE_BOTH),
 }
 
+#: register_all_routers 的 mode 常量名 -> 规范值
+#: 入口既可能写 mode="lazy"，也可能写 mode=MODE_LAZY，两种写法都必须被识别，
+#: 否则 4a 一旦采用常量写法，兼容性断言会误报为「mode 不匹配」。
+MODE_CONSTANTS = {
+    "MODE_LEGACY": MODE_LEGACY,
+    "MODE_LAZY": MODE_LAZY,
+    "MODE_BOTH": MODE_BOTH,
+}
+
 #: 白名单（一）：模块在 WIP 树中存在，origin/main 尚未入库 -> 入口源码里找不到
 PENDING_MODULE_MISSING = frozenset(
     {
@@ -277,11 +286,28 @@ def detect_entry_form(entry_file: Path) -> str:
     return FORM_UNKNOWN
 
 
+def _resolve_mode_value(node: ast.AST) -> str:
+    """把 mode 表达式解析为规范字符串。
+
+    - 字符串字面量 -> 其值（``mode="lazy"``）
+    - ``MODE_LEGACY`` / ``MODE_LAZY`` / ``MODE_BOTH`` 常量引用（含
+      ``router_registry.MODE_LAZY`` 属性写法）-> 对应的规范值
+    - 其他表达式 -> 源码文本（断言会失败并给出可读信息）
+    """
+    if isinstance(node, ast.Constant):
+        return str(node.value)
+    if isinstance(node, ast.Name):
+        return MODE_CONSTANTS.get(node.id, ast.unparse(node))
+    if isinstance(node, ast.Attribute):
+        return MODE_CONSTANTS.get(node.attr, ast.unparse(node))
+    return ast.unparse(node)
+
+
 def _register_modes(entry_file: Path) -> List[Optional[str]]:
     """提取入口源码中 register_all_routers(...) 的 mode 参数列表。
 
     未显式传 mode 时按 register_all_routers 的默认值 MODE_LEGACY 处理；
-    mode 参数不是字面量时返回其源码文本。
+    mode 参数为字面量或 MODE_* 常量时解析为规范值，其他表达式返回其源码文本。
     """
     tree = _parse_module(entry_file)
     modes: List[Optional[str]] = []
@@ -301,10 +327,7 @@ def _register_modes(entry_file: Path) -> List[Optional[str]]:
         for keyword in node.keywords:
             if keyword.arg != "mode":
                 continue
-            if isinstance(keyword.value, ast.Constant):
-                mode = keyword.value.value
-            else:
-                mode = ast.unparse(keyword.value)
+            mode = _resolve_mode_value(keyword.value)
         modes.append(mode)
     return modes
 

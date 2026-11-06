@@ -95,6 +95,34 @@ def _write_registry_source(path: Path, mode: str) -> None:
     )
 
 
+def _write_registry_source_with_constant(path: Path, mode_const: str) -> None:
+    """生成「只有 register_all_routers、mode 用常量表示」的 mock 入口源码。"""
+    lines = [
+        '"""mock：只有 register_all_routers 的入口源码（mode 用常量）。"""',
+        "",
+        "from core.router_registry import %s, register_all_routers" % mode_const,
+        "",
+        "app = object()",
+        "",
+        "register_all_routers(app, mode=%s)" % mode_const,
+    ]
+    path.write_text("\n".join(lines) + "\n", encoding="utf-8", newline="\n")
+
+
+def _write_registry_source_with_attribute(path: Path, mode: str) -> None:
+    """生成「通过 router_registry 属性调用 register_all_routers」的 mock 入口源码。"""
+    lines = [
+        '"""mock：通过 router_registry 属性调用 register_all_routers 的入口源码。"""',
+        "",
+        "from core import router_registry",
+        "",
+        "app = object()",
+        "",
+        'router_registry.register_all_routers(app, mode="%s")' % mode,
+    ]
+    path.write_text("\n".join(lines) + "\n", encoding="utf-8", newline="\n")
+
+
 def _write_mixed_source(path: Path) -> None:
     """生成「混合形态」的 mock 入口源码（两种调用并存）。"""
     path.write_text(
@@ -161,9 +189,17 @@ class TestDetectEntryForm:
         assert detect_entry_form(source) == FORM_UNKNOWN
 
     def test_real_entries_are_detected(self):
-        """真实入口当前仍是 legacy_inline 形态（4a / 4b 落地后会自动切换）。"""
-        assert detect_entry_form(LEGACY_ROUTES_FILE) == FORM_LEGACY_INLINE
-        assert detect_entry_form(AI_EDU_MAIN_FILE) == FORM_LEGACY_INLINE
+        """真实入口必须处于受支持形态（legacy_inline 或 registry）。
+
+        4a / 4b 会把入口从 legacy_inline 切到 registry，因此本断言只锁定
+        「不得是 mixed / unknown」，不锁定具体形态 —— 形态演进时无需改测试。
+        """
+        for entry_file in (LEGACY_ROUTES_FILE, AI_EDU_MAIN_FILE):
+            form = detect_entry_form(entry_file)
+            assert form in (FORM_LEGACY_INLINE, FORM_REGISTRY), "%s 处于不受支持的入口形态: %s" % (
+                entry_file.name,
+                form,
+            )
 
 
 # ==================== legacy_inline 分支 ====================
@@ -250,6 +286,34 @@ class TestRegistryBranch:
         """main_ai_edu 侧写成 mode="legacy" -> 断言失败。"""
         source = tmp_path / "mock_registry_only.py"
         _write_registry_source(source, side_entry_mode(SIDE_LEGACY))
+        with pytest.raises(AssertionError):
+            assert_entry_covers_table(source, SIDE_AI_EDU)
+
+    def test_registry_accepts_constant_mode(self, tmp_path):
+        """mode 用常量表示（mode=MODE_LEGACY）-> 断言通过。"""
+        source = tmp_path / "mock_registry_constant.py"
+        _write_registry_source_with_constant(source, "MODE_LEGACY")
+        assert_entry_covers_table(source, SIDE_LEGACY)
+        assert_entry_has_no_extra(source, SIDE_LEGACY)
+
+    def test_registry_accepts_constant_mode_for_aiedu_side(self, tmp_path):
+        """main_ai_edu 侧 mode=MODE_LAZY -> 断言通过。"""
+        source = tmp_path / "mock_registry_constant.py"
+        _write_registry_source_with_constant(source, "MODE_LAZY")
+        assert_entry_covers_table(source, SIDE_AI_EDU)
+        assert_entry_has_no_extra(source, SIDE_AI_EDU)
+
+    def test_registry_accepts_attribute_call(self, tmp_path):
+        """router_registry.register_all_routers(...) 属性写法 -> 断言通过。"""
+        source = tmp_path / "mock_registry_attribute.py"
+        _write_registry_source_with_attribute(source, side_entry_mode(SIDE_AI_EDU))
+        assert_entry_covers_table(source, SIDE_AI_EDU)
+        assert_entry_has_no_extra(source, SIDE_AI_EDU)
+
+    def test_registry_rejects_constant_mode_mismatch(self, tmp_path):
+        """常量 mode 与该侧不匹配 -> 断言失败。"""
+        source = tmp_path / "mock_registry_constant.py"
+        _write_registry_source_with_constant(source, "MODE_LEGACY")
         with pytest.raises(AssertionError):
             assert_entry_covers_table(source, SIDE_AI_EDU)
 
