@@ -1,0 +1,67 @@
+{
+  "entry": "pending_integration",
+  "source": "core.router_registry.ROUTER_TABLE (pending_integration only)",
+  "total": 15,
+  "paths": [
+    [
+      "DELETE",
+      "/api/v1/ai-teacher/memory/{user_id}"
+    ],
+    [
+      "GET",
+      "/api/v1/ai-teacher/daily-suggestion/{user_id}"
+    ],
+    [
+      "GET",
+      "/api/v1/ai-teacher/growth/{user_id}"
+    ],
+    [
+      "GET",
+      "/api/v1/ai-teacher/knowledge-state/{user_id}"
+    ],
+    [
+      "GET",
+      "/api/v1/ai-teacher/memory/{user_id}/long-term"
+    ],
+    [
+      "GET",
+      "/api/v1/ai-teacher/persona/{user_id}"
+    ],
+    [
+      "GET",
+      "/api/v1/ai-teacher/profile/{user_id}"
+    ],
+    [
+      "GET",
+      "/api/v1/ai-teacher/session/{user_id}"
+    ],
+    [
+      "GET",
+      "/api/v1/ai-teacher/suggestions/{user_id}"
+    ],
+    [
+      "PATCH",
+      "/api/v1/ai-teacher/persona/{user_id}"
+    ],
+    [
+      "PATCH",
+      "/api/v1/ai-teacher/profile/{user_id}"
+    ],
+    [
+      "PATCH",
+      "/api/v1/ai-teacher/suggestions/{suggestion_id}/read"
+    ],
+    [
+      "POST",
+      "/api/v1/ai-teacher/chat"
+    ],
+    [
+      "POST",
+      "/api/v1/ai-teacher/memory/{user_id}/long-term"
+    ],
+    [
+      "WEBSOCKET",
+      "/ws/ai-edu/progress/{user_id}"
+    ]
+  ]
+}
