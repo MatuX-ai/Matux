@@ -7,6 +7,7 @@ import logging
 from typing import Optional, cast
 
 from fastapi import APIRouter, Depends, HTTPException, Query
+from middleware.auth import get_current_user
 from models.token_schemas import (
     CostEstimateRequest,
     CostEstimateResponse,
@@ -22,7 +23,6 @@ from models.user import User
 from services.token_service import TokenService
 from sqlalchemy.orm import Session
 from utils.database import get_sync_db
-from utils.dependencies import get_current_user_sync
 
 logger = logging.getLogger(__name__)
 
@@ -57,7 +57,7 @@ async def get_token_packages(
 @router.post("/purchase", response_model=PurchaseTokenResponse)
 async def purchase_token_package(
     request: PurchaseTokenRequest,
-    current_user: User = Depends(get_current_user_sync),
+    current_user: User = Depends(get_current_user),
     db: Session = Depends(get_sync_db),
     token_service: TokenService = Depends(get_token_service)
 ):
@@ -114,7 +114,7 @@ async def purchase_token_package(
 
 @router.get("/balance", response_model=UserBalanceResponse)
 async def get_balance(
-    current_user: User = Depends(get_current_user_sync),
+    current_user: User = Depends(get_current_user),
     db: Session = Depends(get_sync_db),
     token_service: TokenService = Depends(get_token_service)
 ):
@@ -151,7 +151,7 @@ async def get_usage_history(
     page: int = Query(1, ge=1, description="页码"),
     page_size: int = Query(20, ge=1, le=100, description="每页数量"),
     usage_type: Optional[str] = Query(None, description="使用类型筛选"),
-    current_user: User = Depends(get_current_user_sync),
+    current_user: User = Depends(get_current_user),
     db: Session = Depends(get_sync_db),
     token_service: TokenService = Depends(get_token_service)
 ):
@@ -218,7 +218,7 @@ async def get_usage_history(
 
 @router.get("/stats", response_model=TokenStatsResponse)
 async def get_token_stats(
-    current_user: User = Depends(get_current_user_sync),
+    current_user: User = Depends(get_current_user),
     db: Session = Depends(get_sync_db),
     token_service: TokenService = Depends(get_token_service)
 ):
