@@ -308,13 +308,47 @@ if not settings.ENABLE_LAZY_LOADING:
     from legacy_routes import register_all_routes
     register_all_routes(app)
 else:
-    # 【4b 退化方案】路由注册收敛到 core.router_registry（单一事实源，issue #26）。
+    # 【4b 修正 · 方案 D】路由注册收敛到 core.router_registry（单一事实源，issue #26）。
     #   * mode="lazy"：本入口只注册「懒加载归属」与「两侧共用」的条目，
-    #     共 19 项 —— 18 项 active 实际注册，1 项 pending_integration 被跳过。
+    #     共 19 项 —— 其中 18 项 active，1 项 pending_integration 被跳过。
+    #   * only=[...]：这 18 项里有 9 项同时登记在 core/module_registry.py，
+    #     由 Tier 引擎（LazyLoader）按 Tier 激活。两条注册路径互不感知，
+    #     若本入口也注册这 9 项，同一批路由会被重复挂载
+    #     （实测 9 个模块 / 82 条路由重复，OpenAPI 产生 15 条 Duplicate Operation ID）。
+    #     这 9 项按 Tier 分成两类，处理方式不同：
+    #       - 7 项属 Tier 0 / Tier 1（auth / error_log / org_error_log / admin_arvr /
+    #         exam / achievement / ai_edu_progress）：Tier 引擎在启动时必然激活，
+    #         本入口不再注册 → 消除 66 条重复路由。
+    #       - 2 项属 Tier 2 / Tier 3（arvr_course / creativity）：其 prefix 为空串，
+    #         不进 loader._prefix_map，find_module_by_path 永远匹配不到，
+    #         按需激活链路当前不可达（见 Issue K）。若交给 Tier 引擎，
+    #         这 2 个模块的 16 条路由在正常流量下会 404，
+    #         因此本入口仍保留它们的 eager 注册。
+    #     剩下 9 项（Tier 引擎不覆盖）必须由本入口注册。
+    #     详见 tmp/4b-tier-analysis.md、tmp/4b-fix-plan.md。
     #   * strict=False：注册失败按 L1 降级处理（写日志与报告，不阻断启动）。
     from core.router_registry import register_all_routers
 
-    register_all_routers(app, mode="lazy", strict=False)
+    register_all_routers(
+        app,
+        mode="lazy",
+        strict=False,
+        only=[
+            # 9 项：Tier 引擎（core/module_registry.py）未覆盖，只能由本入口注册
+            "ai_edu_code_execution",
+            "ai_edu_quiz",
+            "leaderboard",
+            "llm_assistant",
+            "micro_course",
+            "recommendation",
+            "system_status",
+            "token",
+            "vircadia_avatar",
+            # 2 项：Tier 2 / Tier 3 且按需激活链路当前不可达（Issue K），保留 eager 注册
+            "arvr_course",
+            "creativity",
+        ],
+    )
     logger.info("懒加载模式：路由由 LazyLoader 引擎管理")
 
 
