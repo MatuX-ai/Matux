@@ -14,7 +14,7 @@
 """
 
 import logging
-from typing import List
+from typing import Dict, List
 
 logger = logging.getLogger(__name__)
 
@@ -68,6 +68,92 @@ def _factory(module_path: str, attr_name: str = "router"):
 class ModuleRegistryError(Exception):
     """模块注册表错误"""
     pass
+
+
+# =============================================================================
+# 路径反查前缀表（Issue #42 方案 A）
+# =============================================================================
+# ModuleSpec.prefix 是「挂载前缀」，它会与 router 自身的
+# APIRouter(prefix=...) 叠加后才是最终请求路径；而中间件需要的是反向能力：
+# 给一条请求路径，找出该激活哪个模块。两者不是同一个概念，故单独维护本表。
+#
+# 取值依据：逐个模块实例化 router，取其 routes 的真实路径后求最长公共前缀
+# （逐模块确认，见 tmp/issue42-plan-a-analysis.md）。一个模块的路由可能分散在
+# 互不相连的路径下（如 ai_service），此时登记多条前缀。
+#
+# 含 {xxx} 的段是路径参数，匹配时按单段通配处理。
+LOOKUP_PREFIXES: Dict[str, List[str]] = {
+    # --- Tier 0 核心层 ---
+    "auth": ["/api/v1/auth"],
+    "unified_auth": ["/api/v1/unified-auth"],
+    "device_profile": ["/api/v1/device"],
+    "plugin_management": ["/api/v1/plugins"],
+    "course": ["/api/courses"],
+    "course_version": ["/api/course-versions"],
+    "aggregation": ["/api/v1/courses"],
+    "subscription": ["/api/v1/subscriptions"],
+    "tenant_config": ["/api/v1/org/{org_id}/config"],
+    "edu_institution": ["/api/v1/org/{org_id}"],
+    "permission": ["/api/v1/permissions"],
+    "material": ["/api/materials"],
+    "error_log": ["/logs"],
+    "org_error_log": ["/api/v1/org/{org_id}/logs"],
+    "admin_arvr": ["/api/v1/admin/arvr"],
+    # --- Tier 1 高优先级 ---
+    # ai_service 的路由分散在三条互不相连的路径下；"/api/v1/models"
+    # 与 model_update 完全重叠，故不在此登记（由 model_update 覆盖）。
+    "ai_service": [
+        "/api/v1/generate-code",
+        "/api/v1/recent-requests",
+        "/api/v1/usage-stats",
+    ],
+    "ai_recommend": ["/api/v1/ai/recommend"],
+    "ai_capabilities": ["/api/v1/ai-capabilities"],
+    "ai_edu_progress": ["/api/v1/org/{org_id}/ai-edu/progress"],
+    "payment": ["/api/v1/payments"],
+    "exam": ["/api/v1/exams"],
+    "achievement": ["/api/v1/org/{org_id}/achievements"],
+    "multimedia": ["/api/v1/org/{org_id}/multimedia"],
+    "learning_source": ["/api/v1/learning-sources"],
+    "unified_learning_record": [
+        "/api/v1/unified-learning-records",
+        "/api/v1/unified-learning",
+    ],
+    "dynamic_course": ["/api/v1/api/dynamic-courses"],
+    "courseware": ["/api/v1/courseware"],
+    # --- Tier 2 按需激活 ---
+    "ar_vr": ["/api/v1/org/{org_id}/arvr"],
+    "ar_vr_mock": ["/api/v1/mock/arvr"],
+    "arvr_course": ["/api/v1/arvr-courses"],
+    "ar_lab": ["/api/v1/org/{org_id}/ar-lab"],
+    "ar_rewards": ["/api/v1/ar"],
+    "blockchain_gateway": ["/api/v1/blockchain"],
+    "digital_twin": ["/api/v1/digital-twin"],
+    "collaborative_editor": [
+        "/api/v1/org/{org_id}/courses/{course_id}/collaborative-documents"
+    ],
+    "learning_behavior": ["/api/v1/api/v1/learning-behavior"],
+    "finance": ["/api/v1/finance/org/{org_id}"],
+    "sponsorship": ["/api/v1/sponsorship"],
+    "admin_settings": ["/api/v1/admin/settings"],
+    "oauth": ["/api/v1/oauth"],
+    "local_knowledge_graph": ["/api/v1/local-knowledge-graph"],
+    "ai_teacher": ["/api/v1/ai-teacher"],
+    "content_store": ["/store"],
+    "openhydra": ["/api/v1/org/{org_id}/ai-lab"],
+    # --- Tier 3 延迟激活 ---
+    "hardware": ["/api/v1/hardware"],
+    "sensor_data": ["/api/v1/sensor-data"],
+    "vector_knowledge": ["/api/v1/knowledge-base"],
+    "model_benchmark": ["/api/v1/model-benchmark"],
+    "creativity": ["/api/v1/creativity"],
+    "model_update": ["/api/v1/models"],
+}
+
+
+def get_lookup_prefixes() -> Dict[str, List[str]]:
+    """获取「模块名 → 路径反查前缀列表」映射（供懒加载引擎反查用）。"""
+    return dict(LOOKUP_PREFIXES)
 
 
 def get_all_module_specs() -> List[dict]:
@@ -435,7 +521,7 @@ def get_all_module_specs() -> List[dict]:
     modules.append({
         "name": "learning_source",
         "tier": 1,
-        "prefix": "/api/v1",
+        "prefix": "",
         "tags": ["学习来源管理"],
         "router_factory": _factory(
             "routes.learning_source_routes", "router"
@@ -449,7 +535,7 @@ def get_all_module_specs() -> List[dict]:
     modules.append({
         "name": "unified_learning_record",
         "tier": 1,
-        "prefix": "/api/v1",
+        "prefix": "",
         "tags": ["统一学习记录"],
         "router_factory": _factory(
             "routes.unified_learning_record_routes", "router"
@@ -498,7 +584,7 @@ def get_all_module_specs() -> List[dict]:
     modules.append({
         "name": "ar_vr",
         "tier": 2,
-        "prefix": "/api/v1",
+        "prefix": "",
         "tags": ["AR/VR"],
         "router_factory": _factory("routes.ar_vr_routes", "router"),
         "dependencies": ["auth"],
@@ -537,7 +623,7 @@ def get_all_module_specs() -> List[dict]:
     modules.append({
         "name": "ar_lab",
         "tier": 2,
-        "prefix": "/api/v1",
+        "prefix": "",
         "tags": ["AR 实验室"],
         "router_factory": _factory("routes.ar_lab_routes", "router"),
         "dependencies": ["auth", "course"],
