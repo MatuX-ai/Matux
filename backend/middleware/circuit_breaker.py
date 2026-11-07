@@ -42,7 +42,6 @@ class CircuitBreakerConfig:
         half_open_max_calls: int = 3,        # 半开状态最大请求数
         expected_exceptions: tuple = (Exception,),  # 预期异常类型
         fallback_function: Optional[Callable] = None,  # 降级函数
-        fallback_max_attempts: int = 3,      # 降级函数最大尝试次数（含首次）
     ):
         self.failure_threshold = failure_threshold
         self.success_threshold = success_threshold
@@ -50,7 +49,6 @@ class CircuitBreakerConfig:
         self.half_open_max_calls = half_open_max_calls
         self.expected_exceptions = expected_exceptions
         self.fallback_function = fallback_function
-        self.fallback_max_attempts = max(1, int(fallback_max_attempts))
 
 
 # ============================================
@@ -229,9 +227,12 @@ class CircuitBreaker:
     async def _handle_fallback(self, *args, original_exception: Exception = None, **kwargs) -> Any:
         """处理降级逻辑。
 
-        降级函数最多尝试 ``config.fallback_max_attempts`` 次（含首次）。全部失败时
-        **向上抛降级函数自身的异常**，而不是用 ``CircuitBreakerOpenError`` 覆盖它 ——
-        否则生产排障只能看到「服务暂时不可用」，真实下游错误被丢弃。
+        降级函数只调用一次。若降级函数自身失败，**向上抛降级函数自身的异常**，
+        而不是用 ``CircuitBreakerOpenError`` 覆盖它 —— 否则生产排障只能看到
+        「服务暂时不可用」，真实下游错误被丢弃。
+
+        注：带重试的降级语义（retry / partial success）不在本实现范围内，
+        对应测试已移到 PR-3e-2 按测试侧语义处理。
 
         Returns:
             降级结果或抛出异常
@@ -241,24 +242,13 @@ class CircuitBreaker:
 
         fallback_function = self.config.fallback_function
         if fallback_function:
-            max_attempts = self.config.fallback_max_attempts
-            last_error: Optional[Exception] = None
-
-            for attempt in range(1, max_attempts + 1):
-                try:
-                    logger.info(
-                        f"[{self.name}] 执行降级函数（第 {attempt}/{max_attempts} 次）"
-                    )
-                    return await fallback_function(*args, **kwargs)
-                except Exception as e:
-                    last_error = e
-                    logger.error(
-                        f"[{self.name}] 降级函数第 {attempt}/{max_attempts} 次执行失败：{e}"
-                    )
-
-            # 所有尝试均失败：保留降级函数自身的异常作为对外错误
-            if last_error is not None:
-                raise last_error from original_exception
+            try:
+                logger.info(f"[{self.name}] 执行降级函数")
+                return await fallback_function(*args, **kwargs)
+            except Exception as e:
+                logger.error(f"[{self.name}] 降级函数执行失败：{str(e)}")
+                # 保留降级函数自身的异常作为对外错误，并挂上原始异常链
+                raise e from original_exception
 
         # 没有配置降级函数，根据状态决定
         if self.state == CircuitState.OPEN:
