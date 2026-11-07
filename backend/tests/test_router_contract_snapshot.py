@@ -571,10 +571,6 @@ class TestEntryWiring:
             'main_ai_edu.py 的 register_all_routers 缺少 mode="lazy"，实际为: %r' % modes
         )
 
-    @pytest.mark.xfail(
-        reason="PR-C1 阶段入口尚未收敛到 register_all_routers；main.py 属 4b 范围，4b 落地后取消本 xfail",
-        strict=True,
-    )
     def test_t4_main_uses_register_all_routers(self):
         """T4：main.py 必须调用 register_all_routers(mode=...)。"""
         source = (BACKEND_DIR / "main.py").read_text(encoding="utf-8")

@@ -308,9 +308,13 @@ if not settings.ENABLE_LAZY_LOADING:
     from legacy_routes import register_all_routes
     register_all_routes(app)
 else:
-    # 仅注册系统管理 API（始终可用）
-    from routes.system_status_routes import router as system_status_router
-    app.include_router(system_status_router)
+    # 【4b 退化方案】路由注册收敛到 core.router_registry（单一事实源，issue #26）。
+    #   * mode="lazy"：本入口只注册「懒加载归属」与「两侧共用」的条目，
+    #     共 19 项 —— 18 项 active 实际注册，1 项 pending_integration 被跳过。
+    #   * strict=False：注册失败按 L1 降级处理（写日志与报告，不阻断启动）。
+    from core.router_registry import register_all_routers
+
+    register_all_routers(app, mode="lazy", strict=False)
     logger.info("懒加载模式：路由由 LazyLoader 引擎管理")
 
 
