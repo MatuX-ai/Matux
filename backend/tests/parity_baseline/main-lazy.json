@@ -1,6 +1,6 @@
 {
   "entry": "main_lazy",
-  "generated_from_commit": "7977f35bc7ddbe8340f7ed064c52bf6be47b17b8",
+  "generated_from_commit": "248522a8284bdab8d961c0839e88169c98f2aa1a",
   "source": "git archive fix/4b-tier-dedup-20261107 backend/ (LF, no CRLF)",
   "stubs_injected": [
     "services.ai_teacher_live_settings",
@@ -8,24 +8,11 @@
     "cache.ai_teacher_persistence"
   ],
   "registry_mode": "lazy",
-  "registry_only": [
-    "ai_edu_code_execution",
-    "ai_edu_quiz",
-    "leaderboard",
-    "llm_assistant",
-    "micro_course",
-    "recommendation",
-    "system_status",
-    "token",
-    "vircadia_avatar",
-    "arvr_course",
-    "creativity"
-  ],
   "registry_exclude": null,
   "condition_keys_enabled": [],
   "paths_by_group": null,
-  "total": 137,
-  "real_total": 137,
+  "total": 170,
+  "real_total": 170,
   "pending_paths": [],
   "paths": [
     [
@@ -42,7 +29,23 @@
     ],
     [
       "DELETE",
+      "/api/v1/exams/questions/{question_id}"
+    ],
+    [
+      "DELETE",
+      "/api/v1/exams/{exam_id}"
+    ],
+    [
+      "DELETE",
+      "/api/v1/org/{org_id}/achievements/admin/{achievement_id}"
+    ],
+    [
+      "DELETE",
       "/api/v1/org/{org_id}/ai-edu/assistant/history"
+    ],
+    [
+      "DELETE",
+      "/api/v1/org/{org_id}/ai-edu/progress/{lesson_id}"
     ],
     [
       "DELETE",
@@ -154,7 +157,51 @@
     ],
     [
       "GET",
+      "/api/v1/exams"
+    ],
+    [
+      "GET",
+      "/api/v1/exams/attempts/{attempt_id}"
+    ],
+    [
+      "GET",
+      "/api/v1/exams/{exam_id}"
+    ],
+    [
+      "GET",
+      "/api/v1/exams/{exam_id}/cheat-summary"
+    ],
+    [
+      "GET",
+      "/api/v1/exams/{exam_id}/my-attempts"
+    ],
+    [
+      "GET",
+      "/api/v1/exams/{exam_id}/statistics"
+    ],
+    [
+      "GET",
       "/api/v1/micro-course/"
+    ],
+    [
+      "GET",
+      "/api/v1/org/{org_id}/achievements/admin/list"
+    ],
+    [
+      "GET",
+      "/api/v1/org/{org_id}/achievements/my/list"
+    ],
+    [
+      "GET",
+      "/api/v1/org/{org_id}/achievements/my/statistics"
+    ],
+    [
+      "GET",
+      "/api/v1/org/{org_id}/achievements/progress/current"
+    ],
+    [
+      "GET",
+      "/api/v1/org/{org_id}/achievements/{achievement_id}"
     ],
     [
       "GET",
@@ -167,6 +214,14 @@
     [
       "GET",
       "/api/v1/org/{org_id}/ai-edu/assistant/statistics"
+    ],
+    [
+      "GET",
+      "/api/v1/org/{org_id}/ai-edu/progress"
+    ],
+    [
+      "GET",
+      "/api/v1/org/{org_id}/ai-edu/progress/statistics"
     ],
     [
       "GET",
@@ -422,6 +477,50 @@
     ],
     [
       "POST",
+      "/api/v1/exams"
+    ],
+    [
+      "POST",
+      "/api/v1/exams/attempts/{attempt_id}/grade"
+    ],
+    [
+      "POST",
+      "/api/v1/exams/attempts/{attempt_id}/heartbeat"
+    ],
+    [
+      "POST",
+      "/api/v1/exams/attempts/{attempt_id}/submit"
+    ],
+    [
+      "POST",
+      "/api/v1/exams/{exam_id}/publish"
+    ],
+    [
+      "POST",
+      "/api/v1/exams/{exam_id}/questions"
+    ],
+    [
+      "POST",
+      "/api/v1/exams/{exam_id}/start"
+    ],
+    [
+      "POST",
+      "/api/v1/org/{org_id}/achievements/admin/create"
+    ],
+    [
+      "POST",
+      "/api/v1/org/{org_id}/achievements/admin/initialize"
+    ],
+    [
+      "POST",
+      "/api/v1/org/{org_id}/achievements/my/{achievement_id}/claim"
+    ],
+    [
+      "POST",
+      "/api/v1/org/{org_id}/achievements/progress/update"
+    ],
+    [
+      "POST",
       "/api/v1/org/{org_id}/ai-edu/assistant/chat"
     ],
     [
@@ -431,6 +530,14 @@
     [
       "POST",
       "/api/v1/org/{org_id}/ai-edu/execute-code"
+    ],
+    [
+      "POST",
+      "/api/v1/org/{org_id}/ai-edu/progress"
+    ],
+    [
+      "POST",
+      "/api/v1/org/{org_id}/ai-edu/progress/complete"
     ],
     [
       "POST",
@@ -571,6 +678,18 @@
     [
       "PUT",
       "/api/v1/creativity/ideas/{idea_id}"
+    ],
+    [
+      "PUT",
+      "/api/v1/exams/questions/{question_id}"
+    ],
+    [
+      "PUT",
+      "/api/v1/exams/{exam_id}"
+    ],
+    [
+      "PUT",
+      "/api/v1/org/{org_id}/achievements/admin/{achievement_id}"
     ],
     [
       "PUT",
