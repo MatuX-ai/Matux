@@ -18,6 +18,7 @@ from fastapi import (
     WebSocket,
     WebSocketDisconnect,
 )
+from middleware.auth import get_current_user
 from middleware.tenant_middleware import require_tenant_access
 from models.collaborative_editor import (
     CollaborativeDocumentCreate,
@@ -37,8 +38,7 @@ from services.collaborative_editor_service import (
     get_collaborative_editor_service,
 )
 from sqlalchemy.orm import Session
-from utils.auth_utils import get_current_user_sync
-from utils.database import get_sync_db
+from utils.database import get_sync_session
 
 logger = logging.getLogger(__name__)
 
@@ -103,8 +103,8 @@ manager = ConnectionManager()
 def validate_course_access(
     org_id: int = Path(..., description="组织ID"),
     course_id: int = Path(..., description="课程ID"),
-    current_user: User = Depends(get_current_user_sync),
-    db: Session = Depends(get_sync_db),
+    current_user: User = Depends(get_current_user),
+    db: Session = Depends(get_sync_session),
 ) -> bool:
     """验证用户对课程的访问权限"""
     return require_tenant_access(org_id, current_user, db)
@@ -116,11 +116,11 @@ def create_document(
     org_id: int = Path(..., description="组织ID"),
     course_id: int = Path(..., description="课程ID"),
     doc_data: CollaborativeDocumentCreate = Body(..., description="文档创建数据"),
-    current_user: User = Depends(get_current_user_sync),
+    current_user: User = Depends(get_current_user),
     editor_service: CollaborativeEditorService = Depends(
         get_collaborative_editor_service
     ),
-    db: Session = Depends(get_sync_db),
+    db: Session = Depends(get_sync_session),
 ):
     """
     创建新的协作文档
@@ -149,11 +149,11 @@ def get_document(
     org_id: int = Path(..., description="组织ID"),
     course_id: int = Path(..., description="课程ID"),
     document_id: int = Path(..., description="文档ID"),
-    current_user: User = Depends(get_current_user_sync),
+    current_user: User = Depends(get_current_user),
     editor_service: CollaborativeEditorService = Depends(
         get_collaborative_editor_service
     ),
-    db: Session = Depends(get_sync_db),
+    db: Session = Depends(get_sync_session),
 ):
     """
     获取指定协作文档的详细信息
@@ -184,11 +184,11 @@ def update_document_content(
     course_id: int = Path(..., description="课程ID"),
     document_id: int = Path(..., description="文档ID"),
     content: str = Body(..., embed=True, description="新文档内容"),
-    current_user: User = Depends(get_current_user_sync),
+    current_user: User = Depends(get_current_user),
     editor_service: CollaborativeEditorService = Depends(
         get_collaborative_editor_service
     ),
-    db: Session = Depends(get_sync_db),
+    db: Session = Depends(get_sync_session),
 ):
     """
     直接更新文档内容（非实时协作方式）
@@ -215,11 +215,11 @@ def apply_operations_batch(
     course_id: int = Path(..., description="课程ID"),
     document_id: int = Path(..., description="文档ID"),
     operations: List[DocumentOperationCreate] = Body(..., description="操作列表"),
-    current_user: User = Depends(get_current_user_sync),
+    current_user: User = Depends(get_current_user),
     editor_service: CollaborativeEditorService = Depends(
         get_collaborative_editor_service
     ),
-    db: Session = Depends(get_sync_db),
+    db: Session = Depends(get_sync_session),
 ):
     """
     批量应用文档操作，支持OT算法转换
@@ -285,11 +285,11 @@ def get_document_operations(
     document_id: int = Path(..., description="文档ID"),
     from_revision: int = Query(0, description="起始修订版本"),
     limit: int = Query(100, ge=1, le=1000, description="返回记录数"),
-    current_user: User = Depends(get_current_user_sync),
+    current_user: User = Depends(get_current_user),
     editor_service: CollaborativeEditorService = Depends(
         get_collaborative_editor_service
     ),
-    db: Session = Depends(get_sync_db),
+    db: Session = Depends(get_sync_session),
 ):
     """
     获取文档的操作历史记录
@@ -316,11 +316,11 @@ def create_comment(
     course_id: int = Path(..., description="课程ID"),
     document_id: int = Path(..., description="文档ID"),
     comment_data: DocumentCommentCreate = Body(..., description="评论数据"),
-    current_user: User = Depends(get_current_user_sync),
+    current_user: User = Depends(get_current_user),
     editor_service: CollaborativeEditorService = Depends(
         get_collaborative_editor_service
     ),
-    db: Session = Depends(get_sync_db),
+    db: Session = Depends(get_sync_session),
 ):
     """
     在文档指定位置添加评论
@@ -372,11 +372,11 @@ def get_document_comments(
     org_id: int = Path(..., description="组织ID"),
     course_id: int = Path(..., description="课程ID"),
     document_id: int = Path(..., description="文档ID"),
-    current_user: User = Depends(get_current_user_sync),
+    current_user: User = Depends(get_current_user),
     editor_service: CollaborativeEditorService = Depends(
         get_collaborative_editor_service
     ),
-    db: Session = Depends(get_sync_db),
+    db: Session = Depends(get_sync_session),
 ):
     """
     获取文档的所有评论
@@ -398,11 +398,11 @@ def resolve_comment(
     course_id: int = Path(..., description="课程ID"),
     document_id: int = Path(..., description="文档ID"),
     comment_id: int = Path(..., description="评论ID"),
-    current_user: User = Depends(get_current_user_sync),
+    current_user: User = Depends(get_current_user),
     editor_service: CollaborativeEditorService = Depends(
         get_collaborative_editor_service
     ),
-    db: Session = Depends(get_sync_db),
+    db: Session = Depends(get_sync_session),
 ):
     """
     标记评论为已解决
@@ -462,11 +462,11 @@ def create_suggestion(
     course_id: int = Path(..., description="课程ID"),
     document_id: int = Path(..., description="文档ID"),
     suggestion_data: DocumentSuggestionCreate = Body(..., description="建议数据"),
-    current_user: User = Depends(get_current_user_sync),
+    current_user: User = Depends(get_current_user),
     editor_service: CollaborativeEditorService = Depends(
         get_collaborative_editor_service
     ),
-    db: Session = Depends(get_sync_db),
+    db: Session = Depends(get_sync_session),
 ):
     """
     在文档指定位置添加修改建议
@@ -519,11 +519,11 @@ def review_suggestion(
     status: str = Body(
         ..., embed=True, pattern="^(accepted|rejected)$", description="审核结果"
     ),
-    current_user: User = Depends(get_current_user_sync),
+    current_user: User = Depends(get_current_user),
     editor_service: CollaborativeEditorService = Depends(
         get_collaborative_editor_service
     ),
-    db: Session = Depends(get_sync_db),
+    db: Session = Depends(get_sync_session),
 ):
     """
     审核并处理文档建议
@@ -570,11 +570,11 @@ def join_session(
     course_id: int = Path(..., description="课程ID"),
     document_id: int = Path(..., description="文档ID"),
     client_id: str = Body(..., embed=True, description="客户端标识"),
-    current_user: User = Depends(get_current_user_sync),
+    current_user: User = Depends(get_current_user),
     editor_service: CollaborativeEditorService = Depends(
         get_collaborative_editor_service
     ),
-    db: Session = Depends(get_sync_db),
+    db: Session = Depends(get_sync_session),
 ):
     """
     加入文档协作会话
@@ -606,11 +606,11 @@ def update_cursor_position(
     selection_end: Optional[int] = Body(
         None, ge=0, embed=True, description="选区结束位置"
     ),
-    current_user: User = Depends(get_current_user_sync),
+    current_user: User = Depends(get_current_user),
     editor_service: CollaborativeEditorService = Depends(
         get_collaborative_editor_service
     ),
-    db: Session = Depends(get_sync_db),
+    db: Session = Depends(get_sync_session),
 ):
     """
     更新用户在文档中的光标位置和选区
@@ -652,11 +652,11 @@ def leave_session(
     org_id: int = Path(..., description="组织ID"),
     course_id: int = Path(..., description="课程ID"),
     session_id: str = Path(..., description="会话ID"),
-    current_user: User = Depends(get_current_user_sync),
+    current_user: User = Depends(get_current_user),
     editor_service: CollaborativeEditorService = Depends(
         get_collaborative_editor_service
     ),
-    db: Session = Depends(get_sync_db),
+    db: Session = Depends(get_sync_session),
 ):
     """
     离开文档协作会话
