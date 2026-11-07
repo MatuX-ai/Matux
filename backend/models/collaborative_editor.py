@@ -26,7 +26,7 @@ from utils.database import Base
 class CollaborativeDocument(Base):
     """协作文档模型"""
 
-    __tablename__ = "collaborative_documents"
+    __tablename__ = "collaborative_editor_documents"
 
     id = Column(Integer, primary_key=True, index=True)
     course_id = Column(Integer, ForeignKey(
@@ -120,7 +120,7 @@ class DocumentOperation(Base):
 class DocumentComment(Base):
     """文档评论模型"""
 
-    __tablename__ = "document_comments"
+    __tablename__ = "collaborative_editor_document_comments"
 
     id = Column(Integer, primary_key=True, index=True)
     document_id = Column(
