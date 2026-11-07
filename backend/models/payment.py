@@ -77,8 +77,8 @@ class Payment(Base):
     __table_args__ = (
         Index("idx_payment_user", "user_id"),
         Index("idx_payment_order", "order_id"),
-        Index("idx_payment_status", "status"),
-        Index("idx_payment_created", "created_at"),
+        Index("idx_payment_status_payment", "status"),
+        Index("idx_payment_created_payment", "created_at"),
     )
 
 
@@ -114,10 +114,10 @@ class Order(Base):
 
     # 索引
     __table_args__ = (
-        Index("idx_order_user", "user_id"),
-        Index("idx_order_status", "status"),
+        Index("idx_payment_order_user", "user_id"),
+        Index("idx_payment_order_status", "status"),
         Index("idx_order_payment_status", "payment_status"),
-        Index("idx_order_created", "created_at"),
+        Index("idx_payment_order_created", "created_at"),
     )
 
 
@@ -167,7 +167,7 @@ class ShoppingCart(Base):
 
     # 索引
     __table_args__ = (
-        Index("idx_cart_user", "user_id"),
+        Index("idx_payment_cart_user", "user_id"),
         Index("idx_cart_product", "product_id"),
         Index("idx_cart_user_product", "user_id", "product_id"),
     )
