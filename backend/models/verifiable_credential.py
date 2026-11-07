@@ -3,13 +3,25 @@ W3C可验证凭证(Verifiable Credentials)数据模型
 遵循W3C Verifiable Credentials Data Model 1.0规范
 """
 
-from datetime import datetime
+from datetime import datetime, timezone
 from enum import Enum
 import hashlib
 import json
 from typing import Any, Dict, List, Optional, Union
 
 from pydantic import BaseModel, Field, validator
+
+
+def _parse_iso8601_utc(value: str) -> datetime:
+    """解析 ISO 8601 字符串为带时区的 datetime（无时区按 UTC 处理）。
+
+    统一走 aware datetime，避免与 datetime.now(timezone.utc) 比较时抛
+    ``TypeError: can't compare offset-naive and offset-aware datetimes``。
+    """
+    parsed = datetime.fromisoformat(value.replace("Z", "+00:00"))
+    if parsed.tzinfo is None:
+        parsed = parsed.replace(tzinfo=timezone.utc)
+    return parsed
 
 
 class CredentialStatusType(str, Enum):
@@ -161,10 +173,8 @@ class VerifiableCredential(BaseModel):
     def validate_expiration_after_issuance(cls, v, values):
         """验证过期日期必须晚于颁发日期"""
         if v is not None and "issuanceDate" in values:
-            issuance = datetime.fromisoformat(
-                values["issuanceDate"].replace("Z", "+00:00")
-            )
-            expiration = datetime.fromisoformat(v.replace("Z", "+00:00"))
+            issuance = _parse_iso8601_utc(values["issuanceDate"])
+            expiration = _parse_iso8601_utc(v)
             if expiration <= issuance:
                 raise ValueError("过期日期必须晚于颁发日期")
         return v
@@ -210,8 +220,8 @@ class VerifiableCredential(BaseModel):
         if self.expirationDate is None:
             return False
 
-        exp_date = datetime.fromisoformat(self.expirationDate.replace("Z", "+00:00"))
-        return datetime.now() > exp_date
+        exp_date = _parse_iso8601_utc(self.expirationDate)
+        return datetime.now(timezone.utc) > exp_date
 
     def is_valid(self) -> bool:
         """

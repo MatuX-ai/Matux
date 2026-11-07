@@ -4,7 +4,7 @@
 """
 
 import asyncio
-from datetime import datetime
+from datetime import datetime, timezone
 import hashlib
 import json
 import logging
@@ -130,7 +130,10 @@ class BlockchainService:
             expiry_date = cert_data.get("expiryDate")
             if expiry_date:
                 expiry_dt = datetime.fromisoformat(expiry_date.replace("Z", "+00:00"))
-                if datetime.now() > expiry_dt:
+                if expiry_dt.tzinfo is None:
+                    # 无时区的 ISO 字符串按 UTC 处理，避免 naive/aware 混比
+                    expiry_dt = expiry_dt.replace(tzinfo=timezone.utc)
+                if datetime.now(timezone.utc) > expiry_dt:
                     raise Exception("证书已过期")
 
             # 验证W3C VC签名（简化版）
