@@ -46,10 +46,10 @@ fixture                说明
   因此依赖 ``main.app`` 全量路由的用例仍会 404 —— 那属于 PR-4b 的收敛范围。
 """
 
+from datetime import timedelta
 import os
 import sys
 import tempfile
-from datetime import timedelta
 from typing import Dict, Iterator
 from unittest.mock import Mock
 
