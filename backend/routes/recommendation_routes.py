@@ -7,14 +7,14 @@ import logging
 from typing import Any, Dict, Optional, cast
 
 from fastapi import APIRouter, Body, Depends, HTTPException, Query
+from middleware.auth import get_current_user
 from models.user import User
 from services.recommendation_service import (
     get_recommendation_service,
 )
 from sqlalchemy import and_
 from sqlalchemy.orm import Session
-from utils.database import get_sync_db
-from utils.dependencies import get_current_user_sync
+from utils.database import get_sync_session
 
 logger = logging.getLogger(__name__)
 
@@ -32,8 +32,8 @@ async def recommend_courses(
     difficulty_min: Optional[int] = Query(None, ge=1, le=5, description="最低难度"),
     difficulty_max: Optional[int] = Query(None, ge=1, le=5, description="最高难度"),
     skill_category: Optional[str] = Query(None, description="技能分类"),
-    db: Session = Depends(get_sync_db),
-    current_user: User = Depends(get_current_user_sync),
+    db: Session = Depends(get_sync_session),
+    current_user: User = Depends(get_current_user),
 ):
     """
     为用户推荐个性化课程列表
@@ -109,8 +109,8 @@ async def recommend_courses(
 async def generate_learning_path(
     org_id: int,
     request: Dict[str, Any] = Body(..., description="学习路径生成请求"),
-    db: Session = Depends(get_sync_db),
-    current_user: User = Depends(get_current_user_sync),
+    db: Session = Depends(get_sync_session),
+    current_user: User = Depends(get_current_user),
 ):
     """
     生成个性化学习路径
@@ -191,8 +191,8 @@ async def generate_learning_path(
 @router.get("/user-profile")
 async def get_user_profile(
     org_id: int,
-    db: Session = Depends(get_sync_db),
-    current_user: User = Depends(get_current_user_sync),
+    db: Session = Depends(get_sync_session),
+    current_user: User = Depends(get_current_user),
 ):
     """
     获取用户学习画像
@@ -246,8 +246,8 @@ async def get_user_profile(
 async def update_learning_preferences(
     org_id: int,
     preferences: Dict[str, Any] = Body(..., description="学习偏好配置"),
-    db: Session = Depends(get_sync_db),
-    current_user: User = Depends(get_current_user_sync),
+    db: Session = Depends(get_sync_session),
+    current_user: User = Depends(get_current_user),
 ):
     """
     更新学习偏好
@@ -286,8 +286,8 @@ async def submit_feedback(
     org_id: int,
     recommendation_id: int,
     feedback: Dict[str, Any] = Body(..., description="反馈信息"),
-    db: Session = Depends(get_sync_db),
-    current_user: User = Depends(get_current_user_sync),
+    db: Session = Depends(get_sync_session),
+    current_user: User = Depends(get_current_user),
 ):
     """
     提交对推荐的反馈
@@ -337,8 +337,8 @@ async def submit_feedback(
 @router.get("/stats")
 async def get_recommendation_statistics(
     org_id: int,
-    db: Session = Depends(get_sync_db),
-    current_user: User = Depends(get_current_user_sync),
+    db: Session = Depends(get_sync_session),
+    current_user: User = Depends(get_current_user),
 ):
     """
     获取推荐统计信息

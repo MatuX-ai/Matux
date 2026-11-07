@@ -7,12 +7,12 @@ import logging
 from typing import Optional
 
 from fastapi import APIRouter, Depends, HTTPException, Query
+from middleware.auth import get_current_user
 from models.leaderboard import LeaderboardPeriod, LeaderboardType
 from models.user import User
 from services.leaderboard_service import get_leaderboard_service
 from sqlalchemy.orm import Session
-from utils.database import get_sync_db
-from utils.dependencies import get_current_user_sync
+from utils.database import get_sync_session
 
 logger = logging.getLogger(__name__)
 
@@ -26,8 +26,8 @@ router = APIRouter(prefix="/api/v1/org/{org_id}/leaderboard", tags=["积分排�
 @router.get("/my/points")
 async def get_my_points(
     org_id: int,
-    db: Session = Depends(get_sync_db),
-    current_user: User = Depends(get_current_user_sync),
+    db: Session = Depends(get_sync_session),
+    current_user: User = Depends(get_current_user),
 ):
     """
     获取我的积分信息
@@ -69,8 +69,8 @@ async def get_my_points_history(
     org_id: int,
     limit: int = Query(50, ge=1, le=200, description="记录数量"),
     transaction_type: Optional[str] = Query(None, description="交易类型（earn/spend）"),
-    db: Session = Depends(get_sync_db),
-    current_user: User = Depends(get_current_user_sync),
+    db: Session = Depends(get_sync_session),
+    current_user: User = Depends(get_current_user),
 ):
     """
     获取我的积分流水
@@ -105,8 +105,8 @@ async def get_my_points_history(
 async def get_my_statistics(
     org_id: int,
     refresh: bool = Query(False, description="是否刷新统计数据"),
-    db: Session = Depends(get_sync_db),
-    current_user: User = Depends(get_current_user_sync),
+    db: Session = Depends(get_sync_session),
+    current_user: User = Depends(get_current_user),
 ):
     """
     获取我的学习统计信息
@@ -143,8 +143,8 @@ async def get_leaderboard(
         "all_time", description="周期类型（daily/weekly/monthly/all_time）"
     ),
     limit: int = Query(100, ge=1, le=500, description="返回数量"),
-    db: Session = Depends(get_sync_db),
-    current_user: User = Depends(get_current_user_sync),
+    db: Session = Depends(get_sync_session),
+    current_user: User = Depends(get_current_user),
 ):
     """
     获取排行榜
@@ -234,8 +234,8 @@ async def get_my_rank(
     org_id: int,
     leaderboard_type: str,
     period: str = Query("all_time", description="周期类型"),
-    db: Session = Depends(get_sync_db),
-    current_user: User = Depends(get_current_user_sync),
+    db: Session = Depends(get_sync_session),
+    current_user: User = Depends(get_current_user),
 ):
     """
     获取我在排行榜中的排名
@@ -286,8 +286,8 @@ async def earn_points_demo(
     org_id: int,
     amount: int = Query(..., ge=1, le=1000, description="积分金额"),
     reason: str = Query(..., description="获得积分原因"),
-    db: Session = Depends(get_sync_db),
-    current_user: User = Depends(get_current_user_sync),
+    db: Session = Depends(get_sync_session),
+    current_user: User = Depends(get_current_user),
 ):
     """
     获得积分（演示接口，实际应通过成就、学习等行为自动获得）
@@ -321,8 +321,8 @@ async def spend_points_demo(
     org_id: int,
     amount: int = Query(..., ge=1, le=1000, description="积分金额"),
     reason: str = Query(..., description="消费积分原因"),
-    db: Session = Depends(get_sync_db),
-    current_user: User = Depends(get_current_user_sync),
+    db: Session = Depends(get_sync_session),
+    current_user: User = Depends(get_current_user),
 ):
     """
     消费积分（演示接口）
@@ -359,8 +359,8 @@ async def spend_points_demo(
 @router.get("/stats/overview")
 async def get_leaderboard_stats_overview(
     org_id: int,
-    db: Session = Depends(get_sync_db),
-    current_user: User = Depends(get_current_user_sync),
+    db: Session = Depends(get_sync_session),
+    current_user: User = Depends(get_current_user),
 ):
     """
     获取排行榜统计概览
