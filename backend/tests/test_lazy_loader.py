@@ -283,6 +283,68 @@ class TestPathMatching:
         assert loader.find_module_by_path("/health") is None
 
 
+# ==================== 最长前缀匹配测试 ====================
+
+class TestLongestPrefixMatch:
+    """最长前缀匹配测试（Issue #42 方案 A）"""
+
+    @staticmethod
+    def _make_spec(name, prefix):
+        """构造一个仅用于路径匹配的模块规格"""
+        return ModuleSpec(
+            name=name,
+            tier=ModuleTier.TIER_2_ON_DEMAND,
+            router_factory=lambda: APIRouter(),
+            prefix=prefix,
+        )
+
+    def test_longest_prefix_match(self, loader):
+        """更精确的前缀应胜出，而不是被 catch-all 前缀遮蔽"""
+        loader.register(self._make_spec("catch_all", "/api/v1"))
+        loader.register(
+            self._make_spec("learning_behavior", "/api/v1/learning-behavior")
+        )
+
+        assert (
+            loader.find_module_by_path("/api/v1/learning-behavior/analytics")
+            == "learning_behavior"
+        )
+        # 未命中更精确前缀时，才回落到 catch-all
+        assert loader.find_module_by_path("/api/v1/other") == "catch_all"
+
+    def test_unknown_path_returns_none(self, loader):
+        """无任何前缀命中时返回 None"""
+        loader.register(
+            self._make_spec("learning_behavior", "/api/v1/learning-behavior")
+        )
+
+        assert loader.find_module_by_path("/unknown/path") is None
+
+    def test_empty_prefix_skipped(self, loader):
+        """空 prefix 的模块不参与路径匹配"""
+        loader.register(self._make_spec("empty_module", ""))
+
+        assert loader.find_module_by_path("/api/v1/empty_module/xxx") is None
+        assert loader.find_module_by_path("/") is None
+
+    def test_path_param_prefix_match(self, loader):
+        """含路径参数的前缀按单段通配匹配"""
+        loader.register(
+            self._make_spec("achievement", "/api/v1/org/{org_id}/achievements")
+        )
+
+        assert (
+            loader.find_module_by_path("/api/v1/org/acme/achievements")
+            == "achievement"
+        )
+        assert (
+            loader.find_module_by_path("/api/v1/org/acme/achievements/1")
+            == "achievement"
+        )
+        # 段数不足时不应命中
+        assert loader.find_module_by_path("/api/v1/org/acme") is None
+
+
 # ==================== 去激活测试 ====================
 
 class TestDeactivation:
