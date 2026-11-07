@@ -7,13 +7,13 @@ import logging
 from typing import Optional
 
 from fastapi import APIRouter, Body, Depends, HTTPException, Query
+from middleware.auth import get_current_user
 from models.user import User
 from services.llm_assistant_service import (
     get_llm_assistant_service,
 )
 from sqlalchemy.orm import Session
-from utils.database import get_sync_db
-from utils.dependencies import get_current_user_sync
+from utils.database import get_sync_session
 
 logger = logging.getLogger(__name__)
 
@@ -27,8 +27,8 @@ async def chat_with_assistant(
     org_id: int,
     message: str = Body(..., description="学生问题"),
     current_lesson_id: Optional[int] = Body(None, description="当前课程 ID"),
-    db: Session = Depends(get_sync_db),
-    current_user: User = Depends(get_current_user_sync),
+    db: Session = Depends(get_sync_session),
+    current_user: User = Depends(get_current_user),
 ):
     """
     与 AI 学习助手对话
@@ -90,8 +90,8 @@ async def chat_with_assistant(
 async def get_conversation_history(
     org_id: int,
     limit: int = Query(20, ge=1, le=100, description="返回消息数量上限"),
-    db: Session = Depends(get_sync_db),
-    current_user: User = Depends(get_current_user_sync),
+    db: Session = Depends(get_sync_session),
+    current_user: User = Depends(get_current_user),
 ):
     """
     获取对话历史
@@ -122,8 +122,8 @@ async def get_conversation_history(
 @router.delete("/history")
 async def clear_conversation_history(
     org_id: int,
-    db: Session = Depends(get_sync_db),
-    current_user: User = Depends(get_current_user_sync),
+    db: Session = Depends(get_sync_session),
+    current_user: User = Depends(get_current_user),
 ):
     """
     清除对话历史
@@ -150,8 +150,8 @@ async def clear_conversation_history(
 @router.get("/statistics")
 async def get_assistant_statistics(
     org_id: int,
-    db: Session = Depends(get_sync_db),
-    current_user: User = Depends(get_current_user_sync),
+    db: Session = Depends(get_sync_session),
+    current_user: User = Depends(get_current_user),
 ):
     """
     获取 AI 助手使用统计
@@ -181,8 +181,8 @@ async def submit_feedback(
     message_id: str = Body(..., description="消息 ID"),
     rating: int = Body(..., ge=1, le=5, description="评分 1-5"),
     comment: Optional[str] = Body(None, description="反馈意见"),
-    db: Session = Depends(get_sync_db),
-    current_user: User = Depends(get_current_user_sync),
+    db: Session = Depends(get_sync_session),
+    current_user: User = Depends(get_current_user),
 ):
     """
     提交对 AI 助手的反馈
@@ -215,7 +215,7 @@ async def submit_feedback(
 async def list_knowledge_base_topics(
     org_id: int,
     category: Optional[str] = Query(None, description="知识类别"),
-    db: Session = Depends(get_sync_db),
+    db: Session = Depends(get_sync_session),
 ):
     """
     获取知识库主题列表
