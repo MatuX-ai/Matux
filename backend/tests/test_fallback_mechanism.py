@@ -191,8 +191,49 @@ class TestAdvancedFallbackScenarios:
         assert "service" in call_sequence
         assert result["level"] == 1
 
-    # test_fallback_with_retry_logic 已移到 PR-3e-2
-    # （降级是否允许重试属测试侧语义争议，待评估后按「只调用一次」改写断言）
+    @pytest.mark.asyncio
+    async def test_fallback_with_retry_logic(self):
+        """降级重试由降级函数自身实现，熔断器只调用降级一次。
+
+        PR-3e-2：原断言假设「熔断器负责重试降级」，但 ``CircuitBreakerConfig``
+        没有任何 retry 字段，``_handle_fallback`` 也只调用降级函数一次。
+        重试语义放回降级函数内部，熔断器侧的调用次数断言为 1。
+        """
+        retry_count = 0
+        max_retries = 3
+
+        async def retry_fallback(*args, **kwargs):
+            nonlocal retry_count
+            # 重试由降级函数自身完成：熔断器只调用本函数一次
+            last_error = None
+            for attempt in range(1, max_retries + 1):
+                retry_count = attempt
+                try:
+                    if attempt < max_retries:
+                        raise Exception("Retry failed")
+                    return {"success": True, "retries": attempt}
+                except Exception as exc:  # noqa: BLE001 - 降级内部重试
+                    last_error = exc
+            raise last_error
+
+        breaker = CircuitBreaker(
+            "Test_Retry",
+            config=CircuitBreakerConfig(
+                failure_threshold=1,
+                fallback_function=retry_fallback
+            )
+        )
+
+        async def failing_service():
+            raise Exception("Service failed")
+
+        result = await breaker.call(failing_service)
+
+        assert result["success"] is True
+        assert result["retries"] == max_retries
+        # 关键语义：熔断器只调用降级函数一次，重试发生在降级函数内部
+        assert breaker.total_fallbacks == 1
+        assert retry_count == max_retries
 
     @pytest.mark.asyncio
     async def test_fallback_timeout_protection(self):
@@ -380,8 +421,45 @@ class TestFallbackErrorHandling:
 
         assert "Fallback also failed" in str(exc_info.value)
 
-    # test_fallback_with_partial_success 已移到 PR-3e-2
-    # （与 retry_logic 同源：降级只调用一次的语义确认后再改写断言）
+    @pytest.mark.asyncio
+    async def test_fallback_with_partial_success(self):
+        """降级第 2 次尝试成功 → 返回 partial；熔断器只调用降级一次。
+
+        与 ``test_fallback_with_retry_logic`` 同源：重试由降级函数自身承担，
+        熔断器不负责重试。
+        """
+        attempt_count = 0
+
+        async def partial_fallback(*args, **kwargs):
+            nonlocal attempt_count
+            last_error = None
+            for attempt in range(1, 3):
+                attempt_count += 1
+                try:
+                    if attempt == 1:
+                        raise Exception("First attempt fails")
+                    return {"partial": True, "attempt": attempt}
+                except Exception as exc:  # noqa: BLE001 - 降级内部重试
+                    last_error = exc
+            raise last_error
+
+        breaker = CircuitBreaker(
+            "Test_Partial",
+            config=CircuitBreakerConfig(
+                failure_threshold=1,
+                fallback_function=partial_fallback
+            )
+        )
+
+        async def failing_service():
+            raise Exception("Fail")
+
+        result = await breaker.call(failing_service)
+
+        assert result["partial"] is True
+        assert result["attempt"] == 2
+        assert breaker.total_fallbacks == 1
+        assert attempt_count == 2
 
 
 if __name__ == "__main__":
