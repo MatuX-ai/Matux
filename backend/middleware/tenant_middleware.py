@@ -11,10 +11,10 @@ from config.settings import settings
 from fastapi import Depends, HTTPException, Request
 from fastapi.responses import JSONResponse
 from jose import JWTError, jwt
+from middleware.auth import get_current_user
 from models.user import User, UserRole
 from sqlalchemy.orm import Session
-from utils.auth_utils import get_current_user_sync
-from utils.database import get_db
+from utils.database import get_sync_session
 from utils.tenant_context import TenantContext
 
 logger = logging.getLogger(__name__)
@@ -261,8 +261,8 @@ async def get_current_org_id(request: Request) -> Optional[int]:
 
 def require_tenant_access(
     org_id: int,
-    current_user: User = Depends(get_current_user_sync),
-    db: Session = Depends(get_db),
+    current_user: User = Depends(get_current_user),
+    db: Session = Depends(get_sync_session),
 ) -> bool:
     """
     验证用户是否有访问指定租户的权限

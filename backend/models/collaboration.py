@@ -330,7 +330,7 @@ class CollaborativeDocument(Base):
         "DocumentVersion", back_populates="document", cascade="all, delete-orphan"
     )
     comments = relationship(
-        "DocumentComment", back_populates="document", cascade="all, delete-orphan"
+        "models.collaboration.DocumentComment", back_populates="document", cascade="all, delete-orphan"
     )
 
     def to_dict(self):
@@ -372,7 +372,7 @@ class DocumentVersion(Base):
     created_at = Column(DateTime(timezone=True), server_default=func.now())
 
     # 关联关系
-    document = relationship("CollaborativeDocument", back_populates="versions")
+    document = relationship("models.collaboration.CollaborativeDocument", back_populates="versions")
     author = relationship("User", backref="document_versions")
 
     def to_dict(self):
@@ -420,9 +420,9 @@ class DocumentComment(Base):
     updated_at = Column(DateTime(timezone=True), onupdate=func.now())
 
     # 关联关系
-    document = relationship("CollaborativeDocument", back_populates="comments")
+    document = relationship("models.collaboration.CollaborativeDocument", back_populates="comments")
     author = relationship("User", backref="document_comments")
-    parent = relationship("DocumentComment", remote_side=[
+    parent = relationship("models.collaboration.DocumentComment", remote_side=[
                           id], backref="replies")
 
     def to_dict(self):
@@ -481,7 +481,7 @@ class StudyGroup(Base):
         "StudyGroupMember", back_populates="group", cascade="all, delete-orphan"
     )
     documents = relationship(
-        "CollaborativeDocument", back_populates="group", cascade="all, delete-orphan"
+        "models.collaboration.CollaborativeDocument", back_populates="group", cascade="all, delete-orphan"
     )
 
     def to_dict(self):

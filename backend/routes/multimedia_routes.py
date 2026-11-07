@@ -7,6 +7,7 @@ import logging
 from typing import List, Optional
 
 from fastapi import APIRouter, Depends, File, Form, HTTPException, Query, UploadFile
+from middleware.auth import get_current_user
 from models.multimedia import (
     DocumentFormat,
     DocumentProcessingRequest,
@@ -28,7 +29,7 @@ from services.multimedia_service import MultimediaService
 from services.three_d_service import ThreeDModelService
 from sqlalchemy.orm import Session
 from starlette.responses import HTMLResponse
-from utils.dependencies import get_current_user_sync, get_sync_db
+from utils.database import get_sync_session
 from utils.tenant_context import get_current_tenant
 
 logger = logging.getLogger(__name__)
@@ -37,16 +38,18 @@ router = APIRouter(prefix="/api/v1/org/{org_id}/multimedia", tags=["多媒体资
 
 
 # 依赖注入函数
-def get_multimedia_service(db: Session = Depends(get_sync_db)) -> MultimediaService:
+def get_multimedia_service(
+    db: Session = Depends(get_sync_session),
+) -> MultimediaService:
     return MultimediaService(db)
 
 
-def get_3d_service(db: Session = Depends(get_sync_db)) -> ThreeDModelService:
+def get_3d_service(db: Session = Depends(get_sync_session)) -> ThreeDModelService:
     return ThreeDModelService(db)
 
 
 def get_document_service(
-    db: Session = Depends(get_sync_db),
+    db: Session = Depends(get_sync_session),
 ) -> DocumentProcessingService:
     return DocumentProcessingService(db)
 
@@ -55,7 +58,7 @@ def get_document_service(
 def create_multimedia_resource(
     org_id: int = get_current_tenant(),
     resource_data: MultimediaResourceCreate = Form(...),
-    current_user: User = Depends(get_current_user_sync),
+    current_user: User = Depends(get_current_user),
     service: MultimediaService = Depends(get_multimedia_service),
 ):
     """
@@ -80,7 +83,7 @@ def list_multimedia_resources(
     org_id: int = get_current_tenant(),
     course_id: Optional[int] = Query(None, description="课程 ID 筛选"),
     media_type: Optional[MediaType] = Query(None, description="媒体类型筛选"),
-    current_user: User = Depends(get_current_user_sync),
+    current_user: User = Depends(get_current_user),
     service: MultimediaService = Depends(get_multimedia_service),
 ):
     """
@@ -114,7 +117,7 @@ def list_multimedia_resources(
 def get_multimedia_resource(
     org_id: int = get_current_tenant(),
     resource_id: int = ...,
-    current_user: User = Depends(get_current_user_sync),
+    current_user: User = Depends(get_current_user),
     service: MultimediaService = Depends(get_multimedia_service),
 ):
     """
@@ -150,7 +153,7 @@ def update_multimedia_resource(
     org_id: int = get_current_tenant(),
     resource_id: int = ...,
     update_data: MultimediaResourceUpdate = ...,
-    current_user: User = Depends(get_current_user_sync),
+    current_user: User = Depends(get_current_user),
     service: MultimediaService = Depends(get_multimedia_service),
 ):
     """
@@ -194,7 +197,7 @@ def update_multimedia_resource(
 def delete_multimedia_resource(
     org_id: int = get_current_tenant(),
     resource_id: int = ...,
-    current_user: User = Depends(get_current_user_sync),
+    current_user: User = Depends(get_current_user),
     service: MultimediaService = Depends(get_multimedia_service),
 ):
     """
@@ -224,7 +227,7 @@ def delete_multimedia_resource(
 def get_video_upload_url(
     org_id: int = get_current_tenant(),
     resource_id: int = ...,
-    current_user: User = Depends(get_current_user_sync),
+    current_user: User = Depends(get_current_user),
     service: MultimediaService = Depends(get_multimedia_service),
 ):
     """
@@ -252,7 +255,7 @@ def complete_file_upload(
     resource_id: int = ...,
     file_size: int = Form(...),
     mime_type: str = Form(...),
-    current_user: User = Depends(get_current_user_sync),
+    current_user: User = Depends(get_current_user),
     service: MultimediaService = Depends(get_multimedia_service),
 ):
     """
@@ -278,7 +281,7 @@ def start_video_transcoding(
     org_id: int = get_current_tenant(),
     resource_id: int = ...,
     transcoding_request: VideoTranscodingRequest = ...,
-    current_user: User = Depends(get_current_user_sync),
+    current_user: User = Depends(get_current_user),
     service: MultimediaService = Depends(get_multimedia_service),
 ):
     """
@@ -312,7 +315,7 @@ def start_video_transcoding(
 def get_transcoding_job_status(
     org_id: int = get_current_tenant(),
     job_id: str = ...,
-    current_user: User = Depends(get_current_user_sync),
+    current_user: User = Depends(get_current_user),
     service: MultimediaService = Depends(get_multimedia_service),
 ):
     """
@@ -352,7 +355,7 @@ def get_transcoding_job_status(
 def process_3d_model(
     org_id: int = get_current_tenant(),
     resource_id: int = ...,
-    current_user: User = Depends(get_current_user_sync),
+    current_user: User = Depends(get_current_user),
     service: ThreeDModelService = Depends(get_3d_service),
 ):
     """
@@ -375,7 +378,7 @@ def get_3d_model_preview(
     org_id: int = get_current_tenant(),
     resource_id: int = ...,
     container_id: Optional[str] = Query(None, description="预览容器ID"),
-    current_user: User = Depends(get_current_user_sync),
+    current_user: User = Depends(get_current_user),
     service: ThreeDModelService = Depends(get_3d_service),
 ):
     """
@@ -410,7 +413,7 @@ def process_document(
     org_id: int = get_current_tenant(),
     resource_id: int = ...,
     processing_request: DocumentProcessingRequest = ...,
-    current_user: User = Depends(get_current_user_sync),
+    current_user: User = Depends(get_current_user),
     service: DocumentProcessingService = Depends(get_document_service),
 ):
     """
@@ -450,7 +453,7 @@ def get_supported_document_formats(
 @router.get("/statistics", summary="获取多媒体资源统计信息")
 def get_multimedia_statistics(
     org_id: int = get_current_tenant(),
-    current_user: User = Depends(get_current_user_sync),
+    current_user: User = Depends(get_current_user),
     service: MultimediaService = Depends(get_multimedia_service),
 ):
     """
@@ -502,7 +505,7 @@ def search_multimedia_resources(
     org_id: int = get_current_tenant(),
     query: str = Query(..., description="搜索关键词"),
     media_type: Optional[MediaType] = Query(None, description="媒体类型筛选"),
-    current_user: User = Depends(get_current_user_sync),
+    current_user: User = Depends(get_current_user),
     service: MultimediaService = Depends(get_multimedia_service),
 ):
     """
@@ -554,7 +557,7 @@ async def direct_file_upload(
     description: Optional[str] = Form(None),
     media_type: MediaType = Form(...),
     file: UploadFile = File(...),
-    current_user: User = Depends(get_current_user_sync),
+    current_user: User = Depends(get_current_user),
     multimedia_service: MultimediaService = Depends(get_multimedia_service),
     document_service: DocumentProcessingService = Depends(get_document_service),
 ):
