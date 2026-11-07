@@ -308,48 +308,50 @@ if not settings.ENABLE_LAZY_LOADING:
     from legacy_routes import register_all_routes
     register_all_routes(app)
 else:
-    # 【4b 修正 · 方案 D】路由注册收敛到 core.router_registry（单一事实源，issue #26）。
-    #   * mode="lazy"：本入口只注册「懒加载归属」与「两侧共用」的条目，
-    #     共 19 项 —— 其中 18 项 active，1 项 pending_integration 被跳过。
-    #   * only=[...]：这 18 项里有 9 项同时登记在 core/module_registry.py，
-    #     由 Tier 引擎（LazyLoader）按 Tier 激活。两条注册路径互不感知，
-    #     若本入口也注册这 9 项，同一批路由会被重复挂载
+    # 【4b 修正 · 方案 E】懒加载入口的路由注册（单一事实源：core/router_registry.py，issue #26）
+    #
+    #   * mode="lazy"：本入口负责「懒加载归属」与「两侧共用」的 active 条目。
+    #   * only=[...]：显式列出本入口在 import 期负责注册的模块名（动态取自 ROUTER_TABLE，
+    #     新增条目自动生效），便于审计「哪些路由由本入口负责」。
+    #     mode="lazy" 字面量保留 —— tests/test_router_contract_snapshot.py 的 T4 AST 探针
+    #     只读 mode 关键字，与 only/exclude 兼容。
+    #   * 重复注册：core/module_registry.py（Tier 引擎）与 ROUTER_TABLE（路由表）是两份
+    #     独立事实源，其中 9 个模块同名（auth / exam / creativity / achievement /
+    #     admin_arvr / ai_edu_progress / error_log / org_error_log / arvr_course）。
+    #     Tier 引擎在 lifespan 激活这些模块时会再挂载一次同样的路由
     #     （实测 9 个模块 / 82 条路由重复，OpenAPI 产生 15 条 Duplicate Operation ID）。
-    #     这 9 项按 Tier 分成两类，处理方式不同：
-    #       - 7 项属 Tier 0 / Tier 1（auth / error_log / org_error_log / admin_arvr /
-    #         exam / achievement / ai_edu_progress）：Tier 引擎在启动时必然激活，
-    #         本入口不再注册 → 消除 66 条重复路由。
-    #       - 2 项属 Tier 2 / Tier 3（arvr_course / creativity）：其 prefix 为空串，
-    #         不进 loader._prefix_map，find_module_by_path 永远匹配不到，
-    #         按需激活链路当前不可达（见 Issue K）。若交给 Tier 引擎，
-    #         这 2 个模块的 16 条路由在正常流量下会 404，
-    #         因此本入口仍保留它们的 eager 注册。
-    #     剩下 9 项（Tier 引擎不覆盖）必须由本入口注册。
-    #     详见 tmp/4b-tier-analysis.md、tmp/4b-fix-plan.md。
+    #     本入口已在 import 期注册这些路由，因此统一在 _init_lazy_architecture() 中
+    #     把同名模块预标记为 ACTIVE，Tier 引擎跳过它们 →
+    #       * 消除重复注册；
+    #       * import 期路由齐全，不会 404（见 tests/conftest.py「已知边界」）。
     #   * strict=False：注册失败按 L1 降级处理（写日志与报告，不阻断启动）。
-    from core.router_registry import register_all_routers
+    #     详见 tmp/4b-tier-analysis.md、tmp/4b-fix-plan.md。
+    from core.router_registry import (
+        MODE_BOTH,
+        MODE_LAZY,
+        STATUS_ACTIVE,
+        register_all_routers,
+        specs_by_name,
+    )
 
+    # 本入口在 import 期负责注册的模块（显式列出，便于审计）。
+    _lazy_entry_modules = sorted(
+        name
+        for name, _spec in specs_by_name().items()
+        if _spec.mode in (MODE_LAZY, MODE_BOTH)
+        and _spec.status == STATUS_ACTIVE
+    )
     register_all_routers(
         app,
         mode="lazy",
         strict=False,
-        only=[
-            # 9 项：Tier 引擎（core/module_registry.py）未覆盖，只能由本入口注册
-            "ai_edu_code_execution",
-            "ai_edu_quiz",
-            "leaderboard",
-            "llm_assistant",
-            "micro_course",
-            "recommendation",
-            "system_status",
-            "token",
-            "vircadia_avatar",
-            # 2 项：Tier 2 / Tier 3 且按需激活链路当前不可达（Issue K），保留 eager 注册
-            "arvr_course",
-            "creativity",
-        ],
+        only=_lazy_entry_modules,
     )
-    logger.info("懒加载模式：路由由 LazyLoader 引擎管理")
+    logger.info(
+        "懒加载模式：本入口已注册 %d 个路由模块"
+        "（Tier 引擎跳过同名模块，避免重复注册）",
+        len(_lazy_entry_modules),
+    )
 
 
 async def _init_lazy_architecture(app_instance, start_time: float):
@@ -409,6 +411,24 @@ async def _init_lazy_architecture(app_instance, start_time: float):
     all_specs = get_all_module_specs_with_plugins()
     logger.info(f"模块注册完成: {len(all_specs)} 个模块 (含插件)")
 
+    # 【4b 修正 · 方案 E】本入口（main.py 懒加载分支）已在 import 期注册路由的模块，
+    #   Tier 引擎不得再次挂载同一批路由 —— 预标记为 ACTIVE 即可跳过。
+    #   ModuleLazyLoader.activate() 只检查 spec.state，不检查 app.routes，
+    #   因此这是消除「双事实源重复注册」的关键一步（详见 tmp/4b-fix-plan.md）。
+    from core.router_registry import (
+        MODE_BOTH,
+        MODE_LAZY,
+        STATUS_ACTIVE,
+        specs_by_name,
+    )
+
+    _entry_owned_modules = {
+        name
+        for name, _spec in specs_by_name().items()
+        if _spec.mode in (MODE_LAZY, MODE_BOTH)
+        and _spec.status == STATUS_ACTIVE
+    }
+
     for spec_data in all_specs:
         spec = ModuleSpec(
             name=spec_data["name"],
@@ -421,6 +441,10 @@ async def _init_lazy_architecture(app_instance, start_time: float):
             fallback_services=spec_data.get("fallback_services", {}),
             model_classes=spec_data.get("model_classes", []),
         )
+        if spec.name in _entry_owned_modules:
+            # 路由已由本入口注册 → 视为已激活，Tier 引擎不再重复挂载
+            spec.mark_active(0.0)
+
         try:
             loader.register(spec)
         except ValueError:
