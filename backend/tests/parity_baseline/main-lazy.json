@@ -1,18 +1,31 @@
 {
   "entry": "main_lazy",
-  "generated_from_commit": "c0c49f00857a04fcb62573b1382b79abf013ac56",
-  "source": "git archive fix/main-edu-router-registry-20261106 backend/ (LF, no CRLF)",
+  "generated_from_commit": "7977f35bc7ddbe8340f7ed064c52bf6be47b17b8",
+  "source": "git archive fix/4b-tier-dedup-20261107 backend/ (LF, no CRLF)",
   "stubs_injected": [
     "services.ai_teacher_live_settings",
     "services.ai_teacher_event_bus",
     "cache.ai_teacher_persistence"
   ],
-  "registry_mode": null,
+  "registry_mode": "lazy",
+  "registry_only": [
+    "ai_edu_code_execution",
+    "ai_edu_quiz",
+    "leaderboard",
+    "llm_assistant",
+    "micro_course",
+    "recommendation",
+    "system_status",
+    "token",
+    "vircadia_avatar",
+    "arvr_course",
+    "creativity"
+  ],
   "registry_exclude": null,
   "condition_keys_enabled": [],
   "paths_by_group": null,
-  "total": 82,
-  "real_total": 82,
+  "total": 137,
+  "real_total": 137,
   "pending_paths": [],
   "paths": [
     [
@@ -22,6 +35,14 @@
     [
       "DELETE",
       "/api/v1/auth/users/{user_id}/roles/{role_code}"
+    ],
+    [
+      "DELETE",
+      "/api/v1/creativity/ideas/{idea_id}"
+    ],
+    [
+      "DELETE",
+      "/api/v1/org/{org_id}/ai-edu/assistant/history"
     ],
     [
       "DELETE",
@@ -61,6 +82,14 @@
     ],
     [
       "GET",
+      "/api/v1/arvr-courses/"
+    ],
+    [
+      "GET",
+      "/api/v1/arvr-courses/{course_id}"
+    ],
+    [
+      "GET",
       "/api/v1/auth/logs/permissions"
     ],
     [
@@ -89,11 +118,71 @@
     ],
     [
       "GET",
+      "/api/v1/creativity/ideas/{idea_id}"
+    ],
+    [
+      "GET",
+      "/api/v1/creativity/my-ideas"
+    ],
+    [
+      "GET",
+      "/api/v1/creativity/statistics"
+    ],
+    [
+      "GET",
+      "/api/v1/creativity/templates"
+    ],
+    [
+      "GET",
+      "/api/v1/creativity/templates/popular"
+    ],
+    [
+      "GET",
+      "/api/v1/creativity/templates/search/{query}"
+    ],
+    [
+      "GET",
+      "/api/v1/creativity/templates/{template_id}"
+    ],
+    [
+      "GET",
       "/api/v1/device/compatibility/{plugin_id}"
     ],
     [
       "GET",
       "/api/v1/device/profile"
+    ],
+    [
+      "GET",
+      "/api/v1/micro-course/"
+    ],
+    [
+      "GET",
+      "/api/v1/org/{org_id}/ai-edu/assistant/history"
+    ],
+    [
+      "GET",
+      "/api/v1/org/{org_id}/ai-edu/assistant/knowledge-base/topics"
+    ],
+    [
+      "GET",
+      "/api/v1/org/{org_id}/ai-edu/assistant/statistics"
+    ],
+    [
+      "GET",
+      "/api/v1/org/{org_id}/ai-edu/quiz-history/{user_id}"
+    ],
+    [
+      "GET",
+      "/api/v1/org/{org_id}/ai-edu/quiz/{quiz_id}/review"
+    ],
+    [
+      "GET",
+      "/api/v1/org/{org_id}/ai-edu/quiz/{quiz_id}/status"
+    ],
+    [
+      "GET",
+      "/api/v1/org/{org_id}/ai-edu/supported-languages"
     ],
     [
       "GET",
@@ -105,11 +194,47 @@
     ],
     [
       "GET",
+      "/api/v1/org/{org_id}/leaderboard/my/points"
+    ],
+    [
+      "GET",
+      "/api/v1/org/{org_id}/leaderboard/my/points/history"
+    ],
+    [
+      "GET",
+      "/api/v1/org/{org_id}/leaderboard/my/rank/{leaderboard_type}"
+    ],
+    [
+      "GET",
+      "/api/v1/org/{org_id}/leaderboard/my/statistics"
+    ],
+    [
+      "GET",
+      "/api/v1/org/{org_id}/leaderboard/stats/overview"
+    ],
+    [
+      "GET",
+      "/api/v1/org/{org_id}/leaderboard/{leaderboard_type}"
+    ],
+    [
+      "GET",
       "/api/v1/org/{org_id}/logs/error"
     ],
     [
       "GET",
       "/api/v1/org/{org_id}/logs/stats"
+    ],
+    [
+      "GET",
+      "/api/v1/org/{org_id}/recommendations/courses"
+    ],
+    [
+      "GET",
+      "/api/v1/org/{org_id}/recommendations/stats"
+    ],
+    [
+      "GET",
+      "/api/v1/org/{org_id}/recommendations/user-profile"
     ],
     [
       "GET",
@@ -181,6 +306,26 @@
     ],
     [
       "GET",
+      "/api/v1/token/balance"
+    ],
+    [
+      "GET",
+      "/api/v1/token/package/{package_id}"
+    ],
+    [
+      "GET",
+      "/api/v1/token/packages"
+    ],
+    [
+      "GET",
+      "/api/v1/token/stats"
+    ],
+    [
+      "GET",
+      "/api/v1/token/usage"
+    ],
+    [
+      "GET",
       "/api/v1/unified-auth/children"
     ],
     [
@@ -194,6 +339,10 @@
     [
       "GET",
       "/logs/stats"
+    ],
+    [
+      "GET",
+      "/vircadia/avatar/health"
     ],
     [
       "PATCH",
@@ -249,11 +398,71 @@
     ],
     [
       "POST",
+      "/api/v1/creativity/evaluate-business"
+    ],
+    [
+      "POST",
+      "/api/v1/creativity/generate-idea"
+    ],
+    [
+      "POST",
+      "/api/v1/creativity/generate-image"
+    ],
+    [
+      "POST",
+      "/api/v1/creativity/score-idea"
+    ],
+    [
+      "POST",
+      "/api/v1/creativity/templates"
+    ],
+    [
+      "POST",
       "/api/v1/device/reassess"
     ],
     [
       "POST",
+      "/api/v1/org/{org_id}/ai-edu/assistant/chat"
+    ],
+    [
+      "POST",
+      "/api/v1/org/{org_id}/ai-edu/assistant/feedback"
+    ],
+    [
+      "POST",
+      "/api/v1/org/{org_id}/ai-edu/execute-code"
+    ],
+    [
+      "POST",
+      "/api/v1/org/{org_id}/ai-edu/quiz/start"
+    ],
+    [
+      "POST",
+      "/api/v1/org/{org_id}/ai-edu/quiz/submit"
+    ],
+    [
+      "POST",
+      "/api/v1/org/{org_id}/ai-edu/test-code"
+    ],
+    [
+      "POST",
+      "/api/v1/org/{org_id}/leaderboard/my/points/earn"
+    ],
+    [
+      "POST",
+      "/api/v1/org/{org_id}/leaderboard/my/points/spend"
+    ],
+    [
+      "POST",
       "/api/v1/org/{org_id}/logs/error"
+    ],
+    [
+      "POST",
+      "/api/v1/org/{org_id}/recommendations/feedback/{recommendation_id}"
+    ],
+    [
+      "POST",
+      "/api/v1/org/{org_id}/recommendations/learning-path"
     ],
     [
       "POST",
@@ -309,6 +518,14 @@
     ],
     [
       "POST",
+      "/api/v1/token/estimate"
+    ],
+    [
+      "POST",
+      "/api/v1/token/purchase"
+    ],
+    [
+      "POST",
       "/api/v1/unified-auth/bind-child"
     ],
     [
@@ -332,6 +549,14 @@
       "/logs/error"
     ],
     [
+      "POST",
+      "/vircadia/avatar/metadata"
+    ],
+    [
+      "POST",
+      "/vircadia/avatar/validate"
+    ],
+    [
       "PUT",
       "/api/v1/admin/arvr/courses/{course_id}"
     ],
@@ -342,6 +567,14 @@
     [
       "PUT",
       "/api/v1/courses/progress"
+    ],
+    [
+      "PUT",
+      "/api/v1/creativity/ideas/{idea_id}"
+    ],
+    [
+      "PUT",
+      "/api/v1/org/{org_id}/recommendations/user-profile/preferences"
     ]
   ]
 }
