@@ -132,7 +132,7 @@ LOOKUP_PREFIXES: Dict[str, List[str]] = {
     "collaborative_editor": [
         "/api/v1/org/{org_id}/courses/{course_id}/collaborative-documents"
     ],
-    "learning_behavior": ["/api/v1/api/v1/learning-behavior"],
+    "learning_behavior": ["/api/v1/learning-behavior"],
     "finance": ["/api/v1/finance/org/{org_id}"],
     "sponsorship": ["/api/v1/sponsorship"],
     "admin_settings": ["/api/v1/admin/settings"],
@@ -692,7 +692,7 @@ def get_all_module_specs() -> List[dict]:
     modules.append({
         "name": "learning_behavior",
         "tier": 2,
-        "prefix": "/api/v1",
+        "prefix": "",
         "tags": ["学习行为特征"],
         "router_factory": _factory(
             "routes.learning_behavior_routes", "router"
