@@ -119,11 +119,15 @@ class CircuitBreaker:
         Raises:
             Exception: 熔断器打开时或函数执行失败
         """
+        # 只把「状态判断 + 决策」放进锁内；降级处理必须在锁外执行。
+        # _handle_fallback() 自身需要获取 self._lock，而 asyncio.Lock 不可重入，
+        # 持锁调用会让当前 Task 等待自己已持有的锁 -> 永久挂起（Issue #46）。
         async with self._lock:
-            # 检查是否允许请求通过
-            if not self._allow_request():
-                # 尝试降级处理
-                return await self._handle_fallback(*args, **kwargs)
+            allowed = self._allow_request()
+
+        if not allowed:
+            # 与下方 except 分支（锁已释放）保持一致：锁外尝试降级处理
+            return await self._handle_fallback(*args, **kwargs)
 
         try:
             # 执行实际调用
