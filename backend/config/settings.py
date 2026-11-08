@@ -115,6 +115,17 @@ class Settings(BaseSettings):
     RATE_LIMIT_REQUESTS: int = 100
     RATE_LIMIT_WINDOW: int = 3600  # 1小时
 
+    # 【P3-E】风控系统配置
+    RISK_CONTROL_ENABLED: bool = True
+    RISK_CONTROL_AUTO_BLOCK_HOURS: int = 1
+    CAPTCHA_PROVIDER: str = "noop"  # noop / hcaptcha / recaptcha / tencent
+    CAPTCHA_HCAPTCHA_SECRET: str = ""
+    CAPTCHA_HCAPTCHA_SITE_KEY: str = ""
+    CAPTCHA_TENCENT_SECRET_ID: str = ""
+    CAPTCHA_TENCENT_SECRET_KEY: str = ""
+    CAPTCHA_TENCENT_CAPTCHA_APP_ID: str = ""
+    CAPTCHA_TOKEN_TTL_SECONDS: int = 300  # 一次性 token 默认 5 分钟
+
     # 熔断器配置
     CIRCUIT_BREAKER_ENABLED: bool = True
     CIRCUIT_BREAKER_FAILURE_THRESHOLD: int = 5
@@ -225,6 +236,26 @@ class Settings(BaseSettings):
     AUTO_PRELOAD_TIER: int = 1
     # 后台预加载延迟（秒），避免与启动竞争资源
     PRELOAD_DELAY_SECONDS: float = 2.0
+
+    # === AI 教师持久化配置 ===
+    # 【P3-D-1】持久化后端选择
+    # - file: 默认，JSON 文件持久化（P3-B 引入）
+    # - sql:  SQLAlchemy ORM + SQLite 持久化（P3-D 新增）
+    # - redis: Redis Hash + Pub/Sub 跨进程持久化（P3-D-2 新增）
+    # 运行时也可通过环境变量 AI_TEACHER_PERSISTENCE_BACKEND 覆盖
+    AI_TEACHER_PERSISTENCE_BACKEND: str = "file"
+    AI_TEACHER_REDIS_URL: str = "redis://localhost:6379/0"  # Redis 连接 URL
+    AI_TEACHER_PERSISTENCE_USE_PUBSUB: bool = True  # 是否启用跨进程通知
+
+    # === 社交化分享配置 ===
+    # 【P3-C】分享平台基础 URL（用于生成短链 + 二维码）
+    SHARE_BASE_URL: str = "http://localhost:8000"
+    # 二维码存储目录（相对于项目根目录）
+    QR_CODE_STORAGE_DIR: str = "backend/static/qrcodes"
+    # 默认邀请奖励积分
+    DEFAULT_INVITE_REWARD_POINTS: int = 100
+    # 邀请码默认有效期（天，None=永不过期）
+    DEFAULT_INVITE_EXPIRY_DAYS: Optional[int] = 30
 
     # === 服务器配置 ===
     # 最大 worker 进程数（生产环境），避免高配机器上资源耗尽
@@ -425,8 +456,9 @@ def get_settings() -> Settings:
 # 为向后兼容，提供全局 settings 实例
 # 注意：在模块首次导入时会触发 Settings() 实例化
 # 如果需要延迟初始化，使用 get_settings() 函数
+# 【P3-D-1 修复】移除 pytest 分支——pytest 也需要 settings 完整加载
+# （utils/database.py 在导入时就引用 settings.DATABASE_URL）
 try:
-    # 仅在非测试环境中立即初始化
     settings = Settings()
 except Exception:
     # 【P1修复】配置加载失败必须显式暴露：静默降级为 settings=None 会让下游
