@@ -27,6 +27,12 @@ from routes.ai_edu_quiz_routes import router as ai_edu_quiz_router
 # )
 from routes.ai_edu_websocket_routes import router as ai_edu_websocket_router
 
+# 【P0 修复】补齐 AI 个性化教师路由：桌面端（main_ai_edu 入口）原先未注册，
+#   导致 /api/v1/ai-teacher/* 全部 404，前端 AI 教师页面不可用。
+#   依赖 backend/cache/ 已在 feat/desktop-p3-batch1 分支入库，可直接注册。
+#   路由内 prefix 已含 /api/v1/ai-teacher，共 17 条路由，不需再传 prefix。
+from routes.ai_teacher_routes import router as ai_teacher_router
+
 # 【P1-Backend 修复 #1】补齐 arvr_course_routes：前端 ARVRCoursePlayerComponent 调用
 #   /api/v1/arvr-courses/{id}，原 routes/ar_vr_routes.py 提供的路径是 /api/v1/org/{org_id}/arvr/*，
 #   前端调用 404 → ARVR 课程 502。补齐后 ARVR 课程可正常加载。
@@ -171,6 +177,10 @@ app.include_router(org_error_log_router)
 # 【P1-Admin 补齐】注册 Admin AR/VR 课程管理后台
 #   路径 /api/v1/admin/arvr/*，要求 JWT + admin 角色
 app.include_router(admin_arvr_router)
+# 【P0 修复】注册 AI 个性化教师路由（17 条，/api/v1/ai-teacher/*）
+#   本入口手写 include_router，不经过 core.router_registry.register_all_routers，
+#   因此不会与 ROUTER_TABLE 重复注册。
+app.include_router(ai_teacher_router, tags=["AI 个性化教师"])
 
 
 # 临时测试路由

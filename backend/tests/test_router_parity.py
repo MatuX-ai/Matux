@@ -12,18 +12,20 @@ include_router(...) 调用，校验「表 ↔ 入口」双向无漂移。
 口径（对齐 issue #21「并集 61」）::
 
     legacy 侧       : 52 个模块（mode ∈ {legacy, both}）
-    main_ai_edu 侧 : 19 个模块（mode ∈ {lazy, both}）
-    交集            : 10 个模块
-    并集            : 52 + 19 - 10 = 61 个模块  == len(ROUTER_TABLE)
+    main_ai_edu 侧 : 20 个模块（mode ∈ {lazy, both}）
+    交集            : 11 个模块
+    并集            : 52 + 20 - 11 = 61 个模块  == len(ROUTER_TABLE)
 
-白名单（issue #26）分两类，本文件分别校验其「缺失形态」：
+白名单（issue #26；desktop-p3-batch1 后剩 3 项）分两类，本文件分别校验其「缺失形态」：
 
     模块未入库 PENDING_MODULE_MISSING（入口源码里本就找不到，属预期）:
         routes.share_routes
         routes.gamification_websocket_routes
     依赖未入库 PENDING_DEPENDENCY（入口源码里有 include_router，注册期跳过）:
         routes.ai_edu_websocket_routes
-        routes.ai_teacher_routes
+
+注：routes.ai_teacher_routes 已随 backend/cache/ 入库，双入口均已注册，
+     不再属于白名单。
 
 用法::
 
@@ -79,10 +81,9 @@ PENDING_MODULE_MISSING = frozenset(
 PENDING_DEPENDENCY = frozenset(
     {
         "routes.ai_edu_websocket_routes",
-        "routes.ai_teacher_routes",
     }
 )
-#: 白名单全集（issue #26 拍板 + PR #27 commit 2 修正为 4 项）
+#: 白名单全集（issue #26 拍板；ai_teacher 入库后剩 3 项）
 EXPECTED_PENDING = PENDING_MODULE_MISSING | PENDING_DEPENDENCY
 
 #: legacy 侧「表里有、入口源码里找不到」的固定基线（全部属于模块未入库白名单）
@@ -342,12 +343,12 @@ class TestEntrySourceParity:
         }
         assert len(table_modules) == 52
 
-    def test_aiedu_side_covers_19_modules(self, aiedu_pairs):
-        """main_ai_edu 侧口径：19 个模块。"""
+    def test_aiedu_side_covers_20_modules(self, aiedu_pairs):
+        """main_ai_edu 侧口径：20 个模块。"""
         table_modules = {
             spec.module_path for spec in ROUTER_TABLE if spec.mode in AI_EDU_SIDE_MODES
         }
-        assert len(table_modules) == 19
+        assert len(table_modules) == 20
 
 
 # ==================== T3：parity 三方一致 ====================
@@ -440,19 +441,19 @@ class TestConditionalRoutes:
             spec.module_path for spec in ROUTER_TABLE if spec.status == STATUS_ACTIVE
         }
         assert conditional_modules <= active_modules
-        assert len(active_modules) == 57
+        assert len(active_modules) == 58
 
 
 # ==================== T5：白名单 ====================
 
 
 class TestPendingIntegration:
-    """T5：pending_integration_modules() 返回 4 项，且与源码缺失形态一致。"""
+    """T5：pending_integration_modules() 返回 3 项，且与源码缺失形态一致。"""
 
-    def test_t5_returns_four_modules(self):
-        """白名单恰好 4 项。"""
+    def test_t5_returns_three_modules(self):
+        """白名单恰为 3 项。"""
         pending = pending_integration_modules()
-        assert len(pending) == 4
+        assert len(pending) == 3
         assert set(pending) == set(EXPECTED_PENDING)
 
     def test_t5_matches_table_status(self):
@@ -490,21 +491,21 @@ class TestPendingIntegration:
 
 
 class TestRegisterAllRoutersParity:
-    """T6：register_all_routers 在 mock app 上注册 57 个 active 模块。"""
+    """T6：register_all_routers 在 mock app 上注册 58 个 active 模块。"""
 
-    def test_t6_registers_57_active_modules(
+    def test_t6_registers_58_active_modules(
         self, mock_app, stub_import, isolated_logs, conditions_on
     ):
-        """条件开启时：57 项 active 全部注册，4 项 pending 被跳过。"""
+        """条件开启时：58 项 active 全部注册，3 项 pending 被跳过。"""
         report = register_all_routers(mock_app)
 
         assert report.total == 61
-        assert len(report.succeeded) == 57
+        assert len(report.succeeded) == 58
         assert not report.failed
         assert not report.disabled
-        assert len(report.skipped) == 4
+        assert len(report.skipped) == 3
         assert {item["module"] for item in report.skipped} == set(EXPECTED_PENDING)
-        assert len(mock_app.calls) == 57
+        assert len(mock_app.calls) == 58
 
     def test_t6_registered_modules_equal_active_set(
         self, mock_app, stub_import, isolated_logs, conditions_on
@@ -525,9 +526,9 @@ class TestRegisterAllRoutersParity:
 
         report = register_all_routers(mock_app)
 
-        # 4 项 pending + 4 项条件未启用
-        assert len(report.skipped) == 8
-        assert len(report.succeeded) == 53
+        # 3 项 pending + 4 项条件未启用
+        assert len(report.skipped) == 7
+        assert len(report.succeeded) == 54
         conditional_modules = {
             spec.module_path for spec in ROUTER_TABLE if spec.condition_key
         }

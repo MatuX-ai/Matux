@@ -114,16 +114,16 @@ class TestRouterTable:
         """总表必须是 61 条（issue #21 的并集口径）。"""
         assert len(ROUTER_TABLE) == 61
 
-    def test_pending_integration_count_is_4(self):
-        """白名单恰好 4 项（issue #26 拍板 + PR #27 commit 2 修正）。"""
+    def test_pending_integration_count_is_3(self):
+        """白名单恰好 3 项（ai_teacher 随 desktop-p3-batch1 入库后移出）。"""
         pending = [
             spec for spec in ROUTER_TABLE if spec.status == STATUS_PENDING_INTEGRATION
         ]
-        assert len(pending) == 4
+        assert len(pending) == 3
 
-    def test_active_count_is_57(self):
-        """其余 57 项为 active。"""
-        assert len(active_specs()) == 57
+    def test_active_count_is_58(self):
+        """其余 58 项为 active。"""
+        assert len(active_specs()) == 58
 
     def test_names_are_unique(self):
         names = [spec.name for spec in ROUTER_TABLE]
@@ -138,9 +138,8 @@ class TestRouterTable:
         assert len(set(keys)) == len(keys)
 
     def test_whitelist_matches_issue26(self):
-        """白名单内容与 issue #26 拍板 + commit 2 修正完全一致（4 项）。"""
+        """白名单内容与 issue #26 拍板一致（ai_teacher 入库后剩 3 项）。"""
         assert set(pending_integration_modules()) == {
-            "routes.ai_teacher_routes",
             "routes.ai_edu_websocket_routes",
             "routes.share_routes",
             "routes.gamification_websocket_routes",
@@ -194,11 +193,11 @@ class TestRegisterAllRouters:
         report = register_all_routers(mock_app)
 
         assert report.total == 61
-        assert len(report.succeeded) == 57
+        assert len(report.succeeded) == 58
         assert not report.failed
         assert not report.disabled
-        # share_routes 已转 pending_integration -> 57 次 include_router
-        assert len(mock_app.calls) == 57
+        # share_routes 已转 pending_integration -> 58 次 include_router
+        assert len(mock_app.calls) == 58
 
     def test_pending_specs_are_skipped_with_warning(
         self, mock_app, stub_import, isolated_logs, conditions_on, caplog
@@ -206,12 +205,11 @@ class TestRegisterAllRouters:
         with caplog.at_level(logging.WARNING, logger="core.router_registry"):
             report = register_all_routers(mock_app)
 
-        assert len(report.skipped) == 4
+        assert len(report.skipped) == 3
         skipped_modules = {item["module"] for item in report.skipped}
         assert skipped_modules == set(pending_integration_modules())
         assert "待集成" in caplog.text
         # 白名单模块不得被注册
-        assert "routes.ai_teacher_routes" not in mock_app.modules()
         assert "routes.ai_edu_websocket_routes" not in mock_app.modules()
         assert "routes.share_routes" not in mock_app.modules()
         assert "routes.gamification_websocket_routes" not in mock_app.modules()
@@ -223,8 +221,8 @@ class TestRegisterAllRouters:
 
         report = register_all_routers(mock_app)
 
-        # 4 条白名单 + 4 条条件未启用
-        assert len(report.skipped) == 8
+        # 3 条白名单 + 4 条条件未启用
+        assert len(report.skipped) == 7
         reasons = {item["reason"] for item in report.skipped}
         assert any(reason.endswith("=False") for reason in reasons)
 
@@ -243,7 +241,7 @@ class TestRegisterAllRouters:
         report = register_all_routers(mock_app, exclude=["auth"])
 
         assert "routes.auth_routes" not in mock_app.modules()
-        assert len(report.succeeded) == 56
+        assert len(report.succeeded) == 57
 
     def test_lazy_mode_only_registers_lazy_and_both(
         self, mock_app, stub_import, isolated_logs, conditions_on
@@ -287,7 +285,7 @@ class TestFailureStrategy:
         assert report.failed[0]["module"] == "routes.ai_routes"
         assert "ImportError" in report.failed[0]["error"]
         # 其余条目照常注册
-        assert len(report.succeeded) == 56
+        assert len(report.succeeded) == 57
         assert "路由注册失败" in caplog.text
 
     def test_l1_failure_counter_is_persisted(
@@ -374,9 +372,9 @@ class TestFailureStrategy:
         data = json.loads(report_path.read_text(encoding="utf-8"))
         assert data["mode"] == MODE_LEGACY
         assert data["total"] == 61
-        assert data["succeeded"] == 57
+        assert data["succeeded"] == 58
         assert data["failed"] == []
-        assert len(data["skipped"]) == 4
+        assert len(data["skipped"]) == 3
         assert "generated_at" in data
         assert "duration_ms" in data
 
