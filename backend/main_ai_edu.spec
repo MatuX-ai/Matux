@@ -47,6 +47,8 @@ for _rel in _DATA_DIRS:
             datas.append((str(_full), _target))
 
 # 应用配置文件模板（不含真实 .env，避免把 SECRET_KEY 打进安装包）
+# 冻结态的真实配置由 config/settings.py 在首次启动时写入用户数据目录：
+#   %APPDATA%\\imato-desktop\\.env（SECRET_KEY + 绝对 DATABASE_URL）
 _env_example = BACKEND_DIR / ".env.example"
 if _env_example.exists():
     datas.append((str(_env_example), "."))
@@ -91,6 +93,22 @@ hiddenimports = [
     "multipart",
     # anyio 后端
     "anyio._backends._asyncio",
+    # 首启建库/种子（main_ai_edu 里通过 __import__(字符串) 动态导入，
+    # PyInstaller 静态分析看不到，必须显式声明）
+    "database.db",
+    "models.achievement",
+    "models.leaderboard",
+    "models.content_store",
+    "models.finance",
+    "models.hardware_module",
+    "models.course",
+    "models.learning_source",
+    "models.organization",
+    "models.recommendation",
+    "models.unified_learning_record",
+    "models.user_organization",
+    "scripts.seed_initial_data",
+    "scripts.seed_demo_data",
 ]
 
 # --------------------------------------------------------------------- 排除项

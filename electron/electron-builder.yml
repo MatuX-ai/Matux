@@ -44,13 +44,12 @@ extraResources:
     to: "backend/templates"
     filter:
       - "**/*"
-  # 运行时数据库（当前版本的首次可用性依赖它：含预置测试/管理员账号）。
-  #   注意：这是与 1.0.4 保持一致的权宜方案；后续应改为「首次启动自动创建默认管理员」，
-  #   避免每次升级用旧库覆盖用户数据（后续升级需加「已存在则跳过」判定）。
-  - from: "../backend/ai_service.db"
-    to: "backend/ai_service.db"
-    filter:
-      - "**/*"
+  # 运行时数据库不再随包分发（上线硬伤修复）：
+  #   - backend/ai_service.db 是开发库，含开发期个人学习记录，不得随安装包分发
+  #   - 桌面端数据库固定在用户数据目录：%APPDATA%\matux-desktop\ai_service.db
+  #     （由 backend/config/settings.py 冻结态 bootstrap 生成并持久化）
+  #   - 首次启动由 create_all 建库 + scripts/seed_initial_data.py 补齐演示账号与课程
+  #   - 旧版本升级：settings.py 会把安装目录下的旧库迁移到用户数据目录，不丢数据
   - from: "../backend/configs"
     to: "backend/configs"
     filter:

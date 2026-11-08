@@ -15,6 +15,23 @@ Unicode true
 !include "LogicLib.nsh"
 
 ; ----------------------------------------------------------------------------
+; Upgrade safety (runs before the old version is uninstalled)
+;
+; v1.0.4 and earlier shipped backend/ai_service.db inside the install dir.
+; New versions keep the database at %APPDATA%\matux-desktop\ai_service.db,
+; and the NSIS uninstaller removes the old install dir first - so the backend
+; side migration in config/settings.py would be too late. Copy the legacy
+; database before the uninstaller runs, only when the user has none yet.
+; ----------------------------------------------------------------------------
+!macro customInit
+  ${If} ${FileExists} "$INSTDIR\resources\backend\ai_service.db"
+  ${AndIfNot} ${FileExists} "$APPDATA\matux-desktop\ai_service.db"
+    CreateDirectory "$APPDATA\matux-desktop"
+    CopyFiles /SILENT "$INSTDIR\resources\backend\ai_service.db" "$APPDATA\matux-desktop"
+  ${EndIf}
+!macroend
+
+; ----------------------------------------------------------------------------
 ; 安装成功钩子（最小空实现，v1.0.4）
 ; Python 检测完全交给 Electron 端的 utils/install-state.js
 ; ----------------------------------------------------------------------------

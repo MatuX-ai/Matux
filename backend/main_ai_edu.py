@@ -4,7 +4,10 @@ AI-Edu-for-Kids 简化版后端服务
 只包含 AI-Edu 相关的功能，避免其他模块的依赖问题
 """
 
+import asyncio
+import logging
 import os
+import sys
 
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
@@ -73,6 +76,22 @@ from routes.token_routes import router as token_router
 from routes.vircadia_avatar_routes import router as vircadia_avatar_router
 from utils.database import Base, sync_engine
 import uvicorn
+
+logger = logging.getLogger("main_ai_edu")
+
+
+def _force_utf8_stdio() -> None:
+    """统一 stdout/stderr 为 UTF-8。
+
+    Electron 用 utf8 解析子进程输出；Windows 默认 cp936 会让中文日志乱码，
+    且种子/启动日志里的 emoji 会抛 UnicodeEncodeError 直接中断流程。
+    """
+    for stream in (sys.stdout, sys.stderr):
+        try:
+            stream.reconfigure(encoding="utf-8", errors="replace")
+        except (AttributeError, ValueError):  # pragma: no cover - 非 TextIOWrapper
+            pass
+
 
 # 创建 FastAPI 应用
 app = FastAPI(
@@ -234,7 +253,107 @@ async def get_statistics(org_id: int):
     }
 
 
+_SECONDARY_MODULES = (
+    "models.achievement",
+    "models.leaderboard",
+    "models.content_store",
+    "models.finance",
+    "models.hardware_module",
+)
+
+
+def _import_secondary_models() -> None:
+    """逐个导入副 Base 模型（单个失败不影响其他表）。"""
+    for module in _SECONDARY_MODULES:
+        try:
+            __import__(module)
+        except Exception:
+            logger.warning("导入 %s 失败（跳该表）", module, exc_info=True)
+
+
+def _register_users_shadow(legacy_base) -> None:
+    """在副 Base 的 metadata 里注册 users 影子表供 FK 解析。
+
+    副 Base 的 user_achievements 等表有 FK 指向 users（主 Base 的表）。
+    不同 metadata 互不可见，缺少目标定义时 create_all 会报 NoReferencedTableError。
+    create_all 默认 checkfirst，已存在的真实 users 表不会被重建。
+    """
+    try:
+        from sqlalchemy import Column, Integer, Table
+
+        if "users" not in legacy_base.metadata.tables:
+            Table("users", legacy_base.metadata, Column("id", Integer, primary_key=True))
+    except Exception:  # pragma: no cover - 影子表仅用于 FK 解析
+        logger.warning("注册 users 影子表失败", exc_info=True)
+
+
+def _create_secondary_tables() -> None:
+    """补建「第二套 declarative Base」（database.db.Base）注册的表。
+
+    历史原因项目里存在两个 declarative_base：
+      - utils.database.Base：users / courses 等主业务表
+      - database.db.Base：achievements / leaderboard / content_store 等
+    首启空库时必须两套都 create_all，否则安装包不再携带 ai_service.db 后，
+    成就 / 排行榜等页面会因表缺失直接 500。
+    """
+    try:
+        from database.db import Base as LegacyBase
+    except Exception:
+        logger.warning("导入 database.db.Base 失败，跳过副表创建", exc_info=True)
+        return
+
+    _import_secondary_models()
+    _register_users_shadow(LegacyBase)
+
+    try:
+        LegacyBase.metadata.create_all(bind=sync_engine)
+    except Exception:
+        # 副表建不出来不应阻断主流程（主业务表与种子数据更重要）
+        logger.warning("副表创建失败（不阻断启动）", exc_info=True)
+
+
+async def _bootstrap_database_async() -> dict:
+    """建表 + 首启种子（同一事件循环内完成，避免 async engine 跨 loop）。"""
+    from scripts.seed_initial_data import seed_initial_data
+    from utils.database import close_db, create_db_and_tables
+
+    try:
+        await create_db_and_tables()
+    except Exception:
+        # 完整模型清单导入失败时回退到「已注册模型」建表，保证库文件与核心表存在
+        logger.warning(
+            "create_db_and_tables 失败，回退 Base.metadata.create_all", exc_info=True
+        )
+        Base.metadata.create_all(bind=sync_engine)
+
+    _create_secondary_tables()
+
+    report = await seed_initial_data()
+    # 释放本 loop 内建立的连接，交给 uvicorn 自己的事件循环重新建连
+    await close_db()
+    return report
+
+
+def _init_database() -> None:
+    """应用启动前的数据库初始化（幂等；失败不阻断启动）。"""
+    try:
+        # 先导入种子模块：它显式 import 了内容相关 ORM 模型，
+        # 保证 create_all 能覆盖 courses / course_lessons 等表。
+        import scripts.seed_initial_data  # noqa: F401
+    except Exception:
+        logger.warning("导入种子模块失败（继续建表）", exc_info=True)
+
+    try:
+        report = asyncio.run(_bootstrap_database_async())
+        logger.info("数据库初始化完成，首启种子报告：%s", report)
+    except Exception:
+        # 空库也可用（用户可自行注册），因此不阻断启动
+        logger.warning("数据库初始化失败（不阻断启动）", exc_info=True)
+
+
 if __name__ == "__main__":
+    _force_utf8_stdio()
+
     # 【修复】端口可由环境变量 PORT 覆盖（Electron 启动后端时会设置）
     backend_port = int(os.getenv("PORT", "8000"))
     print("=" * 80)
@@ -246,7 +365,7 @@ if __name__ == "__main__":
     print(f"   - Port: {backend_port} (from PORT env var or default 8000)")
     print("=" * 80)
 
-    # 启动时创建数据库表（在 __main__ 中执行，避免阻塞模块导入）
-    Base.metadata.create_all(bind=sync_engine)
+    # 启动时创建数据库表 + 首启种子数据（在 __main__ 中执行，避免阻塞模块导入）
+    _init_database()
 
     uvicorn.run(app, host="0.0.0.0", port=backend_port)
