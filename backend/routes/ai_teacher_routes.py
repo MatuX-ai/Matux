@@ -230,77 +230,85 @@ class GrowthTrajectoryResponse(BaseModel):
 
 
 # ==================== Mock 数据 ====================
+# 【P3-B 修复】从进程内 dict 迁移到持久化仓储（cache.ai_teacher_persistence）
+# - 重启后画像 / 会话 / 记忆 / 人格 数据可恢复
+# - 多进程部署时可共享（写竞争由仓储 RLock 保护）
+# - P3-D 计划：迁移到 SQLAlchemy 模型
 
-_mock_profiles: Dict[str, Dict[str, Any]] = {}
-_mock_sessions: Dict[str, Dict[str, Any]] = {}
-_mock_memories: Dict[str, List[Dict[str, Any]]] = {}
-_mock_personas: Dict[str, Dict[str, str]] = {}
+_profiles_repo = get_profiles_repo()
+_sessions_repo = get_sessions_repo()
+_memories_repo = get_memories_repo()
+_personas_repo = get_personas_repo()
 
 
 def _get_mock_profile(user_id: str) -> Dict[str, Any]:
-    """获取或创建 mock 画像"""
-    if user_id not in _mock_profiles:
-        _mock_profiles[user_id] = {
-            "user_id": user_id,
-            "display_name": "小明",
-            "grade_level": "G7",
-            "age_group": "12-14",
-            "learning_style": "visual",
-            "preferred_content_type": "interactive",
-            "ability_dimensions": {
-                "programming_thinking": 68, "algorithm_ability": 45,
-                "debugging_skill": 52, "project_practice": 60,
-                "stem_experiment": 55, "code_quality": 40,
-                "independent_completion": 65, "question_quality": 58,
-            },
-            "interest_preferences": ["game_development", "robotics", "3d_modeling"],
-            "knowledge_mastery": {
-                "python_basics": 0.85, "conditions": 0.90, "loops": 0.45,
-                "functions": 0.0, "led_control": 1.0, "sensors": 0.45,
-            },
-            "total_study_time_minutes": 11220,
-            "completed_courses_count": 23,
-            "average_quiz_score": 72.5,
-            "current_streak_days": 15,
-            "longest_streak_days": 30,
-            "weak_points": [
-                {"knowledge_point": "range() 参数理解", "mastery": 0.55, "error_rate": 0.45,
-                 "suggestion": "Blockly 对照练习", "last_detected": datetime.now().isoformat()},
-                {"knowledge_point": "缩进规范", "mastery": 0.70, "error_rate": 0.30,
-                 "suggestion": "代码格式化插件", "last_detected": datetime.now().isoformat()},
-            ],
-            "error_patterns": {"indentation_error": 12, "range_parameter": 8},
-            "attention_profile": {
-                "average_focus_duration_minutes": 25,
-                "tab_switch_frequency": 2.3,
-                "hesitation_time_ms": 4500,
-                "trend": "stable",
-            },
-            "emotional_states": [
-                {"timestamp": datetime.now().isoformat(), "emotion": "excited",
-                 "source": "dialogue", "confidence": 0.8},
-            ],
-            "learning_milestones": [
-                {"id": "m1", "type": "first_blockly", "title": "初入编程",
-                 "description": "完成第一个 Blockly 关卡", "achieved_at": "2026-01-15T10:00:00Z"},
-                {"id": "m2", "type": "python_intro", "title": "Python 入门",
-                 "description": "完成 Python 基础课程", "achieved_at": "2026-02-20T14:00:00Z"},
-            ],
-            "skill_tree": [
-                {"id": "python_basics", "name": "Python 基础", "category": "python",
-                 "progress": 0.6, "status": "learning", "children": [
-                    {"id": "variables", "name": "变量与数据类型", "category": "python",
-                     "progress": 1.0, "status": "mastered", "parent": "python_basics"},
-                    {"id": "loops", "name": "循环", "category": "python",
-                     "progress": 0.6, "status": "learning", "parent": "python_basics"},
-                ]},
-            ],
-            "persona_seed": "小明，G7，视觉型学习者，编程思维68/100",
-            "learning_goals": ["掌握 Python 函数", "完成机器人项目"],
-            "created_at": "2026-01-10T08:00:00Z",
-            "updated_at": datetime.now().isoformat(),
-        }
-    return _mock_profiles[user_id]
+    """获取或创建 mock 画像（持久化）"""
+    existing = _profiles_repo.get(user_id)
+    if existing is not None:
+        return existing
+    profile = {
+        "user_id": user_id,
+        "display_name": "小明",
+        "grade_level": "G7",
+        "age_group": "12-14",
+        "learning_style": "visual",
+        "preferred_content_type": "interactive",
+        "ability_dimensions": {
+            "programming_thinking": 68, "algorithm_ability": 45,
+            "debugging_skill": 52, "project_practice": 60,
+            "stem_experiment": 55, "code_quality": 40,
+            "independent_completion": 65, "question_quality": 58,
+        },
+        "interest_preferences": ["game_development", "robotics", "3d_modeling"],
+        "knowledge_mastery": {
+            "python_basics": 0.85, "conditions": 0.90, "loops": 0.45,
+            "functions": 0.0, "led_control": 1.0, "sensors": 0.45,
+        },
+        "total_study_time_minutes": 11220,
+        "completed_courses_count": 23,
+        "average_quiz_score": 72.5,
+        "current_streak_days": 15,
+        "longest_streak_days": 30,
+        "weak_points": [
+            {"knowledge_point": "range() 参数理解", "mastery": 0.55, "error_rate": 0.45,
+             "suggestion": "Blockly 对照练习", "last_detected": datetime.now().isoformat()},
+            {"knowledge_point": "缩进规范", "mastery": 0.70, "error_rate": 0.30,
+             "suggestion": "代码格式化插件", "last_detected": datetime.now().isoformat()},
+        ],
+        "error_patterns": {"indentation_error": 12, "range_parameter": 8},
+        "attention_profile": {
+            "average_focus_duration_minutes": 25,
+            "tab_switch_frequency": 2.3,
+            "hesitation_time_ms": 4500,
+            "trend": "stable",
+        },
+        "emotional_states": [
+            {"timestamp": datetime.now().isoformat(), "emotion": "excited",
+             "source": "dialogue", "confidence": 0.8},
+        ],
+        "learning_milestones": [
+            {"id": "m1", "type": "first_blockly", "title": "初入编程",
+             "description": "完成第一个 Blockly 关卡", "achieved_at": "2026-01-15T10:00:00Z"},
+            {"id": "m2", "type": "python_intro", "title": "Python 入门",
+             "description": "完成 Python 基础课程", "achieved_at": "2026-02-20T14:00:00Z"},
+        ],
+        "skill_tree": [
+            {"id": "python_basics", "name": "Python 基础", "category": "python",
+             "progress": 0.6, "status": "learning", "children": [
+                {"id": "variables", "name": "变量与数据类型", "category": "python",
+                 "progress": 1.0, "status": "mastered", "parent": "python_basics"},
+                {"id": "loops", "name": "循环", "category": "python",
+                 "progress": 0.6, "status": "learning", "parent": "python_basics"},
+            ]},
+        ],
+        "persona_seed": "小明，G7，视觉型学习者，编程思维68/100",
+        "learning_goals": ["掌握 Python 函数", "完成机器人项目"],
+        "created_at": "2026-01-10T08:00:00Z",
+        "updated_at": datetime.now().isoformat(),
+    }
+    # 【P3-B 修复】持久化
+    _profiles_repo.set(user_id, profile)
+    return profile
 
 
 # ==================== 路由端点 ====================
@@ -319,15 +327,17 @@ async def update_learning_profile(user_id: str, update: LearningProfileUpdateReq
     update_data = update.model_dump(exclude_none=True)
     profile.update(update_data)
     profile["updated_at"] = datetime.now().isoformat()
-    _mock_profiles[user_id] = profile
+    # 【P3-B 修复】持久化
+    _profiles_repo.set(user_id, profile)
     return profile
 
 
 @router.get("/memory/{user_id}/long-term", response_model=List[LongTermMemoryModel])
 async def get_long_term_memories(user_id: str, query: Optional[str] = None):
     """获取长期记忆"""
-    if user_id not in _mock_memories:
-        _mock_memories[user_id] = [
+    existing = _memories_repo.get(user_id)
+    if existing is None:
+        existing = [
             {
                 "id": "mem_1", "user_id": user_id, "category": "learning_summary",
                 "content": "学生完成循环入门测验，for/while 正确率 60%",
@@ -336,7 +346,8 @@ async def get_long_term_memories(user_id: str, query: Optional[str] = None):
                 "access_count": 2, "last_accessed_at": datetime.now().isoformat(),
             }
         ]
-    return _mock_memories[user_id]
+        _memories_repo.set(user_id, existing)
+    return existing
 
 
 @router.post("/memory/{user_id}/long-term", response_model=LongTermMemoryModel)
@@ -350,17 +361,19 @@ async def save_long_term_memory(user_id: str, request: SaveMemoryRequest):
         "access_count": 0,
         "last_accessed_at": datetime.now().isoformat(),
     }
-    if user_id not in _mock_memories:
-        _mock_memories[user_id] = []
-    _mock_memories[user_id].append(memory)
+    memories = _memories_repo.get(user_id, [])
+    memories.append(memory)
+    # 【P3-B 修复】持久化
+    _memories_repo.set(user_id, memories)
     return memory
 
 
 @router.get("/session/{user_id}")
 async def get_session(user_id: str):
     """获取或创建会话"""
-    if user_id not in _mock_sessions:
-        _mock_sessions[user_id] = {
+    existing = _sessions_repo.get(user_id)
+    if existing is None:
+        existing = {
             "sessionId": f"session_{datetime.now().timestamp()}",
             "userId": user_id,
             "recentMessages": [],
@@ -368,7 +381,8 @@ async def get_session(user_id: str):
             "startedAt": datetime.now().isoformat(),
             "lastActivityAt": datetime.now().isoformat(),
         }
-    return _mock_sessions[user_id]
+        _sessions_repo.set(user_id, existing)
+    return existing
 
 
 @router.post("/chat", response_model=ChatResponse)
@@ -406,15 +420,16 @@ async def chat_with_teacher(request: ChatRequest):
         knowledge_context=knowledge_context,
     )
 
-    # 更新会话
-    if request.user_id in _mock_sessions:
-        session = _mock_sessions[request.user_id]
+    # 更新会话（【P3-B 修复】持久化）
+    session = _sessions_repo.get(request.user_id)
+    if session is not None:
         session["recentMessages"].extend([
             {"role": "user", "content": request.message, "timestamp": datetime.now().isoformat()},
             {"role": "assistant", "content": reply, "timestamp": datetime.now().isoformat()},
         ])
         session["recentMessages"] = session["recentMessages"][-20:]
         session["lastActivityAt"] = datetime.now().isoformat()
+        _sessions_repo.set(request.user_id, session)
 
     elapsed = (datetime.now() - start_time).total_seconds() * 1000
 
@@ -550,29 +565,71 @@ async def get_knowledge_state(user_id: str):
 @router.get("/persona/{user_id}", response_model=TeacherPersonaModel)
 async def get_persona(user_id: str):
     """获取 AI 教师人格配置"""
-    if user_id not in _mock_personas:
-        _mock_personas[user_id] = {
+    existing = _personas_repo.get(user_id)
+    if existing is None:
+        existing = {
             "user_id": user_id, "address_mode": "name", "nickname": "",
             "language_style": "lively", "hint_level": "guided_thinking",
             "encouragement_frequency": "moderate", "strictness": "standard",
             "emoji_usage": "moderate",
         }
-    return _mock_personas[user_id]
+        _personas_repo.set(user_id, existing)
+    return existing
 
 
 @router.patch("/persona/{user_id}", response_model=TeacherPersonaModel)
 async def update_persona(user_id: str, persona: TeacherPersonaModel):
     """更新 AI 教师人格配置"""
-    _mock_personas[user_id] = persona.model_dump()
+    # 【P3-B 修复】持久化
+    _personas_repo.set(user_id, persona.model_dump())
     return persona
 
 
 @router.delete("/memory/{user_id}")
 async def reset_memory(user_id: str):
     """重置 AI 教师记忆"""
-    _mock_memories.pop(user_id, None)
-    _mock_sessions.pop(user_id, None)
+    # 【P3-B 修复】持久化仓储支持按 key 删除
+    _memories_repo.delete(user_id)
+    _sessions_repo.delete(user_id)
     return {"success": True}
+
+
+# ==================== 【P3-B】实时推送设置 + 事件历史 ====================
+
+
+@router.get("/live-settings/{user_id}")
+async def get_live_settings(user_id: str):
+    """【P3-B】获取用户 AI 教师实时推送设置"""
+    try:
+        uid = int(user_id)
+    except ValueError:
+        raise HTTPException(status_code=400, detail="user_id 必须是整数")
+    settings = ai_teacher_live_settings.get_settings(uid)
+    return settings.to_dict()
+
+
+@router.put("/live-settings/{user_id}")
+async def update_live_settings(user_id: str, payload: Dict[str, Any]):
+    """【P3-B】更新用户 AI 教师实时推送设置"""
+    try:
+        uid = int(user_id)
+    except ValueError:
+        raise HTTPException(status_code=400, detail="user_id 必须是整数")
+    updated = ai_teacher_live_settings.update_settings(uid, payload or {})
+    return updated.to_dict()
+
+
+@router.get("/live-events/history/{user_id}")
+async def get_live_events_history(
+    user_id: str, limit: int = Query(default=20, ge=1, le=100)
+):
+    """【P3-B】获取最近 AI 教师实时事件历史（供前端断线后回放）"""
+    try:
+        uid = int(user_id)
+    except ValueError:
+        raise HTTPException(status_code=400, detail="user_id 必须是整数")
+    history = ai_teacher_live_bus.get_history(uid, limit=limit)
+    return {"success": True, "data": history, "count": len(history)}
 
 
 # ==================== 辅助函数 ====================

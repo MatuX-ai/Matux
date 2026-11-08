@@ -89,6 +89,16 @@ class LearningProgressConnectionManager:
         for ws in disconnected:
             self.disconnect(ws, user_id)
 
+    # 【P3-B】AI 教师实时事件专用广播方法
+    async def broadcast_ai_teacher(self, user_id: int, event: dict):
+        """广播 AI 教师实时事件给指定用户的所有连接"""
+        message = {
+            "type": event.get("type", "ai_teacher_unknown"),
+            "data": event,
+            "timestamp": datetime.utcnow().isoformat(),
+        }
+        await self.broadcast_to_user(user_id, message)
+
     async def update_learning_state(
         self, user_id: int, lesson_id: int, progress_data: dict
     ):
@@ -215,9 +225,14 @@ async def handle_client_message(
     data = message.get("data", {})
 
     if msg_type == "ping":
-        # 心跳检测
+        # 心跳检测（【P3-B】同时推送 AI 教师 live_settings 快照，前端可同步）
+        settings = ai_teacher_live_settings.get_settings(user_id)
         await websocket.send_json(
-            {"type": "pong", "timestamp": datetime.utcnow().isoformat()}
+            {
+                "type": "pong",
+                "timestamp": datetime.utcnow().isoformat(),
+                "live_settings": settings.to_dict(),
+            }
         )
 
     elif msg_type == "update_progress":
