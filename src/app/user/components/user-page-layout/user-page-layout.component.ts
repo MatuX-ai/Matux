@@ -11,23 +11,32 @@
  */
 
 import { CommonModule } from '@angular/common';
-import { Component, OnDestroy, OnInit } from '@angular/core';
+import { ChangeDetectorRef, Component, ElementRef, OnDestroy, OnInit, ViewChild } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { MatButtonModule } from '@angular/material/button';
 import { MatIconModule } from '@angular/material/icon';
 import { MatMenuModule } from '@angular/material/menu';
 import { MatTooltipModule } from '@angular/material/tooltip';
 import { RouterModule } from '@angular/router';
-import { Subject } from 'rxjs';
+import { Subject, Subscription } from 'rxjs';
 import { takeUntil } from 'rxjs/operators';
 
 import { User } from '../../../core/models/auth.models';
 import { AiAssistantToggleService } from '../../../core/services/ai-assistant-toggle.service';
+import { AITeacherService } from '../../../core/services/ai-teacher.service';
 import { AuthService } from '../../../core/services/auth.service';
 import { ROUTES } from '../../../routes.const';
 import { UserCenterService } from '../../services/user-center.service';
 import { UserFooterComponent } from '../user-footer/user-footer.component';
 import { UserNavbarComponent } from '../user-navbar/user-navbar.component';
+
+/** AI 面板消息条目 */
+interface AiPanelMessage {
+  role: 'user' | 'ai';
+  content: string;
+  /** 后端不可用时的本地 mock 降级回复 */
+  fallback?: boolean;
+}
 
 @Component({
   selector: 'app-user-page-layout',
@@ -55,7 +64,17 @@ export class UserPageLayoutComponent implements OnInit, OnDestroy {
   // AI 助手状态
   showAIAssistant = false;
   aiMessage = '';
-  aiMessages: Array<{ role: 'user' | 'ai'; content: string }> = [];
+  aiMessages: AiPanelMessage[] = [];
+  /** 【P0-B】真实请求进行中（禁重复提交 + 显示 loading） */
+  aiSending = false;
+
+  /** 对话会话 id：同一布局内保持稳定，后端用它聚合 recentMessages */
+  private aiSessionId = '';
+
+  /** 【P0-B】当前进行中的 chat 请求，组件销毁时取消 */
+  private aiChatSub?: Subscription;
+
+  @ViewChild('aiPanelContent') aiPanelContent?: ElementRef<HTMLElement>;
 
   // 【P3 修复】设备状态已移至全局 <app-status-bar>，此处不再持有
   // 保留占位避免模板编译错误,实际 UI 由 AppComponent 提供
@@ -67,7 +86,9 @@ export class UserPageLayoutComponent implements OnInit, OnDestroy {
   constructor(
     private authService: AuthService,
     private userCenterService: UserCenterService,
-    private aiToggle: AiAssistantToggleService
+    private aiToggle: AiAssistantToggleService,
+    private aiTeacher: AITeacherService,
+    private cdr: ChangeDetectorRef
   ) {}
 
   ngOnInit(): void {
@@ -97,6 +118,8 @@ export class UserPageLayoutComponent implements OnInit, OnDestroy {
   ngOnDestroy(): void {
     this.destroy$.next();
     this.destroy$.complete();
+    // 【P0-B】取消未完成的对话请求，避免回调写入已销毁视图
+    this.aiChatSub?.unsubscribe();
     // 使用保存的引用正确移除监听器
     if (this.boundCheckScreenWidth) {
       window.removeEventListener('resize', this.boundCheckScreenWidth);
@@ -120,25 +143,69 @@ export class UserPageLayoutComponent implements OnInit, OnDestroy {
 
   /**
    * 发送 AI 消息
+   *
+   * 【P0-B 修复】这里原来是 setTimeout 1s 的假回复（`好的，你说的是："..."`），
+   * 从未发起任何 HTTP 请求。现在改为真实调用 AITeacherService.chat()
+   * → POST /api/v1/ai-teacher/chat，含 loading / 成功 / 失败三态。
    */
   sendAIMessage(): void {
-    if (!this.aiMessage.trim()) return;
+    const text = (this.aiMessage ?? '').trim();
+    if (!text || this.aiSending) return;
 
     // 添加用户消息
-    this.aiMessages.push({
-      role: 'user',
-      content: this.aiMessage,
-    });
-
-    const userMessage = this.aiMessage;
+    this.aiMessages.push({ role: 'user', content: text });
     this.aiMessage = '';
+    this.aiSending = true;
+    this.scrollAiPanelToBottom();
 
-    // 模拟 AI 响应
-    setTimeout(() => {
-      this.aiMessages.push({
-        role: 'ai',
-        content: `好的，你说的是："${userMessage}"\n\n让我帮你解答...`,
+    const userId = this.currentUser?.id ? String(this.currentUser.id) : '1';
+    if (!this.aiSessionId) {
+      this.aiSessionId = `session_desktop_${userId}_${Date.now()}`;
+    }
+
+    const pending = this.aiTeacher
+      .chat({ userId, message: text, sessionId: this.aiSessionId })
+      .subscribe({
+        next: (res) => {
+          this.aiMessages.push({
+            role: 'ai',
+            content: res?.reply || '（AI 老师没有返回内容）',
+            fallback: res?.model === 'mock',
+          });
+          this.aiSending = false;
+          this.cdr.markForCheck();
+          this.scrollAiPanelToBottom();
+        },
+        error: () => {
+          // service 层已有 mock 降级，这里只是最后一道保护
+          this.aiMessages.push({
+            role: 'ai',
+            content: '抱歉，AI 老师暂时无法响应，请稍后重试。',
+            fallback: true,
+          });
+          this.aiSending = false;
+          this.cdr.markForCheck();
+          this.scrollAiPanelToBottom();
+        },
       });
-    }, 1000);
+
+    // 组件销毁时取消未完成请求，避免回调写入已销毁视图
+    this.aiChatSub = pending;
+  }
+
+  /** 【P0-B】消息列表 trackBy：内容不可变，仅按索引+角色定位 */
+  trackAiMessage(index: number, msg: AiPanelMessage): string {
+    return `${index}_${msg.role}`;
+  }
+
+  /** 新消息后把面板内容滚到底部 */
+  private scrollAiPanelToBottom(): void {
+    // 等待本轮变更检测完成后再滚动
+    setTimeout(() => {
+      const el = this.aiPanelContent?.nativeElement;
+      if (el) {
+        el.scrollTop = el.scrollHeight;
+      }
+    }, 0);
   }
 }

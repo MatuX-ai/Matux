@@ -11,6 +11,7 @@ import logging
 from typing import Dict, List, Optional
 
 from config.license_config import load_sentinel_config
+from config.settings import settings
 from fastapi import APIRouter, Query, WebSocket, WebSocketDisconnect, status
 from jose import JWTError, jwt
 from services.gamification_event_bus import (
@@ -147,20 +148,43 @@ def _verify_token(token: str) -> Optional[int]:
     """
     验证 JWT token 并返回 user_id
 
-    使用与 auth_routes.py 一致的密钥与算法。
+    【P0-C 修复】两个原实现缺陷：
+    1. 密钥只读 sentinel 配置的 jwt_secret（缺失时回退 dev-secret），与
+       auth_routes.create_access_token 使用的 settings.SECRET_KEY 不一致，
+       导致前端拿登录 token 连 /ws/gamification 必被拒。
+       现在优先用 settings.SECRET_KEY（与登录签发端一致），
+       仅在其为空时回退 sentinel 配置，保持旧部署兼容。
+    2. 用户 ID 提取顺序错误：auth_routes 签发的 payload 形如
+       {"sub": <username 字符串>, "uid": <用户数字 ID>}，原实现只读
+       sub/user_id，int(username) 必然 ValueError。现在优先读 uid。
     """
     try:
-        config = load_sentinel_config()
-        secret = (
-            config.security.jwt_secret if hasattr(config, "security") else "dev-secret"
-        )
-        algorithm = "HS256"
+        secret = getattr(settings, "SECRET_KEY", None)
+        algorithm = getattr(settings, "ALGORITHM", None) or "HS256"
+        if not secret:
+            config = load_sentinel_config()
+            secret = (
+                config.security.jwt_secret
+                if hasattr(config, "security")
+                else "dev-secret"
+            )
         payload = jwt.decode(token, secret, algorithms=[algorithm])
-        user_id = payload.get("sub") or payload.get("user_id")
-        return int(user_id) if user_id is not None else None
     except (JWTError, ValueError, TypeError) as e:
         logger.warning(f"WebSocket token 验证失败: {e}")
         return None
+
+    # auth_routes 实际签发 uid；兼容历史 payload 的 user_id / 数字型 sub
+    for key in ("uid", "user_id", "sub"):
+        raw = payload.get(key)
+        if raw is None:
+            continue
+        try:
+            return int(raw)
+        except (TypeError, ValueError):
+            continue
+
+    logger.warning(f"WebSocket token 缺少可用的用户 ID: {payload!r}")
+    return None
 
 
 # ==================== WebSocket 端点 ====================

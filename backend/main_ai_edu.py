@@ -49,6 +49,12 @@ from routes.error_log_routes import router as error_log_router
 #   main_ai_edu.py 原版未注册 exam_routes，导致 /api/v1/exams 返回 404
 #   前端 ExamListComponent 会显示“服务器错误”，UX 完整度测试中标记为 P1。
 from routes.exam_routes import router as exam_router
+# 【P0-C 修复】注册游戏化 WebSocket 路由（/ws/gamification）
+#   成就中心 / 签到页依赖实时推送（achievement_unlocked / node_status_updated / set_completed）。
+#   此前桌面端入口（main_ai_edu）只挂了 AI 教育 WS，从未 include 本 router，
+#   因此 /ws/gamification 返回 404，前端无论怎么改 URL 都连不上。
+#   注：commit 28890ff 恢复的是 legacy_routes.py 的注册，桌面端不走该入口。
+from routes.gamification_websocket_routes import router as gamification_ws_router
 from routes.leaderboard_routes import router as leaderboard_router
 from routes.llm_assistant_routes import router as llm_assistant_router
 from routes.micro_course_routes import router as micro_course_router
@@ -181,6 +187,9 @@ app.include_router(admin_arvr_router)
 #   本入口手写 include_router，不经过 core.router_registry.register_all_routers，
 #   因此不会与 ROUTER_TABLE 重复注册。
 app.include_router(ai_teacher_router, tags=["AI 个性化教师"])
+# 【P0-C 修复】注册游戏化 WebSocket：router 内 prefix 已含 /ws/gamification，
+#   端点本身是 @router.websocket("")，最终路径 /ws/gamification?token=<JWT>。
+app.include_router(gamification_ws_router)
 
 
 # 临时测试路由

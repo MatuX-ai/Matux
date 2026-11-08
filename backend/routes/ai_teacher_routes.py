@@ -11,8 +11,11 @@ AI 个性化教师 API 路由
 - 知识状态查询
 """
 
+from concurrent.futures import ThreadPoolExecutor
+from concurrent.futures import TimeoutError as FuturesTimeoutError
 from datetime import datetime
 import logging
+import os
 from typing import Any, Dict, List, Optional
 
 from cache.ai_teacher_persistence import (
@@ -29,6 +32,55 @@ from services.ai_teacher_live_settings import ai_teacher_live_settings  # 【P3-
 logger = logging.getLogger(__name__)
 
 router = APIRouter(prefix="/api/v1/ai-teacher", tags=["AI 个性化教师"])
+
+
+# ==================== 【P0-B 修复】RAG 检索超时保护 ====================
+# 背景：/chat 里的 RAG 检索会懒加载 sentence-transformers / text2vec 模型，
+#   首次调用会去 huggingface.co 下载权重。桌面端/离线环境下外网不可达，
+#   下载每个文件重试 5 × 10s，导致 POST /chat 卡 60s+ 最终超时（前端只看到永远 loading）。
+# 策略：单 worker 线程池 + 3s 超时；一旦超时/异常就置 disabled，
+#   后续请求直接跳过 RAG（回到纯占位回复），不再阻塞对话。
+_RAG_TIMEOUT_SEC = float(os.getenv("AI_TEACHER_RAG_TIMEOUT_SEC", "3"))
+_RAG_EXECUTOR = ThreadPoolExecutor(max_workers=1, thread_name_prefix="ai-teacher-rag")
+_RAG_STATE: Dict[str, bool] = {"disabled": False}
+
+
+def _rag_worker(message: str, user_id: str, profile_seed: str):
+    """在工作线程中完成懒加载 + 检索（get_* 本身也可能触发模型加载）。"""
+    from services.vector_knowledge_service import get_vector_knowledge_service
+
+    service = get_vector_knowledge_service()
+    return service.rag_retrieve(
+        query=message,
+        user_id=user_id,
+        profile_seed=profile_seed,
+    )
+
+
+def _try_rag_context(message: str, user_id: str, profile_seed: str):
+    """尝试 RAG 检索；超时或不可用时返回空上下文，不影响对话主流程。
+
+    注意：get_vector_knowledge_service() 会在首次调用时懒加载 embedding 模型
+    （离线环境会去 huggingface 下载并长时间阻塞），因此必须把它一起放进
+    工作线程，否则超时机制形同虚设。
+    """
+    if _RAG_STATE["disabled"]:
+        return "", False
+    try:
+        future = _RAG_EXECUTOR.submit(_rag_worker, message, user_id, profile_seed)
+        result = future.result(timeout=_RAG_TIMEOUT_SEC)
+        return result.context, result.total_score > 0
+    except FuturesTimeoutError:
+        _RAG_STATE["disabled"] = True
+        logger.warning(
+            "RAG 检索超时（>%ss，模型可能正在下载），已禁用后续检索",
+            _RAG_TIMEOUT_SEC,
+        )
+        return "", False
+    except Exception as exc:  # noqa: BLE001 - RAG 任何异常都不应阻断对话
+        _RAG_STATE["disabled"] = True
+        logger.warning("RAG 检索不可用，已禁用后续检索: %s", exc)
+        return "", False
 
 
 # ==================== Pydantic 模型 ====================
@@ -401,18 +453,9 @@ async def chat_with_teacher(request: ChatRequest):
 
     # 如果没有前端传入的 RAG 上下文，后端自行检索
     if not knowledge_context:
-        try:
-            from services.vector_knowledge_service import get_vector_knowledge_service
-            rag_service = get_vector_knowledge_service()
-            rag_result = rag_service.rag_retrieve(
-                query=request.message,
-                user_id=request.user_id,
-                profile_seed=profile_seed,
-            )
-            knowledge_context = rag_result.context
-            knowledge_used = rag_result.total_score > 0
-        except Exception:
-            pass  # RAG 不可用时降级
+        knowledge_context, knowledge_used = _try_rag_context(
+            request.message, request.user_id, profile_seed
+        )
 
     # 基于学生画像 + RAG 上下文生成个性化回复
     reply = _generate_personalized_reply(

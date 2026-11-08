@@ -34,12 +34,33 @@
         <mat-icon>close</mat-icon>
       </button>
     </div>
-    <div class="ai-panel-content">
+    <div class="ai-panel-content" #aiPanelContent>
       <div class="ai-message ai-message-welcome">
         <div class="ai-avatar">🤖</div>
         <div class="ai-bubble">
           你好！我是你的 AI 老师 👋<br /><br />
           有什么我可以帮助你的吗？
+        </div>
+      </div>
+
+      <!-- 【P0-B】真实对话消息列表：用户靠右 / AI 靠左 -->
+      <div
+        *ngFor="let msg of aiMessages; trackBy: trackAiMessage"
+        class="ai-message"
+        [class.user]="msg.role === 'user'"
+      >
+        <div class="ai-avatar">{{ msg.role === 'user' ? '🧑' : '🤖' }}</div>
+        <div class="ai-bubble">
+          {{ msg.content }}
+          <div *ngIf="msg.fallback" class="ai-bubble-note">本地回复（后端暂不可用）</div>
+        </div>
+      </div>
+
+      <!-- 【P0-B】请求进行中 -->
+      <div *ngIf="aiSending" class="ai-message ai-message-loading">
+        <div class="ai-avatar">🤖</div>
+        <div class="ai-bubble">
+          <span class="ai-typing">正在思考</span>
         </div>
       </div>
     </div>
@@ -49,9 +70,15 @@
         placeholder="输入你的问题..."
         class="ai-input"
         [(ngModel)]="aiMessage"
+        [disabled]="aiSending"
         (keyup.enter)="sendAIMessage()"
       />
-      <button mat-icon-button color="primary" (click)="sendAIMessage()">
+      <button
+        mat-icon-button
+        color="primary"
+        [disabled]="aiSending || !aiMessage.trim()"
+        (click)="sendAIMessage()"
+      >
         <mat-icon>send</mat-icon>
       </button>
     </div>

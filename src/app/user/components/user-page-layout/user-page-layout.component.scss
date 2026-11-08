@@ -177,6 +177,34 @@
   color: white;
 }
 
+/* 【P0-B】降级回复提示：小号字，不抢消息主体 */
+.ai-bubble-note {
+  margin-top: 6px;
+  font-size: 12px;
+  opacity: 0.75;
+}
+
+/* 【P0-B】loading 态：三点呼吸动画 */
+.ai-typing::after {
+  content: '';
+  animation: ai-typing-dots 1.2s steps(4, end) infinite;
+}
+
+@keyframes ai-typing-dots {
+  0% {
+    content: '';
+  }
+  25% {
+    content: '.';
+  }
+  50% {
+    content: '..';
+  }
+  75% {
+    content: '...';
+  }
+}
+
 .ai-panel-input {
   display: flex;
   align-items: center;
