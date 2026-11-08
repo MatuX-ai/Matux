@@ -10,10 +10,10 @@ from fastapi import (
     WebSocket,
     WebSocketDisconnect,
 )
+from middleware.auth import get_current_user
 from models.user import User
 from sqlalchemy.orm import Session
-from utils.database import get_sync_db
-from utils.dependencies import get_current_user_sync
+from utils.database import get_sync_session
 
 logger = logging.getLogger(__name__)
 
@@ -46,8 +46,8 @@ async def get_available_ports(org_id: int = Depends(lambda: 1)):
 async def connect_hardware(
     port_data: dict,
     org_id: int = Depends(lambda: 1),
-    current_user: User = Depends(get_current_user_sync),
-    db: Session = Depends(get_sync_db),
+    current_user: User = Depends(get_current_user),
+    db: Session = Depends(get_sync_session),
 ):
     """
     连接硬件设备
@@ -79,8 +79,8 @@ async def connect_hardware(
 @router.post("/hardware/disconnect")
 async def disconnect_hardware(
     org_id: int = Depends(lambda: 1),
-    current_user: User = Depends(get_current_user_sync),
-    db: Session = Depends(get_sync_db),
+    current_user: User = Depends(get_current_user),
+    db: Session = Depends(get_sync_session),
 ):
     """
     断开硬件连接
@@ -166,8 +166,8 @@ async def get_sensor_history(
 async def start_experiment(
     experiment_data: dict = None,
     org_id: int = Depends(lambda: 1),
-    current_user: User = Depends(get_current_user_sync),
-    db: Session = Depends(get_sync_db),
+    current_user: User = Depends(get_current_user),
+    db: Session = Depends(get_sync_session),
 ):
     """
     开始新的实验
@@ -196,8 +196,8 @@ async def start_experiment(
 @router.post("/experiments/stop")
 async def stop_experiment(
     org_id: int = Depends(lambda: 1),
-    current_user: User = Depends(get_current_user_sync),
-    db: Session = Depends(get_sync_db),
+    current_user: User = Depends(get_current_user),
+    db: Session = Depends(get_sync_session),
 ):
     """
     停止当前实验
@@ -283,7 +283,7 @@ async def list_unity_builds(org_id: int = Depends(lambda: 1)):
 @router.post("/unity/builds/upload")
 async def upload_unity_build(
     org_id: int = Depends(lambda: 1),
-    current_user: User = Depends(get_current_user_sync),
+    current_user: User = Depends(get_current_user),
 ):
     """
     上传新的Unity构建

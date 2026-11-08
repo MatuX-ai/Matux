@@ -9,11 +9,12 @@ import time
 from typing import Any, Dict, List, Optional
 
 from fastapi import APIRouter, Depends, HTTPException, status
+from middleware.auth import get_current_user
 from models.user import User
 from pydantic import BaseModel, Field
 from services.performance_monitor import performance_monitor
 from sqlalchemy.orm import Session
-from utils.dependencies import get_current_user_sync, get_sync_db
+from utils.database import get_sync_session
 
 logger = logging.getLogger(__name__)
 
@@ -71,9 +72,7 @@ class NLPChatRequest(BaseModel):
     """NLP 对话请求"""
 
     message: str = Field(..., description="用户消息")
-    context: Optional[List[Dict[str, str]]] = Field(
-        default=None, description="对话上下文"
-    )
+    context: Optional[List[Dict[str, str]]] = Field(default=None, description="对话上下文")
     temperature: float = Field(default=0.7, ge=0.0, le=1.0, description="生成温度")
 
 
@@ -222,8 +221,8 @@ class MockXEduHub:
 @router.post("/vision/analyze", response_model=VisionAnalysisResponse)
 async def vision_analyze(
     request: VisionTaskRequest,
-    current_user: User = Depends(get_current_user_sync),
-    db: Session = Depends(get_sync_db),
+    current_user: User = Depends(get_current_user),
+    db: Session = Depends(get_sync_session),
 ):
     """
     视觉分析接口
@@ -247,9 +246,7 @@ async def vision_analyze(
         }
     """
     try:
-        logger.info(
-            f"收到视觉分析请求：用户 {current_user.id}, 任务 {request.task_type}"
-        )
+        logger.info(f"收到视觉分析请求：用户 {current_user.id}, 任务 {request.task_type}")
 
         # 调用 XEduHub（当前为 Mock 实现）
         result = await MockXEduHub.analyze_vision(request)
@@ -271,8 +268,8 @@ async def vision_analyze(
 @router.post("/nlp/chat", response_model=NLPChatResponse)
 async def nlp_chat(
     request: NLPChatRequest,
-    current_user: User = Depends(get_current_user_sync),
-    db: Session = Depends(get_sync_db),
+    current_user: User = Depends(get_current_user),
+    db: Session = Depends(get_sync_session),
 ):
     """
     NLP 对话接口
@@ -315,8 +312,8 @@ async def nlp_chat(
 @router.post("/ml/predict", response_model=MLTaskResponse)
 async def ml_predict(
     request: MLTaskRequest,
-    current_user: User = Depends(get_current_user_sync),
-    db: Session = Depends(get_sync_db),
+    current_user: User = Depends(get_current_user),
+    db: Session = Depends(get_sync_session),
 ):
     """
     机器学习预测接口
@@ -340,16 +337,12 @@ async def ml_predict(
         }
     """
     try:
-        logger.info(
-            f"收到 ML 预测请求：用户 {current_user.id}, 任务 {request.task_type}"
-        )
+        logger.info(f"收到 ML 预测请求：用户 {current_user.id}, 任务 {request.task_type}")
 
         # 调用 XEdu ML（当前为 Mock 实现）
         result = await MockXEduHub.run_ml_task(request)
 
-        logger.info(
-            f"ML 预测完成：{result.prediction}, 耗时 {result.inference_time_ms:.2f}ms"
-        )
+        logger.info(f"ML 预测完成：{result.prediction}, 耗时 {result.inference_time_ms:.2f}ms")
 
         return result
 
@@ -363,8 +356,8 @@ async def ml_predict(
 
 @router.get("/models/list")
 async def list_available_models(
-    current_user: User = Depends(get_current_user_sync),
-    db: Session = Depends(get_sync_db),
+    current_user: User = Depends(get_current_user),
+    db: Session = Depends(get_sync_session),
 ):
     """
     获取可用模型列表
@@ -419,8 +412,8 @@ async def health_check():
 
 @router.get("/monitoring/dashboard")
 async def get_monitoring_dashboard(
-    current_user: User = Depends(get_current_user_sync),
-    db: Session = Depends(get_sync_db),
+    current_user: User = Depends(get_current_user),
+    db: Session = Depends(get_sync_session),
 ):
     """
     获取性能监控仪表板数据
@@ -471,8 +464,8 @@ async def get_monitoring_dashboard(
 @router.post("/monitoring/reset")
 async def reset_monitoring_metrics(
     model_name: Optional[str] = None,
-    current_user: User = Depends(get_current_user_sync),
-    db: Session = Depends(get_sync_db),
+    current_user: User = Depends(get_current_user),
+    db: Session = Depends(get_sync_session),
 ):
     """
     重置监控指标
