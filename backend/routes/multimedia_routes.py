@@ -8,7 +8,6 @@ from typing import List, Optional
 
 from fastapi import APIRouter, Depends, File, Form, HTTPException, Query, UploadFile
 from models.multimedia import (
-    DocumentFormat,
     DocumentProcessingRequest,
     MediaTranscodingJob,
     MediaType,
@@ -16,7 +15,6 @@ from models.multimedia import (
     MultimediaResourceCreate,
     MultimediaResourceResponse,
     MultimediaResourceUpdate,
-    ThreeDModelPreviewConfig,
     TranscodingJobResponse,
     VideoStatus,
     VideoTranscodingRequest,

@@ -445,7 +445,6 @@ if __name__ == "__main__":
             )
 
         # 测试难度调整
-        from models.difficulty_level import DebuggingSession, HardwareOperationMetric
 
         metrics = TaskPerformanceMetrics(
             user_id=user_id,
