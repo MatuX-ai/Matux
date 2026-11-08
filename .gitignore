@@ -121,3 +121,30 @@ data/ghost/mysql/
 !electron/build/
 !electron/build/**/*.nsh
 !electron/build/**/*.ico
+
+# === P3 桌面端产物隔离（2026-11-08）===
+# 注意：proto/ 下有 74 个 Next.js 源码文件已被跟踪，因此只忽略构建产物 .next/
+proto/learning-portal/.next/
+proto/**/.next/
+
+# UI 验证截图 / Playwright 结果
+screenshots/
+tests/test-results/
+test-results/
+
+# electron-builder 输出（*.exe / *.blockmap / win-unpacked 已有规则）
+release/*.nsis.7z
+release/latest.yml
+
+# AI 教师运行时数据与迁移备份（backend/data/ 已有 2 个文件被跟踪，故精确到文件名）
+backend/data/ai_teacher_*.json
+backend/data/backup_to_redis_*/
+
+# 一次性审计 / lint / tsc 脚本输出
+backend/_audit_*.txt
+_c_root_bt.txt
+_collect_root.txt
+stylelint_result.json
+tsc-out.txt
+tsc-risk3.txt
+01-dashboard-baseline.png
