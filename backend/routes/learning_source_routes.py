@@ -7,6 +7,7 @@ import logging
 from typing import Optional
 
 from fastapi import APIRouter, Body, Depends, HTTPException, Path, Query
+from middleware.auth import get_current_user
 from models.learning_source import (
     LearningSourceCreate,
     LearningSourceListResponse,
@@ -18,8 +19,7 @@ from models.learning_source import (
 from models.user import User
 from services.learning_source_service import LearningSourceService
 from sqlalchemy.orm import Session
-from utils.auth_utils import get_current_user_sync
-from utils.database import get_sync_db
+from utils.database import get_sync_session
 
 logger = logging.getLogger(__name__)
 
@@ -27,7 +27,9 @@ logger = logging.getLogger(__name__)
 router = APIRouter(prefix="/api/v1", tags=["学习来源管理"])
 
 
-def get_learning_source_service(db: Session = Depends(get_sync_db)) -> LearningSourceService:
+def get_learning_source_service(
+    db: Session = Depends(get_sync_session),
+) -> LearningSourceService:
     """获取学习来源服务实例"""
     return LearningSourceService(db)
 
@@ -41,7 +43,7 @@ def get_learning_source_service(db: Session = Depends(get_sync_db)) -> LearningS
 )
 def create_learning_source(
     source_data: LearningSourceCreate = Body(..., description="学习来源创建数据"),
-    current_user: User = Depends(get_current_user_sync),
+    current_user: User = Depends(get_current_user),
     service: LearningSourceService = Depends(get_learning_source_service),
 ):
     """创建新的学习来源记录"""
@@ -101,7 +103,7 @@ def get_user_learning_sources(
 def update_learning_source(
     source_id: int = Path(..., description="学习来源ID"),
     source_data: LearningSourceUpdate = Body(..., description="更新数据"),
-    current_user: User = Depends(get_current_user_sync),
+    current_user: User = Depends(get_current_user),
     service: LearningSourceService = Depends(get_learning_source_service),
 ):
     """更新学习来源信息"""
@@ -122,7 +124,7 @@ def update_learning_source(
 def delete_learning_source(
     source_id: int = Path(..., description="学习来源ID"),
     soft: bool = Query(True, description="是否软删除"),
-    current_user: User = Depends(get_current_user_sync),
+    current_user: User = Depends(get_current_user),
     service: LearningSourceService = Depends(get_learning_source_service),
 ):
     """删除学习来源"""
