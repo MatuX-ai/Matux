@@ -23,15 +23,38 @@ files:
   # 前端 dist 必须通过 extraResources 单独打包（见下方）
 asar: true
 extraResources:
-  - from: "../backend"
-    to: "backend"
+  # 【PyInstaller 集成】后端改为自带冻结运行时，干净机器无需安装 Python 3.9+
+  #   产物由 backend/main_ai_edu.spec 生成：
+  #     cd backend && python -m PyInstaller main_ai_edu.spec --distpath dist --workpath build
+  #   安装后的布局：resources/backend/dist/main_ai_edu/main_ai_edu.exe
+  #                 resources/backend/dist/main_ai_edu/_internal/**（Python 运行时 + 依赖）
+  #   注意：build 前必须先执行上面的打包命令，否则本目录不存在会导致 electron-builder 报错。
+  - from: "../backend/dist/main_ai_edu"
+    to: "backend/dist/main_ai_edu"
     filter:
       - "**/*"
-      - "!**/__pycache__/**"
-      - "!**/*.pyc"
-      - "!**/venv/**"
-      - "!**/.env"
-      - "!**/tests/**"
+  # 运行时可写目录：首次启动种子数据（ai_teacher_*.json）、分享页模板、二维码静态目录
+  # 保留在源码目录结构下，cwd=resources/backend 时与开发环境行为一致（含 ai_service.db 落盘位置）
+  - from: "../backend/data"
+    to: "backend/data"
+    filter:
+      - "**/*"
+      - "!**/backup_to_redis_*/**"
+  - from: "../backend/templates"
+    to: "backend/templates"
+    filter:
+      - "**/*"
+  # 运行时数据库（当前版本的首次可用性依赖它：含预置测试/管理员账号）。
+  #   注意：这是与 1.0.4 保持一致的权宜方案；后续应改为「首次启动自动创建默认管理员」，
+  #   避免每次升级用旧库覆盖用户数据（后续升级需加「已存在则跳过」判定）。
+  - from: "../backend/ai_service.db"
+    to: "backend/ai_service.db"
+    filter:
+      - "**/*"
+  - from: "../backend/configs"
+    to: "backend/configs"
+    filter:
+      - "**/*"
   # 【修复 1.0.2 蓝屏】前端 dist 作为外部资源打包，避免 ../dist/**/* 被忽略导致
   # 安装包内没有 index.html，主窗口 ready-to-show 永远不触发 → 用户看到"蓝屏"
   - from: "../dist/imatuproject"

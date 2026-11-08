@@ -139,16 +139,26 @@ class BackendManager {
       this.reusedExisting = false;
       this.reuseKind = null;
 
-      // 2. 检测 Python 环境（使用 detector 模块）
-      const pythonInfo = detectPython();
-      if (!pythonInfo.available) {
-        splashReporter?.('error', '未检测到 Python 3.9+ 环境', 0);
-        this.isStarting = false;
-        return false;
-      }
+      // 2. 确定后端入口：冻结 exe（PyInstaller）优先，其次才需要系统 Python
+      //    【PyInstaller 集成】干净机器上可能完全没有 Python 3.9+，
+      //    此时只要 resources/backend/dist/main_ai_edu/main_ai_edu.exe 存在，
+      //    就应该直接拉起，而不能被 Python 检测拦下。
+      const backendInfo = getBackendScriptPath();
+      let pythonInfo = null;
 
-      console.log(`[INFO] Python: ${pythonInfo.path} (${pythonInfo.version})`);
-      splashReporter?.('starting-backend', '正在启动后端服务...', 25);
+      if (backendInfo.type !== 'exe') {
+        // 源码模式：检测 Python 环境（使用 detector 模块）
+        pythonInfo = detectPython();
+        if (!pythonInfo.available) {
+          splashReporter?.('error', '未检测到 Python 3.9+ 环境', 0);
+          this.isStarting = false;
+          return false;
+        }
+        console.log(`[INFO] Python: ${pythonInfo.path} (${pythonInfo.version})`);
+      } else {
+        console.log(`[INFO] 使用内置后端可执行文件，无需系统 Python: ${backendInfo.path}`);
+        splashReporter?.('starting-backend', '正在启动内置后端服务...', 25);
+      }
 
       // 3. 启动进程
       this.process = this.spawnBackend(pythonInfo);
@@ -620,15 +630,20 @@ class BackendManager {
       // 3. 等待端口释放
       await this.waitForPortRelease(this.currentPort, 5000);
 
-      // 4. 检测 Python（用户点强制重启后，可能要重新检测）
-      const pythonInfo = detectPython();
-      if (!pythonInfo.available) {
-        throw new Error('未检测到 Python 环境，无法重新拉起后端');
+      // 4. 确定后端入口（冻结 exe 优先，无需重新检测 Python）
+      const restartBackendInfo = getBackendScriptPath();
+      if (restartBackendInfo.type !== 'exe') {
+        const pythonInfo = detectPython();
+        if (!pythonInfo.available) {
+          throw new Error('未检测到 Python 环境，无法重新拉起后端');
+        }
+        console.log(`[INFO] Python: ${pythonInfo.path} (${pythonInfo.version})`);
+      } else {
+        console.log(`[INFO] 使用内置后端可执行文件重新拉起: ${restartBackendInfo.path}`);
       }
-      console.log(`[INFO] Python: ${pythonInfo.path} (${pythonInfo.version})`);
 
       // 5. spawn 新后端
-      this.process = this.spawnBackend(pythonInfo);
+      this.process = this.spawnBackend(null);
       this.bindProcessEvents(splashReporter);
       console.log(`[INFO] 已重新拉起后端进程 (PID=${this.process.pid})`);
 

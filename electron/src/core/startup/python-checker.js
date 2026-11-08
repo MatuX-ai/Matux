@@ -17,6 +17,8 @@ const {
 
 const {
   APP_PATHS,
+  hasFrozenBackend,
+  getFrozenBackendExe,
 } = require('../../../config/constants');
 
 const {
@@ -68,6 +70,16 @@ function isDegradedMode(info) {
  */
 async function checkPythonEnvironment({ sendSplashStatus }) {
   sendSplashStatus('checking-python', '正在检测 Python 环境...', 5);
+
+  // 【PyInstaller 集成】生产环境自带冻结后端 exe 时，完全不需要系统 Python：
+  //   直接返回 bundled 标记，跳过 Python 检测 / pip 依赖检查 / 原生弹窗引导。
+  //   这是「干净机器也能跑」的关键：否则无 Python 的机器会卡在安装引导弹窗上。
+  if (hasFrozenBackend()) {
+    const frozen = getFrozenBackendExe();
+    console.log(`[INFO] 检测到内置后端可执行文件，跳过系统 Python 检测: ${frozen.path}`);
+    sendSplashStatus('checking-python', '使用内置后端运行环境...', 10);
+    return { available: true, bundled: true, version: 'bundled', path: frozen.path };
+  }
 
   // 【NSIS 集成】第1优先级：消费 NSIS pending 路径（一次性桥接）
   consumePendingPythonPath(validatePythonAtPath);

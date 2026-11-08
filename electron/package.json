@@ -5,6 +5,7 @@
   "main": "main.js",
   "scripts": {
     "start": "electron .",
+    "build:backend": "cd ../backend && python -m PyInstaller main_ai_edu.spec --distpath dist --workpath build --noconfirm",
     "build": "electron-builder --win",
     "build:portable": "electron-builder --win portable --config electron-builder.yml",
     "build:all": "npm run build && npm run build:portable",

@@ -105,22 +105,75 @@ const SPLASH_WINDOW_SIZE = {
 // ==================== 路径配置 ====================
 
 /**
+ * 后端冻结产物的相对路径（相对 backend 目录）
+ * PyInstaller onedir 布局：backend/dist/main_ai_edu/main_ai_edu.exe
+ * 兼容旧的 onefile 布局：backend/dist/main_ai_edu.exe
+ */
+const FROZEN_BACKEND_RELATIVE_PATHS = [
+  ['dist', 'main_ai_edu', 'main_ai_edu.exe'], // onedir（当前方案）
+  ['dist', 'main_ai_edu.exe'],                // onefile（历史布局）
+];
+
+/**
  * 获取后端目录路径
  * 生产环境: backend 作为 extraResources 打包在 resources/backend/
  * 开发环境(从源码跑 electron .): electron 的 process.resourcesPath 指向 electron/dist/，
- *   没有 backend 资源；若该路径下找不到 backend/main_ai_edu.py，回退到源码 backend/。
+ *   没有 backend 资源；若该路径下找不到 backend 资源，回退到源码 backend/。
+ *
+ * 【PyInstaller 集成】生产环境不再携带 main_ai_edu.py，只带冻结 exe。
+ *   因此判定条件从「main_ai_edu.py 存在」放宽为「源码或冻结 exe 任一存在」。
  */
 function getBackendDir() {
   const fs = require('fs');
   if (!isDev && process.resourcesPath) {
     // 生产环境: backend 在 resources/backend/ 目录（extraResources 配置）
     const packaged = path.join(process.resourcesPath, 'backend');
-    if (fs.existsSync(path.join(packaged, 'main_ai_edu.py'))) {
+    if (fs.existsSync(packaged) && _isBackendDirUsable(fs, packaged)) {
       return packaged;
     }
   }
   // 开发环境/回退: 从 electron/config/ 向上两级到项目根
   return path.join(__dirname, '..', '..', 'backend');
+}
+
+/**
+ * 判断目录是否是有效的后端目录（含源码入口或冻结 exe）
+ */
+function _isBackendDirUsable(fs, dir) {
+  if (fs.existsSync(path.join(dir, 'main_ai_edu.py'))) return true;
+  return FROZEN_BACKEND_RELATIVE_PATHS.some((parts) =>
+    fs.existsSync(path.join(dir, ...parts))
+  );
+}
+
+/**
+ * 定位已冻结（PyInstaller）的后端可执行文件
+ * @returns {{type: 'exe', path: string, cwd: string}|null}
+ */
+function getFrozenBackendExe() {
+  const fs = require('fs');
+  if (process.platform !== 'win32') return null;
+  // 【开发模式隔离】npm start（NODE_ENV=development）必须跑源码后端，
+  //   否则本地只要存在 backend/dist 就会静默切到冻结 exe（改代码不生效）。
+  if (isDev) return null;
+
+  const backendDir = getBackendDir();
+  for (const parts of FROZEN_BACKEND_RELATIVE_PATHS) {
+    const exePath = path.join(backendDir, ...parts);
+    if (fs.existsSync(exePath)) {
+      // cwd 固定为 backend 目录：数据库（sqlite 相对路径）与运行时数据目录
+      // 需与源码模式保持一致，避免升级后读到空的 ai_service.db。
+      return { type: 'exe', path: exePath, cwd: backendDir };
+    }
+  }
+  return null;
+}
+
+/**
+ * 是否存在可用的冻结后端（生产环境不依赖系统 Python）
+ */
+function hasFrozenBackend() {
+  return getFrozenBackendExe() !== null;
 }
 
 /**
@@ -160,17 +213,15 @@ function getFrontendDir() {
 
 /**
  * 获取后端脚本路径
+ * 优先级：冻结 exe > Python 源码脚本
  */
 function getBackendScriptPath() {
-  // 生产环境使用 PyInstaller 打包的 exe
-  if (!isDev && process.platform === 'win32') {
-    const exePath = path.join(getBackendDir(), 'dist', 'main_ai_edu.exe');
-    const fs = require('fs');
-    if (fs.existsSync(exePath)) {
-      return { type: 'exe', path: exePath, cwd: getBackendDir() };
-    }
+  // 生产环境优先使用 PyInstaller 打包的 exe（干净机器无需系统 Python）
+  if (!isDev) {
+    const frozen = getFrozenBackendExe();
+    if (frozen) return frozen;
   }
-  // 开发环境使用源码
+  // 开发环境 / 未冻结时使用源码
   const scriptPath = path.join(getBackendDir(), 'main_ai_edu.py');
   return { type: 'script', path: scriptPath, cwd: getBackendDir() };
 }
@@ -282,6 +333,8 @@ module.exports = {
   getFrontendIndex,
   getFrontendDir,
   getBackendScriptPath,
+  getFrozenBackendExe,
+  hasFrozenBackend,
 
   // Python
   PYTHON_MIN_VERSION,
