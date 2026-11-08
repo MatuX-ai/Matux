@@ -8,6 +8,7 @@ from typing import List, Optional
 
 from config.settings import settings
 from fastapi import APIRouter, Body, Depends, HTTPException, Path, status
+from middleware.auth import get_current_user
 from models.user import User
 from pydantic import BaseModel, Field
 from services.openhydra_service import (
@@ -16,7 +17,7 @@ from services.openhydra_service import (
     OpenHydraServiceError,
 )
 from sqlalchemy.orm import Session
-from utils.dependencies import get_current_user_sync, get_sync_db
+from utils.database import get_sync_session
 
 logger = logging.getLogger(__name__)
 
@@ -95,8 +96,8 @@ def get_openhydra_service() -> OpenHydraService:
 async def enter_ai_lab(
     org_id: int,
     request: Optional[CreateContainerRequest] = None,
-    current_user: User = Depends(get_current_user_sync),
-    db: Session = Depends(get_sync_db),
+    current_user: User = Depends(get_current_user),
+    db: Session = Depends(get_sync_session),
     service: OpenHydraService = Depends(get_openhydra_service),
 ):
     """
@@ -186,7 +187,7 @@ async def enter_ai_lab(
 @router.get("/container/status", response_model=ContainerStatusResponse)
 async def get_container_status(
     org_id: int,
-    current_user: User = Depends(get_current_user_sync),
+    current_user: User = Depends(get_current_user),
     service: OpenHydraService = Depends(get_openhydra_service),
 ):
     """
@@ -246,7 +247,7 @@ async def get_container_status(
 @router.post("/container/stop")
 async def stop_container(
     org_id: int,
-    current_user: User = Depends(get_current_user_sync),
+    current_user: User = Depends(get_current_user),
     service: OpenHydraService = Depends(get_openhydra_service),
 ):
     """
@@ -304,7 +305,7 @@ async def stop_container(
 async def extend_container(
     org_id: int = Path(..., description="组织 ID"),
     hours: int = Body(default=4, description="延长的时间（小时）", ge=1, le=24),
-    current_user: User = Depends(get_current_user_sync),
+    current_user: User = Depends(get_current_user),
     service: OpenHydraService = Depends(get_openhydra_service),
 ):
     """
