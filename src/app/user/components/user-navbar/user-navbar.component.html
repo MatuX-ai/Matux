@@ -147,6 +147,10 @@
       <mat-icon>menu</mat-icon>
     </button>
 
+    <!-- 【无边框窗口 P3】窗口控制按钮：最小化 / 最大化-还原 / 关闭
+         仅 Electron 非 macOS 渲染；Web/PWA 下组件自身不显示 -->
+    <app-desktop-window-controls class="navbar-window-controls"></app-desktop-window-controls>
+
     <mat-menu #mobileMenu="matMenu">
       <div class="mobile-menu-header" *ngIf="currentUser">
         <span [innerHTML]="safeDisplayName"></span>

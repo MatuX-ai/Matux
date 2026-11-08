@@ -102,6 +102,25 @@ export interface AppEvent {
   [key: string]: unknown;
 }
 
+/**
+ * 无边框自定义标题栏窗口控制 API（frame:false）
+ * 仅 Electron 主窗口暴露；Web/PWA 环境下 window.electronAPI.windowControls 为 undefined
+ */
+export interface WindowControlsAPI {
+  /** 最小化窗口 */
+  minimize(): Promise<{ success: boolean }>;
+  /** 最大化 / 还原（主进程根据当前状态切换） */
+  maximize(): Promise<{ success: boolean }>;
+  /** 关闭窗口（有托盘时主进程会拦为隐藏到托盘） */
+  close(): Promise<{ success: boolean }>;
+  /** 查询是否最大化 */
+  isMaximized(): Promise<{ success: boolean; isMaximized: boolean }>;
+  /** 监听最大化状态变化，返回取消监听函数 */
+  onMaximizeChange(callback: (isMaximized: boolean) => void): () => void;
+  /** 当前运行平台：win32 / darwin / linux */
+  platform: string;
+}
+
 export interface ElectronAPI {
   // ==================== 后端通信 ====================
 
@@ -183,6 +202,12 @@ export interface ElectronAPI {
 
   /** 窗口操作（最小化/最大化/关闭/全屏等） */
   windowControl(action: AppEventType): void;
+
+  /**
+   * 【无边框窗口 P3】自定义标题栏窗口控制
+   * 仅在 Electron 主窗口存在，Web/PWA 环境为 undefined
+   */
+  windowControls?: WindowControlsAPI;
 
   /** 获取当前窗口尺寸 */
   getWindowSize(): Promise<{ width: number; height: number }>;

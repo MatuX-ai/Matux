@@ -38,16 +38,26 @@ function validateDimension(value, min = 100, max = 9999) {
  * 创建窗口 IPC Handlers
  * @param {object} options 配置选项
  * @param {object} options.appState AppState 实例
+ * @param {Function} [options.getMainWindow] 主窗口实时读取函数（优先于 appState）
  * @returns {object} handlers 对象
  */
 function createWindowHandlers(options = {}) {
-  const { appState = null } = options;
+  const { appState = null, getMainWindow: getMainWindowFn = null } = options;
 
   /**
    * 获取主窗口引用
+   *
+   * 【无边框窗口 P3】优先使用调用方注入的实时读取函数：
+   * createWindowHandlers 在主窗口创建之前注册，appState.getMainWindow()
+   * 在部分启动路径下为 null，会导致窗口控制按钮静默失效。
    */
   function getMainWindow() {
-    return appState ? appState.getMainWindow() : null;
+    if (typeof getMainWindowFn === 'function') {
+      const win = getMainWindowFn();
+      return win && !win.isDestroyed() ? win : null;
+    }
+    const win = appState ? appState.getMainWindow() : null;
+    return win && !win.isDestroyed() ? win : null;
   }
 
   /**
@@ -92,6 +102,38 @@ function createWindowHandlers(options = {}) {
       return {
         success: true,
         isMaximized: getMainWindow()?.isMaximized() || false
+      };
+    });
+
+    // ==================== 无边框自定义标题栏（P3） ====================
+    // 与上面短横线通道等价，命名对齐 Electron 官方 window:* 约定。
+    // 渲染进程只需维护一套 windowControls API，旧通道保留向后兼容。
+
+    safeHandle('window:minimize', () => {
+      getMainWindow()?.minimize();
+      return { success: true };
+    });
+
+    safeHandle('window:maximize', () => {
+      const win = getMainWindow();
+      if (!win) return { success: false };
+      if (win.isMaximized()) {
+        win.unmaximize();
+      } else {
+        win.maximize();
+      }
+      return { success: true };
+    });
+
+    safeHandle('window:close', () => {
+      getMainWindow()?.close();
+      return { success: true };
+    });
+
+    safeHandle('window:is-maximized', () => {
+      return {
+        success: true,
+        isMaximized: getMainWindow()?.isMaximized() || false,
       };
     });
 

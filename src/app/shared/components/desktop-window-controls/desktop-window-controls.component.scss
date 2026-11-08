@@ -1,0 +1,76 @@
+// ===== 无边框窗口控制按钮 =====
+// 尺寸/交互对齐 Windows 11 原生标题栏：46×32px、hover 半透明白、关闭键 hover #E81123
+// 两个使用场景（绿色导航栏 / 深色浮动条）都是深色底，故默认用白色描边 + 半透明白 hover，
+// 允许宿主通过 CSS 变量覆盖（--wc-hover-bg 等）。
+
+:host {
+  display: block;
+  flex-shrink: 0;
+
+  // 关键：按钮组必须排除在拖拽区之外，否则点不动
+  -webkit-app-region: no-drag;
+}
+
+.window-controls {
+  display: flex;
+  align-items: center;
+  height: 32px;
+
+  -webkit-app-region: no-drag;
+}
+
+.wc-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 46px;
+  height: 32px;
+  padding: 0;
+  border: 0;
+  border-radius: 0;
+  background: transparent;
+  color: inherit;
+  cursor: default;
+
+  -webkit-app-region: no-drag;
+  transition:
+    background-color 120ms ease,
+    color 120ms ease;
+}
+
+.wc-btn:hover {
+  background: var(--wc-hover-bg, rgb(255 255 255 / 18%));
+}
+
+.wc-btn:active {
+  background: var(--wc-hover-bg-active, rgb(255 255 255 / 28%));
+}
+
+// 关闭键：Windows 11 原生 #E81123，hover/active 反白图标
+.wc-close:hover {
+  background: var(--wc-close-hover-bg, #e81123);
+  color: #fff;
+}
+
+.wc-close:active {
+  background: var(--wc-close-active-bg, #f1707a);
+  color: #fff;
+}
+
+.wc-btn:focus-visible {
+  outline: 2px solid currentcolor;
+  outline-offset: -3px;
+}
+
+.wc-icon {
+  width: 10px;
+  height: 10px;
+  overflow: visible;
+}
+
+.wc-icon path,
+.wc-icon rect {
+  fill: none;
+  stroke: currentcolor;
+  stroke-width: 1;
+}

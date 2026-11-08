@@ -18,7 +18,17 @@
  * - 自动更新: src/core/updates
  */
 
-const { app, BrowserWindow, ipcMain, dialog, shell, protocol, net, screen } = require('electron');
+const {
+  app,
+  BrowserWindow,
+  ipcMain,
+  dialog,
+  shell,
+  protocol,
+  net,
+  screen,
+  Menu,
+} = require('electron');
 const path = require('path');
 const fs = require('fs');
 const http = require('http');
@@ -500,7 +510,17 @@ function createMainWindow(windowManager) {
       contextIsolation: true,
     },
     icon: APP_PATHS.icon,
-    titleBarStyle: 'default',
+    // 【无边框窗口 P3】桌面端自定义标题栏
+    // - Windows/Linux: frame:false 彻底去掉原生标题栏与边框，拖拽区由渲染进程
+    //   的 -webkit-app-region: drag 提供，窗口控制按钮走 window:* IPC
+    // - macOS: 保留原生 traffic lights（frame:true + hiddenInset），无边框会让
+    //   窗口失去关闭入口；渲染进程会自动隐藏自定义按钮组
+    // - 不设 transparent:true: Windows 下透明窗口会丢失 DWM 阴影，拖动时残影
+    frame: process.platform === 'darwin',
+    titleBarStyle: process.platform === 'darwin' ? 'hiddenInset' : 'hidden',
+    // Windows 11: 圆角 + 阴影由 DWM 处理；thickFrame 保持默认 true，
+    // 无边框下仍可从四边/四角拖拽调整窗口大小
+    ...(process.platform === 'win32' ? { roundedCorners: true, hasShadow: true } : {}),
     title: 'MatuX',
   });
 
@@ -657,6 +677,28 @@ function createMainWindow(windowManager) {
   mainWindow.on('focus', () => mainWindow.webContents.send('app-event', { type: 'window-focus' }));
   mainWindow.on('enter-full-screen', () => mainWindow.webContents.send('app-event', { type: 'fullscreen-enter' }));
   mainWindow.on('leave-full-screen', () => mainWindow.webContents.send('app-event', { type: 'fullscreen-leave' }));
+
+  // 【无边框窗口 P3】最大化状态广播：渲染进程据此切换 □ / ❐ 图标
+  const broadcastMaximizeState = () => {
+    if (mainWindow && !mainWindow.isDestroyed()) {
+      mainWindow.webContents.send('window:maximize-change', mainWindow.isMaximized());
+    }
+  };
+  mainWindow.on('maximize', broadcastMaximizeState);
+  mainWindow.on('unmaximize', broadcastMaximizeState);
+
+  // 【无边框窗口 P3】菜单移除后 F11 全屏快捷键兜底（原本由默认菜单 role 提供）
+  mainWindow.webContents.on('before-input-event', (event, input) => {
+    if (input.key !== 'F11') return;
+    mainLogger.logEvent('F11-KEY', { type: input.type, control: input.control, alt: input.alt, shift: input.shift });
+    if (input.type !== 'keyDown') return;
+    event.preventDefault();
+    if (mainWindow && !mainWindow.isDestroyed()) {
+      const nextFullscreen = !mainWindow.isFullScreen();
+      mainWindow.setFullScreen(nextFullscreen);
+      mainLogger.logEvent('F11-TOGGLE', { fullscreen: nextFullscreen });
+    }
+  });
 
   // 窗口大小变化（节流）
   let resizeTimeout = null;
@@ -954,7 +996,12 @@ function registerIpcHandlers() {
   const backendHandlers = createBackendHandlers({ backendManager: appInitializer?.getBackendManager(), appState, appInitializer });
   backendHandlers.register();
 
-  const windowHandlers = createWindowHandlers({ appState });
+  // 【无边框窗口 P3】窗口控制按钮必须能拿到真实主窗口引用：
+  //   appState.setMainWindow() 在 createMainWindow 中并未被调用，仅靠 appState
+  //   会拿到 null，导致 window-minimize/maximize/close 全部静默失效。
+  //   这里注入主进程模块级 mainWindow 的实时读取闭包（注册时窗口尚未创建，
+  //   所以必须是函数而不是值）。
+  const windowHandlers = createWindowHandlers({ appState, getMainWindow: () => mainWindow });
   windowHandlers.register();
 
   const notificationHandlers = createNotificationHandlers({ appState, showNotification: showTrayNotification });
@@ -1101,6 +1148,16 @@ app.whenReady().then(async () => {
     } catch (_) { /* 心跳失败不影响主流程 */ }
   }, 5 * 60 * 1000);
   if (typeof heartbeatTimer.unref === 'function') heartbeatTimer.unref();
+
+  // 【无边框窗口 P3】移除 Electron 默认菜单（File/Edit/View/Window/Help）
+  // 自定义标题栏已接管窗口控制；菜单移除后 F11 全屏改由 before-input-event 兜底
+  try {
+    Menu.setApplicationMenu(null);
+    mainLogger.logEvent('MENU-CLEARED', {});
+    console.log('[Main] 已移除应用默认菜单（无边框模式）');
+  } catch (err) {
+    console.warn('[Main] 移除默认菜单失败（非阻塞）:', err && err.message);
+  }
 
   // 【P2-5】electron-updater 接入骨架：feedURL 未配置时静默跳过，不阻塞启动。
   // 后续配置好 update.electronjs.org / 自有服务器签名后，把 FEED_URL 填上即可启用自动更新。
