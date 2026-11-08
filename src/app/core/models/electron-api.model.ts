@@ -92,7 +92,9 @@ export type AppEventType =
   | 'open-file'
   | 'update-available'
   | 'fullscreen-enter'
-  | 'fullscreen-leave';
+  | 'fullscreen-leave'
+  // 【加固】协议代理层异常/后端 5xx 上报，主进程 protocol.handle 发出，含 path/method/backendUrl/targetStatus/durationMs/errorMessage/timestamp
+  | 'proxy-error';
 
 /** 应用事件数据 */
 export interface AppEvent {

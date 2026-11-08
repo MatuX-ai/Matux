@@ -172,13 +172,85 @@ function registerAppProtocol() {
       //   被 base href './' 解析为 app://./api/...，需要代理到后端。
       if (isApiOrAsset) {
         const backendUrl = `${process.env.BACKEND_URL || `http://localhost:${process.env.BACKEND_PORT || 8000}`}/${relativePath}`;
-        console.log(`[Protocol] API代理: ${relativePath} -> ${backendUrl}`);
+        // 【加固】完整生命周期：记录 method/URL，响应后记录 status + durationMs，
+        //   在失败/超时/5xx 时主动报 proxy-error 事件给前端，避免前端 fetch 永远 pending。
+        const upperMethod = (request.method || 'GET').toUpperCase();
+        const reqStart = Date.now();
+        console.log(`[Protocol] → ${upperMethod} ${backendUrl}`);
+        const notifyProxyError = (source, errMsg, status) => {
+          const durationMs = Date.now() - reqStart;
+          safeSendAppEvent({
+            type: 'proxy-error',
+            source, // 'proxy' = 代理层同步/异步异常；'backend' = 后端 5xx
+            path: relativePath,
+            method: upperMethod,
+            backendUrl: maskBackendUrl(backendUrl),
+            targetStatus: status || 0,
+            durationMs,
+            errorMessage: errMsg || '',
+            timestamp: new Date().toISOString(),
+          });
+          return durationMs;
+        };
         // 【修复】转发原始请求的 method、headers、body，确保 POST/PUT 等方法正确代理
-        return net.fetch(backendUrl, {
-          method: request.method,
-          headers: request.headers,
-          body: request.body,
-        });
+        // 【P1 修复】补 duplex: 'half'：
+        //   Electron 28 / Node 18 自带的 undici 在 RequestInit 带 body 时强制要求
+        //   duplex: 'half'，否则同步抛 `TypeError: RequestInit: duplex option is required when sending a body.`
+        //   该异常在 protocol.handle 回调中无法变成响应回传给浏览器，导致前端 fetch 永远 pending。
+        //   表现为：桌面端点击登录卡在 "Validating credentials..." 永远不返回。
+        //   修复后 POST/PUT/PATCH 等带 body 的请求可正常代理到后端。
+        try {
+          const init = {
+            method: request.method,
+            headers: request.headers,
+          };
+          // 仅在有 body 时透传 + 声明 duplex（GET/HEAD 等不允许有 body）
+          if (upperMethod !== 'GET' && upperMethod !== 'HEAD') {
+            if (request.body) {
+              init.body = request.body;
+              init.duplex = 'half';
+            }
+          }
+          return net.fetch(backendUrl, init)
+            .then((response) => {
+              const durationMs = Date.now() - reqStart;
+              console.log(`[Protocol] ← ${response.status} ${upperMethod} ${relativePath} (${durationMs}ms)`);
+              // 【加固】后端明确 5xx：记录并报事件，调用方不必额外代码即可拿到信号
+              if (response.status >= 500) {
+                safeSendAppEvent({
+                  type: 'proxy-error',
+                  source: 'backend',
+                  path: relativePath,
+                  method: upperMethod,
+                  backendUrl: maskBackendUrl(backendUrl),
+                  targetStatus: response.status,
+                  durationMs,
+                  timestamp: new Date().toISOString(),
+                });
+              }
+              return response;
+            })
+            .catch((fetchErr) => {
+              const fetchMsg =
+                (fetchErr && fetchErr.message) ||
+                (typeof fetchErr === 'string' ? fetchErr : String(fetchErr));
+              notifyProxyError('proxy', fetchMsg, 0);
+              console.error('[Protocol] API代理 fetch 失败:', fetchMsg);
+              return new Response(`Bad Gateway: ${relativePath}\n${fetchMsg}`, {
+                status: 502,
+                headers: { 'Content-Type': 'text/plain; charset=utf-8' },
+              });
+            });
+        } catch (proxyErr) {
+          const proxyMsg =
+            (proxyErr && proxyErr.message) || (typeof proxyErr === 'string' ? proxyErr : String(proxyErr));
+          console.error('[Protocol] API代理同步异常:', proxyMsg);
+          notifyProxyError('proxy', proxyMsg, 0);
+          return new Response(`Bad Gateway: ${relativePath}\n${proxyMsg}`, {
+            status: 502,
+            headers: { 'Content-Type': 'text/plain; charset=utf-8' },
+          });
+        }
       }
       if (hasExtension) {
         // 有扩展名但不是已知 API 路径（如 .json、.ico、.map 等）→ 404
@@ -579,6 +651,37 @@ function createMainWindow(windowManager) {
 // ==================== 工具函数 ====================
 
 /**
+ * 安全发送 app-event 到主窗口
+ * 【加固】所有主进程 → 渲染进程的发送都过这里，避免主窗口未创建 / isDestroyed / webContents 不可用导致额外异常
+ * @param {object} payload
+ */
+function safeSendAppEvent(payload) {
+  try {
+    if (mainWindow && !mainWindow.isDestroyed()) {
+      const wc = mainWindow.webContents;
+      if (wc && !wc.isCrashed() && !wc.isDestroyed()) {
+        wc.send('app-event', payload);
+      }
+    }
+  } catch (_sendErr) {
+    // 静默忽略：上层不必要知道诊断包发送失败
+  }
+}
+
+/**
+ * 给用户/前端看的“安全” backendUrl，掼除可能的 BasicAuth 凭据
+ * 例如 http://user:pass@host:8000 → http://****@host:8000
+ */
+function maskBackendUrl(url) {
+  if (typeof url !== 'string') return '';
+  try {
+    return url.replace(/(:\/\/)([^:@/]+):([^@]+)@/, '$1$2:****@');
+  } catch {
+    return url;
+  }
+}
+
+/**
  * 向 Splash 窗口发送状态更新
  *
  * @param {string} phase - 启动阶段标识
@@ -886,6 +989,33 @@ app.on('second-instance', (event, commandLine) => {
   });
 
 app.whenReady().then(async () => {
+  // 【P2-5】electron-updater 接入骨架：feedURL 未配置时静默跳过，不阻塞启动。
+  // 后续配置好 update.electronjs.org / 自有服务器签名后，把 FEED_URL 填上即可启用自动更新。
+  try {
+    const { autoUpdater } = require('electron-updater');
+    const FEED_URL = process.env.IMATO_UPDATE_FEED_URL || '';
+    autoUpdater.autoDownload = false;
+    autoUpdater.autoInstallOnAppQuit = true;
+    if (FEED_URL) {
+      autoUpdater.setFeedURL({ provider: 'generic', url: FEED_URL });
+      autoUpdater.on('update-available', (info) => {
+        console.log('[Updater] update available:', info && info.version);
+      });
+      autoUpdater.on('update-downloaded', (info) => {
+        console.log('[Updater] update downloaded:', info && info.version);
+      });
+      autoUpdater.on('error', (err) => {
+        console.warn('[Updater] error (non-blocking):', err && err.message);
+      });
+      autoUpdater.checkForUpdatesAndNotify().catch((e) => {
+        console.warn('[Updater] check failed (non-blocking):', e && e.message);
+      });
+    } else {
+      console.log('[Updater] FEED_URL not configured, skipping auto-update check.');
+    }
+  } catch (e) {
+    console.warn('[Updater] electron-updater not available (non-blocking):', e && e.message);
+  }
   // 0. 注册 splash 关键 IPC handler（必须在 createSplashWindow 之前注册,
   //   否则 initialize() 阻塞期间用户点击"跳过"会因无人监听被丢弃）
   ipcMain.on('splash-quit', () => {

@@ -168,7 +168,7 @@ contextBridge.exposeInMainWorld('electronAPI', {
     const validChannels = ['app-event', 'from-backend', 'window-blur', 'window-focus',
       'fullscreen-enter', 'fullscreen-leave', 'window-resize', 'open-file',
       'update-available', 'auto-updater-status', 'backend-disconnected', 'backend-reconnected',
-      'backend:module-status', 'backend-status-change', 'backend-degraded'];
+      'backend:module-status', 'backend-status-change', 'backend-degraded', 'proxy-error'];
     if (validChannels.includes(channel)) {
       ipcRenderer.on(channel, (_event, ...args) => func(...args));
     }
