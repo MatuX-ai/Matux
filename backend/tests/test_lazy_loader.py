@@ -283,6 +283,140 @@ class TestPathMatching:
         assert loader.find_module_by_path("/health") is None
 
 
+# ==================== 最长前缀匹配测试 ====================
+
+class TestLongestPrefixMatch:
+    """最长前缀匹配测试（Issue #42 方案 A）"""
+
+    @staticmethod
+    def _make_spec(name, prefix):
+        """构造一个仅用于路径匹配的模块规格"""
+        return ModuleSpec(
+            name=name,
+            tier=ModuleTier.TIER_2_ON_DEMAND,
+            router_factory=lambda: APIRouter(),
+            prefix=prefix,
+        )
+
+    def test_longest_prefix_match(self, loader):
+        """更精确的前缀应胜出，而不是被 catch-all 前缀遮蔽"""
+        loader.register(self._make_spec("catch_all", "/api/v1"))
+        loader.register(
+            self._make_spec("learning_behavior", "/api/v1/learning-behavior")
+        )
+
+        assert (
+            loader.find_module_by_path("/api/v1/learning-behavior/analytics")
+            == "learning_behavior"
+        )
+        # 未命中更精确前缀时，才回落到 catch-all
+        assert loader.find_module_by_path("/api/v1/other") == "catch_all"
+
+    def test_unknown_path_returns_none(self, loader):
+        """无任何前缀命中时返回 None"""
+        loader.register(
+            self._make_spec("learning_behavior", "/api/v1/learning-behavior")
+        )
+
+        assert loader.find_module_by_path("/unknown/path") is None
+
+    def test_empty_prefix_skipped(self, loader):
+        """空 prefix 的模块不参与路径匹配"""
+        loader.register(self._make_spec("empty_module", ""))
+
+        assert loader.find_module_by_path("/api/v1/empty_module/xxx") is None
+        assert loader.find_module_by_path("/") is None
+
+    def test_path_param_prefix_match(self, loader):
+        """含路径参数的前缀按单段通配匹配"""
+        loader.register(
+            self._make_spec("achievement", "/api/v1/org/{org_id}/achievements")
+        )
+
+        assert (
+            loader.find_module_by_path("/api/v1/org/acme/achievements")
+            == "achievement"
+        )
+        assert (
+            loader.find_module_by_path("/api/v1/org/acme/achievements/1")
+            == "achievement"
+        )
+        # 段数不足时不应命中
+        assert loader.find_module_by_path("/api/v1/org/acme") is None
+
+
+# ==================== 多值 prefix 映射测试 ====================
+
+class TestPrefixMapMultiModule:
+    """同一 prefix 被多个模块共享时的行为（Issue #42-A）"""
+
+    @staticmethod
+    def _make_spec(name, prefix):
+        """构造一个仅用于路径匹配的模块规格"""
+        return ModuleSpec(
+            name=name,
+            tier=ModuleTier.TIER_2_ON_DEMAND,
+            router_factory=lambda: APIRouter(),
+            prefix=prefix,
+        )
+
+    def test_prefix_map_multi_module(self, loader):
+        """同一 prefix 的多个模块应共存，不能被覆盖式赋值吞掉"""
+        loader.register(self._make_spec("shared_a", "/api/v1/shared"))
+        loader.register(self._make_spec("shared_b", "/api/v1/shared"))
+
+        assert loader._prefix_map["/api/v1/shared"] == [
+            "shared_a",
+            "shared_b",
+        ]
+        # 单值接口按注册顺序取首个，保持向后兼容
+        assert loader.find_module_by_path("/api/v1/shared/x") == "shared_a"
+        # 多值接口保留全部候选
+        assert loader.find_modules_by_path("/api/v1/shared/x") == [
+            "shared_a",
+            "shared_b",
+        ]
+
+    def test_longest_prefix_match_with_shared_prefix(self, loader):
+        """共享前缀的模块整体排在更短的 catch-all 前缀之前"""
+        loader.register(self._make_spec("catch_all", "/api/v1"))
+        loader.register(self._make_spec("shared_a", "/api/v1/shared"))
+        loader.register(self._make_spec("shared_b", "/api/v1/shared"))
+
+        candidates = loader.find_modules_by_path("/api/v1/shared/x")
+
+        assert candidates[:2] == ["shared_a", "shared_b"]
+        assert candidates[-1] == "catch_all"
+        # 单值接口仍取最长前缀下的首个模块
+        assert loader.find_module_by_path("/api/v1/shared/x") == "shared_a"
+        # catch-all 只在精确前缀未命中时兜底
+        assert loader.find_module_by_path("/api/v1/other") == "catch_all"
+
+    def test_unknown_path_returns_none(self, loader):
+        """无任何前缀命中时单值/多值接口都应表达「无匹配」"""
+        loader.register(self._make_spec("shared_a", "/api/v1/shared"))
+
+        assert loader.find_module_by_path("/unknown/path") is None
+        assert loader.find_modules_by_path("/unknown/path") == []
+
+    def test_shared_prefix_skipped_when_empty(self, loader):
+        """空 prefix 不进入映射，也不会污染多值结构"""
+        loader.register(self._make_spec("empty_module", ""))
+
+        assert loader._prefix_map == {}
+        assert loader.find_modules_by_path("/") == []
+
+    def test_register_multi_prefix_module(self, loader):
+        """同一模块的多个前缀各自登记，且不重复追加"""
+        loader.register(self._make_spec("multi", "/api/v1/a"))
+        loader.register(self._make_spec("multi_b", "/api/v1/a"))
+
+        assert loader._prefix_map["/api/v1/a"] == ["multi", "multi_b"]
+        # 重复解析不应改变映射内容
+        loader.find_modules_by_path("/api/v1/a/x")
+        assert loader._prefix_map["/api/v1/a"] == ["multi", "multi_b"]
+
+
 # ==================== 去激活测试 ====================
 
 class TestDeactivation:

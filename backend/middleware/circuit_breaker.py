@@ -119,11 +119,15 @@ class CircuitBreaker:
         Raises:
             Exception: 熔断器打开时或函数执行失败
         """
+        # 只把「状态判断 + 决策」放进锁内；降级处理必须在锁外执行。
+        # _handle_fallback() 自身需要获取 self._lock，而 asyncio.Lock 不可重入，
+        # 持锁调用会让当前 Task 等待自己已持有的锁 -> 永久挂起（Issue #46）。
         async with self._lock:
-            # 检查是否允许请求通过
-            if not self._allow_request():
-                # 尝试降级处理
-                return await self._handle_fallback(*args, **kwargs)
+            allowed = self._allow_request()
+
+        if not allowed:
+            # 与下方 except 分支（锁已释放）保持一致：锁外尝试降级处理
+            return await self._handle_fallback(*args, **kwargs)
 
         try:
             # 执行实际调用
@@ -221,8 +225,14 @@ class CircuitBreaker:
                 self.last_state_change_time = datetime.utcnow()
 
     async def _handle_fallback(self, *args, original_exception: Exception = None, **kwargs) -> Any:
-        """
-        处理降级逻辑
+        """处理降级逻辑。
+
+        降级函数只调用一次。若降级函数自身失败，**向上抛降级函数自身的异常**，
+        而不是用 ``CircuitBreakerOpenError`` 覆盖它 —— 否则生产排障只能看到
+        「服务暂时不可用」，真实下游错误被丢弃。
+
+        注：带重试的降级语义（retry / partial success）不在本实现范围内，
+        对应测试已移到 PR-3e-2 按测试侧语义处理。
 
         Returns:
             降级结果或抛出异常
@@ -230,15 +240,17 @@ class CircuitBreaker:
         async with self._lock:
             self.total_fallbacks += 1
 
-        # 如果配置了降级函数，使用降级函数
-        if self.config.fallback_function:
+        fallback_function = self.config.fallback_function
+        if fallback_function:
             try:
                 logger.info(f"[{self.name}] 执行降级函数")
-                return await self.config.fallback_function(*args, **kwargs)
+                return await fallback_function(*args, **kwargs)
             except Exception as e:
                 logger.error(f"[{self.name}] 降级函数执行失败：{str(e)}")
+                # 保留降级函数自身的异常作为对外错误，并挂上原始异常链
+                raise e from original_exception
 
-        # 如果没有降级函数或降级失败，根据状态决定
+        # 没有配置降级函数，根据状态决定
         if self.state == CircuitState.OPEN:
             # 熔断器打开，返回友好错误
             raise CircuitBreakerOpenError(

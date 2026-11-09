@@ -207,9 +207,9 @@ class SubscriptionPayment(Base):
     # 索引
     __table_args__ = (
         Index("idx_payment_subscription", "subscription_id"),
-        Index("idx_payment_status", "status"),
+        Index("idx_subscription_payment_status", "status"),
         Index("idx_payment_cycle", "billing_cycle_start", "billing_cycle_end"),
-        Index("idx_payment_created", "created_at"),
+        Index("idx_subscription_payment_created", "created_at"),
     )
 
 

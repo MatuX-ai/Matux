@@ -20,6 +20,47 @@ from .module_spec import ModuleSpec, ModuleState, ModuleTier
 
 logger = logging.getLogger(__name__)
 
+
+def _is_path_param(segment: str) -> bool:
+    """判断路径段是否为参数占位符（如 {org_id}）。"""
+    return segment.startswith("{") and segment.endswith("}")
+
+
+def _split_path(path: str) -> List[str]:
+    """按 "/" 切分路径，忽略空段。"""
+    return [segment for segment in path.split("/") if segment]
+
+
+def _match_prefix(request_path: str, prefix: str) -> bool:
+    """判断请求路径是否命中前缀（逐段比较，参数段视为单段通配）。
+
+    路径参数感知是必需的：多数 org 级模块的反查前缀形如
+    "/api/v1/org/{org_id}/achievements"，真实请求里该段是具体值，
+    纯字符串 startswith 永远匹配不上。
+    """
+    prefix_segments = _split_path(prefix)
+    path_segments = _split_path(request_path)
+    if not prefix_segments or len(prefix_segments) > len(path_segments):
+        return False
+    for prefix_segment, path_segment in zip(prefix_segments, path_segments):
+        if _is_path_param(prefix_segment):
+            if not path_segment:
+                return False
+            continue
+        if prefix_segment != path_segment:
+            return False
+    return True
+
+
+def _get_lookup_prefixes(module_name: str) -> List[str]:
+    """获取模块的「路径反查前缀」列表（由 core.module_registry 维护）。"""
+    try:
+        from .module_registry import get_lookup_prefixes
+    except ImportError:  # pragma: no cover - 插件独立部署场景
+        return []
+    return list(get_lookup_prefixes().get(module_name, []))
+
+
 # 熔断器默认配置
 DEFAULT_BREAKER_CONFIG = None  # 延迟导入避免循环依赖
 
@@ -48,8 +89,9 @@ class ModuleLazyLoader:
                                   asyncio.Lock] = defaultdict(asyncio.Lock)
         self._global_lock = asyncio.Lock()
         self._activated_routers: set = set()
-        # URL prefix → module_name 映射（中间件使用）
-        self._prefix_map: Dict[str, str] = {}
+        # URL prefix → module_name 列表（中间件使用）。同一 prefix 可能被
+        # 多个模块共享，故为多值（Issue #42-A）。
+        self._prefix_map: Dict[str, List[str]] = {}
         # 熔断器注册表
         self._breaker_registry = None
 
@@ -71,8 +113,21 @@ class ModuleLazyLoader:
         self.modules[spec.name] = spec
 
         # 建立 prefix → module 映射
-        if spec.prefix:
-            self._prefix_map[spec.prefix] = spec.name
+        # 优先使用 module_registry 维护的「路径反查前缀」：它描述该模块
+        # 实际挂载出的请求路径前缀（一个模块的路由可能分散在互不相连的
+        # 路径下，因此是列表而非单个字符串）。缺失时回退到 spec.prefix。
+        #
+        # 一个 prefix 可能被多个模块共享（Issue #42-A）：早期实现用
+        # ``dict[prefix] = name`` 覆盖式赋值，后注册的模块会静默吞掉先注册
+        # 的模块。这里改为追加，保留全部候选，由调用方按最长前缀挑选。
+        lookup_prefixes = _get_lookup_prefixes(spec.name)
+        prefixes = list(lookup_prefixes) or (
+            [spec.prefix] if spec.prefix else []
+        )
+        for prefix in prefixes:
+            owners = self._prefix_map.setdefault(prefix, [])
+            if spec.name not in owners:
+                owners.append(spec.name)
 
         logger.info(
             f"📦 模块已注册: {spec.name} "
@@ -384,9 +439,44 @@ class ModuleLazyLoader:
                 return None
         return self._breaker_registry
 
+    def find_modules_by_path(self, request_path: str) -> List[str]:
+        """
+        根据请求路径查找全部候选模块名（最长前缀优先）
+
+        同一个 prefix 可能被多个模块共享（Issue #42-A），因此返回列表而非
+        单值。排序规则：
+
+        1. 前缀段数多的模块在前（最长前缀匹配），避免被短前缀（如
+           "/api/v1" 这类 catch-all）抢先命中而遮蔽更精确的模块；
+        2. 段数相同时按注册顺序，先注册者在前。
+
+        Args:
+            request_path: HTTP 请求路径
+
+        Returns:
+            模块名列表（最长前缀优先）；无任何命中时返回空列表
+        """
+        scored: List[tuple] = []
+        sequence = 0
+        for prefix, module_names in self._prefix_map.items():
+            hit = _match_prefix(request_path, prefix)
+            score = len(_split_path(prefix)) if hit else 0
+            for module_name in module_names:
+                if hit:
+                    scored.append((score, sequence, module_name))
+                sequence += 1
+        if not scored:
+            return []
+        scored.sort(key=lambda item: (-item[0], item[1]))
+        return [module_name for _, _, module_name in scored]
+
     def find_module_by_path(self, request_path: str) -> Optional[str]:
         """
-        根据请求路径查找对应模块名
+        根据请求路径查找对应模块名（最长前缀匹配）
+
+        命中多条时返回优先级最高的那个（排序规则见
+        :meth:`find_modules_by_path`）。需要全部候选时请改用
+        :meth:`find_modules_by_path`。
 
         Args:
             request_path: HTTP 请求路径
@@ -394,18 +484,8 @@ class ModuleLazyLoader:
         Returns:
             模块名，未找到返回 None
         """
-        # 精确匹配前缀
-        for prefix, module_name in self._prefix_map.items():
-            if request_path.startswith(prefix):
-                return module_name
-
-        # 尝试匹配带 /api/v1 前缀
-        for prefix, module_name in self._prefix_map.items():
-            if prefix.startswith("/api/v1"):
-                if request_path.startswith(prefix):
-                    return module_name
-
-        return None
+        candidates = self.find_modules_by_path(request_path)
+        return candidates[0] if candidates else None
 
     def get_breaker_status(self, module_name: str) -> Optional[Dict]:
         """获取模块熔断器状态"""

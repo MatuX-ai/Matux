@@ -7,7 +7,7 @@ from typing import Any, Dict, List, Optional, Tuple
 from langchain.memory import ConversationBufferMemory
 
 from ..config.settings import get_settings
-from ..database.tenant_aware_session import get_db_session
+from ..database.tenant_aware_session import get_sync_session
 from ..models.ai_completion import (
     ContextAnalysisResult,
     ProgrammingLanguage,
@@ -41,7 +41,7 @@ class CompletionMemory:
             是否成功添加
         """
         try:
-            async with get_db_session() as db:
+            async with get_sync_session() as db:
                 # 检查是否存在相同记录
                 existing_record = await db.execute(
                     "SELECT id, usage_count FROM user_code_history "
@@ -108,7 +108,7 @@ class CompletionMemory:
             用户代码模式列表
         """
         try:
-            async with get_db_session() as db:
+            async with get_sync_session() as db:
                 result = await db.execute(
                     "SELECT code_snippet, context, usage_count, last_used "
                     "FROM user_code_history "
@@ -158,7 +158,7 @@ class CompletionMemory:
             prefix_hash = self._generate_prefix_hash(prefix)
             expires_at = datetime.utcnow() + self.cache_ttl
 
-            async with get_db_session() as db:
+            async with get_sync_session() as db:
                 # 检查缓存是否已存在
                 existing_cache = await db.execute(
                     "SELECT id FROM completion_cache WHERE prefix_hash = :prefix_hash",
@@ -221,7 +221,7 @@ class CompletionMemory:
             prefix_hash = self._generate_prefix_hash(prefix)
             current_time = datetime.utcnow()
 
-            async with get_db_session() as db:
+            async with get_sync_session() as db:
                 result = await db.execute(
                     "SELECT completions_json, confidence_scores_json, hit_count "
                     "FROM completion_cache "
@@ -260,7 +260,7 @@ class CompletionMemory:
         try:
             current_time = datetime.utcnow()
 
-            async with get_db_session() as db:
+            async with get_sync_session() as db:
                 result = await db.execute(
                     "DELETE FROM completion_cache WHERE expires_at <= :current_time",
                     {"current_time": current_time},

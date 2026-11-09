@@ -7,6 +7,7 @@ import logging
 from typing import Optional
 
 from fastapi import APIRouter, Body, Depends, HTTPException, Path, Query
+from middleware.auth import get_current_user
 from models.unified_learning_record import (
     LearningRecordStatus,
     UnifiedLearningRecordCreate,
@@ -17,8 +18,7 @@ from models.unified_learning_record import (
 from models.user import User
 from services.unified_learning_record_service import UnifiedLearningRecordService
 from sqlalchemy.orm import Session
-from utils.auth_utils import get_current_user_sync
-from utils.database import get_sync_db
+from utils.database import get_sync_session
 
 logger = logging.getLogger(__name__)
 
@@ -26,7 +26,9 @@ logger = logging.getLogger(__name__)
 router = APIRouter(prefix="/api/v1", tags=["统一学习记录"])
 
 
-def get_service(db: Session = Depends(get_sync_db)) -> UnifiedLearningRecordService:
+def get_service(
+    db: Session = Depends(get_sync_session),
+) -> UnifiedLearningRecordService:
     """获取服务实例"""
     return UnifiedLearningRecordService(db)
 
@@ -40,7 +42,7 @@ def get_service(db: Session = Depends(get_sync_db)) -> UnifiedLearningRecordServ
 )
 def create_record(
     data: UnifiedLearningRecordCreate = Body(..., description="记录创建数据"),
-    current_user: User = Depends(get_current_user_sync),
+    current_user: User = Depends(get_current_user),
     service: UnifiedLearningRecordService = Depends(get_service),
 ):
     """创建新的统一学习记录"""
@@ -100,7 +102,7 @@ def get_user_records(
 def update_record(
     record_id: int = Path(..., description="记录ID"),
     data: UnifiedLearningRecordUpdate = Body(..., description="更新数据"),
-    current_user: User = Depends(get_current_user_sync),
+    current_user: User = Depends(get_current_user),
     service: UnifiedLearningRecordService = Depends(get_service),
 ):
     """更新学习记录信息"""
@@ -121,7 +123,7 @@ def update_record(
 def delete_record(
     record_id: int = Path(..., description="记录ID"),
     soft: bool = Query(True, description="是否软删除"),
-    current_user: User = Depends(get_current_user_sync),
+    current_user: User = Depends(get_current_user),
     service: UnifiedLearningRecordService = Depends(get_service),
 ):
     """删除学习记录"""
@@ -157,7 +159,7 @@ def sync_from_enrollment(
     enrollment_id: int = Body(..., description="选课记录ID"),
     user_id: int = Body(..., description="用户ID"),
     learning_source_id: int = Body(..., description="学习来源ID"),
-    current_user: User = Depends(get_current_user_sync),
+    current_user: User = Depends(get_current_user),
     service: UnifiedLearningRecordService = Depends(get_service),
 ):
     """从已有的选课记录创建统一学习记录"""

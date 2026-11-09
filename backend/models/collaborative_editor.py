@@ -26,7 +26,7 @@ from utils.database import Base
 class CollaborativeDocument(Base):
     """协作文档模型"""
 
-    __tablename__ = "collaborative_documents"
+    __tablename__ = "collaborative_editor_documents"
 
     id = Column(Integer, primary_key=True, index=True)
     course_id = Column(Integer, ForeignKey(
@@ -76,7 +76,7 @@ class DocumentOperation(Base):
 
     id = Column(Integer, primary_key=True, index=True)
     document_id = Column(
-        Integer, ForeignKey("collaborative_documents.id"), nullable=False, index=True
+        Integer, ForeignKey("collaborative_editor_documents.id"), nullable=False, index=True
     )
     user_id = Column(Integer, ForeignKey("users.id"),
                      nullable=False, index=True)
@@ -98,7 +98,7 @@ class DocumentOperation(Base):
     created_at = Column(DateTime, default=datetime.utcnow)
 
     # 关系
-    document = relationship("CollaborativeDocument")
+    document = relationship("models.collaborative_editor.CollaborativeDocument")
     user = relationship("User")
 
     __table_args__ = (
@@ -120,11 +120,11 @@ class DocumentOperation(Base):
 class DocumentComment(Base):
     """文档评论模型"""
 
-    __tablename__ = "document_comments"
+    __tablename__ = "collaborative_editor_document_comments"
 
     id = Column(Integer, primary_key=True, index=True)
     document_id = Column(
-        Integer, ForeignKey("collaborative_documents.id"), nullable=False, index=True
+        Integer, ForeignKey("collaborative_editor_documents.id"), nullable=False, index=True
     )
     user_id = Column(Integer, ForeignKey("users.id"),
                      nullable=False, index=True)
@@ -149,7 +149,7 @@ class DocumentComment(Base):
 
     # 回复
     parent_comment_id = Column(
-        Integer, ForeignKey("document_comments.id"))  # 父评论ID
+        Integer, ForeignKey("collaborative_editor_document_comments.id"))  # 父评论ID
     replies_count = Column(Integer, default=0)  # 回复数量
 
     created_at = Column(DateTime, default=datetime.utcnow)
@@ -157,11 +157,11 @@ class DocumentComment(Base):
                         onupdate=datetime.utcnow)
 
     # 关系
-    document = relationship("CollaborativeDocument")
+    document = relationship("models.collaborative_editor.CollaborativeDocument")
     user = relationship("User", foreign_keys=[user_id])
     resolver = relationship("User", foreign_keys=[resolved_by])
-    parent_comment = relationship("DocumentComment", remote_side=[id])
-    replies = relationship("DocumentComment", back_populates="parent_comment")
+    parent_comment = relationship("models.collaborative_editor.DocumentComment", remote_side=[id])
+    replies = relationship("models.collaborative_editor.DocumentComment", back_populates="parent_comment")
 
     __table_args__ = (
         Index("idx_doc_comment_document", "document_id"),
@@ -177,7 +177,7 @@ class DocumentSuggestion(Base):
 
     id = Column(Integer, primary_key=True, index=True)
     document_id = Column(
-        Integer, ForeignKey("collaborative_documents.id"), nullable=False, index=True
+        Integer, ForeignKey("collaborative_editor_documents.id"), nullable=False, index=True
     )
     user_id = Column(Integer, ForeignKey("users.id"),
                      nullable=False, index=True)
@@ -201,7 +201,7 @@ class DocumentSuggestion(Base):
                         onupdate=datetime.utcnow)
 
     # 关系
-    document = relationship("CollaborativeDocument")
+    document = relationship("models.collaborative_editor.CollaborativeDocument")
     user = relationship("User", foreign_keys=[user_id])
     reviewer = relationship("User", foreign_keys=[reviewed_by])
 
@@ -218,7 +218,7 @@ class DocumentSession(Base):
 
     id = Column(Integer, primary_key=True, index=True)
     document_id = Column(
-        Integer, ForeignKey("collaborative_documents.id"), nullable=False, index=True
+        Integer, ForeignKey("collaborative_editor_documents.id"), nullable=False, index=True
     )
     user_id = Column(Integer, ForeignKey("users.id"),
                      nullable=False, index=True)
@@ -238,7 +238,7 @@ class DocumentSession(Base):
     left_at = Column(DateTime)  # 离开会话时间
 
     # 关系
-    document = relationship("CollaborativeDocument")
+    document = relationship("models.collaborative_editor.CollaborativeDocument")
     user = relationship("User")
 
     __table_args__ = (

@@ -32,6 +32,12 @@ pytest==9.2.0
 pytest-cov==7.1.0
 pytest-asyncio==1.4.1.post1
 pytest-mock==3.17.0
+# pytest 的 --timeout=30 依赖本插件；缺失时 pytest 直接 UsageError 退出，
+# 0 个用例被执行（Issue #32 的 CI 假绿根因）。
+pytest-timeout==2.4.0
+# 与 backend/requirements.txt 保持一致。CI 中未锁版本的 pip install httpx
+# 会把它升级到 0.28+ 造成 starlette TestClient 行为漂移，故显式锁定。
+httpx==0.25.2
 
 # Git钩子工具
 pre-commit==4.7.0

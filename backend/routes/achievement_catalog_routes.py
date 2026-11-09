@@ -14,7 +14,7 @@ from fastapi import APIRouter, Depends, Query
 from models.achievement import Achievement, UserAchievement
 from sqlalchemy import select
 from sqlalchemy.orm import Session
-from utils.database import get_db_session
+from utils.database import get_sync_session
 
 router = APIRouter(prefix="/api/v1/achievements", tags=["成就系统"])
 
@@ -113,7 +113,7 @@ async def list_achievements(
     user_id: Optional[int] = Query(None, description="用户 ID（可空）"),
     userId: Optional[int] = Query(None, description="用户 ID（前端驼峰参数）"),
     include_hidden: bool = Query(False),
-    db: Session = Depends(get_db_session),
+    db: Session = Depends(get_sync_session),
 ):
     """返回全部启用的成就定义，附带指定用户的解锁状态。"""
     uid = _resolve_user_id(user_id, userId)
@@ -133,7 +133,7 @@ async def list_badges(
     userId: Optional[int] = Query(None, description="用户 ID（前端驼峰参数）"),
     user_id: Optional[int] = Query(None, description="用户 ID"),
     include_hidden: bool = Query(False),
-    db: Session = Depends(get_db_session),
+    db: Session = Depends(get_sync_session),
 ):
     """前端成就中心入口：返回 badges 数组 + 统计。"""
     uid = _resolve_user_id(user_id, userId)
@@ -158,7 +158,7 @@ async def list_my_achievements(
     userId: Optional[int] = Query(None),
     user_id: Optional[int] = Query(None),
     include_hidden: bool = Query(False),
-    db: Session = Depends(get_db_session),
+    db: Session = Depends(get_sync_session),
 ):
     return await list_badges(
         userId=userId,
@@ -172,7 +172,7 @@ async def list_my_achievements(
 async def achievement_stats(
     userId: Optional[int] = Query(None),
     user_id: Optional[int] = Query(None),
-    db: Session = Depends(get_db_session),
+    db: Session = Depends(get_sync_session),
 ):
     """前端 AchievementStats 结构：积分 / 徽章数 / 连续天数。"""
     uid = _resolve_user_id(user_id, userId)

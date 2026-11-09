@@ -71,7 +71,6 @@ def register_all_routes(app):
     from routes import learning_source_routes  # 路由已有 /api/v1 前缀
     from routes import opensciedu_routes  # OpenSciEDU 公共课程
     from routes import org_error_log_routes  # 组织级错误日志收集
-    from routes import share_routes  # 【P3-C】社交化分享路由
     from routes import system_status_routes  # 系统状态路由
     from routes import unified_learning_record_routes  # 路由已有 /api/v1 前缀
     settings = Settings()
@@ -133,9 +132,6 @@ def register_all_routes(app):
     # 【P3-A-2】游戏化 WebSocket 路由
     app.include_router(gamification_websocket_routes.router,
                        tags=["P3-A 游戏化 WebSocket"])
-    # 【P3-C】社交化分享路由（API + 落地页）
-    app.include_router(share_routes.api_router, tags=["P3-C 社交分享 API"])
-    app.include_router(share_routes.page_router, tags=["P3-C 社交分享 落地页"])
     app.include_router(ai_teacher_routes.router, tags=["AI 个性化教师"])
     app.include_router(vector_knowledge_routes.router, tags=["向量知识库"])
     app.include_router(local_knowledge_graph_routes.router, tags=["本地知识图谱"])

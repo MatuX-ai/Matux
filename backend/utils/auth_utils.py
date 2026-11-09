@@ -15,14 +15,14 @@ from sqlalchemy.orm import Session
 # 【P0-A 修复】原依赖 get_db 是异步 AsyncSession 生成器，被同步函数 get_current_user_sync
 #   使用后 db.execute() 返回 coroutine，报 "'coroutine' object has no attribute
 #   'scalar_one_or_none'" 并使所有鉴权接口 500。改用未装饰的同步会话依赖。
-from utils.database import get_db_session
+from utils.database import get_sync_session
 
 # OAuth2 scheme
 oauth2_scheme = OAuth2PasswordBearer(tokenUrl="/api/v1/auth/token")
 
 
 def get_current_user_sync(
-    token: str = Depends(oauth2_scheme), db: Session = Depends(get_db_session)
+    token: str = Depends(oauth2_scheme), db: Session = Depends(get_sync_session)
 ) -> User:
     """
     同步版本的获取当前用户函数

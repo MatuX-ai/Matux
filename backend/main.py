@@ -293,9 +293,13 @@ async def _do_startup(app: FastAPI, start_time: float):
         logger.warning(f"⚠️  AI 教师实时推送系统启动失败: {e}")
 
     # 【P3-D-2】启动 Redis Pub/Sub 订阅桥
-    if settings.AI_TEACHER_PERSISTENCE_BACKEND == "redis" and settings.AI_TEACHER_PERSISTENCE_USE_PUBSUB:
+    if (
+        settings.AI_TEACHER_PERSISTENCE_BACKEND == "redis"
+        and settings.AI_TEACHER_PERSISTENCE_USE_PUBSUB
+    ):
         try:
             from cache.repository.redis_pubsub import start_pubsub_bridge
+
             publisher_id = start_pubsub_bridge()
             if publisher_id:
                 logger.info(f"✅ AI 教师 Redis Pub/Sub 已启动 (publisher={publisher_id})")
@@ -345,31 +349,50 @@ if not settings.ENABLE_LAZY_LOADING:
     from legacy_routes import register_all_routes
     register_all_routes(app)
 else:
-    # 仅注册系统管理 API（始终可用）
-    from routes.system_status_routes import router as system_status_router
-    app.include_router(system_status_router)
-    # 【P3-A-2】注册游戏化 WebSocket 路由
-    try:
-        from routes.gamification_websocket_routes import (
-            router as gamification_ws_router,
-        )
-        app.include_router(gamification_ws_router)
-        logger.info("✅ 游戏化 WebSocket 路由已注册: /ws/gamification")
-    except Exception as e:
-        logger.warning(f"⚠️  游戏化 WebSocket 路由注册失败: {e}")
-    # 【P3-C】注册社交化分享路由（API + 落地页）
-    # 始终可用：成就解锁会自动调用创建分享卡
-    try:
-        from routes.share_routes import (
-            api_router as share_api_router,
-            page_router as share_page_router,
-        )
-        app.include_router(share_api_router)
-        app.include_router(share_page_router)
-        logger.info("✅ 社交化分享路由已注册 (API + 落地页)")
-    except Exception as e:
-        logger.warning(f"⚠️  社交化分享路由注册失败: {e}")
-    logger.info("懒加载模式：路由由 LazyLoader 引擎管理")
+    # 【4b 修正 · 方案 E】懒加载入口的路由注册（单一事实源：core/router_registry.py，issue #26）
+    #
+    #   * mode="lazy"：本入口负责「懒加载归属」与「两侧共用」的 active 条目。
+    #   * only=[...]：显式列出本入口在 import 期负责注册的模块名（动态取自 ROUTER_TABLE，
+    #     新增条目自动生效），便于审计「哪些路由由本入口负责」。
+    #     mode="lazy" 字面量保留 —— tests/test_router_contract_snapshot.py 的 T4 AST 探针
+    #     只读 mode 关键字，与 only/exclude 兼容。
+    #   * 重复注册：core/module_registry.py（Tier 引擎）与 ROUTER_TABLE（路由表）是两份
+    #     独立事实源，其中 9 个模块同名（auth / exam / creativity / achievement /
+    #     admin_arvr / ai_edu_progress / error_log / org_error_log / arvr_course）。
+    #     Tier 引擎在 lifespan 激活这些模块时会再挂载一次同样的路由
+    #     （实测 9 个模块 / 82 条路由重复，OpenAPI 产生 15 条 Duplicate Operation ID）。
+    #     本入口已在 import 期注册这些路由，因此统一在 _init_lazy_architecture() 中
+    #     把同名模块预标记为 ACTIVE，Tier 引擎跳过它们 →
+    #       * 消除重复注册；
+    #       * import 期路由齐全，不会 404（见 tests/conftest.py「已知边界」）。
+    #   * strict=False：注册失败按 L1 降级处理（写日志与报告，不阻断启动）。
+    #     详见 tmp/4b-tier-analysis.md、tmp/4b-fix-plan.md。
+    from core.router_registry import (
+        MODE_BOTH,
+        MODE_LAZY,
+        STATUS_ACTIVE,
+        register_all_routers,
+        specs_by_name,
+    )
+
+    # 本入口在 import 期负责注册的模块（显式列出，便于审计）。
+    _lazy_entry_modules = sorted(
+        name
+        for name, _spec in specs_by_name().items()
+        if _spec.mode in (MODE_LAZY, MODE_BOTH)
+        and _spec.status == STATUS_ACTIVE
+    )
+    register_all_routers(
+        app,
+        mode="lazy",
+        strict=False,
+        only=_lazy_entry_modules,
+    )
+    logger.info(
+        "懒加载模式：本入口已注册 %d 个路由模块"
+        "（Tier 引擎跳过同名模块，避免重复注册）",
+        len(_lazy_entry_modules),
+    )
 
 
 async def _init_lazy_architecture(app_instance, start_time: float):
@@ -384,9 +407,6 @@ async def _init_lazy_architecture(app_instance, start_time: float):
     5. 注册激活中间件
     6. 后台预加载 Tier 1 模块
     """
-    from core.lazy_tables import get_lazy_table_manager
-    from core.module_registry import get_all_module_specs
-
     from core import (
         ModuleSpec,
         ModuleTier,
@@ -394,6 +414,8 @@ async def _init_lazy_architecture(app_instance, start_time: float):
         init_lazy_table_manager,
         init_service_manager,
     )
+    from core.lazy_tables import get_lazy_table_manager
+    from core.module_registry import get_all_module_specs
 
     logger.info("\n" + "=" * 60)
     logger.info("启动懒加载架构")
@@ -430,6 +452,24 @@ async def _init_lazy_architecture(app_instance, start_time: float):
     all_specs = get_all_module_specs_with_plugins()
     logger.info(f"模块注册完成: {len(all_specs)} 个模块 (含插件)")
 
+    # 【4b 修正 · 方案 E】本入口（main.py 懒加载分支）已在 import 期注册路由的模块，
+    #   Tier 引擎不得再次挂载同一批路由 —— 预标记为 ACTIVE 即可跳过。
+    #   ModuleLazyLoader.activate() 只检查 spec.state，不检查 app.routes，
+    #   因此这是消除「双事实源重复注册」的关键一步（详见 tmp/4b-fix-plan.md）。
+    from core.router_registry import (
+        MODE_BOTH,
+        MODE_LAZY,
+        STATUS_ACTIVE,
+        specs_by_name,
+    )
+
+    _entry_owned_modules = {
+        name
+        for name, _spec in specs_by_name().items()
+        if _spec.mode in (MODE_LAZY, MODE_BOTH)
+        and _spec.status == STATUS_ACTIVE
+    }
+
     for spec_data in all_specs:
         spec = ModuleSpec(
             name=spec_data["name"],
@@ -442,6 +482,10 @@ async def _init_lazy_architecture(app_instance, start_time: float):
             fallback_services=spec_data.get("fallback_services", {}),
             model_classes=spec_data.get("model_classes", []),
         )
+        if spec.name in _entry_owned_modules:
+            # 路由已由本入口注册 → 视为已激活，Tier 引擎不再重复挂载
+            spec.mark_active(0.0)
+
         try:
             loader.register(spec)
         except ValueError:
@@ -535,6 +579,7 @@ async def _do_shutdown(app: FastAPI):
     # 【P3-B】AI 教师持久化层：关闭前 flush（避免 debounced 未触发的数据丢失）
     try:
         from cache.ai_teacher_persistence import flush_all_repos
+
         flush_all_repos()
     except Exception as e:
         logger.warning(f"AI 教师持久化 flush 异常: {e}")
@@ -542,6 +587,7 @@ async def _do_shutdown(app: FastAPI):
     # 【P3-D-2】停止 Redis Pub/Sub 订阅桥
     try:
         from cache.repository.redis_pubsub import stop_pubsub_bridge
+
         stop_pubsub_bridge()
     except Exception as e:
         logger.warning(f"AI 教师 Pub/Sub 停止异常: {e}")

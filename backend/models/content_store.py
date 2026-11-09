@@ -284,7 +284,7 @@ class ShoppingCartItem(Base):
 
     # 索引
     __table_args__ = (
-        Index("idx_cart_user", "user_id"),
+        Index("idx_content_store_cart_user", "user_id"),
         Index("idx_cart_content", "content_id"),
         Index("idx_cart_user_content", "user_id", "content_id", unique=True),
     )
@@ -331,9 +331,9 @@ class Order(Base):
 
     # 索引
     __table_args__ = (
-        Index("idx_order_user", "user_id"),
-        Index("idx_order_status", "status"),
-        Index("idx_order_created", "created_at"),
+        Index("idx_content_store_order_user", "user_id"),
+        Index("idx_content_store_order_status", "status"),
+        Index("idx_content_store_order_created", "created_at"),
         Index("idx_order_paid", "paid_at"),
     )
 

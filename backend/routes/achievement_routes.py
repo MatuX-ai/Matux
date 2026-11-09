@@ -7,12 +7,12 @@ import logging
 from typing import Any, Dict, List, Optional
 
 from fastapi import APIRouter, Body, Depends, HTTPException, Query
+from middleware.auth import get_current_user
 from models.achievement import Achievement, AchievementCategory, AchievementType
 from models.user import User
 from services.achievement_service import AchievementService, get_achievement_service
 from sqlalchemy.orm import Session
-from utils.database import get_db_session
-from utils.dependencies import get_current_user_sync
+from utils.database import get_sync_session
 
 logger = logging.getLogger(__name__)
 
@@ -20,7 +20,7 @@ logger = logging.getLogger(__name__)
 router = APIRouter(prefix="/api/v1/org/{org_id}/achievements", tags=["成就系统"])
 
 
-# ==================== 【P3-A-1】全局统计接口 ====================
+# ==================== 【P3-A-1】全局统计接口（PR #68 取自分支 C08） ====================
 
 
 @router.get("/stats/batch")
@@ -29,10 +29,9 @@ async def get_achievements_stats_batch(
         None,
         description="逗号分隔的成就 ID 列表；不传返回所有",
     ),
-    db: Session = Depends(get_db_session),
+    db: Session = Depends(get_sync_session),
 ):
-    """
-    批量获取成就的全局统计
+    """批量获取成就的全局统计
 
     返回字段：
     - id: 成就 ID
@@ -64,7 +63,7 @@ async def get_achievements_stats_batch(
 async def get_achievement_stats(
     org_id: int,
     achievement_id: int,
-    db: Session = Depends(get_db_session),
+    db: Session = Depends(get_sync_session),
 ):
     """获取单个成就的全局统计"""
     try:
@@ -84,11 +83,10 @@ async def get_achievement_stats(
 async def recompute_achievement_stats(
     org_id: int,
     achievement_id: int,
-    db: Session = Depends(get_db_session),
-    current_user: User = Depends(get_current_user_sync),
+    db: Session = Depends(get_sync_session),
+    current_user: User = Depends(get_current_user),
 ):
-    """
-    手动触发重算某个成就的全局统计（管理接口）
+    """手动触发重算某个成就的全局统计（管理接口）
 
     通常 unlock_achievement() 会自动调用。
     """
@@ -112,8 +110,8 @@ async def recompute_achievement_stats(
 async def create_achievement(
     org_id: int,
     achievement_data: Dict[str, Any] = Body(..., description="成就配置数据"),
-    db: Session = Depends(get_db_session),
-    current_user: User = Depends(get_current_user_sync),
+    db: Session = Depends(get_sync_session),
+    current_user: User = Depends(get_current_user),
 ):
     """
     创建新成就（需要管理员权限）
@@ -159,8 +157,8 @@ async def update_achievement(
     org_id: int,
     achievement_id: int,
     updates: Dict[str, Any] = Body(..., description="更新字段"),
-    db: Session = Depends(get_db_session),
-    current_user: User = Depends(get_current_user_sync),
+    db: Session = Depends(get_sync_session),
+    current_user: User = Depends(get_current_user),
 ):
     """
     更新成就信息（需要管理员权限）
@@ -185,8 +183,8 @@ async def update_achievement(
 async def delete_achievement(
     org_id: int,
     achievement_id: int,
-    db: Session = Depends(get_db_session),
-    current_user: User = Depends(get_current_user_sync),
+    db: Session = Depends(get_sync_session),
+    current_user: User = Depends(get_current_user),
 ):
     """
     停用成就（软删除，需要管理员权限）
@@ -214,8 +212,8 @@ async def list_all_achievements(
     achievement_type: Optional[str] = Query(None, description="成就类型"),
     limit: int = Query(50, ge=1, le=100, description="每页数量"),
     offset: int = Query(0, ge=0, description="偏移量"),
-    db: Session = Depends(get_db_session),
-    current_user: User = Depends(get_current_user_sync),
+    db: Session = Depends(get_sync_session),
+    current_user: User = Depends(get_current_user),
 ):
     """
     获取所有成就列表（管理员视图，包含隐藏成就）
@@ -256,8 +254,8 @@ async def get_my_achievements(
     org_id: int,
     include_locked: bool = Query(False, description="是否包含未解锁成就"),
     include_hidden: bool = Query(False, description="是否包含隐藏成就（仅已解锁）"),
-    db: Session = Depends(get_db_session),
-    current_user: User = Depends(get_current_user_sync),
+    db: Session = Depends(get_sync_session),
+    current_user: User = Depends(get_current_user),
 ):
     """
     获取我的成就列表
@@ -294,8 +292,8 @@ async def get_my_achievements(
 @router.get("/my/statistics")
 async def get_my_achievement_statistics(
     org_id: int,
-    db: Session = Depends(get_db_session),
-    current_user: User = Depends(get_current_user_sync),
+    db: Session = Depends(get_sync_session),
+    current_user: User = Depends(get_current_user),
 ):
     """
     获取我的成就统计信息
@@ -322,8 +320,8 @@ async def get_my_achievement_statistics(
 async def claim_achievement_reward(
     org_id: int,
     achievement_id: int,
-    db: Session = Depends(get_db_session),
-    current_user: User = Depends(get_current_user_sync),
+    db: Session = Depends(get_sync_session),
+    current_user: User = Depends(get_current_user),
 ):
     """
     领取成就奖励
@@ -361,8 +359,8 @@ async def update_achievement_progress(
     metric_name: str = Body(..., description="指标名称"),
     metric_value: int = Body(..., description="指标值"),
     period_type: str = Body("all_time", description="周期类型"),
-    db: Session = Depends(get_db_session),
-    current_user: User = Depends(get_current_user_sync),
+    db: Session = Depends(get_sync_session),
+    current_user: User = Depends(get_current_user),
 ):
     """
     更新成就进度指标
@@ -428,8 +426,8 @@ async def update_achievement_progress(
 async def get_current_progress(
     org_id: int,
     metric_name: Optional[str] = Query(None, description="指标名称"),
-    db: Session = Depends(get_db_session),
-    current_user: User = Depends(get_current_user_sync),
+    db: Session = Depends(get_sync_session),
+    current_user: User = Depends(get_current_user),
 ):
     """
     获取当前成就进度
@@ -473,8 +471,8 @@ async def get_current_progress(
 @router.post("/admin/initialize")
 async def initialize_achievements(
     org_id: int,
-    db: Session = Depends(get_db_session),
-    current_user: User = Depends(get_current_user_sync),
+    db: Session = Depends(get_sync_session),
+    current_user: User = Depends(get_current_user),
 ):
     """
     初始化预定义成就（管理员操作）
@@ -502,8 +500,8 @@ async def initialize_achievements(
 async def get_achievement_detail(
     org_id: int,
     achievement_id: int,
-    db: Session = Depends(get_db_session),
-    current_user: User = Depends(get_current_user_sync),
+    db: Session = Depends(get_sync_session),
+    current_user: User = Depends(get_current_user),
 ):
     """
     获取成就详情

@@ -98,13 +98,15 @@ def get_sync_db() -> Generator[TenantAwareSession, None, None]:
         session.close()
 
 
-def get_db_session() -> Generator[TenantAwareSession, None, None]:
-    """FastAPI 同步会话依赖（普通生成器，供 Depends 使用）。
+def get_sync_session() -> Generator[TenantAwareSession, None, None]:
+    """同步会话依赖（FastAPI ``Depends`` 专用）。
 
-    说明：get_sync_db 被 @contextmanager 装饰，FastAPI 0.135 会把它识别成
-    生成器函数并用 contextmanager 再包一层，导致依赖注入时 500。
-    这里保留一个未装饰的生成器版本，供 Depends(get_db_session) 使用；
-    with get_sync_db() 的旧用法不受影响。
+    与 :func:`get_sync_db` 的区别：后者是 ``@contextmanager``，只能配合
+    ``with`` 语句使用；FastAPI 的 ``Depends`` 需要**真正的 generator
+    function** 才能自动 ``close()``。直接把 ``@contextmanager`` 包装后的
+    函数交给 ``Depends``，FastAPI 会把它当普通同步依赖调用，最终注入给路由
+    的是 ``_GeneratorContextManager`` 本身 —— 任何 ``db.query(...)`` 都会抛
+    ``AttributeError``，请求变成 500。
     """
     session = SyncSessionLocal()
     try:

@@ -2,6 +2,13 @@
 AI-Edu-for-Kids 简化版后端服务
 
 只包含 AI-Edu 相关的功能，避免其他模块的依赖问题
+
+【PR #68 合并目标版本 · 草案】以 origin/main 的注册表骨架为准，保留分支全部非路由改动：
+  * 路由注册：统一走 core.router_registry.register_all_routers(mode="lazy")，
+    丢弃分支手写的 25 个 include_router。
+  * digital_twin（决策 2）与 share（决策 3）保持 Phase 2 启用，本入口不注册。
+  * 非路由：保留分支的 --run-user-code 隐藏模式、UTF-8 stdio、副 Base 建表、
+    首启种子初始化等全部桌面端修复。
 """
 
 import asyncio
@@ -54,88 +61,9 @@ def _run_user_code_if_requested() -> None:
 if __name__ == "__main__":
     _run_user_code_if_requested()
 
+from core.router_registry import register_all_routers
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
-
-# 【Phase1 修复】扁平化成就 / 课程查询路由：桌面端此前只有组织级成就路由，
-#   /api/v1/achievements 与 /api/v1/courses 均 404，前端只能显示示例数据。
-from routes.achievement_catalog_routes import router as achievement_catalog_router
-from routes.achievement_routes import router as achievement_router
-
-# 【P1-Admin 补齐】注册 Admin AR/VR 课程管理路由
-#   提供后台课程 CRUD / 上传 / 编辑 / 删除能力，路径 /api/v1/admin/arvr/*，
-#   需要 Bearer JWT + admin 角色才能访问。
-from routes.admin_arvr_routes import router as admin_arvr_router
-from routes.ai_edu_code_execution import router as ai_edu_code_router
-from routes.ai_edu_progress_routes import router as ai_edu_progress_router
-from routes.ai_edu_quiz_routes import router as ai_edu_quiz_router
-
-# 协作文档模块因编码问题暂未修复，后续处理
-# from routes.collaboration_routes import (
-#     discussion_router,
-#     document_router,
-#     group_router,
-#     project_router,
-# )
-from routes.ai_edu_websocket_routes import router as ai_edu_websocket_router
-
-# 【P0 修复】补齐 AI 个性化教师路由：桌面端（main_ai_edu 入口）原先未注册，
-#   导致 /api/v1/ai-teacher/* 全部 404，前端 AI 教师页面不可用。
-#   依赖 backend/cache/ 已在 feat/desktop-p3-batch1 分支入库，可直接注册。
-#   路由内 prefix 已含 /api/v1/ai-teacher，共 17 条路由，不需再传 prefix。
-from routes.ai_teacher_routes import router as ai_teacher_router
-
-# 【P1-Backend 修复 #1】补齐 arvr_course_routes：前端 ARVRCoursePlayerComponent 调用
-#   /api/v1/arvr-courses/{id}，原 routes/ar_vr_routes.py 提供的路径是 /api/v1/org/{org_id}/arvr/*，
-#   前端调用 404 → ARVR 课程 502。补齐后 ARVR 课程可正常加载。
-from routes.arvr_course_routes import router as arvr_course_router
-
-# 【修复 #10】补充 auth_router 注册：main_ai_edu.py 原版未包含认证路由，
-#   导致 /api/v1/auth/signin 返回 404，前端登录失败。
-#   auth_routes 依赖为 iMato 标准库（bcrypt、jose、sqlalchemy 等），与现有后端环境兼容。
-from routes.auth_routes import router as auth_router
-from routes.course_catalog_routes import router as course_catalog_router
-from routes.creativity_routes import router as creativity_router
-
-# 【P0-A 修复】注册数字孪生实验室路由：桌面端入口（main_ai_edu）此前从未 include，
-#   且 legacy_routes 受 ENABLE_DIGITAL_TWIN_ROUTES=False 关闭，
-#   导致 /api/v1/digital-twin/sessions 与 /ws/session/{id} 全部 404。
-#   前端 digital-twin-lab 因此显示“会话 ID 缺失 / 实时同步已停用”。
-#   路由内部 prefix 已含 /digital-twin。
-from routes.digital_twin_routes import router as digital_twin_router
-from routes.error_log_routes import router as error_log_router
-
-# 【P1 修复 #P1-2】补充 exam_router 注册：在线测验模块
-#   main_ai_edu.py 原版未注册 exam_routes，导致 /api/v1/exams 返回 404
-#   前端 ExamListComponent 会显示“服务器错误”，UX 完整度测试中标记为 P1。
-from routes.exam_routes import router as exam_router
-# 【P0-C 修复】注册游戏化 WebSocket 路由（/ws/gamification）
-#   成就中心 / 签到页依赖实时推送（achievement_unlocked / node_status_updated / set_completed）。
-#   此前桌面端入口（main_ai_edu）只挂了 AI 教育 WS，从未 include 本 router，
-#   因此 /ws/gamification 返回 404，前端无论怎么改 URL 都连不上。
-#   注：commit 28890ff 恢复的是 legacy_routes.py 的注册，桌面端不走该入口。
-from routes.gamification_websocket_routes import router as gamification_ws_router
-from routes.leaderboard_routes import router as leaderboard_router
-from routes.llm_assistant_routes import router as llm_assistant_router
-from routes.micro_course_routes import router as micro_course_router
-
-# 【P0-B 修复】注册 OpenSciEDU 公共课程路由：桌面端入口此前未 include，
-#   前端 /api/v1/opensciedu/* 全部 404 → 只能走 mock 兜底。
-#   路由内部 prefix 已含 /api/v1/opensciedu。
-from routes.opensciedu_routes import router as opensciedu_router
-
-# 【P1-Backend 修复 #2】补齐 org_error_log_routes：前端 ErrorLoggerService 调用
-#   /api/v1/org/{org_id}/logs/error，原 routes/error_log_routes.py 提供的路径是 /logs/error（无 org_id 前缀），
-#   前端调用 404 → ErrorLoggerService 上报失败。补齐后前端错误可正常上报。
-from routes.org_error_log_routes import router as org_error_log_router
-from routes.recommendation_routes import router as recommendation_router
-
-# 【修复 #11】补充 system_status_router 注册：底部状态栏轮询
-#   /api/v1/system/health-detail 和 /api/v1/system/modules 依赖此 router。
-#   缺失则 404 → catchError → healthy$.next(false) → 状态栏显示"后端未启动"。
-from routes.system_status_routes import router as system_status_router
-from routes.token_routes import router as token_router
-from routes.vircadia_avatar_routes import router as vircadia_avatar_router
 from utils.database import Base, sync_engine
 import uvicorn
 
@@ -160,13 +88,30 @@ app = FastAPI(
     title="AI-Edu-for-Kids API", description="AI 教育课程学习平台 API", version="1.0.0"
 )
 
+# 【PR #68】路由注册收敛到 core.router_registry（单一事实源，issue #21）。
+#
+#   * mode="lazy"：本入口只注册「懒加载归属」与「两侧共用」的条目，共 24 项 ——
+#     23 项 active 实际注册，1 项 pending_integration（ai_edu_websocket）被跳过。
+#   * 桌面端此前手写 include 的路由（AI 教师 / 成就目录 / 课程目录 /
+#     游戏化 WebSocket / OpenSciEDU）已全部登记入 ROUTER_TABLE，由本调用统一注册，
+#     入口不再手写 include_router。
+#   * digital_twin（决策 2）与 share（决策 3）保持 pending / 条件关闭，
+#     Phase 2 再启用，本入口不注册。
+#   * strict=False：注册失败按 L1 降级处理（写日志与报告，不阻断启动）；
+#     连续失败达阈值的条目按 L2 熔断跳过。
+register_all_routers(app, mode="lazy", strict=False)
+
 # CORS 配置
 # 【P1 修复 #13】环境变量驱动 + 合理默认值
 # - 默认允许 4200 (Angular dev server) / 3000 (Webpack dev server) / 8080 (本地 UX 测试静态服务器)
 # - 生产环境可通过环境变量 CORS_ALLOWED_ORIGINS 覆盖，逗号分隔，例如：
 #   CORS_ALLOWED_ORIGINS=https://app.example.com,https://admin.example.com
 # - 开发环境允许本地任意 http://localhost:* 端口，方便不同端口调试
-_default_dev_origins = ["http://localhost:4200", "http://localhost:3000", "http://localhost:8080"]
+_default_dev_origins = [
+    "http://localhost:4200",
+    "http://localhost:3000",
+    "http://localhost:8080",
+]
 _env_origins = os.getenv("CORS_ALLOWED_ORIGINS")
 if _env_origins:
     allow_origins = [o.strip() for o in _env_origins.split(",") if o.strip()]
@@ -196,90 +141,6 @@ async def root():
 @app.get("/health")
 async def health_check():
     return {"status": "healthy"}
-
-
-# 导入 AI-Edu 路由
-
-# 错误日志收集路由
-
-# O2.4 AI 学习助手路由
-
-# O2.3 微课程转化路由
-
-# Vircadia Avatar 路由
-
-# 注册路由
-app.include_router(
-    ai_edu_progress_router, tags=["AI 教育"]
-)
-app.include_router(
-    ai_edu_code_router, prefix="/api/v1/org/{org_id}/ai-edu", tags=["AI 教育代码执行"]
-)
-app.include_router(
-    ai_edu_quiz_router, prefix="/api/v1/org/{org_id}/ai-edu", tags=["AI 教育测验"]
-)
-app.include_router(ai_edu_websocket_router, tags=["AI 教育 WebSocket"])
-app.include_router(achievement_router, tags=["成就系统"])
-# 【Phase1 修复】扁平化成就 / 课程查询（真实数据库）
-#   GET /api/v1/achievements?userId=  → 成就定义 + 解锁状态
-#   GET /api/v1/courses             → 课程列表（含我的选课）
-app.include_router(achievement_catalog_router)
-app.include_router(course_catalog_router)
-# 【P1 修复 #P1-2】注册测验路由。路由内部已包含完整 prefix /api/v1/exams，
-#   ExamListComponent 调用 /api/v1/exams?status=published&page=1&page_size=20
-#   不需要再传 prefix。
-app.include_router(exam_router, tags=["在线测验"])
-app.include_router(recommendation_router, tags=["AI 智能推荐"])
-app.include_router(leaderboard_router, tags=["积分排行榜"])
-# 协作文档路由因编码问题暂未启用
-# app.include_router(discussion_router, tags=["协作学习 - 讨论区"])
-# app.include_router(document_router, tags=["协作学习 - 协作文档"])
-# app.include_router(group_router, tags=["协作学习 - 学习小组"])
-# app.include_router(project_router, tags=["协作学习 - 项目管理"])
-# O2.3 微课程转化
-app.include_router(micro_course_router, tags=["微课程转化"])
-# O2.4 AI 学习助手
-app.include_router(llm_assistant_router, tags=["AI 学习助手"])
-
-# 创意激发引擎
-app.include_router(creativity_router, tags=["创意引擎"])
-# 【修复 #10】认证路由（signin/signup/me/token/refresh/logout 等）
-app.include_router(auth_router, prefix="/api/v1/auth", tags=["认证"])
-# 【修复 #11】系统状态路由（health-detail/modules/circuit-breakers 等）
-#   路由装饰器中已含完整路径 /api/v1/system/*，不需要再传 prefix
-app.include_router(system_status_router)
-# Token 管理
-app.include_router(token_router, tags=["Token 管理"])
-# 错误日志收集
-app.include_router(
-    error_log_router, tags=["错误日志管理"]
-)
-# Vircadia Avatar
-app.include_router(
-    vircadia_avatar_router, tags=["Vircadia Avatar"]
-)
-# 【P1-Backend 修复 #1】注册 ARVR 课程路由（前端简化路径）
-#   前端 ARVRCoursePlayerComponent 调用 GET /api/v1/arvr-courses/{id}
-#   路由内部 prefix 已包含 /api/v1/arvr-courses
-app.include_router(arvr_course_router)
-# 【P1-Backend 修复 #2】注册组织级错误日志路由（前端兼容路径）
-#   前端 ErrorLoggerService 调用 POST /api/v1/org/{org_id}/logs/error
-#   路由内部 prefix 已包含 /api/v1/org/{org_id}/logs
-app.include_router(org_error_log_router)
-# 【P1-Admin 补齐】注册 Admin AR/VR 课程管理后台
-#   路径 /api/v1/admin/arvr/*，要求 JWT + admin 角色
-app.include_router(admin_arvr_router)
-# 【P0 修复】注册 AI 个性化教师路由（17 条，/api/v1/ai-teacher/*）
-#   本入口手写 include_router，不经过 core.router_registry.register_all_routers，
-#   因此不会与 ROUTER_TABLE 重复注册。
-app.include_router(ai_teacher_router, tags=["AI 个性化教师"])
-# 【P0-C 修复】注册游戏化 WebSocket：router 内 prefix 已含 /ws/gamification，
-#   端点本身是 @router.websocket("")，最终路径 /ws/gamification?token=<JWT>。
-app.include_router(gamification_ws_router)
-# 【P0-A 修复】数字孪生实验室（HTTP + WebSocket）
-app.include_router(digital_twin_router, tags=["数字孪生实验室"])
-# 【P0-B 修复】OpenSciEDU 公共课程（真实 API，命不中时前端自动回退 mock）
-app.include_router(opensciedu_router, tags=["OpenSciEDU 公共课程"])
 
 
 # 临时测试路由

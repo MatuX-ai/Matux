@@ -13,7 +13,7 @@ from services.code_completion_service import CodeCompletionService
 
 # 该模块依赖的生产代码已失效：
 #   - ai_service/completion_memory.py 依赖 langchain.memory（当前环境 langchain 1.x 已移除）
-#     且引用了不存在的 database.tenant_aware_session.get_db_session
+#     且引用了不存在的 database.tenant_aware_session.get_sync_session
 #   - services/code_completion_service.py 仍使用 `..` 相对导入，
 #     且引用了不存在的 services/ai_manager.py、services/completion_memory.py
 # 待上述生产代码恢复后删除本跳过。
@@ -210,7 +210,7 @@ class TestCompletionMemory:
         )
 
         with patch(
-            "database.tenant_aware_session.get_db_session"
+            "database.tenant_aware_session.get_sync_session"
         ) as mock_session:
             mock_db = AsyncMock()
             mock_session.return_value.__aenter__.return_value = mock_db
@@ -225,7 +225,7 @@ class TestCompletionMemory:
     async def test_get_user_patterns(self, completion_memory):
         """测试获取用户模式"""
         with patch(
-            "database.tenant_aware_session.get_db_session"
+            "database.tenant_aware_session.get_sync_session"
         ) as mock_session:
             mock_db = AsyncMock()
             mock_session.return_value.__aenter__.return_value = mock_db
@@ -253,7 +253,7 @@ class TestCompletionMemory:
         confidence_scores = [0.95]
 
         with patch(
-            "database.tenant_aware_session.get_db_session"
+            "database.tenant_aware_session.get_sync_session"
         ) as mock_session:
             mock_db = AsyncMock()
             mock_session.return_value.__aenter__.return_value = mock_db
@@ -269,7 +269,7 @@ class TestCompletionMemory:
     async def test_get_cached_completion(self, completion_memory):
         """测试获取缓存的补全结果"""
         with patch(
-            "database.tenant_aware_session.get_db_session"
+            "database.tenant_aware_session.get_sync_session"
         ) as mock_session:
             mock_db = AsyncMock()
             mock_session.return_value.__aenter__.return_value = mock_db

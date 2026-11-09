@@ -14,8 +14,8 @@ from models.user import User
 from pydantic import BaseModel
 from sqlalchemy.orm import Session
 # 【P0-A 修复】get_sync_db 被 @contextmanager 装饰，FastAPI 0.135 会再包一层导致依赖注入 500；
-#   改用未装饰的同步生成器 get_db_session。
-from utils.database import get_db_session
+#   改用未装饰的同步生成器 get_sync_session。
+from utils.database import get_sync_session
 
 # 【P0-A 修复】utils.dependencies.get_current_user_sync 是未实现的占位（直接 raise
 #   NotImplementedError），导致所有鉴权接口 500。改用 auth_utils 中的真实实现。
@@ -142,7 +142,7 @@ manager = ConnectionManager()
 
 @router.websocket("/ws/session/{session_id}")
 async def websocket_endpoint(
-    websocket: WebSocket, session_id: str, user_id: str, db: Session = Depends(get_db_session)
+    websocket: WebSocket, session_id: str, user_id: str, db: Session = Depends(get_sync_session)
 ):
     """WebSocket会话连接端点"""
     await manager.connect(websocket, session_id, user_id)
@@ -280,7 +280,7 @@ async def handle_sync_request(session_id: str, websocket: WebSocket):
 
 @router.post("/sessions", response_model=SessionInfo)
 async def create_session(
-    current_user: User = Depends(get_current_user_sync), db: Session = Depends(get_db_session)
+    current_user: User = Depends(get_current_user_sync), db: Session = Depends(get_sync_session)
 ):
     """创建新的数字孪生会话"""
     try:
@@ -317,7 +317,7 @@ async def create_session(
 async def get_session_info(
     session_id: str,
     current_user: User = Depends(get_current_user_sync),
-    db: Session = Depends(get_db_session),
+    db: Session = Depends(get_sync_session),
 ):
     """获取会话信息"""
     try:
@@ -346,7 +346,7 @@ async def update_circuit_state(
     session_id: str,
     state: CircuitState,
     current_user: User = Depends(get_current_user_sync),
-    db: Session = Depends(get_db_session),
+    db: Session = Depends(get_sync_session),
 ):
     """更新电路状态（HTTP接口）"""
     try:
@@ -376,7 +376,7 @@ async def update_circuit_state(
 async def get_circuit_state(
     session_id: str,
     current_user: User = Depends(get_current_user_sync),
-    db: Session = Depends(get_db_session),
+    db: Session = Depends(get_sync_session),
 ):
     """获取电路状态"""
     try:
@@ -403,7 +403,7 @@ async def get_circuit_state(
 async def update_device_state(
     state: DeviceState,
     current_user: User = Depends(get_current_user_sync),
-    db: Session = Depends(get_db_session),
+    db: Session = Depends(get_sync_session),
 ):
     """更新设备状态"""
     try:
@@ -425,7 +425,7 @@ async def update_device_state(
 async def get_device_state(
     device_id: str,
     current_user: User = Depends(get_current_user_sync),
-    db: Session = Depends(get_db_session),
+    db: Session = Depends(get_sync_session),
 ):
     """获取设备状态"""
     try:
@@ -452,7 +452,7 @@ async def get_device_state(
 async def get_session_participants(
     session_id: str,
     current_user: User = Depends(get_current_user_sync),
-    db: Session = Depends(get_db_session),
+    db: Session = Depends(get_sync_session),
 ):
     """获取会话参与者列表"""
     try:

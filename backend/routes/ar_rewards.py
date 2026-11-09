@@ -3,11 +3,11 @@ import logging
 from typing import Optional
 
 from fastapi import APIRouter, BackgroundTasks, Depends, HTTPException
+from middleware.auth import get_current_user
 from models.user import User
 from pydantic import BaseModel
 from services.ar_reward_service import ARSceneCompletionData, ar_reward_service
 from services.reward_event_bus import RewardEvent, reward_event_bus
-from utils.dependencies import get_current_user_sync
 
 router = APIRouter(prefix="/ar", tags=["AR Rewards"])
 logger = logging.getLogger(__name__)
@@ -40,7 +40,7 @@ class ARElementValidationRequest(BaseModel):
 async def handle_scene_completion(
     request: ARSceneCompletionRequest,
     background_tasks: BackgroundTasks,
-    current_user: User = Depends(get_current_user_sync),
+    current_user: User = Depends(get_current_user),
 ):
     """处理AR场景完成奖励"""
     try:
@@ -58,9 +58,10 @@ async def handle_scene_completion(
 
         # 发布奖励事件到事件总线
         event = RewardEvent(
+            event_id=f"evt_ar_scene_{int(datetime.now().timestamp() * 1000)}",
             event_type="ar_scene_completed",
             user_id=current_user.id,
-            data={
+            payload={
                 "accuracy": scene_data.accuracy,
                 "completion_time": scene_data.completion_time,
                 "components_placed": scene_data.components_placed,
@@ -73,9 +74,7 @@ async def handle_scene_completion(
 
         background_tasks.add_task(reward_event_bus.publish, event)
 
-        logger.info(
-            f"AR场景完成事件已接收: 用户{current_user.id}, 场景{request.scene_id}"
-        )
+        logger.info(f"AR场景完成事件已接收: 用户{current_user.id}, 场景{request.scene_id}")
 
         return {
             "success": True,
@@ -96,15 +95,16 @@ async def handle_scene_completion(
 async def handle_component_validation(
     request: ARElementValidationRequest,
     background_tasks: BackgroundTasks,
-    current_user: User = Depends(get_current_user_sync),
+    current_user: User = Depends(get_current_user),
 ):
     """处理AR元件验证奖励"""
     try:
         # 发布元件验证事件
         event = RewardEvent(
+            event_id=f"evt_ar_component_{int(datetime.now().timestamp() * 1000)}",
             event_type="ar_component_validated",
             user_id=current_user.id,
-            data={
+            payload={
                 "component_type": request.component_type,
                 "accuracy": request.accuracy,
                 "is_first_placement": request.is_first_placement,
@@ -114,9 +114,7 @@ async def handle_component_validation(
 
         background_tasks.add_task(reward_event_bus.publish, event)
 
-        logger.info(
-            f"AR元件验证事件已接收: 用户{current_user.id}, 元件{request.component_type}"
-        )
+        logger.info(f"AR元件验证事件已接收: 用户{current_user.id}, 元件{request.component_type}")
 
         return {
             "success": True,
@@ -134,7 +132,7 @@ async def handle_component_validation(
 
 
 @router.get("/rewards/summary")
-async def get_ar_rewards_summary(current_user: User = Depends(get_current_user_sync)):
+async def get_ar_rewards_summary(current_user: User = Depends(get_current_user)):
     """获取用户AR奖励摘要"""
     try:
         summary = await ar_reward_service.get_user_ar_rewards_summary(current_user.id)
@@ -147,10 +145,10 @@ async def get_ar_rewards_summary(current_user: User = Depends(get_current_user_s
 
 
 @router.get("/achievements/unlocked")
-async def get_unlocked_achievements(current_user: User = Depends(get_current_user_sync)):
+async def get_unlocked_achievements(current_user: User = Depends(get_current_user)):
     """获取用户已解锁的成就"""
     try:
-        from ..services.achievement_badge_system import achievement_system
+        from services.achievement_badge_system import achievement_system
 
         achievements = achievement_system.get_user_achievements(current_user.id)
         rarity_stats = achievement_system.get_badge_rarity_stats(current_user.id)
@@ -188,7 +186,7 @@ async def get_unlocked_achievements(current_user: User = Depends(get_current_use
 
 @router.post("/events/test-scene-completion")
 async def test_scene_completion(
-    background_tasks: BackgroundTasks, current_user: User = Depends(get_current_user_sync)
+    background_tasks: BackgroundTasks, current_user: User = Depends(get_current_user)
 ):
     """测试场景完成事件（开发用）"""
     try:
@@ -205,9 +203,10 @@ async def test_scene_completion(
         )
 
         event = RewardEvent(
+            event_id=f"evt_ar_test_{int(datetime.now().timestamp() * 1000)}",
             event_type="ar_scene_completed",
             user_id=current_user.id,
-            data={
+            payload={
                 "accuracy": test_data.accuracy,
                 "completion_time": test_data.completion_time,
                 "components_placed": test_data.components_placed,

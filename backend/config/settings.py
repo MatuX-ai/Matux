@@ -390,6 +390,13 @@ class Settings(BaseSettings):
     ENABLE_DIGITAL_TWIN_ROUTES: bool = False  # 数字孪生实验室
     ENABLE_FEDERATED_ROUTES: bool = False  # 联邦学习 API
     ENABLE_MODEL_UPDATE_ROUTES: bool = False  # AI 模型热更新
+    # AI 模型版本文件存储目录：默认 backend/data/models（基于 __file__ 解析，
+    # 与启动 CWD 无关），可用环境变量 MODEL_STORAGE_PATH 覆盖。
+    # ModelUpdateService 初始化时会按该路径 mkdir(parents=True, exist_ok=True)。
+    MODEL_STORAGE_PATH: str = Field(
+        default=str(Path(__file__).resolve().parent.parent / "data" / "models"),
+        description="AI 模型版本文件的存储目录",
+    )
     # XR 手势识别 (与 gesture_recognition 重复)
     ENABLE_XR_GESTURE_ROUTES: bool = False
 

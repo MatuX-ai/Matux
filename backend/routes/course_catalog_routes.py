@@ -14,7 +14,7 @@ from models.user import User
 from pydantic import BaseModel, Field
 from sqlalchemy import func, select
 from sqlalchemy.orm import Session
-from utils.database import get_db_session
+from utils.database import get_sync_session
 
 router = APIRouter(prefix="/api/v1/courses", tags=["课程"])
 
@@ -91,7 +91,7 @@ def _course_filters(stmt, status: Optional[str], category: Optional[str], keywor
 
 
 @router.post("/enrollments", summary="报名课程")
-async def create_enrollment(payload: EnrollmentCreate, db: Session = Depends(get_db_session)):
+async def create_enrollment(payload: EnrollmentCreate, db: Session = Depends(get_sync_session)):
     """报名课程；已存在有效选课记录时幂等返回原记录。"""
     course = db.get(Course, payload.course_id)
     if course is None or not course.is_active:
@@ -129,7 +129,7 @@ async def list_my_enrollments(
     status: Optional[str] = Query(None, description="active/completed/suspended"),
     page: int = Query(1, ge=1),
     page_size: int = Query(20, ge=1, le=100),
-    db: Session = Depends(get_db_session),
+    db: Session = Depends(get_sync_session),
 ):
     """返回指定用户的选课记录（供「我的课程」页使用）。"""
     base = select(CourseEnrollment).where(CourseEnrollment.user_id == user_id)
@@ -160,7 +160,7 @@ async def list_courses(
     category: Optional[str] = Query(None),
     keyword: Optional[str] = Query(None),
     ids: Optional[str] = Query(None, description="逗号分隔的课程 ID，批量查询"),
-    db: Session = Depends(get_db_session),
+    db: Session = Depends(get_sync_session),
 ):
     """分页返回课程列表；ids 参数用于「按选课记录批量取课程」。"""
     id_list: Optional[List[int]] = None
@@ -192,7 +192,7 @@ async def list_courses(
 
 
 @router.get("/{course_id}", summary="课程详情")
-async def get_course(course_id: int, db: Session = Depends(get_db_session)):
+async def get_course(course_id: int, db: Session = Depends(get_sync_session)):
     """返回单门课程详情（含课时列表）。"""
     course = db.get(Course, course_id)
     if course is None or not course.is_active:
