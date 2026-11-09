@@ -1,6 +1,6 @@
 {
   "name": "matux-desktop",
-  "version": "1.0.4",
+  "version": "1.0.5",
   "description": "MatuX STEM Learning Tool - Windows Desktop Application",
   "main": "main.js",
   "scripts": {

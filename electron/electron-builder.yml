@@ -62,10 +62,11 @@ extraResources:
       - "**/*"
 win:
   target:
+    # 【P0 体积修复】只发 x64：双架构（x64+ia32）会把安装包从 ~198MiB 撑到 ~386MiB，
+    # 超出入安装包 <200MiB 的门槛；ia32 已无用户（Win10+ 均为 x64）。
     - target: nsis
       arch:
         - x64
-        - ia32
   icon: build/icon.ico
   requestedExecutionLevel: asInvoker
 nsis:
