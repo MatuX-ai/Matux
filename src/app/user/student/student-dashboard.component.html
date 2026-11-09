@@ -1,12 +1,17 @@
 <!--
-  学生仪表板模板（重构版）
+  学生仪表板模板（重构版 + P1 增强）
   - 4 个核心 dashboard 卡（学习/成就/创作/社交）
   - 3 个次要 widget（每日任务/排行榜/学习日历）
   - 推荐课程 + 课件库
   - 顶部状态栏（积分/等级/连续天数）
   - AI 老师浮动按钮（PRD 6.5 强制要求）
+  - 【P1-1】排行榜赛季头部 + 终奖预览
+  - 【P1-2】离线加倍 banner + StatusBar 2x 角标
 -->
 <div class="student-dashboard">
+  <!-- 【P1-2】离线加倍 banner（顶部，offline 时显示） -->
+  <app-offline-bonus-banner></app-offline-bonus-banner>
+
   <!-- 【P1 修复】演示数据横幅(数据服务 fallback 时显示) -->
   <app-mock-mode-banner
     *ngIf="snapshot?.isUsingMock"
@@ -14,7 +19,7 @@
     note="WebSocket 进度推送走模拟数据,完成真实任务后真实数据将自动接入"
   ></app-mock-mode-banner>
 
-  <!-- 【一级】欢迎区域 -->
+  <!-- 【一级】欢迎区域（P0-4 加签到仪式） -->
   <section class="welcome-section" *ngIf="layout.isVisible('welcome')" aria-label="欢迎区域">
     <div class="welcome-header">
       <div class="welcome-greeting">
@@ -22,6 +27,12 @@
         <p class="welcome-date">{{ currentDate }}</p>
       </div>
       <div class="welcome-actions">
+        <app-daily-checkin
+          *ngIf="snapshot"
+          [userId]="snapshot.userId"
+          [candidateTasks]="snapshot.dailyTasks || []"
+          (checkinCompleted)="onCheckinCompleted($event)"
+        ></app-daily-checkin>
         <button
           mat-icon-button
           (click)="openLayoutDialog()"
@@ -143,4 +154,7 @@
 
   <!-- AI 老师浮动按钮（PRD 6.5 强制要求） -->
   <app-floating-ai-assistant></app-floating-ai-assistant>
+
+  <!-- P0-2 等级升阶全屏仪式（监听 LevelEventService，无 UI 噪音时静默） -->
+  <app-level-up-modal></app-level-up-modal>
 </div>

@@ -3,6 +3,30 @@
     <h1 class="page-title">AI 教师设置</h1>
   </div>
 
+  <!-- 【P3-B】入口：实时推送设置（勿扰 / 频次 / 类型开关） -->
+  <mat-card class="quick-link-card">
+    <mat-card-content>
+      <div class="quick-link-row">
+        <div class="quick-link-text">
+          <mat-icon class="quick-link-icon">notifications_active</mat-icon>
+          <div>
+            <strong>📡 实时推送设置</strong>
+            <p class="hint">勿扰时段、推送类型开关、频次控制</p>
+          </div>
+        </div>
+        <a
+          mat-stroked-button
+          color="primary"
+          routerLink="/user/ai-teacher-live-settings"
+          class="quick-link-btn"
+        >
+          前往设置
+          <mat-icon iconPositionEnd>chevron_right</mat-icon>
+        </a>
+      </div>
+    </mat-card-content>
+  </mat-card>
+
   <form [formGroup]="settingsForm" (ngSubmit)="saveSettings()">
     <!-- 称呼方式 -->
     <mat-card class="settings-section">

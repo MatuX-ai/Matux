@@ -11,13 +11,16 @@
  */
 import { CommonModule } from '@angular/common';
 import {
+  AfterViewChecked,
   ChangeDetectionStrategy,
   ChangeDetectorRef,
   Component,
+  ElementRef,
   EventEmitter,
   Input,
   OnDestroy,
   Output,
+  ViewChild,
 } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { MatButtonModule } from '@angular/material/button';
@@ -96,9 +99,12 @@ export interface TabRunResult {
   styleUrls: ['./tabbed-editor.component.scss'],
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
-export class TabbedEditorComponent implements OnDestroy {
+export class TabbedEditorComponent implements AfterViewChecked, OnDestroy {
   /** 标签页列表 */
   @Input() tabs: EditorTab[] = [];
+
+  /** 编辑器宿主容器（用于监控可见尺寸变化） */
+  @ViewChild('editorHost') editorHost?: ElementRef<HTMLElement>;
 
   /** 当前激活的标签页 ID */
   @Input() activeTabId: string | null = null;
@@ -148,6 +154,16 @@ export class TabbedEditorComponent implements OnDestroy {
   /** 键盘快捷键监听器引用 */
   private keydownHandler: ((e: KeyboardEvent) => void) | null = null;
 
+  /** Monaco 实例（onInit 后可用） */
+  private editorInstance: { layout: (dim?: { width?: number; height?: number }) => void } | null =
+    null;
+
+  /** 宿主尺寸监听（解决 Tab 隐藏时初始化导致编辑器停留在 5x5 的问题） */
+  private resizeObserver: ResizeObserver | null = null;
+
+  /** 最近一次已知的宿主尺寸 */
+  private lastHostSize = '';
+
   /** Electron API 实例（仅在 Electron 环境可用） */
   private readonly electronApi = getElectronAPI();
 
@@ -179,6 +195,55 @@ export class TabbedEditorComponent implements OnDestroy {
       suggest: { showWords: true, showSnippets: true },
       quickSuggestions: true,
     };
+  }
+
+  /**
+   * Monaco 初始化回调。
+   *
+   * 【P0-C 修复】编辑器在非激活 Tab（display:none）中初始化时，Monaco 内部尺寸
+   * 会停留在 5x5；仅靠 automaticLayout 在部分场景不会重新测量，导致切回该
+   * Tab 后 view-lines 为 0、看不到代码也无法输入。这里显式监听宿主尺寸并在
+   * 变化时调用 editor.layout()。
+   */
+  onEditorInit(editor: unknown): void {
+    this.editorInstance = editor as { layout: (dim?: { width?: number; height?: number }) => void };
+    this.observeEditorHost();
+  }
+
+  /** 监听编辑器宿主尺寸变化 */
+  private observeEditorHost(): void {
+    if (typeof ResizeObserver === 'undefined') return;
+    this.resizeObserver?.disconnect();
+    this.resizeObserver = new ResizeObserver(() => this.layoutEditorToHost());
+    const host = this.editorHost?.nativeElement;
+    if (host) {
+      this.resizeObserver.observe(host);
+    }
+    // Tab 切换动画结束后再校准一次
+    setTimeout(() => this.layoutEditorToHost(), 150);
+  }
+
+  /** 将编辑器尺寸对齐到当前宿主可见尺寸 */
+  private layoutEditorToHost(): void {
+    const host = this.editorHost?.nativeElement;
+    if (!host || !this.editorInstance) return;
+    const rect = host.getBoundingClientRect();
+    if (rect.width <= 0 || rect.height <= 0) return;
+    const sizeKey = `${Math.round(rect.width)}x${Math.round(rect.height)}`;
+    if (sizeKey === this.lastHostSize) return;
+    this.lastHostSize = sizeKey;
+    try {
+      this.editorInstance.layout({ width: rect.width, height: rect.height });
+    } catch {
+      // 实例已被销毁（Tab 重建中）：丢弃引用，等下一次 onInit 重新绑定
+      this.editorInstance = null;
+      this.lastHostSize = '';
+    }
+  }
+
+  ngAfterViewChecked(): void {
+    // 兜底：Tab 从隐藏变为可见时不依赖 ResizeObserver 的触发时机
+    this.layoutEditorToHost();
   }
 
   /** 切换到指定标签页 */
@@ -445,5 +510,7 @@ export class TabbedEditorComponent implements OnDestroy {
       document.removeEventListener('keydown', this.keydownHandler);
       this.keydownHandler = null;
     }
+    this.resizeObserver?.disconnect();
+    this.resizeObserver = null;
   }
 }

@@ -12,14 +12,17 @@ from jose import JWTError, jwt
 from models.user import User
 from sqlalchemy import select
 from sqlalchemy.orm import Session
-from utils.database import get_db
+# 【P0-A 修复】原依赖 get_db 是异步 AsyncSession 生成器，被同步函数 get_current_user_sync
+#   使用后 db.execute() 返回 coroutine，报 "'coroutine' object has no attribute
+#   'scalar_one_or_none'" 并使所有鉴权接口 500。改用未装饰的同步会话依赖。
+from utils.database import get_db_session
 
 # OAuth2 scheme
 oauth2_scheme = OAuth2PasswordBearer(tokenUrl="/api/v1/auth/token")
 
 
 def get_current_user_sync(
-    token: str = Depends(oauth2_scheme), db: Session = Depends(get_db)
+    token: str = Depends(oauth2_scheme), db: Session = Depends(get_db_session)
 ) -> User:
     """
     同步版本的获取当前用户函数
@@ -70,6 +73,9 @@ def get_current_user_sync(
 
         return user
 
+    except HTTPException:
+        # 【P0-A 修复】凭据无效时上面抛的是 401，不能被下面的通用 except 改写成 500
+        raise
     except Exception as e:
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,

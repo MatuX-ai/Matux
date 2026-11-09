@@ -1,0 +1,257 @@
+/**
+ * 成就套装样式（P2-B）
+ */
+
+:host {
+  display: block;
+}
+
+.sets-wrapper {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(360px, 1fr));
+  gap: 16px;
+}
+
+.set-card {
+  position: relative;
+  display: flex;
+  overflow: hidden;
+  gap: 16px;
+  padding: 20px;
+  border: 1px solid #e2e8f0;
+  border-radius: 18px;
+  background: white;
+  transition: all 0.2s ease;
+
+  &:hover {
+    box-shadow: 0 8px 24px rgb(0 0 0 / 6%);
+    transform: translateY(-2px);
+  }
+
+  &.completed {
+    border-color: rgb(16 185 129 / 30%);
+    background: linear-gradient(135deg, #f0fdf4 0%, #d1fae5 100%);
+  }
+}
+
+.completion-glow {
+  position: absolute;
+  inset: -2px;
+  border-radius: 18px;
+  background: conic-gradient(
+    from 0deg,
+    transparent,
+    rgb(16 185 129 / 20%),
+    transparent
+  );
+  pointer-events: none;
+  animation: setGlow 5s linear infinite;
+}
+
+@keyframes setGlow {
+  from {
+    transform: rotate(0deg);
+  }
+
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+// ============ Icon ============
+
+.set-icon {
+  position: relative;
+  display: flex;
+  flex-shrink: 0;
+  justify-content: center;
+  align-items: center;
+  width: 64px;
+  height: 64px;
+  border-radius: 16px;
+  box-shadow: 0 4px 12px rgb(0 0 0 / 10%);
+}
+
+.set-emoji {
+  font-size: 32px;
+}
+
+.completed-badge {
+  position: absolute;
+  right: -6px;
+  bottom: -6px;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  width: 24px;
+  height: 24px;
+  border: 2px solid #10b981;
+  border-radius: 50%;
+  background: white;
+  color: #10b981;
+
+  mat-icon {
+    width: 14px;
+    height: 14px;
+    font-size: 14px;
+  }
+}
+
+// ============ Body ============
+
+.set-body {
+  flex: 1;
+  min-width: 0;
+}
+
+.set-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 4px;
+}
+
+.set-name {
+  margin: 0;
+  color: #1e293b;
+  font-size: 16px;
+  font-weight: 700;
+}
+
+.set-count {
+  color: #64748b;
+  font-size: 13px;
+  font-weight: 600;
+}
+
+.set-desc {
+  margin: 0 0 12px;
+  color: #64748b;
+  font-size: 12px;
+  line-height: 1.4;
+}
+
+.set-progress {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 12px;
+}
+
+.progress-track {
+  overflow: hidden;
+  flex: 1;
+  height: 8px;
+  border-radius: 4px;
+  background: #f1f5f9;
+}
+
+.progress-fill {
+  height: 100%;
+  border-radius: 4px;
+  transition: width 0.6s cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+
+.progress-percent {
+  min-width: 40px;
+  color: #1e293b;
+  font-size: 13px;
+  font-weight: 700;
+  text-align: right;
+}
+
+// ============ Bonus ============
+
+.bonus-section {
+  margin-bottom: 10px;
+  padding: 8px 12px;
+  border: 1px solid rgb(245 158 11 / 20%);
+  border-radius: 10px;
+  background: linear-gradient(135deg, #fef3c7 0%, #fde68a 100%);
+}
+
+.bonus-label {
+  margin-bottom: 4px;
+  color: #92400e;
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+}
+
+.bonus-content {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.bonus-emoji {
+  font-size: 16px;
+}
+
+.bonus-name {
+  color: #78350f;
+  font-size: 12px;
+  font-weight: 700;
+}
+
+// ============ Remaining ============
+
+.remaining-section {
+  padding-top: 8px;
+  border-top: 1px dashed #e2e8f0;
+}
+
+.remaining-label {
+  margin-bottom: 6px;
+  color: #64748b;
+  font-size: 11px;
+  font-weight: 600;
+}
+
+.remaining-list {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+
+.remaining-chip {
+  padding: 2px 8px;
+  border-radius: 8px;
+  background: #f1f5f9;
+  color: #475569;
+  font-size: 11px;
+}
+
+.remaining-more {
+  padding: 2px 8px;
+  border-radius: 8px;
+  background: #e2e8f0;
+  color: #64748b;
+  font-size: 11px;
+  font-weight: 700;
+}
+
+// ============ Empty ============
+
+.empty-state {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  grid-column: 1 / -1;
+  padding: 80px 24px;
+  color: #94a3b8;
+
+  .empty-icon {
+    width: 64px;
+    height: 64px;
+    margin-bottom: 12px;
+    opacity: 0.4;
+    font-size: 64px;
+  }
+
+  p {
+    margin: 0;
+    font-size: 14px;
+  }
+}

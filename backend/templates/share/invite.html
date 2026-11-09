@@ -1,0 +1,150 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta property="og:title" content="{{ inviter_name }} 邀请你加入 iMato">
+  <meta property="og:description" content="通过邀请码 {{ code }} 注册即得 {{ invite.reward_value }} 积分奖励">
+  <meta property="og:type" content="website">
+  <title>{{ inviter_name }} 邀请你加入 iMato</title>
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, "PingFang SC", "Microsoft YaHei", sans-serif;
+      background: linear-gradient(135deg, #FF6B6B 0%, #FFD93D 100%);
+      min-height: 100vh;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 20px;
+      color: #333;
+    }
+    .container {
+      max-width: 420px;
+      width: 100%;
+      background: #fff;
+      border-radius: 16px;
+      box-shadow: 0 20px 60px rgba(0,0,0,0.2);
+      padding: 32px 24px;
+      text-align: center;
+    }
+    .inviter-avatar {
+      width: 80px;
+      height: 80px;
+      border-radius: 50%;
+      background: linear-gradient(135deg, #FF6B6B, #FFD93D);
+      color: #fff;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 36px;
+      font-weight: bold;
+      margin: 0 auto 16px;
+    }
+    .inviter-text {
+      font-size: 18px;
+      color: #333;
+      margin-bottom: 8px;
+    }
+    .inviter-name {
+      font-size: 24px;
+      font-weight: 700;
+      color: #1a1a1a;
+      margin-bottom: 24px;
+    }
+    .reward-card {
+      background: linear-gradient(135deg, #FFF3CD 0%, #FFE69C 100%);
+      border-radius: 12px;
+      padding: 24px;
+      margin-bottom: 24px;
+    }
+    .reward-title {
+      font-size: 14px;
+      color: #856404;
+      margin-bottom: 8px;
+    }
+    .reward-value {
+      font-size: 48px;
+      font-weight: 800;
+      color: #FF6B6B;
+      line-height: 1;
+    }
+    .reward-unit {
+      font-size: 18px;
+      color: #FF6B6B;
+      margin-left: 4px;
+    }
+    .invite-code {
+      background: #f8f9fa;
+      border: 2px dashed #ddd;
+      border-radius: 8px;
+      padding: 16px;
+      margin-bottom: 24px;
+    }
+    .invite-code-label {
+      font-size: 12px;
+      color: #999;
+      margin-bottom: 8px;
+    }
+    .invite-code-value {
+      font-family: monospace;
+      font-size: 24px;
+      font-weight: 700;
+      color: #333;
+      letter-spacing: 2px;
+    }
+    .cta {
+      display: block;
+      width: 100%;
+      padding: 16px;
+      background: linear-gradient(135deg, #FF6B6B 0%, #FFD93D 100%);
+      color: #fff;
+      border: none;
+      border-radius: 12px;
+      font-size: 16px;
+      font-weight: 600;
+      cursor: pointer;
+      text-decoration: none;
+      margin-bottom: 16px;
+    }
+    .footer {
+      font-size: 12px;
+      color: #999;
+      margin-top: 16px;
+    }
+  </style>
+</head>
+<body>
+  <main class="container">
+    <div class="inviter-avatar">{{ inviter_name[0]|upper }}</div>
+    <p class="inviter-text"><strong>{{ inviter_name }}</strong> 邀请你</p>
+    <h1 class="inviter-name">加入 iMato 学习平台</h1>
+
+    <div class="reward-card">
+      <div class="reward-title">邀请奖励</div>
+      <div>
+        <span class="reward-value">{{ invite.reward_value }}</span>
+        <span class="reward-unit">积分</span>
+      </div>
+    </div>
+
+    <div class="invite-code">
+      <div class="invite-code-label">邀请码</div>
+      <div class="invite-code-value">{{ code }}</div>
+    </div>
+
+    {% if invite.usage_limit %}
+    <p style="font-size: 13px; color: #666; margin-bottom: 16px;">
+      剩余使用次数：{{ invite.remaining }} / {{ invite.usage_limit }}
+    </p>
+    {% endif %}
+
+    <a class="cta" href="/?invite={{ code }}">立即注册领取奖励</a>
+
+    <p class="footer">
+      本邀请码由 <strong>{{ inviter_name }}</strong> 生成 ·
+      <br>注册后自动到账 {{ invite.reward_value }} 积分
+    </p>
+  </main>
+</body>
+</html>

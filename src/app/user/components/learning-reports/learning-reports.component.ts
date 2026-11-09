@@ -25,9 +25,13 @@ import { MatTooltipModule } from '@angular/material/tooltip';
 import { Subject } from 'rxjs';
 import { takeUntil } from 'rxjs/operators';
 
-import type { StudentLearningProfile } from '../../../core/models/ai-teacher.models';
+import type {
+  AiTeacherLiveEvent,
+  StudentLearningProfile,
+} from '../../../core/models/ai-teacher.models';
 import type { User } from '../../../core/models/auth.models';
 import { AITeacherService } from '../../../core/services/ai-teacher.service';
+import { AiTeacherLiveService } from '../../../core/services/ai-teacher-live.service';
 import { AuthService } from '../../../core/services/auth.service';
 import { PdfPrintService } from '../../../shared/services/pdf-print.service';
 import { LearningReport, LearningReportsService } from '../../services/learning-reports.service';
@@ -62,23 +66,76 @@ export class LearningReportsComponent implements OnInit, OnDestroy {
 
   currentUser: User | null = null;
 
+  // 【P3-B】AI 教师实时推送历史（最近 10 条，侧栏展示）
+  liveRecommendations: AiTeacherLiveEvent[] = [];
+
+  // 【P3-B】前端 AI 教师实时事件服务引用（用于 markRead 等桥接）
+  private liveTeacherService: AiTeacherLiveService | null = null;
+
   constructor(
     private learningReportsService: LearningReportsService,
     private aiTeacherService: AITeacherService,
     private authService: AuthService,
     private snackBar: MatSnackBar,
     private cdr: ChangeDetectorRef,
-    private pdfPrintService: PdfPrintService
-  ) {}
+    private pdfPrintService: PdfPrintService,
+    // 【P3-B】可选注入：root 级提供的 live service
+    liveTeacherService?: AiTeacherLiveService
+  ) {
+    this.liveTeacherService = liveTeacherService ?? null;
+  }
 
   ngOnInit(): void {
     this.authService.currentUser$.pipe(takeUntil(this.destroy$)).subscribe((user) => {
       this.currentUser = user;
+      if (user) {
+        const userId = String(user.id);
+        // 【P3-B】注入当前用户 ID，并拉取服务端历史回放
+        this.liveTeacherService?.setUserId(userId);
+        this.loadLiveHistory(userId);
+        this.loadLiveSettings(userId);
+      }
     });
     this.aiTeacherService.profile$.pipe(takeUntil(this.destroy$)).subscribe((p) => {
       this.profile = p;
     });
     this.loadReports();
+    // 【P3-B】订阅前端 live service 的历史流（断线期间累积的本地事件）
+    this.liveTeacherService?.history$
+      .pipe(takeUntil(this.destroy$))
+      .subscribe((events) => {
+        this.liveRecommendations = (events || []).slice(0, 10);
+        this.cdr.markForCheck();
+      });
+  }
+
+  /**
+   * 【P3-B】从后端拉取最近事件历史并回放到 live service。
+   * 失败/超时由 AiTeacherService.getLiveHistory 内部降级为空数组。
+   */
+  private loadLiveHistory(userId: string): void {
+    this.aiTeacherService
+      .getLiveHistory(userId, 20)
+      .pipe(takeUntil(this.destroy$))
+      .subscribe((events) => {
+        if (events && events.length > 0) {
+          this.liveTeacherService?.replayFromServer(events);
+        }
+      });
+  }
+
+  /** 【P3-B】拉取用户级 live settings（仅作侧栏兜底；toast 由 toast 组件自己加载） */
+  private loadLiveSettings(userId: string): void {
+    this.aiTeacherService
+      .getLiveSettings(userId)
+      .pipe(takeUntil(this.destroy$))
+      .subscribe();
+  }
+
+  /** 【P3-B】侧栏列表点击桥接：标记已读并触发埋点 */
+  onLiveRecommendationClick(event: AiTeacherLiveEvent): void {
+    this.liveTeacherService?.click(event, 'cta');
+    this.cdr.markForCheck();
   }
 
   private loadReports(): void {

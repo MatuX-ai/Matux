@@ -4,6 +4,7 @@
 """
 
 from datetime import datetime
+import asyncio
 import json
 import logging
 from typing import Any, Dict, List, Optional
@@ -12,14 +13,47 @@ from fastapi import APIRouter, Depends, HTTPException, WebSocket, WebSocketDisco
 from models.user import User
 from pydantic import BaseModel
 from sqlalchemy.orm import Session
-from utils.database import get_sync_db
-from utils.dependencies import get_current_user_sync
+# 【P0-A 修复】get_sync_db 被 @contextmanager 装饰，FastAPI 0.135 会再包一层导致依赖注入 500；
+#   改用未装饰的同步生成器 get_db_session。
+from utils.database import get_db_session
+
+# 【P0-A 修复】utils.dependencies.get_current_user_sync 是未实现的占位（直接 raise
+#   NotImplementedError），导致所有鉴权接口 500。改用 auth_utils 中的真实实现。
+from utils.auth_utils import get_current_user_sync
 from utils.redis_client import redis_client
 
 logger = logging.getLogger(__name__)
 
 # 创建路由器
-router = APIRouter(prefix="/digital-twin", tags=["数字孪生实验室"])
+# 【P0-A 修复】prefix 补齐 /api/v1：前端统一请求 /api/v1/digital-twin/*，
+#   此前只有 /digital-twin/* 导致桌面端与 Web 端全部 404。
+router = APIRouter(prefix="/api/v1/digital-twin", tags=["数字孪生实验室"])
+
+
+# 【P0-A 修复】桌面端未部署 Redis：redis_client 的 get/setex 是同步方法，无 Redis 时
+#   直接返回 None。原代码 `await redis_client.setex(...)` 会抛
+#   "object NoneType can't be used in 'await' expression" 让接口 500。
+#   这里统一封装为可 await 的安全包装，Redis 不可用时静默跳过。
+async def _cache_setex(key: str, ttl: int, value: str) -> None:
+    """写入缓存，失败不影响主流程"""
+    try:
+        result = redis_client.setex(key, ttl, value)
+        if asyncio.iscoroutine(result):
+            await result
+    except Exception as cache_err:  # noqa: BLE001
+        logger.debug(f"Redis 写入跳过: {cache_err}")
+
+
+async def _cache_get(key: str) -> Optional[str]:
+    """读取缓存，Redis 不可用时返回 None"""
+    try:
+        result = redis_client.get(key)
+        if asyncio.iscoroutine(result):
+            result = await result
+        return result
+    except Exception as cache_err:  # noqa: BLE001
+        logger.debug(f"Redis 读取跳过: {cache_err}")
+        return None
 
 
 class CircuitElementState(BaseModel):
@@ -76,6 +110,9 @@ class ConnectionManager:
         self.active_connections: Dict[str, List[WebSocket]] = {}
         self.session_states: Dict[str, CircuitState] = {}
         self.device_states: Dict[str, DeviceState] = {}
+        # 【P0-A 修复】会话信息进程内存储。桌面端未部署 Redis 时
+        #   redis_client.setex 静默返回 None，导致刚创建的会话 GET 时 404。
+        self.sessions: Dict[str, SessionInfo] = {}
 
     async def connect(self, websocket: WebSocket, session_id: str, user_id: str):
         await websocket.accept()
@@ -105,7 +142,7 @@ manager = ConnectionManager()
 
 @router.websocket("/ws/session/{session_id}")
 async def websocket_endpoint(
-    websocket: WebSocket, session_id: str, user_id: str, db: Session = Depends(get_sync_db)
+    websocket: WebSocket, session_id: str, user_id: str, db: Session = Depends(get_db_session)
 ):
     """WebSocket会话连接端点"""
     await manager.connect(websocket, session_id, user_id)
@@ -164,7 +201,7 @@ async def handle_circuit_state_update(
 
         # 缓存到Redis
         cache_key = f"digital_twin:circuit:{session_id}"
-        await redis_client.setex(
+        await _cache_setex(
             cache_key, 3600, json.dumps(circuit_state.dict(), default=str)  # 1小时过期
         )
 
@@ -198,7 +235,7 @@ async def handle_device_state_update(session_id: str, data: Dict, websocket: Web
 
         # 缓存设备状态
         device_cache_key = f"digital_twin:device:{device_key}"
-        await redis_client.setex(
+        await _cache_setex(
             device_cache_key,
             1800,  # 30分钟过期
             json.dumps(device_state.dict(), default=str),
@@ -243,7 +280,7 @@ async def handle_sync_request(session_id: str, websocket: WebSocket):
 
 @router.post("/sessions", response_model=SessionInfo)
 async def create_session(
-    current_user: User = Depends(get_current_user_sync), db: Session = Depends(get_sync_db)
+    current_user: User = Depends(get_current_user_sync), db: Session = Depends(get_db_session)
 ):
     """创建新的数字孪生会话"""
     try:
@@ -259,9 +296,12 @@ async def create_session(
             is_active=True,
         )
 
+        # 【P0-A 修复】先写进程内存储：无 Redis 的桌面端也能正常读取
+        manager.sessions[session_id] = session_info
+
         # 缓存会话信息
         cache_key = f"digital_twin:session:{session_id}"
-        await redis_client.setex(
+        await _cache_setex(
             cache_key, 86400, json.dumps(session_info.dict(), default=str)  # 24小时过期
         )
 
@@ -277,12 +317,16 @@ async def create_session(
 async def get_session_info(
     session_id: str,
     current_user: User = Depends(get_current_user_sync),
-    db: Session = Depends(get_sync_db),
+    db: Session = Depends(get_db_session),
 ):
     """获取会话信息"""
     try:
+        # 【P0-A 修复】进程内存储优先，Redis 仅在可用时作为后备
+        if session_id in manager.sessions:
+            return manager.sessions[session_id]
+
         cache_key = f"digital_twin:session:{session_id}"
-        cached_data = await redis_client.get(cache_key)
+        cached_data = await _cache_get(cache_key)
 
         if cached_data:
             session_data = json.loads(cached_data)
@@ -290,6 +334,8 @@ async def get_session_info(
         else:
             raise HTTPException(status_code=404, detail="会话不存在")
 
+    except HTTPException:
+        raise
     except Exception as e:
         logger.error(f"获取会话信息失败: {e}")
         raise HTTPException(status_code=500, detail="获取会话信息失败")
@@ -300,7 +346,7 @@ async def update_circuit_state(
     session_id: str,
     state: CircuitState,
     current_user: User = Depends(get_current_user_sync),
-    db: Session = Depends(get_sync_db),
+    db: Session = Depends(get_db_session),
 ):
     """更新电路状态（HTTP接口）"""
     try:
@@ -309,7 +355,7 @@ async def update_circuit_state(
 
         # 缓存到Redis
         cache_key = f"digital_twin:circuit:{session_id}"
-        await redis_client.setex(cache_key, 3600, json.dumps(state.dict(), default=str))
+        await _cache_setex(cache_key, 3600, json.dumps(state.dict(), default=str))
 
         # 广播给WebSocket客户端
         broadcast_data = {
@@ -330,7 +376,7 @@ async def update_circuit_state(
 async def get_circuit_state(
     session_id: str,
     current_user: User = Depends(get_current_user_sync),
-    db: Session = Depends(get_sync_db),
+    db: Session = Depends(get_db_session),
 ):
     """获取电路状态"""
     try:
@@ -340,7 +386,7 @@ async def get_circuit_state(
 
         # 从Redis查找
         cache_key = f"digital_twin:circuit:{session_id}"
-        cached_data = await redis_client.get(cache_key)
+        cached_data = await _cache_get(cache_key)
 
         if cached_data:
             state_data = json.loads(cached_data)
@@ -357,7 +403,7 @@ async def get_circuit_state(
 async def update_device_state(
     state: DeviceState,
     current_user: User = Depends(get_current_user_sync),
-    db: Session = Depends(get_sync_db),
+    db: Session = Depends(get_db_session),
 ):
     """更新设备状态"""
     try:
@@ -366,7 +412,7 @@ async def update_device_state(
 
         # 缓存到Redis
         cache_key = f"digital_twin:device:{state.device_id}"
-        await redis_client.setex(cache_key, 1800, json.dumps(state.dict(), default=str))
+        await _cache_setex(cache_key, 1800, json.dumps(state.dict(), default=str))
 
         return {"success": True, "message": "设备状态已更新"}
 
@@ -379,7 +425,7 @@ async def update_device_state(
 async def get_device_state(
     device_id: str,
     current_user: User = Depends(get_current_user_sync),
-    db: Session = Depends(get_sync_db),
+    db: Session = Depends(get_db_session),
 ):
     """获取设备状态"""
     try:
@@ -389,7 +435,7 @@ async def get_device_state(
 
         # 从Redis查找
         cache_key = f"digital_twin:device:{device_id}"
-        cached_data = await redis_client.get(cache_key)
+        cached_data = await _cache_get(cache_key)
 
         if cached_data:
             state_data = json.loads(cached_data)
@@ -406,7 +452,7 @@ async def get_device_state(
 async def get_session_participants(
     session_id: str,
     current_user: User = Depends(get_current_user_sync),
-    db: Session = Depends(get_sync_db),
+    db: Session = Depends(get_db_session),
 ):
     """获取会话参与者列表"""
     try:

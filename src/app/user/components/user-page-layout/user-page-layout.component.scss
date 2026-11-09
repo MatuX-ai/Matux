@@ -45,6 +45,9 @@
 }
 
 .content-wrapper {
+  /* 【P1-1 修复】1024 窗口横向溢出：width:100% + padding 在默认 content-box 下
+     会超出父容器（实测 documentElement.scrollWidth 1033 > 1024）。 */
+  box-sizing: border-box;
   flex: 1;
   width: 100%;
   max-width: 1400px;

@@ -64,6 +64,11 @@ export class BlocklyWorkspaceComponent implements AfterViewInit, OnDestroy {
   isEmpty = true;
   currentCode = '# 等待生成代码';
 
+  // 【P0-D 修复】运行结果
+  isRunning = false;
+  hasRun = false;
+  runOutput = '';
+
   // 语言选项
   selectedLanguage: TargetLanguage = TargetLanguage.PYTHON;
   languages = [
@@ -188,6 +193,75 @@ export class BlocklyWorkspaceComponent implements AfterViewInit, OnDestroy {
   }
 
   // ==================== 代码操作 ====================
+
+  /**
+   * 【P0-D 修复】运行工作区积木。
+   *
+   * 桌面端不依赖 Docker 代码沙箱：统一生成 JavaScript 并在前端沙箱内执行，
+   * 重定向 console 输出到结果面板，保证“拖拽积木 → 运行 → 看到输出”离线可用。
+   */
+  runProgram(): void {
+    if (this.isRunning) return;
+
+    this.hasRun = true;
+    if (this.isEmpty) {
+      this.runOutput = '工作区为空：请先从左侧分类中拖入积木';
+      return;
+    }
+
+    this.isRunning = true;
+    try {
+      // 运行固定使用 JS 生成器（不受预览语言影响，避免 Python 无运行时）
+      const jsCode = this.blocklyService.generateCode(TargetLanguage.JAVASCRIPT);
+      this.runOutput = this.executeJavaScript(jsCode);
+    } finally {
+      this.isRunning = false;
+    }
+  }
+
+  /** 清除运行结果 */
+  clearRunOutput(): void {
+    this.hasRun = false;
+    this.runOutput = '';
+  }
+
+  /** 在隔离的 Function 上下文中执行代码，并捕获 console 输出 */
+  private executeJavaScript(code: string): string {
+    const logs: string[] = [];
+    const capture = (...args: unknown[]): void => {
+      logs.push(args.map((a) => this.stringifyValue(a)).join(' '));
+    };
+    const sandboxConsole = {
+      log: capture,
+      info: capture,
+      warn: capture,
+      error: capture,
+      debug: capture,
+    };
+
+    try {
+      // eslint-disable-next-line no-new-func
+      const runner = new Function('console', `"use strict";\n${code}`);
+      runner(sandboxConsole);
+      return logs.length > 0 ? logs.join('\n') : '（程序执行完成，没有输出）';
+    } catch (err) {
+      return `运行错误: ${err instanceof Error ? err.message : String(err)}`;
+    }
+  }
+
+  private stringifyValue(value: unknown): string {
+    if (typeof value === 'string') return value;
+    if (value === null) return 'null';
+    if (value === undefined) return 'undefined';
+    if (typeof value === 'object') {
+      try {
+        return JSON.stringify(value);
+      } catch {
+        return String(value);
+      }
+    }
+    return String(value);
+  }
 
   copyCode(): void {
     if (!this.currentCode) return;

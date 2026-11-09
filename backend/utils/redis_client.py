@@ -6,6 +6,7 @@ Redis客户端工具类
 from datetime import datetime, timedelta
 import json
 import logging
+import time
 from typing import Any, Dict, Optional
 
 from config.license_config import load_sentinel_config
@@ -39,8 +40,10 @@ class RedisLicenseStore:
                 password=self.config.storage.password,
                 ssl=self.config.storage.ssl,
                 decode_responses=True,
-                socket_connect_timeout=5,
-                socket_timeout=5,
+                # 【P0-A 修复】桌面端默认无 Redis：连接探测必须快速失败，
+                #   5s 超时会让每个涉及缓存的接口卡 6s+，被前端 5s 超时误判为失败。
+                socket_connect_timeout=0.3,
+                socket_timeout=0.3,
             )
             # 测试连接
             self._client.ping()
@@ -276,24 +279,35 @@ redis_license_store = RedisLicenseStore()
 class _LazyRedisClient:
     """延迟初始化的 Redis 客户端代理（用于通用缓存）"""
 
+    # 【P0-A 修复】连接失败后的冷却时间（秒）：期间直接返回 None，
+    #   避免每个请求都重试连接（桌面端无 Redis 时每个请求多花 5s）。
+    _RETRY_INTERVAL = 30.0
+
     def __init__(self):
         self._client = None
+        self._last_failure_at = 0.0
 
     def _ensure(self):
-        """确保客户端已连接"""
-        if self._client is None:
-            try:
-                self._client = redis.Redis(
-                    host='localhost',
-                    port=6379,
-                    db=0,
-                    decode_responses=True,
-                    socket_connect_timeout=5,
-                )
-                self._client.ping()
-            except Exception as e:
-                logger.warning(f"Redis 连接失败：{e}")
-                self._client = None
+        """确保客户端已连接（不可用时快速失败 + 冷却）"""
+        if self._client is not None:
+            return self._client
+        now = time.time()
+        if now - self._last_failure_at < self._RETRY_INTERVAL:
+            return None
+        try:
+            self._client = redis.Redis(
+                host='localhost',
+                port=6379,
+                db=0,
+                decode_responses=True,
+                socket_connect_timeout=0.3,
+                socket_timeout=0.3,
+            )
+            self._client.ping()
+        except Exception as e:
+            logger.warning(f"Redis 连接失败（{self._RETRY_INTERVAL:.0f}s 内不再重试）：{e}")
+            self._client = None
+            self._last_failure_at = now
         return self._client
 
     def get(self, key):

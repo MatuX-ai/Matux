@@ -36,16 +36,18 @@ import { takeUntil } from 'rxjs/operators';
 
 import { DashboardLayoutService } from '../../core/services/dashboard-layout.service';
 import { ROUTES } from '../../routes.const';
+import { DailyCheckinComponent } from '../../shared/components/daily-checkin/daily-checkin.component';
 import { DashboardLayoutDialogComponent } from '../../shared/components/dashboard-layout-dialog/dashboard-layout-dialog.component';
 import { ExpGainToastComponent } from '../../shared/components/exp-gain-toast/exp-gain-toast.component';
 import { FloatingAiAssistantComponent } from '../../shared/components/floating-ai-assistant/floating-ai-assistant.component';
 import { LearningCalendarHeatmapComponent } from '../../shared/components/learning-calendar-heatmap/learning-calendar-heatmap.component';
-import { LevelUpDialogComponent } from '../../shared/components/level-up-dialog/level-up-dialog.component';
+import { LevelUpModalComponent } from '../../shared/components/level-up-modal/level-up-modal.component';
 import { MockModeBannerComponent } from '../../shared/components/mock-mode-banner/mock-mode-banner.component';
 import { StudentMaterialDashboardComponent } from '../../shared/components/student-material-dashboard/student-material-dashboard.component';
 import { StudentStatusBarComponent } from '../../shared/components/student-status-bar/student-status-bar.component';
 import { UnifiedCourseCardComponent } from '../../shared/components/unified-course-card/unified-course-card.component';
 
+import { OfflineBonusBannerComponent } from '../../shared/components/offline-bonus-banner/offline-bonus-banner.component';
 import type { DailyTask, DashboardSnapshot } from './services/student-dashboard-data.service';
 import { StudentDashboardDataService } from './services/student-dashboard-data.service';
 import { AchievementCenterCardComponent } from './widgets/core-cards/achievement-center-card.component';
@@ -88,6 +90,9 @@ import { WeeklyLeaderboardWidgetComponent } from './widgets/weekly-leaderboard-w
     DailyTasksWidgetComponent,
     WeeklyLeaderboardWidgetComponent,
     MockModeBannerComponent,
+    DailyCheckinComponent,
+    LevelUpModalComponent,
+    OfflineBonusBannerComponent,
   ],
   templateUrl: './student-dashboard.component.html',
   styleUrls: ['./student-dashboard.component.scss'],
@@ -97,6 +102,11 @@ export class StudentDashboardComponent implements OnInit, OnDestroy {
 
   /** 路由常量，供模板使用 */
   readonly ROUTES = ROUTES;
+
+  /** P0-4 签到完成回调（占位：未来可触发 EXP toast / 卡牌飞入） */
+  onCheckinCompleted(_result: unknown): void {
+    // 暂不追加 UI：DailyCheckinComponent 内部已触发 EXP 飞升与 LevelEventService
+  }
 
   /** 当前仪表板快照 */
   snapshot: DashboardSnapshot | null = null;
@@ -170,26 +180,17 @@ export class StudentDashboardComponent implements OnInit, OnDestroy {
 
   /** 完成任务（委托 service，触发 EXP 飞升和升级 modal） */
   onTaskCompleted(task: DailyTask): void {
-    const oldLevel = this.snapshot?.level;
     this.dataService.completeTask(task.id).subscribe((result) => {
       if (!result) return;
-      // 显示 EXP 飞升动画
+      // 显示 EXP 飞升动画（toast；P0-1 的飞升在 daily-tasks-widget 内已触发 sparkle+flyNumber）
       this.dialog.open(ExpGainToastComponent, {
         data: { amount: task.rewardExp, reason: task.title },
         panelClass: 'exp-gain-dialog',
         hasBackdrop: false,
         autoFocus: false,
       });
-      // 升级时弹出 modal
-      if (result.leveledUp && result.newLevel && oldLevel) {
-        setTimeout(() => {
-          this.dialog.open(LevelUpDialogComponent, {
-            data: { oldLevel, newLevel: result.newLevel },
-            panelClass: 'level-up-dialog-panel',
-            disableClose: false,
-          });
-        }, 500);
-      }
+      // 升级检测已由 AchievementCenterCard 监听 level.current 变化 → LevelEventService
+      // 全屏 LevelUpModal 自动展示，无需在此处手动弹 dialog。
     });
   }
 

@@ -1,0 +1,652 @@
+/**
+ * 学习地图样式（P2-A）
+ *
+ * - 顶部 Hero（标题 + 推荐 + 视图切换）
+ * - 整体进度条
+ * - Track Tabs（学科切换）
+ * - 地图视图（SVG 节点 + 连线 + 图例）
+ * - 列表视图（扁平卡片）
+ */
+
+:host {
+  --lm-bg-card: #fff;
+  --lm-bg-soft: #f8fafc;
+  --lm-text-primary: #1e293b;
+  --lm-text-secondary: #64748b;
+  --lm-border: #e2e8f0;
+  --lm-primary: #2563eb;
+  --lm-success: #10b981;
+  --lm-warning: #f59e0b;
+  --lm-purple: #8b5cf6;
+  --lm-radius: 16px;
+  --lm-radius-lg: 24px;
+
+  display: block;
+}
+
+.learning-map-container {
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+  padding: 8px 0;
+}
+
+// ============ Hero ============
+
+.lm-hero {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 16px;
+  padding: 20px 24px;
+  border: 1px solid rgb(37 99 233 / 15%);
+  border-radius: var(--lm-radius-lg);
+  background: linear-gradient(135deg, #f0f9ff 0%, #e0e7ff 100%);
+
+  .hero-text {
+    flex: 1;
+    min-width: 200px;
+  }
+
+  .hero-title {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    margin: 0 0 6px;
+    color: var(--lm-text-primary);
+    font-size: 24px;
+    font-weight: 700;
+  }
+
+  .title-icon {
+    font-size: 28px;
+  }
+
+  .hero-subtitle {
+    margin: 0;
+    color: var(--lm-text-secondary);
+    font-size: 13px;
+  }
+
+  .hero-recommendation {
+    flex: 2;
+    min-width: 280px;
+  }
+
+  .rec-label {
+    margin-bottom: 6px;
+    color: var(--lm-text-secondary);
+    font-size: 11px;
+    font-weight: 700;
+    letter-spacing: 0.05em;
+    text-transform: uppercase;
+  }
+
+  .rec-card {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 12px 16px;
+    border: 1px solid var(--lm-border);
+    border-radius: var(--lm-radius);
+    background: white;
+    box-shadow: 0 1px 3px rgb(0 0 0 / 4%);
+  }
+
+  .rec-icon {
+    font-size: 28px;
+  }
+
+  .rec-info {
+    flex: 1;
+    min-width: 0;
+  }
+
+  .rec-name {
+    color: var(--lm-text-primary);
+    font-size: 14px;
+    font-weight: 700;
+  }
+
+  .rec-meta {
+    color: var(--lm-text-secondary);
+    font-size: 11px;
+  }
+
+  .rec-btn {
+    flex-shrink: 0;
+  }
+
+  .view-mode-switch {
+    display: flex;
+    gap: 6px;
+  }
+
+  .mode-btn {
+    width: 40px;
+    min-width: 0;
+    height: 40px;
+    padding: 0;
+    transition: all 0.2s ease;
+
+    &.active {
+      border-color: var(--lm-primary);
+      background: var(--lm-primary);
+      color: white;
+    }
+  }
+}
+
+// ============ 整体进度条 ============
+
+.lm-overall-progress {
+  padding: 16px 20px;
+  border: 1px solid var(--lm-border);
+  border-radius: var(--lm-radius);
+  background: var(--lm-bg-card);
+
+  .progress-info {
+    display: flex;
+    justify-content: space-between;
+    margin-bottom: 6px;
+  }
+
+  .progress-label {
+    color: var(--lm-text-secondary);
+    font-size: 12px;
+    font-weight: 600;
+  }
+
+  .progress-value {
+    color: var(--lm-primary);
+    font-size: 14px;
+    font-weight: 700;
+  }
+
+  .progress-bar {
+    height: 8px;
+    margin-bottom: 10px;
+    border-radius: 4px;
+  }
+
+  .progress-stats {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 12px;
+    font-size: 12px;
+  }
+
+  .stat-item {
+    display: flex;
+    align-items: center;
+    gap: 4px;
+    color: var(--lm-text-secondary);
+  }
+
+  .stat-emoji {
+    font-size: 14px;
+  }
+}
+
+// ============ Tabs ============
+
+.track-tabs {
+  ::ng-deep .mat-mdc-tab-labels {
+    padding: 4px;
+    border: 1px solid var(--lm-border);
+    border-radius: var(--lm-radius);
+    background: var(--lm-bg-card);
+  }
+
+  ::ng-deep .mdc-tab {
+    min-width: 120px;
+    border-radius: 12px;
+  }
+}
+
+// ============ Track Header ============
+
+.track-viewport {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.track-header {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  padding: 16px 20px;
+  border: 1px solid var(--lm-border);
+  border-radius: var(--lm-radius);
+  background: var(--lm-bg-card);
+}
+
+.track-icon {
+  display: flex;
+  flex-shrink: 0;
+  justify-content: center;
+  align-items: center;
+  width: 56px;
+  height: 56px;
+  border-radius: 14px;
+  box-shadow: 0 4px 12px rgb(0 0 0 / 12%);
+}
+
+.track-emoji {
+  font-size: 28px;
+}
+
+.track-info {
+  flex: 1;
+  min-width: 0;
+}
+
+.track-name {
+  margin: 0 0 4px;
+  color: var(--lm-text-primary);
+  font-size: 18px;
+  font-weight: 700;
+}
+
+.track-desc {
+  margin: 0;
+  color: var(--lm-text-secondary);
+  font-size: 13px;
+}
+
+.track-stats {
+  flex-shrink: 0;
+  text-align: right;
+}
+
+.track-stat-main {
+  display: flex;
+  align-items: baseline;
+  gap: 6px;
+}
+
+.track-stat-percent {
+  color: var(--lm-primary);
+  font-size: 28px;
+  font-weight: 700;
+}
+
+.track-stat-label {
+  color: var(--lm-text-secondary);
+  font-size: 11px;
+}
+
+.track-stat-detail {
+  margin-top: 2px;
+  color: var(--lm-text-secondary);
+  font-size: 11px;
+}
+
+// ============ 地图视图 ============
+
+.map-viewport {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.map-canvas-wrapper {
+  position: relative;
+  overflow: auto;
+  padding: 16px;
+  border: 1px solid var(--lm-border);
+  border-radius: var(--lm-radius);
+  background: linear-gradient(135deg, #fafafa 0%, #f1f5f9 100%);
+}
+
+.map-svg {
+  display: block;
+  max-width: 100%;
+  height: auto;
+  margin: 0 auto;
+}
+
+.node-group {
+  cursor: pointer;
+  transition: transform 0.2s ease;
+
+  &:hover {
+    transform: translateY(-2px);
+  }
+
+  &:hover .node-circle {
+    filter: brightness(1.08);
+  }
+
+  &.status-locked {
+    opacity: 0.55;
+    cursor: not-allowed;
+
+    &:hover .node-circle {
+      filter: none;
+    }
+  }
+}
+
+.node-pulse {
+  transform-origin: center;
+  animation: nodePulse 2s ease-in-out infinite;
+}
+
+@keyframes nodePulse {
+  0%,
+  100% {
+    opacity: 0.4;
+    transform: scale(1);
+  }
+
+  50% {
+    opacity: 0.8;
+    transform: scale(1.15);
+  }
+}
+
+.legendary-ring {
+  transform-origin: center;
+  animation: legendarySpin 8s linear infinite;
+}
+
+@keyframes legendarySpin {
+  from {
+    transform: rotate(0deg);
+  }
+
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+.connection {
+  transition: stroke-dashoffset 0.5s ease;
+
+  &.active {
+    animation: dashflow 1.6s linear infinite;
+  }
+}
+
+@keyframes dashflow {
+  to {
+    stroke-dashoffset: -24;
+  }
+}
+
+// ============ 【P3-A-3】高亮强化动画 ============
+
+@keyframes nodeHighlightPulse {
+  0% {
+    filter: drop-shadow(0 0 0 transparent);
+    transform: scale(1);
+  }
+
+  50% {
+    filter: drop-shadow(0 0 16px currentcolor);
+    transform: scale(1.15);
+  }
+
+  100% {
+    filter: drop-shadow(0 0 0 transparent);
+    transform: scale(1);
+  }
+}
+
+@keyframes nodeHighlightHalo {
+  0% {
+    opacity: 0;
+    transform: scale(0.8);
+  }
+
+  50% {
+    opacity: 0.9;
+    transform: scale(1.25);
+  }
+
+  100% {
+    opacity: 0;
+    transform: scale(1.4);
+  }
+}
+
+@keyframes pathFocusFlow {
+  0% {
+    stroke-dashoffset: 0;
+    stroke-opacity: 0.3;
+  }
+
+  50% {
+    stroke-dashoffset: -8;
+    stroke-opacity: 1;
+  }
+
+  100% {
+    stroke-dashoffset: -16;
+    stroke-opacity: 0.3;
+  }
+}
+
+.node-group.highlighting {
+  transform-origin: center;
+  animation: nodeHighlightPulse 1.5s ease-in-out 3;
+  transform-box: fill-box;
+}
+
+.node-highlight-halo {
+  pointer-events: none;
+  transform-origin: center;
+  animation: nodeHighlightHalo 1.5s ease-in-out 3;
+  transform-box: fill-box;
+}
+
+.connection.focused {
+  animation: pathFocusFlow 0.8s linear 3;
+  stroke: var(--lm-primary);
+  stroke-width: 3;
+}
+
+// ============ 列表视图 ============
+
+.list-viewport {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.list-item {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  padding: 14px 18px;
+  border: 2px solid var(--lm-border);
+  border-radius: var(--lm-radius);
+  background: var(--lm-bg-card);
+  cursor: pointer;
+  transition: all 0.2s ease;
+
+  &:hover {
+    border-color: var(--lm-primary);
+    box-shadow: 0 4px 12px rgb(0 0 0 / 6%);
+    transform: translateX(4px);
+  }
+
+  &.status-mastered {
+    border-color: rgb(16 185 129 / 30%);
+    background: linear-gradient(135deg, #f0fdf4 0%, #dcfce7 100%);
+  }
+
+  &.status-legendary {
+    border-color: rgb(245 158 11 / 40%);
+    background: linear-gradient(135deg, #fffbeb 0%, #fef3c7 100%);
+  }
+
+  &.status-in_progress {
+    border-color: rgb(59 130 246 / 30%);
+  }
+
+  &.status-locked {
+    opacity: 0.55;
+  }
+}
+
+.list-icon {
+  position: relative;
+  flex-shrink: 0;
+}
+
+.list-icon-emoji {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  width: 48px;
+  height: 48px;
+  border-radius: 50%;
+  background: var(--lm-bg-soft);
+  font-size: 24px;
+}
+
+.list-status-badge {
+  position: absolute;
+  right: -2px;
+  bottom: -2px;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  width: 20px;
+  height: 20px;
+  border: 2px solid white;
+  border-radius: 50%;
+  font-size: 11px;
+}
+
+.list-body {
+  flex: 1;
+  min-width: 0;
+}
+
+.list-name {
+  color: var(--lm-text-primary);
+  font-size: 14px;
+  font-weight: 700;
+}
+
+.list-desc {
+  margin-top: 2px;
+  color: var(--lm-text-secondary);
+  font-size: 12px;
+  line-height: 1.4;
+}
+
+.list-prereq {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  margin-top: 6px;
+  color: var(--lm-text-secondary);
+  font-size: 11px;
+
+  .prereq-mat-icon {
+    width: 12px;
+    height: 12px;
+    font-size: 12px;
+  }
+}
+
+.prereq-name {
+  color: var(--lm-primary);
+}
+
+.list-progress {
+  height: 4px;
+  margin-top: 8px;
+}
+
+.list-arrow {
+  flex-shrink: 0;
+  color: var(--lm-text-secondary);
+}
+
+// ============ 图例 ============
+
+.map-legend {
+  padding: 14px 18px;
+  border: 1px solid var(--lm-border);
+  border-radius: var(--lm-radius);
+  background: var(--lm-bg-card);
+}
+
+.legend-title {
+  margin-bottom: 10px;
+  color: var(--lm-text-secondary);
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+}
+
+.legend-items {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 14px;
+}
+
+.legend-item {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 12px;
+}
+
+.legend-swatch {
+  width: 14px;
+  height: 14px;
+  border-radius: 4px;
+}
+
+.legend-text {
+  color: var(--lm-text-primary);
+  font-weight: 600;
+}
+
+.legend-emoji {
+  font-size: 13px;
+}
+
+// ============ 空状态 ============
+
+.empty-state {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 48px 24px;
+  color: var(--lm-text-secondary);
+
+  .empty-icon {
+    width: 48px;
+    height: 48px;
+    margin-bottom: 12px;
+    opacity: 0.4;
+    font-size: 48px;
+  }
+}
+
+// ============ 响应式 ============
+
+@media (width <= 768px) {
+  .lm-hero {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .track-header {
+    flex-wrap: wrap;
+  }
+
+  .track-stats {
+    width: 100%;
+    text-align: left;
+  }
+}

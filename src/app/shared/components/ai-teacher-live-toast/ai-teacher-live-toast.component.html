@@ -1,0 +1,35 @@
+<div class="toast-container" [ngClass]="position" role="status" aria-live="polite">
+  <div
+    *ngFor="let toast of toasts; trackBy: trackById"
+    class="ai-toast"
+    [ngClass]="'variant-' + toast._variant"
+    [style.--accent]="toast._accentColor"
+  >
+    <div class="toast-icon">{{ toast._icon }}</div>
+    <div class="toast-body">
+      <div class="toast-title">
+        {{ toast.payload?.title }}
+      </div>
+      <div class="toast-message" [innerText]="toast.payload?.message"></div>
+      <div class="toast-actions">
+        <button
+          *ngIf="toast.payload?.ctaRoute"
+          mat-flat-button
+          color="primary"
+          class="cta-btn"
+          (click)="onCtaClick(toast)"
+        >
+          {{ toast.payload?.ctaLabel || '查看' }}
+        </button>
+        <button
+          mat-icon-button
+          class="dismiss-btn"
+          aria-label="关闭"
+          (click)="onDismiss(toast)"
+        >
+          <mat-icon>close</mat-icon>
+        </button>
+      </div>
+    </div>
+  </div>
+</div>

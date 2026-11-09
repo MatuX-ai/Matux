@@ -145,5 +145,61 @@
     "reconnected": "You are back online",
     "updateAvailable": "New version available. Click to update.",
     "update": "Update"
+  },
+  "level": {
+    "title": {
+      "1": "Curious Cub",
+      "2": "Coding Rookie",
+      "3": "Code Apprentice",
+      "4": "Loop Knight",
+      "5": "Function Wizard",
+      "6": "Algorithm Artisan",
+      "7": "Data Alchemist",
+      "8": "Architecture Master",
+      "9": "AI Collaborator",
+      "10": "Metaverse Creator"
+    },
+    "tier": {
+      "bronze": "Bronze",
+      "silver": "Silver",
+      "gold": "Gold",
+      "diamond": "Diamond",
+      "star": "Stellar"
+    },
+    "nextUnlock": "{n} EXP to unlock '{title}'",
+    "maxReached": "Max level reached! Creator's Crown unlocked",
+    "upgraded": "You leveled up to",
+    "continueButton": "Keep Learning",
+    "totalExp": "Total EXP"
+  },
+  "checkin": {
+    "button": "Check-in",
+    "tooltip": "Tap to claim today's reward +50 EXP",
+    "ariaLabel": "Daily check-in: tap to claim today's reward",
+    "opening": "Opening...",
+    "success": "Today's +50 EXP credited",
+    "streakDays": "{n}-day streak",
+    "greeting": {
+      "before": "Hi, {name} 👋 Ready to start today?",
+      "after": "Welcome back, {name} ✨ Today's adventure has begun"
+    }
+  },
+  "tasks": {
+    "complete": "Completed",
+    "allDone": "Awesome! All tasks done for today",
+    "reward": "+{n} EXP"
+  },
+  "fab": {
+    "state": {
+      "idle": "AI Teacher online · tap to start chat",
+      "message": "AI Teacher · {n} new messages",
+      "reward": "AI Teacher · new rewards to claim",
+      "stuck": "AI Teacher · need a hand?"
+    },
+    "opening": {
+      "reward": "I noticed you leveled up! Want to chat about your new title?",
+      "stuck": "You've been on this task for {n} minutes. Want a hint?",
+      "message": "I have {n} new messages for you"
+    }
   }
 }

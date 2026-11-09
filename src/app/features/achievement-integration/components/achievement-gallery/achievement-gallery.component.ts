@@ -94,6 +94,17 @@ export interface AchievementDialogData {
   unlockedDate?: string;
   conditions?: AchievementCondition[];
   txHash?: string;
+  // 【P2-B】增强字段
+  unlockRate?: number;
+  totalHolders?: number;
+  relatedSkillIds?: string[];
+  setId?: string;
+  setName?: string;
+  obtainedFrom?: string;
+  storyLine?: string;
+  pointsValue?: number;
+  // 【P2-C】跳转到关联学习节点的事件回调
+  onNavigateToSkill?: (skillId: string) => void;
 }
 
 // ============ 详情弹窗组件 ============
@@ -139,10 +150,85 @@ export interface AchievementDialogData {
 
       <!-- 内容区 -->
       <div class="dialog-body">
+        <!-- 故事背景【P2-B】 -->
+        <div class="section" *ngIf="data.storyLine">
+          <p class="story-line">{{ data.storyLine }}</p>
+        </div>
+
         <!-- 描述 -->
         <div class="section">
           <h4 class="section-label">描述</h4>
           <p class="section-text">{{ data.description }}</p>
+        </div>
+
+        <!-- 解锁来源【P2-B】 -->
+        <div class="section" *ngIf="data.obtainedFrom">
+          <h4 class="section-label">📍 解锁来源</h4>
+          <p class="section-text">{{ data.obtainedFrom }}</p>
+        </div>
+
+        <!-- 全球解锁率【P2-B】 -->
+        <div class="section" *ngIf="data.unlockRate !== undefined">
+          <h4 class="section-label">🌍 全球解锁率</h4>
+          <div class="unlock-rate-box">
+            <div class="rate-header">
+              <span class="rate-value">{{ unlockRatePercent }}%</span>
+              <span class="rate-holders" *ngIf="data.totalHolders">
+                {{ formatHolders(data.totalHolders) }} 人解锁
+              </span>
+            </div>
+            <mat-progress-bar
+              mode="determinate"
+              [value]="data.unlockRate * 100"
+              class="rate-bar"
+            ></mat-progress-bar>
+            <p class="rate-hint">
+              {{
+                data.unlockRate < 0.1
+                  ? '🔒 稀有徽章，仅少数人达成'
+                  : data.unlockRate < 0.3
+                    ? '💎 较少人能解锁'
+                    : data.unlockRate < 0.6
+                      ? '⭐ 较为常见'
+                      : '✨ 大多数用户都能获得'
+              }}
+            </p>
+          </div>
+        </div>
+
+        <!-- 套装归属【P2-B】 -->
+        <div class="section" *ngIf="data.setName">
+          <h4 class="section-label">🎁 套装归属</h4>
+          <div class="set-badge">
+            <mat-icon>workspaces</mat-icon>
+            <span>{{ data.setName }}</span>
+          </div>
+        </div>
+
+        <!-- 关联学习节点【P2-C】 -->
+        <div class="section" *ngIf="data.relatedSkillIds && data.relatedSkillIds.length > 0">
+          <h4 class="section-label">🗺️ 关联学习节点</h4>
+          <div class="skill-chips">
+            <button
+              *ngFor="let skillId of data.relatedSkillIds"
+              class="skill-chip"
+              (click)="onSkillClick(skillId)"
+              [disabled]="!data.onNavigateToSkill"
+              matTooltip="点击跳转到学习地图"
+            >
+              <mat-icon>map</mat-icon>
+              {{ skillId }}
+            </button>
+          </div>
+        </div>
+
+        <!-- 积分价值【P2-B】 -->
+        <div class="section" *ngIf="data.pointsValue">
+          <h4 class="section-label">💎 积分价值</h4>
+          <div class="points-box">
+            <span class="points-value">+{{ data.pointsValue }}</span>
+            <span class="points-label">积分</span>
+          </div>
         </div>
 
         <!-- 获得条件 -->
@@ -422,6 +508,122 @@ export interface AchievementDialogData {
         background: linear-gradient(135deg, #3b82f6, #8b5cf6);
         color: #fff;
       }
+
+      /* 【P2-B】故事背景 */
+      .story-line {
+        margin: 0;
+        padding: 12px 16px;
+        background: linear-gradient(135deg, #fef3c7 0%, #fde68a 100%);
+        border-radius: 12px;
+        color: #78350f;
+        font-size: 14px;
+        font-style: italic;
+        line-height: 1.5;
+      }
+
+      /* 【P2-B】全球解锁率 */
+      .unlock-rate-box {
+        padding: 12px 16px;
+        background: #f8fafc;
+        border-radius: 12px;
+      }
+      .rate-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: baseline;
+        margin-bottom: 8px;
+      }
+      .rate-value {
+        font-size: 22px;
+        font-weight: 700;
+        color: #0f172a;
+      }
+      .rate-holders {
+        font-size: 12px;
+        color: #64748b;
+      }
+      .rate-bar {
+        margin-bottom: 6px;
+      }
+      .rate-hint {
+        margin: 4px 0 0;
+        font-size: 11px;
+        color: #64748b;
+      }
+
+      /* 【P2-B】套装归属 */
+      .set-badge {
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+        padding: 6px 12px;
+        background: linear-gradient(135deg, #ddd6fe 0%, #c4b5fd 100%);
+        color: #5b21b6;
+        border-radius: 12px;
+        font-size: 13px;
+        font-weight: 600;
+      }
+      .set-badge mat-icon {
+        font-size: 16px;
+        width: 16px;
+        height: 16px;
+      }
+
+      /* 【P2-C】关联学习节点 chips */
+      .skill-chips {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 6px;
+      }
+      .skill-chip {
+        display: inline-flex;
+        align-items: center;
+        gap: 4px;
+        padding: 6px 10px;
+        background: #f1f5f9;
+        color: #475569;
+        border: 1px solid #e2e8f0;
+        border-radius: 10px;
+        font-size: 12px;
+        font-weight: 600;
+        cursor: pointer;
+        transition: all 0.15s ease;
+        font-family: monospace;
+      }
+      .skill-chip:hover:not(:disabled) {
+        background: #ddd6fe;
+        border-color: #a78bfa;
+        color: #5b21b6;
+        transform: translateY(-1px);
+      }
+      .skill-chip:disabled {
+        opacity: 0.6;
+        cursor: not-allowed;
+      }
+      .skill-chip mat-icon {
+        font-size: 14px;
+        width: 14px;
+        height: 14px;
+      }
+
+      /* 【P2-B】积分价值 */
+      .points-box {
+        display: inline-flex;
+        align-items: baseline;
+        gap: 6px;
+        padding: 12px 16px;
+        background: linear-gradient(135deg, #fbbf24 0%, #d97706 100%);
+        color: white;
+        border-radius: 12px;
+      }
+      .points-value {
+        font-size: 24px;
+        font-weight: 700;
+      }
+      .points-label {
+        font-size: 12px;
+        font-weight: 600;
+      }
     `,
   ],
 })
@@ -469,6 +671,27 @@ export class AchievementDetailDialogComponent {
   onUnlock(): void {
     this.dialogRef.close();
     this.snackBar.open('前往完成相关任务解锁', '知道了', { duration: 2000 });
+  }
+
+  /** 【P2-B】格式化解锁率百分比 */
+  get unlockRatePercent(): string {
+    if (this.data.unlockRate === undefined) return '0';
+    return (this.data.unlockRate * 100).toFixed(0);
+  }
+
+  /** 【P2-B】格式化解锁人数（千 / 万） */
+  formatHolders(holders: number): string {
+    if (holders >= 10000) return `${(holders / 10000).toFixed(1)} 万`;
+    if (holders >= 1000) return `${(holders / 1000).toFixed(1)} k`;
+    return holders.toString();
+  }
+
+  /** 【P2-C】点击关联学习节点 chip → 通知父组件跳转 */
+  onSkillClick(skillId: string): void {
+    if (this.data.onNavigateToSkill) {
+      this.data.onNavigateToSkill(skillId);
+      this.dialogRef.close();
+    }
   }
 }
 

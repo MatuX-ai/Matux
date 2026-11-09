@@ -27,6 +27,7 @@ import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatIconModule } from '@angular/material/icon';
 import { MatRadioModule } from '@angular/material/radio';
 import { MatSnackBar, MatSnackBarModule } from '@angular/material/snack-bar';
+import { RouterModule } from '@angular/router';
 import { Subject } from 'rxjs';
 import { takeUntil } from 'rxjs/operators';
 
@@ -48,6 +49,8 @@ import { AuthService } from '../../../core/services/auth.service';
     MatFormFieldModule,
     MatDividerModule,
     MatSnackBarModule,
+    // 【P3-B】用于页面内跳转到实时推送设置
+    RouterModule,
   ],
   changeDetection: ChangeDetectionStrategy.OnPush,
   templateUrl: './ai-teacher-settings.component.html',

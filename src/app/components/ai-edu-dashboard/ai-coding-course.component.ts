@@ -7,6 +7,7 @@
  */
 
 import { CommonModule } from '@angular/common';
+import { HttpClient } from '@angular/common/http';
 import { Component, OnInit } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { MatButtonModule } from '@angular/material/button';
@@ -15,11 +16,24 @@ import { MatIconModule } from '@angular/material/icon';
 import { MatTabsModule } from '@angular/material/tabs';
 import { MatToolbarModule } from '@angular/material/toolbar';
 import { MatTooltipModule } from '@angular/material/tooltip';
+import { firstValueFrom } from 'rxjs';
 
 import { PublicCourse } from '../../core/services/opensciedu.service';
 import { BlocklyWorkspaceComponent } from '../../shared/components/blockly-workspace/blockly-workspace.component';
 import { OpenscieduCatalogComponent } from '../../shared/components/opensciedu-catalog/opensciedu-catalog.component';
 import { OpenscieduGraphComponent } from '../../shared/components/opensciedu-graph/opensciedu-graph.component';
+import {
+  EditorTab,
+  TabRunResult,
+  TabbedEditorComponent,
+} from '../../shared/components/tabbed-editor/tabbed-editor.component';
+
+interface CodeExecutionResponse {
+  success: boolean;
+  output: string;
+  error?: string | null;
+  execution_time: number;
+}
 
 @Component({
   selector: 'app-ai-coding-course',
@@ -36,6 +50,7 @@ import { OpenscieduGraphComponent } from '../../shared/components/opensciedu-gra
     BlocklyWorkspaceComponent,
     OpenscieduCatalogComponent,
     OpenscieduGraphComponent,
+    TabbedEditorComponent,
   ],
   template: `
     <div class="ai-coding-course">
@@ -89,6 +104,27 @@ import { OpenscieduGraphComponent } from '../../shared/components/opensciedu-gra
             </ng-template>
             <div class="tab-content">
               <app-opensciedu-graph></app-opensciedu-graph>
+            </div>
+          </mat-tab>
+
+          <!-- Tab 4: 代码编辑器（【P0-C 修复】挂载 Monaco） -->
+          <mat-tab>
+            <ng-template mat-tab-label>
+              <mat-icon class="tab-icon">edit_note</mat-icon>
+              <span>代码编辑器</span>
+            </ng-template>
+            <div class="tab-content editor-tab-content">
+              <app-tabbed-editor
+                [tabs]="editorTabs"
+                [activeTabId]="activeEditorTabId"
+                [isRunning]="isEditorRunning"
+                [lastRunResult]="editorRunResult"
+                (tabChange)="activeEditorTabId = $event"
+                (contentChange)="onEditorContentChange($event)"
+                (newTabRequest)="addEditorTab()"
+                (tabClose)="closeEditorTab($event)"
+                (runRequest)="runEditorTab($event)"
+              ></app-tabbed-editor>
             </div>
           </mat-tab>
         </mat-tab-group>
@@ -156,6 +192,17 @@ import { OpenscieduGraphComponent } from '../../shared/components/opensciedu-gra
         overflow: auto;
       }
 
+      /* 【P0-C 修复】Monaco 编辑器需要固定高度，避免双层滚动条 */
+      .editor-tab-content {
+        height: calc(100vh - 132px);
+        overflow: hidden;
+
+        app-tabbed-editor {
+          display: block;
+          height: 100%;
+        }
+      }
+
       .code-panel {
         position: fixed;
         bottom: 20px;
@@ -191,8 +238,131 @@ import { OpenscieduGraphComponent } from '../../shared/components/opensciedu-gra
 export class AICodingCourseComponent implements OnInit {
   currentCode = '';
 
+  // 【P0-C 修复】Monaco 多标签编辑器状态
+  editorTabs: EditorTab[] = [
+    {
+      id: 'main',
+      title: 'main.py',
+      content:
+        '# MatuX 代码编辑器（Monaco）\n# Ctrl+Enter 运行，Ctrl+S 保存，Ctrl+N 新建标签页\nprint("Hello, MatuX!")\n',
+      language: 'python',
+      isDirty: false,
+    },
+  ];
+  activeEditorTabId: string | null = 'main';
+  isEditorRunning = false;
+  editorRunResult: TabRunResult | null = null;
+
+  constructor(private http: HttpClient) {}
+
   ngOnInit(): void {
     console.log('[AICodingCourse] 组件初始化');
+  }
+
+  /** 【P0-C 修复】编辑器内容变更 */
+  onEditorContentChange(event: { tabId: string; content: string }): void {
+    const tab = this.editorTabs.find((t) => t.id === event.tabId);
+    if (tab) {
+      tab.content = event.content;
+      tab.isDirty = true;
+    }
+    this.currentCode = event.content;
+  }
+
+  /** 新建编辑器标签页 */
+  addEditorTab(): void {
+    const index = this.editorTabs.length + 1;
+    const tab: EditorTab = {
+      id: `tab_${Date.now()}`,
+      title: `untitled_${index}.py`,
+      content: '',
+      language: 'python',
+      isDirty: false,
+    };
+    this.editorTabs = [...this.editorTabs, tab];
+    this.activeEditorTabId = tab.id;
+  }
+
+  /** 关闭编辑器标签页 */
+  closeEditorTab(tabId: string): void {
+    this.editorTabs = this.editorTabs.filter((t) => t.id !== tabId);
+    if (this.activeEditorTabId === tabId) {
+      this.activeEditorTabId = this.editorTabs[0]?.id ?? null;
+    }
+  }
+
+  /** 【P0-C 修复】运行编辑器标签页代码 */
+  async runEditorTab(tabId: string): Promise<void> {
+    const tab = this.editorTabs.find((t) => t.id === tabId);
+    if (!tab || this.isEditorRunning) return;
+
+    this.isEditorRunning = true;
+    const startTime = performance.now();
+
+    try {
+      if (tab.language === 'javascript') {
+        const output = this.executeLocalJavaScript(tab.content);
+        this.editorRunResult = {
+          tabId,
+          success: !output.startsWith('运行错误'),
+          output,
+          executionTime: Math.round(performance.now() - startTime),
+        };
+        return;
+      }
+
+      // Python 等语言走后端沙箱（桌面端未部署 Docker 时给出明确提示）
+      const orgId = Number(localStorage.getItem('org_id')) || 1;
+      const response = await firstValueFrom(
+        this.http.post<CodeExecutionResponse>(
+          `/api/v1/org/${orgId}/ai-edu/execute-code`,
+          { code: tab.content, language: tab.language, timeout: 5 }
+        )
+      );
+      this.editorRunResult = {
+        tabId,
+        success: response.success,
+        output: response.output || '(无输出)',
+        error: response.error ?? undefined,
+        executionTime: Math.round(performance.now() - startTime),
+      };
+    } catch (err) {
+      this.editorRunResult = {
+        tabId,
+        success: false,
+        output: '',
+        error:
+          '在线执行服务不可用（桌面端未启用代码沙箱时属正常现象）。可切换到 JavaScript 标签页在前端运行。' +
+          (err instanceof Error ? ` 详情：${err.message}` : ''),
+        executionTime: Math.round(performance.now() - startTime),
+      };
+    } finally {
+      this.isEditorRunning = false;
+    }
+  }
+
+  /** 前端 JavaScript 沙箱执行 */
+  private executeLocalJavaScript(code: string): string {
+    const logs: string[] = [];
+    const capture = (...args: unknown[]): void => {
+      logs.push(args.map((a) => (typeof a === 'string' ? a : JSON.stringify(a))).join(' '));
+    };
+    const sandboxConsole = {
+      log: capture,
+      info: capture,
+      warn: capture,
+      error: capture,
+      debug: capture,
+    };
+
+    try {
+      // eslint-disable-next-line no-new-func
+      const runner = new Function('console', `"use strict";\n${code}`);
+      runner(sandboxConsole);
+      return logs.length > 0 ? logs.join('\n') : '（程序执行完成，没有输出）';
+    } catch (err) {
+      return `运行错误: ${err instanceof Error ? err.message : String(err)}`;
+    }
   }
 
   /**

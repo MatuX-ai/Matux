@@ -115,6 +115,14 @@ const routes: Routes = [
             (m) => m.AITeacherSettingsComponent
           ),
       },
+      // 【P3-B】AI 教师实时推送设置（勿扰 / 频次 / 类型开关）
+      {
+        path: 'ai-teacher-live-settings',
+        loadComponent: () =>
+          import(
+            './components/ai-teacher-live-settings/ai-teacher-live-settings.component'
+          ).then((m) => m.AiTeacherLiveSettingsComponent),
+      },
       {
         path: 'settings',
         loadComponent: () =>

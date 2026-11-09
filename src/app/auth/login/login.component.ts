@@ -8,12 +8,14 @@ import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatIconModule } from '@angular/material/icon';
 import { MatInputModule } from '@angular/material/input';
 import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
+import { MatSnackBar, MatSnackBarModule } from '@angular/material/snack-bar';
 import { MatTooltipModule } from '@angular/material/tooltip';
 import { ActivatedRoute, Router, RouterModule } from '@angular/router';
 
 import { environment } from '../../../environments/environment';
 import { LoginRequest } from '../../core/models/auth.models';
 import { AuthService } from '../../core/services/auth.service';
+import { ElectronService } from '../../core/services/electron.service';
 import { I18nService } from '../../core/services/i18n.service';
 import { ModuleStatusService } from '../../core/services/module-status.service';
 import { StartupModeService } from '../../core/services/startup-mode.service';
@@ -164,6 +166,7 @@ interface ConfettiConfig {
     MatCheckboxModule,
     MatIconModule,
     MatProgressSpinnerModule,
+    MatSnackBarModule,
     MatTooltipModule,
   ],
   templateUrl: './login.component.html',
@@ -183,6 +186,13 @@ export class LoginComponent implements OnInit, OnDestroy {
   fastModeHint = '';
   // 【启动优化 P3】fast mode 登录失败时显示恢复引导：点击退出应用 + 取消偏好
   fastModeRecoveryHint = false;
+
+  // 【加固】协议代理层异常提示：
+  //   - 主进程 protocol.handle 转发 app://./api/... 失败或后端 5xx 时会发 proxy-error 事件
+  //   - 仅与 /api/v1/auth/** 相关且仅在桌面环境下有意义；让用户看到具体原因而不是空等
+  //   - 非 Electron 环境一直为空，不使用 isElectron 判断本身，仅看 ElectronService 是否可用
+  proxyErrorHint = '';
+  private proxyErrorSubscription?: { unsubscribe: () => void };
 
   readonly isProduction = environment.production;
   readonly ROUTES = ROUTES;
@@ -216,7 +226,9 @@ export class LoginComponent implements OnInit, OnDestroy {
     public i18n: I18nService,
     private cdr: ChangeDetectorRef,
     private startupMode: StartupModeService,
-    private moduleStatus: ModuleStatusService
+    private moduleStatus: ModuleStatusService,
+    private electron: ElectronService,
+    private snackBar: MatSnackBar
   ) {
     this.rememberMe = this.authService.isRememberMe();
 
@@ -227,6 +239,34 @@ export class LoginComponent implements OnInit, OnDestroy {
       } catch {
         /* sessionStorage 不可用 */
       }
+    }
+
+    // 【加固】订阅协议代理异常：仅在桌面环境下有意义
+    // - path 以 api/v1/auth 开头的请求（signin / signup / oauth 等）会激活提示
+    // - source=proxy 表示 Electron 代理层或后端不可达，source=backend 表示后端返回 5xx
+    // - durationMs / timestamp 仅供调试查看，不发给用户
+    if (this.electron && this.electron.isElectron) {
+      const sub = this.electron.proxyError$.subscribe((evt) => {
+        if (!evt || !evt.path) return;
+        // 仅关心与认证相关的请求
+        if (!evt.path.startsWith('api/v1/auth')) return;
+        // 避免重复覆盖：仅在尚未设置过 或 间隔 8s 以上时更新
+        const now = Date.now();
+        if (this.proxyErrorHint && now - (this._lastProxyErrorAt || 0) < 8000) {
+          return;
+        }
+        this._lastProxyErrorAt = now;
+        if (evt.source === 'backend') {
+          this.proxyErrorHint = `后端返回了 ${evt.targetStatus || '5xx'}，可能是后端内部错误。`;
+        } else {
+          const msg = (evt.errorMessage || '').slice(0, 80);
+          this.proxyErrorHint = msg
+            ? `后端不可达 (${evt.durationMs ?? '?'}ms)：${msg}`
+            : `后端不可达 (${evt.durationMs ?? '?'}ms)`;
+        }
+        this.cdr.markForCheck();
+      });
+      this.proxyErrorSubscription = { unsubscribe: () => sub.unsubscribe() };
     }
 
     // 【启动优化 P3】订阅启动模式与后端就绪状态
@@ -293,6 +333,7 @@ export class LoginComponent implements OnInit, OnDestroy {
 
   ngOnDestroy(): void {
     this.timers.forEach((t) => clearTimeout(t));
+    this.proxyErrorSubscription?.unsubscribe();
   }
 
   // ============ trackBy 函数 ============
@@ -520,6 +561,7 @@ export class LoginComponent implements OnInit, OnDestroy {
     }
   }
   private _pendingStreakWrite?: { today: string; next: number };
+  private _lastProxyErrorAt?: number;
 
   // ============ 路由跳转 ============
   private navigateAfterLogin(): void {
@@ -560,18 +602,38 @@ export class LoginComponent implements OnInit, OnDestroy {
     });
   }
 
-  // ============ OAuth 入口（保持原有逻辑） ============
-  loginWithQQ(): void {
-    this.authService.signInWithQQ();
-  }
+  // ============ OAuth 入口 ============
+  /**
+   * 【P1-OAuth 修复】微信登录暂未开放。
+   * 之前直接调 signInWithOAuth：后端 /oauth/wechat/authorize 未部署 → 404 →
+   * 降级用占位 appId 拼 URL → 打开无效页面（用户感知为“点击没反应”）。
+   * 现改为明确提示，引导账号密码登录。
+   */
   loginWithWechat(): void {
-    this.authService.signInWithWeChat();
+    this.showOAuthUnavailable('微信');
   }
+
+  /** 【P1-OAuth 修复】QQ 登录暂未开放（同微信，后端未部署） */
+  loginWithQQ(): void {
+    this.showOAuthUnavailable('QQ');
+  }
+
   loginWithGoogle(): void {
     this.authService.signInWithGoogle();
   }
   loginWithGithub(): void {
     this.authService.signInWithGitHub();
+  }
+
+  /** 第三方登录未开放提示：页面内警示 + 底部弹窗双重反馈 */
+  private showOAuthUnavailable(provider: string): void {
+    const message = `${provider} 登录暂未开放，请使用账号密码登录`;
+    this.errorMessage = message;
+    this.snackBar.open(message, '知道了', {
+      duration: 4000,
+      horizontalPosition: 'center',
+      verticalPosition: 'bottom',
+    });
   }
 
   /**

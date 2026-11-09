@@ -178,6 +178,44 @@
         </ul>
       </mat-card-content>
     </mat-card>
+
+    <!-- 【P3-B】AI 教师实时建议侧栏 -->
+    <mat-card class="section-card live-recommendations">
+      <mat-card-header>
+        <mat-icon mat-card-avatar class="ai-avatar">bolt</mat-icon>
+        <mat-card-title>📡 实时建议</mat-card-title>
+        <mat-card-subtitle>基于近期学习状态推送的即时提醒</mat-card-subtitle>
+      </mat-card-header>
+      <mat-card-content>
+        <div *ngIf="liveRecommendations?.length; else noLive" class="live-list">
+          <div
+            *ngFor="let evt of liveRecommendations"
+            class="live-item"
+            [attr.data-type]="evt.type"
+            (click)="onLiveRecommendationClick(evt)"
+            role="button"
+            tabindex="0"
+          >
+            <div class="live-icon">
+              <ng-container [ngSwitch]="evt.type">
+                <span *ngSwitchCase="'ai_teacher_celebration'">🎉</span>
+                <span *ngSwitchCase="'ai_teacher_suggestion'">💡</span>
+                <span *ngSwitchCase="'ai_teacher_nudge'">👋</span>
+                <span *ngSwitchDefault>✨</span>
+              </ng-container>
+            </div>
+            <div class="live-body">
+              <div class="live-title">{{ evt.payload?.title }}</div>
+              <div class="live-message">{{ evt.payload?.message }}</div>
+              <div class="live-time">{{ evt.createdAt | date: 'short' }}</div>
+            </div>
+          </div>
+        </div>
+        <ng-template #noLive>
+          <p class="empty-hint">暂无新的实时建议，继续努力！</p>
+        </ng-template>
+      </mat-card-content>
+    </mat-card>
   </ng-container>
 
   <!-- 加载中 -->

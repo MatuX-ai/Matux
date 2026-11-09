@@ -1,0 +1,248 @@
+/**
+ * 成就解锁 Toast 样式（P2-B）
+ */
+
+:host {
+  position: fixed;
+  inset: 0;
+  z-index: 9999;
+  pointer-events: none;
+}
+
+.toast-overlay {
+  position: fixed;
+  inset: 0;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  background: radial-gradient(circle, rgb(0 0 0 / 65%) 0%, rgb(0 0 0 / 85%) 100%);
+  cursor: pointer;
+  pointer-events: auto;
+  animation: overlayFadeIn 0.4s ease;
+}
+
+@keyframes overlayFadeIn {
+  from {
+    opacity: 0;
+  }
+
+  to {
+    opacity: 1;
+  }
+}
+
+// ============ 放射光线 ============
+
+.rays-bg {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  width: 600px;
+  height: 600px;
+  pointer-events: none;
+  transform: translate(-50%, -50%);
+}
+
+.ray {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  width: 4px;
+  height: 280px;
+  background: linear-gradient(
+    180deg,
+    transparent 0%,
+    rgb(251 191 36 / 60%) 50%,
+    transparent 100%
+  );
+  transform-origin: 50% 0%;
+  animation: rayPulse 1.5s ease-in-out infinite;
+}
+
+@keyframes rayPulse {
+  0%, 100% {
+    opacity: 0.5;
+  }
+
+  50% {
+    opacity: 1;
+  }
+}
+
+// ============ 中央徽章 ============
+
+.badge-stage {
+  position: relative;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  width: 180px;
+  height: 180px;
+  margin-bottom: 24px;
+  animation: stageIn 0.6s cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+
+@keyframes stageIn {
+  0% {
+    opacity: 0;
+    transform: scale(0.3) rotate(-180deg);
+  }
+
+  100% {
+    opacity: 1;
+    transform: scale(1) rotate(0);
+  }
+}
+
+.stage-ring {
+  position: absolute;
+  width: 180px;
+  height: 180px;
+  border: 3px solid rgb(251 191 36 / 60%);
+  border-radius: 50%;
+  animation: ringExpand 2s ease-in-out infinite;
+}
+
+.stage-ring-2 {
+  animation-delay: 1s;
+}
+
+@keyframes ringExpand {
+  0% {
+    opacity: 0.8;
+    transform: scale(0.7);
+  }
+
+  100% {
+    opacity: 0;
+    transform: scale(1.6);
+  }
+}
+
+.badge-flip {
+  position: relative;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  width: 140px;
+  height: 140px;
+  border-radius: 50%;
+  background: linear-gradient(135deg, #fbbf24 0%, #d97706 100%);
+  box-shadow:
+    0 0 60px rgb(251 191 36 / 60%),
+    0 0 30px rgb(251 191 36 / 40%),
+    inset 0 4px 12px rgb(255 255 255 / 30%);
+  animation: badgeFlip 0.8s ease-out;
+}
+
+@keyframes badgeFlip {
+  0% {
+    transform: rotateY(180deg) scale(0.5);
+  }
+
+  100% {
+    transform: rotateY(0) scale(1);
+  }
+}
+
+.rarity-legendary .badge-flip {
+  background: linear-gradient(135deg, #fbbf24 0%, #b45309 100%);
+  box-shadow:
+    0 0 80px rgb(245 158 11 / 80%),
+    0 0 40px rgb(245 158 11 / 60%),
+    inset 0 4px 12px rgb(255 255 255 / 40%);
+}
+
+.badge-emoji {
+  filter: drop-shadow(0 4px 8px rgb(0 0 0 / 30%));
+  font-size: 80px;
+}
+
+// ============ 文案 ============
+
+.toast-text {
+  color: white;
+  text-align: center;
+  animation: textSlideUp 0.5s 0.3s ease backwards;
+}
+
+@keyframes textSlideUp {
+  from {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.toast-title {
+  margin-bottom: 8px;
+  color: #fbbf24;
+  font-size: 24px;
+  font-weight: 700;
+  letter-spacing: 0.05em;
+  text-shadow: 0 0 12px rgb(251 191 36 / 60%);
+}
+
+.toast-name {
+  margin-bottom: 8px;
+  color: white;
+  font-size: 32px;
+  font-weight: 700;
+  text-shadow: 0 2px 8px rgb(0 0 0 / 40%);
+}
+
+.toast-desc {
+  max-width: 480px;
+  margin: 0 auto 16px;
+  color: rgb(255 255 255 / 85%);
+  font-size: 14px;
+  line-height: 1.5;
+}
+
+.toast-meta {
+  display: flex;
+  justify-content: center;
+  gap: 12px;
+  margin-bottom: 8px;
+}
+
+.rarity-tag,
+.points-tag {
+  padding: 4px 12px;
+  border-radius: 12px;
+  background: rgb(255 255 255 / 15%);
+  color: white;
+  backdrop-filter: blur(8px);
+  font-size: 12px;
+  font-weight: 700;
+}
+
+.points-tag {
+  background: rgb(251 191 36 / 30%);
+  color: #fbbf24;
+}
+
+// ============ 关闭提示 ============
+
+.dismiss-hint {
+  position: absolute;
+  bottom: 40px;
+  color: rgb(255 255 255 / 60%);
+  font-size: 12px;
+  animation: hintFade 1s 1s ease backwards;
+}
+
+@keyframes hintFade {
+  from {
+    opacity: 0;
+  }
+
+  to {
+    opacity: 1;
+  }
+}

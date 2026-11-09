@@ -51,6 +51,13 @@ from routes.arvr_course_routes import router as arvr_course_router
 from routes.auth_routes import router as auth_router
 from routes.course_catalog_routes import router as course_catalog_router
 from routes.creativity_routes import router as creativity_router
+
+# 【P0-A 修复】注册数字孪生实验室路由：桌面端入口（main_ai_edu）此前从未 include，
+#   且 legacy_routes 受 ENABLE_DIGITAL_TWIN_ROUTES=False 关闭，
+#   导致 /api/v1/digital-twin/sessions 与 /ws/session/{id} 全部 404。
+#   前端 digital-twin-lab 因此显示“会话 ID 缺失 / 实时同步已停用”。
+#   路由内部 prefix 已含 /digital-twin。
+from routes.digital_twin_routes import router as digital_twin_router
 from routes.error_log_routes import router as error_log_router
 
 # 【P1 修复 #P1-2】补充 exam_router 注册：在线测验模块
@@ -66,6 +73,11 @@ from routes.gamification_websocket_routes import router as gamification_ws_route
 from routes.leaderboard_routes import router as leaderboard_router
 from routes.llm_assistant_routes import router as llm_assistant_router
 from routes.micro_course_routes import router as micro_course_router
+
+# 【P0-B 修复】注册 OpenSciEDU 公共课程路由：桌面端入口此前未 include，
+#   前端 /api/v1/opensciedu/* 全部 404 → 只能走 mock 兜底。
+#   路由内部 prefix 已含 /api/v1/opensciedu。
+from routes.opensciedu_routes import router as opensciedu_router
 
 # 【P1-Backend 修复 #2】补齐 org_error_log_routes：前端 ErrorLoggerService 调用
 #   /api/v1/org/{org_id}/logs/error，原 routes/error_log_routes.py 提供的路径是 /logs/error（无 org_id 前缀），
@@ -219,6 +231,10 @@ app.include_router(ai_teacher_router, tags=["AI 个性化教师"])
 # 【P0-C 修复】注册游戏化 WebSocket：router 内 prefix 已含 /ws/gamification，
 #   端点本身是 @router.websocket("")，最终路径 /ws/gamification?token=<JWT>。
 app.include_router(gamification_ws_router)
+# 【P0-A 修复】数字孪生实验室（HTTP + WebSocket）
+app.include_router(digital_twin_router, tags=["数字孪生实验室"])
+# 【P0-B 修复】OpenSciEDU 公共课程（真实 API，命不中时前端自动回退 mock）
+app.include_router(opensciedu_router, tags=["OpenSciEDU 公共课程"])
 
 
 # 临时测试路由

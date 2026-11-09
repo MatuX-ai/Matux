@@ -1,22 +1,41 @@
 /**
- * 成就中心卡 - 核心 dashboard 卡 #2
+ * 成就中心卡 - 核心 dashboard 卡 #2（P0-3 改造 + P0-2 触发源）
  *
  * 内容：
- * - 等级徽章 + 经验值进度条
+ * - 等级徽章 + 段位色环
+ * - 10 级叙事化称号（好奇宝宝 → 元宇宙创世者）
+ * - 经验值进度条 + 下一称号预告
  * - 连续打卡天数（火焰图标）
  * - 徽章预览（解锁/未解锁状态，含稀有度）
  * - 跳转成就墙
  *
- * 视觉：琥珀渐变 + 金色稀有度
+ * 视觉：琥珀渐变 + 段位色环
+ *
+ * 触发升级：ngOnChanges 监听 level.current 变化 → LevelEventService.emit
+ *
+ * @see 桌面端游戏化P0升级.md §2.2 / §2.3
  */
 
 import { CommonModule } from '@angular/common';
-import { ChangeDetectionStrategy, Component, EventEmitter, Input, Output } from '@angular/core';
+import {
+  ChangeDetectionStrategy,
+  Component,
+  EventEmitter,
+  Input,
+  OnChanges,
+  OnInit,
+  Output,
+  SimpleChanges,
+  inject,
+} from '@angular/core';
 import { MatCardModule } from '@angular/material/card';
 import { MatIconModule } from '@angular/material/icon';
 import { MatProgressBarModule } from '@angular/material/progress-bar';
 import { MatTooltipModule } from '@angular/material/tooltip';
 
+import { I18nService } from '../../../../core/services/i18n.service';
+import { LevelEventService } from '../../../../core/services/level-event.service';
+import { LevelTitleService } from '../../../../core/services/level-title.service';
 import type { DashboardSnapshot, UserLevel } from '../../services/student-dashboard-data.service';
 import type { ExtendedAchievementBadge } from '../../student-dashboard.mock';
 
@@ -31,19 +50,11 @@ import type { ExtendedAchievementBadge } from '../../student-dashboard.mock';
       [class.clickable]="true"
       tabindex="0"
       role="button"
-      [attr.aria-label]="
-        '成就中心：连续打卡 ' +
-        streakDays +
-        ' 天，已解锁 ' +
-        unlockedCount +
-        '/' +
-        totalCount +
-        ' 徽章'
-      "
+      [attr.aria-label]="ariaLabel"
       (click)="onClick()"
       (keyup.enter)="onClick()"
     >
-      <div class="card-icon-wrap">
+      <div class="card-icon-wrap" [style.background]="cardIconGradient">
         <mat-icon>emoji_events</mat-icon>
       </div>
       <div class="card-body">
@@ -52,13 +63,24 @@ import type { ExtendedAchievementBadge } from '../../student-dashboard.mock';
           <mat-icon class="card-arrow">arrow_forward</mat-icon>
         </div>
 
-        <!-- 等级 + 经验值进度条 -->
+        <!-- 等级 + 段位色环 + 经验值进度条 -->
         <div class="level-row">
-          <div class="level-badge" [class]="'rarity-' + 'legendary'">
+          <div
+            class="level-badge"
+            [style.background]="levelGradient"
+            [style.box-shadow]="
+              '0 0 0 3px ' + tierColor + ', 0 4px 12px ' + tierColor + '60'
+            "
+            [attr.aria-label]="'段位 ' + tierLabel"
+            [matTooltip]="'段位：' + tierLabel"
+          >
             <span class="level-number">Lv.{{ level.current }}</span>
           </div>
           <div class="level-info">
-            <div class="level-title">{{ level.title }}</div>
+            <div class="level-title">
+              <span class="title-text">{{ levelTitle }}</span>
+              <span class="tier-dot" [style.background]="tierColor" [matTooltip]="tierLabel"></span>
+            </div>
             <div class="exp-bar">
               <mat-progress-bar
                 mode="determinate"
@@ -66,8 +88,23 @@ import type { ExtendedAchievementBadge } from '../../student-dashboard.mock';
                 color="accent"
               ></mat-progress-bar>
             </div>
-            <div class="exp-text">{{ level.exp }} / {{ level.expToNext }} EXP</div>
+            <div class="exp-text" *ngIf="!isMax">
+              {{ level.exp }} / {{ level.expToNext }} EXP
+            </div>
+            <div class="exp-text max-text" *ngIf="isMax">
+              <mat-icon class="crown-icon">workspace_premium</mat-icon>
+              已达巅峰，解锁创世者之冠
+            </div>
           </div>
+        </div>
+
+        <!-- 下一称号预告（非满级时） -->
+        <div class="next-title-row" *ngIf="!isMax && nextTitle" [matTooltip]="'下一等级预告'">
+          <span class="next-label">再 {{ expToNextCount }} EXP 解锁</span>
+          <span class="next-title-text">「{{ nextTitleLabel }}」</span>
+          <span class="next-badge-mini" *ngIf="nextTitle.nextBadgeIcon">
+            {{ nextTitle.nextBadgeIcon }}
+          </span>
         </div>
 
         <!-- 连续打卡 -->
@@ -144,7 +181,6 @@ import type { ExtendedAchievementBadge } from '../../student-dashboard.mock';
         width: 56px;
         height: 56px;
         border-radius: 14px;
-        background: var(--stem-gradient-warning, linear-gradient(135deg, #fef3c7 0%, #fbbf24 100%));
         box-shadow: 0 4px 12px rgba(0, 0, 0, 0.12);
         color: white;
       }
@@ -153,7 +189,7 @@ import type { ExtendedAchievementBadge } from '../../student-dashboard.mock';
         font-size: 28px;
         width: 28px;
         height: 28px;
-        color: #ffffff; // 【修复 #14】mat-icon 默认 var(--icon-default) 会覆盖父级 white，显式重写
+        color: #ffffff;
       }
 
       .card-body {
@@ -203,16 +239,17 @@ import type { ExtendedAchievementBadge } from '../../student-dashboard.mock';
         flex-shrink: 0;
         justify-content: center;
         align-items: center;
-        width: 40px;
-        height: 40px;
+        width: 44px;
+        height: 44px;
         border-radius: 50%;
-        background: var(--stem-gradient-explore, linear-gradient(135deg, #059669 0%, #0ea5e9 100%));
         color: white;
-        box-shadow: 0 2px 6px rgba(5, 150, 105, 0.3);
+        transition:
+          box-shadow 800ms cubic-bezier(0.34, 1.56, 0.64, 1),
+          background 600ms ease;
       }
 
       .level-number {
-        font-size: 12px;
+        font-size: 11px;
         font-weight: 700;
       }
 
@@ -225,9 +262,23 @@ import type { ExtendedAchievementBadge } from '../../student-dashboard.mock';
       }
 
       .level-title {
+        display: flex;
+        align-items: center;
+        gap: 6px;
+      }
+
+      .title-text {
         color: var(--matux-color-text-primary, #1c1917);
         font-size: 13px;
         font-weight: 700;
+      }
+
+      .tier-dot {
+        display: inline-block;
+        width: 8px;
+        height: 8px;
+        border-radius: 50%;
+        box-shadow: 0 0 0 2px rgba(255, 255, 255, 0.9);
       }
 
       .exp-bar {
@@ -237,6 +288,45 @@ import type { ExtendedAchievementBadge } from '../../student-dashboard.mock';
       .exp-text {
         color: var(--matux-color-text-secondary, #57534e);
         font-size: 10px;
+      }
+
+      .max-text {
+        display: flex;
+        align-items: center;
+        gap: 4px;
+        color: var(--stem-tier-star, #ec4899);
+        font-weight: 700;
+      }
+
+      .crown-icon {
+        font-size: 14px;
+        width: 14px;
+        height: 14px;
+      }
+
+      .next-title-row {
+        display: flex;
+        align-items: center;
+        gap: 6px;
+        padding: 6px 10px;
+        border-radius: 8px;
+        background: rgba(245, 158, 11, 0.08);
+        font-size: 11px;
+        line-height: 1.4;
+      }
+
+      .next-label {
+        color: var(--matux-color-text-secondary, #57534e);
+      }
+
+      .next-title-text {
+        color: var(--stem-warning, #f59e0b);
+        font-weight: 700;
+      }
+
+      .next-badge-mini {
+        margin-left: auto;
+        font-size: 16px;
       }
 
       .streak-row {
@@ -316,9 +406,18 @@ import type { ExtendedAchievementBadge } from '../../student-dashboard.mock';
     `,
   ],
 })
-export class AchievementCenterCardComponent {
+export class AchievementCenterCardComponent implements OnInit, OnChanges {
   @Input() snapshot: DashboardSnapshot | null = null;
   @Output() navigate = new EventEmitter<string>();
+
+  private readonly levelTitleService = inject(LevelTitleService);
+  private readonly levelEventService = inject(LevelEventService);
+  private readonly i18n = inject(I18nService);
+
+  /** 上一次记录的等级 current（去重避免同 level 多次触发） */
+  private lastLevelCurrent: number | null = null;
+
+  // ===== 派生数据 =====
 
   get level(): UserLevel {
     return (
@@ -327,10 +426,62 @@ export class AchievementCenterCardComponent {
         title: '初学者',
         exp: 0,
         expToNext: 100,
-        expProgressPercent: 0,
         totalExp: 0,
+        expProgressPercent: 0,
       }
     );
+  }
+
+  get currentEntry() {
+    return this.levelTitleService.getTitleByLevel(this.level.current);
+  }
+
+  get nextTitle() {
+    return this.levelTitleService.getNextTitle(this.level.current);
+  }
+
+  get isMax(): boolean {
+    return this.levelTitleService.isMaxLevel(this.level.current);
+  }
+
+  get levelTitle(): string {
+    // 优先用 i18n key（level.title.{n}），缺失时 fallback 到阶梯中的 tier 推导
+    const key = `level.title.${this.currentEntry.level}`;
+    const translated = this.i18n?.translate?.(key);
+    if (translated && translated !== key) return translated;
+    return this.fallbackTitle(this.currentEntry.level, this.currentEntry.tier);
+  }
+
+  get nextTitleLabel(): string {
+    if (!this.nextTitle) return '';
+    const key = `level.title.${this.nextTitle.level}`;
+    const translated = this.i18n?.translate?.(key);
+    if (translated && translated !== key) return translated;
+    return this.fallbackTitle(this.nextTitle.level, this.nextTitle.tier);
+  }
+
+  get tierLabel(): string {
+    const key = `level.tier.${this.currentEntry.tier}`;
+    const translated = this.i18n?.translate?.(key);
+    if (translated && translated !== key) return translated;
+    return this.fallbackTier(this.currentEntry.tier);
+  }
+
+  get tierColor(): string {
+    return this.levelTitleService.getTierColor(this.currentEntry.tier);
+  }
+
+  get levelGradient(): string {
+    // 段位色渐变背景
+    return `linear-gradient(135deg, ${this.tierColor} 0%, ${this.tierColor}cc 100%)`;
+  }
+
+  get cardIconGradient(): string {
+    return 'var(--stem-gradient-warning, linear-gradient(135deg, #fef3c7 0%, #fbbf24 100%))';
+  }
+
+  get expToNextCount(): number {
+    return this.levelTitleService.expToNext(this.level.current, this.level.totalExp);
   }
 
   get streakDays(): number {
@@ -360,7 +511,71 @@ export class AchievementCenterCardComponent {
     return this.snapshot?.achievements?.progressPercent ?? 0;
   }
 
+  get ariaLabel(): string {
+    return `成就中心：连续打卡 ${this.streakDays} 天，${this.levelTitle} Lv.${this.level.current}，已解锁 ${this.unlockedCount}/${this.totalCount} 徽章`;
+  }
+
+  // ===== 生命周期 =====
+
+  ngOnInit(): void {
+    this.lastLevelCurrent = this.level.current;
+  }
+
+  ngOnChanges(changes: SimpleChanges): void {
+    const lvlChange = changes['snapshot'];
+    if (!lvlChange) return;
+    const newLevel: UserLevel | undefined = lvlChange.currentValue?.level;
+    if (!newLevel) return;
+
+    if (this.lastLevelCurrent === null) {
+      this.lastLevelCurrent = newLevel.current;
+      return;
+    }
+    if (newLevel.current > this.lastLevelCurrent) {
+      const old: UserLevel = {
+        current: this.lastLevelCurrent,
+        title: '',
+        exp: 0,
+        expToNext: 0,
+        totalExp: 0,
+        expProgressPercent: 0,
+      };
+      const userId = (this.snapshot as any)?.userId ?? null;
+      this.levelEventService.emitLevelUp(userId, old, newLevel, newLevel.totalExp);
+      this.lastLevelCurrent = newLevel.current;
+    }
+  }
+
   onClick(): void {
     this.navigate.emit('/achievements');
+  }
+
+  // ===== 文案降级（i18n 缺失时） =====
+
+  private fallbackTitle(level: number, tier: string): string {
+    const FALLBACK: Record<number, string> = {
+      1: '好奇宝宝',
+      2: '编程新手',
+      3: '代码学徒',
+      4: '循环骑士',
+      5: '函数巫师',
+      6: '算法工匠',
+      7: '数据炼金师',
+      8: '架构大师',
+      9: 'AI 协作者',
+      10: '元宇宙创世者',
+    };
+    return FALLBACK[level] ?? `Lv.${level}`;
+  }
+
+  private fallbackTier(tier: string): string {
+    const FALLBACK: Record<string, string> = {
+      bronze: '青铜',
+      silver: '白银',
+      gold: '黄金',
+      diamond: '钻石',
+      star: '星耀',
+    };
+    return FALLBACK[tier] ?? tier;
   }
 }

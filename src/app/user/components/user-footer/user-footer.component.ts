@@ -79,22 +79,10 @@ import { ROUTES } from '../../../routes.const';
             <mat-icon>settings</mat-icon>
             {{ i18n.translate('userFooter.settings') }}
           </a>
-          <a
-            mat-button
-            [routerLink]="ROUTES.HELP"
-            [attr.aria-label]="i18n.translate('userFooter.help')"
-          >
-            <mat-icon>help_outline</mat-icon>
-            {{ i18n.translate('userFooter.help') }}
-          </a>
-          <a
-            mat-button
-            [routerLink]="ROUTES.ABOUT"
-            [attr.aria-label]="i18n.translate('userFooter.about')"
-          >
-            <mat-icon>info</mat-icon>
-            {{ i18n.translate('userFooter.about') }}
-          </a>
+          <!-- 【P1-3】/help 与 /about 当前指向 ComingSoon 占位页，从 footer 入口下线，待页面真正实现后再恢复
+          <a mat-button [routerLink]="ROUTES.HELP"><mat-icon>help_outline</mat-icon>{{ i18n.translate('userFooter.help') }}</a>
+          <a mat-button [routerLink]="ROUTES.ABOUT"><mat-icon>info</mat-icon>{{ i18n.translate('userFooter.about') }}</a>
+          -->
         </div>
         <div class="footer-copyright">
           <span>&copy; {{ currentYear }} iMato. {{ i18n.translate('userFooter.copyright') }}.</span>

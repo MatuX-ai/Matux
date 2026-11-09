@@ -1,17 +1,35 @@
 /**
- * 每周排行榜 widget - 同班同学积分榜
+ * 每周排行榜 widget（P1-1：赛季增强版）
  *
- * 显示 top 5 同学，本周积分变化、排名升降
- * 当前用户行高亮
+ * 显示：
+ * - 头部：赛季名 + 倒计时徽章
+ * - top 5 同学，本周积分变化、排名升降
+ * - 当前用户行：额外显示「距上一名还差 N EXP」+ 我行额外信息
+ * - 右上角：赛季终奖按钮 → 弹出 3 档奖励卡
  *
- * @see Task 3.6 排行榜
+ * @see Task 3.6 排行榜 + 桌面端游戏化P1升级 §2.1
  */
 
 import { CommonModule } from '@angular/common';
-import { ChangeDetectionStrategy, Component, EventEmitter, Input, Output } from '@angular/core';
+import {
+  ChangeDetectionStrategy,
+  Component,
+  EventEmitter,
+  Input,
+  OnDestroy,
+  OnInit,
+  Output,
+  inject,
+} from '@angular/core';
 import { MatCardModule } from '@angular/material/card';
 import { MatIconModule } from '@angular/material/icon';
+import { Subscription, interval } from 'rxjs';
 
+import {
+  SeasonReward,
+  SeasonService,
+  TimeRemaining,
+} from '../../../core/services/season.service';
 import type { LeaderboardEntry } from '../services/student-dashboard-data.service';
 
 @Component({
@@ -21,14 +39,48 @@ import type { LeaderboardEntry } from '../services/student-dashboard-data.servic
   imports: [CommonModule, MatCardModule, MatIconModule],
   template: `
     <mat-card class="leaderboard-widget" aria-label="每周排行榜">
+      <!-- 头部：赛季名 + 倒计时 + 终奖按钮 -->
       <div class="widget-header">
         <div class="title-group">
           <mat-icon class="title-icon">leaderboard</mat-icon>
           <h2 class="title">本周排行榜</h2>
         </div>
-        <span class="week-tag">{{ weekLabel }}</span>
+        <div class="header-right">
+          <span class="season-tag" [attr.aria-label]="ariaSeason">
+            <span class="season-emoji">{{ seasonEmoji }}</span>
+            <span class="season-name">{{ seasonName }}</span>
+            <span class="season-divider">·</span>
+            <span class="season-remaining">剩余 {{ remainingDays }} 天</span>
+          </span>
+          <button
+            type="button"
+            class="reward-btn"
+            (click)="toggleRewards()"
+            [attr.aria-expanded]="showRewards"
+            aria-label="查看赛季终奖"
+          >
+            <span class="reward-icon">🏆</span>
+          </button>
+        </div>
       </div>
 
+      <!-- 终奖预览（折叠） -->
+      <div class="reward-strip" *ngIf="showRewards" [@.disabled]="false">
+        <div
+          class="reward-card"
+          *ngFor="let r of rewards; trackBy: trackByRank"
+          [style.background]="'linear-gradient(135deg, ' + r.gradient[0] + ' 0%, ' + r.gradient[1] + ' 100%)'"
+        >
+          <div class="reward-badge">{{ r.badge }}</div>
+          <div class="reward-info">
+            <div class="reward-title">{{ r.title }}</div>
+            <div class="reward-range">Top {{ r.rankRange }}</div>
+          </div>
+          <div class="reward-exp">+{{ r.exp }} EXP</div>
+        </div>
+      </div>
+
+      <!-- top 5 列表 -->
       <div class="leaderboard-list">
         <div
           *ngFor="let entry of entries; trackBy: trackByUserId"
@@ -82,6 +134,12 @@ import type { LeaderboardEntry } from '../services/student-dashboard-data.servic
               }}{{ entry.rankChange > 0 ? entry.rankChange : -entry.rankChange }}
             </div>
           </div>
+
+          <!-- 当前用户：距上一名差距 -->
+          <div *ngIf="entry.isCurrentUser && gapToAbove > 0" class="gap-pill">
+            <span class="gap-icon">⚡</span>
+            <span class="gap-text">差 {{ gapToAbove }} EXP</span>
+          </div>
         </div>
       </div>
     </mat-card>
@@ -105,6 +163,7 @@ import type { LeaderboardEntry } from '../services/student-dashboard-data.servic
         justify-content: space-between;
         align-items: center;
         margin-bottom: 12px;
+        gap: 8px;
       }
 
       .title-group {
@@ -124,13 +183,130 @@ import type { LeaderboardEntry } from '../services/student-dashboard-data.servic
         font-weight: 700;
       }
 
-      .week-tag {
-        padding: 2px 8px;
-        border-radius: 10px;
-        background: var(--matux-color-background, #f1f5f9);
-        color: var(--matux-color-text-secondary, #57534e);
+      .header-right {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+      }
+
+      .season-tag {
+        display: inline-flex;
+        align-items: center;
+        gap: 4px;
+        padding: 4px 10px;
+        border-radius: 999px;
+        background: linear-gradient(135deg, #fef3c7 0%, #fed7aa 100%);
+        color: #92400e;
         font-size: 11px;
+        font-weight: 700;
+        white-space: nowrap;
+      }
+
+      .season-emoji {
+        font-size: 13px;
+      }
+
+      .season-name {
+        font-weight: 700;
+      }
+
+      .season-divider {
+        color: #c2410c;
+        opacity: 0.5;
+      }
+
+      .season-remaining {
         font-weight: 600;
+        font-variant-numeric: tabular-nums;
+      }
+
+      .reward-btn {
+        display: inline-flex;
+        justify-content: center;
+        align-items: center;
+        width: 28px;
+        height: 28px;
+        border: none;
+        border-radius: 50%;
+        background: var(--matux-color-background, #f1f5f9);
+        cursor: pointer;
+        transition: transform 200ms ease, background 200ms ease;
+      }
+
+      .reward-btn:hover {
+        background: #fef3c7;
+        transform: scale(1.1);
+      }
+
+      .reward-btn:active {
+        transform: scale(0.95);
+      }
+
+      .reward-btn[aria-expanded='true'] {
+        background: #fef3c7;
+      }
+
+      .reward-icon {
+        font-size: 16px;
+      }
+
+      .reward-strip {
+        display: grid;
+        grid-template-columns: repeat(3, 1fr);
+        gap: 8px;
+        margin-bottom: 12px;
+        padding: 8px;
+        border-radius: 12px;
+        background: var(--matux-color-background, #f1f5f9);
+        animation: rewardFadeIn 280ms cubic-bezier(0.34, 1.56, 0.64, 1);
+      }
+
+      @keyframes rewardFadeIn {
+        from {
+          opacity: 0;
+          transform: translateY(-8px);
+        }
+        to {
+          opacity: 1;
+          transform: translateY(0);
+        }
+      }
+
+      .reward-card {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        gap: 2px;
+        padding: 8px 4px;
+        border-radius: 10px;
+        color: #ffffff;
+        text-align: center;
+        box-shadow: 0 2px 6px rgba(0, 0, 0, 0.08);
+      }
+
+      .reward-badge {
+        font-size: 22px;
+        line-height: 1;
+        filter: drop-shadow(0 1px 1px rgba(0, 0, 0, 0.2));
+      }
+
+      .reward-title {
+        font-size: 12px;
+        font-weight: 700;
+        margin-top: 2px;
+      }
+
+      .reward-range {
+        font-size: 10px;
+        opacity: 0.9;
+        font-weight: 600;
+      }
+
+      .reward-exp {
+        font-size: 11px;
+        font-weight: 700;
+        margin-top: 2px;
+        font-variant-numeric: tabular-nums;
       }
 
       .leaderboard-list {
@@ -148,6 +324,7 @@ import type { LeaderboardEntry } from '../services/student-dashboard-data.servic
         border-radius: 10px;
         background: var(--matux-color-background, #f1f5f9);
         transition: background 200ms ease;
+        position: relative;
       }
 
       .lb-entry.is-me {
@@ -266,12 +443,108 @@ import type { LeaderboardEntry } from '../services/student-dashboard-data.servic
       .rank-change.down {
         color: var(--stem-error, #ef4444);
       }
+
+      .gap-pill {
+        grid-column: 1 / -1;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 4px;
+        margin-top: 4px;
+        padding: 4px 10px;
+        border-radius: 999px;
+        background: linear-gradient(135deg, #fef3c7 0%, #fde68a 100%);
+        color: #92400e;
+        font-size: 11px;
+        font-weight: 700;
+        font-variant-numeric: tabular-nums;
+        animation: gapGlow 1.6s ease-in-out infinite;
+      }
+
+      @keyframes gapGlow {
+        0%,
+        100% {
+          box-shadow: 0 0 0 0 rgba(245, 158, 11, 0.4);
+        }
+        50% {
+          box-shadow: 0 0 0 4px rgba(245, 158, 11, 0);
+        }
+      }
+
+      .gap-icon {
+        font-size: 12px;
+      }
     `,
   ],
 })
-export class WeeklyLeaderboardWidgetComponent {
+export class WeeklyLeaderboardWidgetComponent implements OnInit, OnDestroy {
   @Input() entries: LeaderboardEntry[] = [];
   @Output() viewAll = new EventEmitter<void>();
+
+  private readonly seasonService = inject(SeasonService);
+  private readonly sub = new Subscription();
+
+  /** 倒计时流（每分钟刷新） */
+  remaining: TimeRemaining = this.seasonService.timeRemaining();
+
+  showRewards = false;
+  rewards: SeasonReward[] = [];
+
+  ngOnInit(): void {
+    this.rewards = this.seasonService.upcomingRewards();
+    // 每 60 秒刷新倒计时
+    this.sub.add(interval(60000).subscribe(() => (this.remaining = this.seasonService.timeRemaining())));
+  }
+
+  ngOnDestroy(): void {
+    this.sub.unsubscribe();
+  }
+
+  toggleRewards(): void {
+    this.showRewards = !this.showRewards;
+  }
+
+  get seasonName(): string {
+    return this.seasonService.getCurrentSeason().name;
+  }
+
+  get seasonEmoji(): string {
+    const id = this.seasonService.getCurrentSeason().id;
+    if (id.endsWith('q1')) return '🌸';
+    if (id.endsWith('q2')) return '🌞';
+    if (id.endsWith('q3')) return '🍂';
+    return '❄️';
+  }
+
+  get remainingDays(): number {
+    return this.remaining.days;
+  }
+
+  get ariaSeason(): string {
+    const s = this.seasonService.getCurrentSeason();
+    return `${s.name} 剩余 ${this.remainingDays} 天`;
+  }
+
+  /**
+   * 距上一名差距（当前用户非第 1 名时计算）
+   * - 找 currentUser 上一名（rank = me.rank - 1）
+   * - gap = above.totalExp - me.totalExp
+   */
+  get gapToAbove(): number {
+    const me = this.entries.find((e) => e.isCurrentUser);
+    if (!me || me.rank <= 1) return 0;
+    const above = this.entries.find((e) => e.rank === me.rank - 1);
+    if (!above) return 0;
+    return Math.max(0, above.totalExp - me.totalExp);
+  }
+
+  trackByUserId(index: number, entry: LeaderboardEntry): number {
+    return entry.userId;
+  }
+
+  trackByRank(index: number, r: SeasonReward): string {
+    return r.rankRange;
+  }
 
   get weekLabel(): string {
     const now = new Date();
@@ -284,9 +557,5 @@ export class WeeklyLeaderboardWidgetComponent {
     const m2 = end.getMonth() + 1;
     const d2 = end.getDate();
     return `${m1}/${d1} - ${m2}/${d2}`;
-  }
-
-  trackByUserId(index: number, entry: LeaderboardEntry): number {
-    return entry.userId;
   }
 }
