@@ -11,13 +11,98 @@ from models.achievement import Achievement, AchievementCategory, AchievementType
 from models.user import User
 from services.achievement_service import AchievementService, get_achievement_service
 from sqlalchemy.orm import Session
-from utils.database import get_sync_db
+from utils.database import get_db_session
 from utils.dependencies import get_current_user_sync
 
 logger = logging.getLogger(__name__)
 
 # 创建路由器
 router = APIRouter(prefix="/api/v1/org/{org_id}/achievements", tags=["成就系统"])
+
+
+# ==================== 【P3-A-1】全局统计接口 ====================
+
+
+@router.get("/stats/batch")
+async def get_achievements_stats_batch(
+    achievement_ids: Optional[str] = Query(
+        None,
+        description="逗号分隔的成就 ID 列表；不传返回所有",
+    ),
+    db: Session = Depends(get_db_session),
+):
+    """
+    批量获取成就的全局统计
+
+    返回字段：
+    - id: 成就 ID
+    - name: 成就名称
+    - rarity: 稀有度
+    - total_unlocked: 总解锁次数
+    - unlock_rate: 按组织的解锁率（百分比）
+    - global_unlock_rate: 全局解锁率（0-1）
+    - total_holders: 累计解锁用户数（去重）
+    - stats_updated_at: 统计更新时间
+    """
+    try:
+        service = get_achievement_service(db)
+        ids_list: Optional[List[int]] = None
+        if achievement_ids:
+            ids_list = [int(s.strip()) for s in achievement_ids.split(",") if s.strip()]
+        stats = service.get_badge_stats(achievement_ids=ids_list)
+        return {
+            "success": True,
+            "count": len(stats),
+            "data": stats,
+        }
+    except Exception as e:
+        logger.error(f"获取批量统计失败：{e}")
+        raise HTTPException(status_code=500, detail=str(e))
+
+
+@router.get("/stats/{achievement_id}")
+async def get_achievement_stats(
+    org_id: int,
+    achievement_id: int,
+    db: Session = Depends(get_db_session),
+):
+    """获取单个成就的全局统计"""
+    try:
+        service = get_achievement_service(db)
+        stats = service.get_single_badge_stats(achievement_id)
+        if not stats:
+            raise HTTPException(status_code=404, detail="成就不存在")
+        return {"success": True, "data": stats}
+    except HTTPException:
+        raise
+    except Exception as e:
+        logger.error(f"获取成就统计失败：{e}")
+        raise HTTPException(status_code=500, detail=str(e))
+
+
+@router.post("/admin/{achievement_id}/recompute-stats")
+async def recompute_achievement_stats(
+    org_id: int,
+    achievement_id: int,
+    db: Session = Depends(get_db_session),
+    current_user: User = Depends(get_current_user_sync),
+):
+    """
+    手动触发重算某个成就的全局统计（管理接口）
+
+    通常 unlock_achievement() 会自动调用。
+    """
+    try:
+        service = get_achievement_service(db)
+        result = service.recompute_global_stats(achievement_id)
+        if not result:
+            raise HTTPException(status_code=404, detail="成就不存在")
+        return {"success": True, "data": result}
+    except HTTPException:
+        raise
+    except Exception as e:
+        logger.error(f"重算统计失败：{e}")
+        raise HTTPException(status_code=500, detail=str(e))
 
 
 # ==================== 成就管理（管理员） ====================
@@ -27,7 +112,7 @@ router = APIRouter(prefix="/api/v1/org/{org_id}/achievements", tags=["成就系�
 async def create_achievement(
     org_id: int,
     achievement_data: Dict[str, Any] = Body(..., description="成就配置数据"),
-    db: Session = Depends(get_sync_db),
+    db: Session = Depends(get_db_session),
     current_user: User = Depends(get_current_user_sync),
 ):
     """
@@ -74,7 +159,7 @@ async def update_achievement(
     org_id: int,
     achievement_id: int,
     updates: Dict[str, Any] = Body(..., description="更新字段"),
-    db: Session = Depends(get_sync_db),
+    db: Session = Depends(get_db_session),
     current_user: User = Depends(get_current_user_sync),
 ):
     """
@@ -100,7 +185,7 @@ async def update_achievement(
 async def delete_achievement(
     org_id: int,
     achievement_id: int,
-    db: Session = Depends(get_sync_db),
+    db: Session = Depends(get_db_session),
     current_user: User = Depends(get_current_user_sync),
 ):
     """
@@ -129,7 +214,7 @@ async def list_all_achievements(
     achievement_type: Optional[str] = Query(None, description="成就类型"),
     limit: int = Query(50, ge=1, le=100, description="每页数量"),
     offset: int = Query(0, ge=0, description="偏移量"),
-    db: Session = Depends(get_sync_db),
+    db: Session = Depends(get_db_session),
     current_user: User = Depends(get_current_user_sync),
 ):
     """
@@ -171,7 +256,7 @@ async def get_my_achievements(
     org_id: int,
     include_locked: bool = Query(False, description="是否包含未解锁成就"),
     include_hidden: bool = Query(False, description="是否包含隐藏成就（仅已解锁）"),
-    db: Session = Depends(get_sync_db),
+    db: Session = Depends(get_db_session),
     current_user: User = Depends(get_current_user_sync),
 ):
     """
@@ -209,7 +294,7 @@ async def get_my_achievements(
 @router.get("/my/statistics")
 async def get_my_achievement_statistics(
     org_id: int,
-    db: Session = Depends(get_sync_db),
+    db: Session = Depends(get_db_session),
     current_user: User = Depends(get_current_user_sync),
 ):
     """
@@ -237,7 +322,7 @@ async def get_my_achievement_statistics(
 async def claim_achievement_reward(
     org_id: int,
     achievement_id: int,
-    db: Session = Depends(get_sync_db),
+    db: Session = Depends(get_db_session),
     current_user: User = Depends(get_current_user_sync),
 ):
     """
@@ -276,7 +361,7 @@ async def update_achievement_progress(
     metric_name: str = Body(..., description="指标名称"),
     metric_value: int = Body(..., description="指标值"),
     period_type: str = Body("all_time", description="周期类型"),
-    db: Session = Depends(get_sync_db),
+    db: Session = Depends(get_db_session),
     current_user: User = Depends(get_current_user_sync),
 ):
     """
@@ -343,7 +428,7 @@ async def update_achievement_progress(
 async def get_current_progress(
     org_id: int,
     metric_name: Optional[str] = Query(None, description="指标名称"),
-    db: Session = Depends(get_sync_db),
+    db: Session = Depends(get_db_session),
     current_user: User = Depends(get_current_user_sync),
 ):
     """
@@ -388,7 +473,7 @@ async def get_current_progress(
 @router.post("/admin/initialize")
 async def initialize_achievements(
     org_id: int,
-    db: Session = Depends(get_sync_db),
+    db: Session = Depends(get_db_session),
     current_user: User = Depends(get_current_user_sync),
 ):
     """
@@ -417,7 +502,7 @@ async def initialize_achievements(
 async def get_achievement_detail(
     org_id: int,
     achievement_id: int,
-    db: Session = Depends(get_sync_db),
+    db: Session = Depends(get_db_session),
     current_user: User = Depends(get_current_user_sync),
 ):
     """

@@ -98,6 +98,21 @@ def get_sync_db() -> Generator[TenantAwareSession, None, None]:
         session.close()
 
 
+def get_db_session() -> Generator[TenantAwareSession, None, None]:
+    """FastAPI 同步会话依赖（普通生成器，供 Depends 使用）。
+
+    说明：get_sync_db 被 @contextmanager 装饰，FastAPI 0.135 会把它识别成
+    生成器函数并用 contextmanager 再包一层，导致依赖注入时 500。
+    这里保留一个未装饰的生成器版本，供 Depends(get_db_session) 使用；
+    with get_sync_db() 的旧用法不受影响。
+    """
+    session = SyncSessionLocal()
+    try:
+        yield session
+    finally:
+        session.close()
+
+
 async def create_db_and_tables() -> None:
     """
     创建数据库表

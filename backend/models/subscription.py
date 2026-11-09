@@ -5,6 +5,7 @@
 from datetime import datetime
 from enum import Enum
 
+from database.shadow_registry import register_shadow_model
 from sqlalchemy import (
     JSON,
     Boolean,
@@ -21,6 +22,11 @@ from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy.orm import relationship
 
 Base = declarative_base()
+
+# 架构债垫片：UserSubscription 的 relationship("User") 指向主 Base 的
+# users 表，本模块独立 Base 里没有 User 类，注册影子类避免
+# configure_mappers 整体失败。
+User = register_shadow_model(Base, "User", "users")
 
 
 class BillingCycle(str, Enum):
@@ -146,7 +152,9 @@ class UserSubscription(Base):
     updated_at = Column(DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
 
     # 关联关系
-    user = relationship("User", back_populates="subscriptions")
+    # 架构债垫片：User 是跨 Base 的影子类（仅映射 users.id），没有可用的
+    # 反向属性 subscriptions，因此这里保留单向关系。
+    user = relationship("User")
     plan = relationship("SubscriptionPlan", back_populates="subscriptions")
     payments = relationship("SubscriptionPayment", back_populates="subscription")
 

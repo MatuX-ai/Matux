@@ -5,6 +5,7 @@
 from datetime import datetime
 import enum
 
+import database.package_base_compat  # noqa: F401  # 包级 Base 的 User 影子映射
 from database import Base
 from sqlalchemy import (
     JSON,

@@ -229,7 +229,12 @@ function registerAppProtocol() {
       //   原因：Angular environment.apiUrl = '' 使渲染进程用相对路径发起 fetch，
       //   被 base href './' 解析为 app://./api/...，需要代理到后端。
       if (isApiOrAsset) {
-        const backendUrl = `${process.env.BACKEND_URL || `http://localhost:${process.env.BACKEND_PORT || 8000}`}/${relativePath}`;
+        // 【Phase1 修复】必须保留 query string：
+        //   此前 backendUrl 只用 pathname 重建，?user_id= / ?ids= / ?userId=
+        //   全部被丢弃，导致 /api/v1/courses/enrollments 等接口 422、
+        //   /api/v1/achievements?userId= 拿到错误的解锁状态。
+        const search = url.search || '';
+        const backendUrl = `${process.env.BACKEND_URL || `http://localhost:${process.env.BACKEND_PORT || 8000}`}/${relativePath}${search}`;
         // 【加固】完整生命周期：记录 method/URL，响应后记录 status + durationMs，
         //   在失败/超时/5xx 时主动报 proxy-error 事件给前端，避免前端 fetch 永远 pending。
         const upperMethod = (request.method || 'GET').toUpperCase();

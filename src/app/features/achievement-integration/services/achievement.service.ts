@@ -91,7 +91,8 @@ const FALLBACK_BADGES: AchievementBadge[] = [
   providedIn: 'root',
 })
 export class AchievementService {
-  private readonly apiUrl = `${environment.apiUrl}/gamification/achievements`;
+  // 【Phase1 修复】改指向桌面端扁平化成就路由（后端 achievement_catalog_routes）
+  private readonly apiUrl = `${environment.apiUrl}/api/v1/achievements`;
 
   /** 成就数据缓存 */
   private badgesSubject = new BehaviorSubject<AchievementBadge[]>([]);

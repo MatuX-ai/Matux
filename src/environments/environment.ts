@@ -14,14 +14,14 @@ export const environment = {
   httpTimeout: 5000,
 
   /**
-   * 【P4-A】选课记录相关 API 配置。
-   *   - enrollmentsApiUrl: 后端 endpoint；当前后端尚未提供 student/enrollments
-   *     端点，这里暂时指向 /api/v1/micro-course/ 作为实验通道。
-   *   - useRealEnrollmentsApi: 是否走真实 HTTP（默认 false，保持以前 mock 体验）。
-   *     调试 P3-1 重试卡片时可临时设为 true。
+   * 【Phase1 修复】选课记录相关 API 配置。
+   *   - enrollmentsApiUrl: 后端 /api/v1/courses/enrollments
+   *     （course_catalog_routes 提供 GET 列表 + POST 报名）。
+   *   - useRealEnrollmentsApi: 走真实 HTTP；请求失败时组件进入 error 分支，
+   *     由 RetryCardComponent 兜底重试。
    */
-  enrollmentsApiUrl: '/api/v1/student/enrollments',
-  useRealEnrollmentsApi: false,
+  enrollmentsApiUrl: '/api/v1/courses/enrollments',
+  useRealEnrollmentsApi: true,
 
   /** OAuth 应用凭证 */
   oauth: {

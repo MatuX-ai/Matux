@@ -11,6 +11,10 @@ import sys
 
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
+
+# 【Phase1 修复】扁平化成就 / 课程查询路由：桌面端此前只有组织级成就路由，
+#   /api/v1/achievements 与 /api/v1/courses 均 404，前端只能显示示例数据。
+from routes.achievement_catalog_routes import router as achievement_catalog_router
 from routes.achievement_routes import router as achievement_router
 
 # 【P1-Admin 补齐】注册 Admin AR/VR 课程管理路由
@@ -45,6 +49,7 @@ from routes.arvr_course_routes import router as arvr_course_router
 #   导致 /api/v1/auth/signin 返回 404，前端登录失败。
 #   auth_routes 依赖为 iMato 标准库（bcrypt、jose、sqlalchemy 等），与现有后端环境兼容。
 from routes.auth_routes import router as auth_router
+from routes.course_catalog_routes import router as course_catalog_router
 from routes.creativity_routes import router as creativity_router
 from routes.error_log_routes import router as error_log_router
 
@@ -158,6 +163,11 @@ app.include_router(
 )
 app.include_router(ai_edu_websocket_router, tags=["AI 教育 WebSocket"])
 app.include_router(achievement_router, tags=["成就系统"])
+# 【Phase1 修复】扁平化成就 / 课程查询（真实数据库）
+#   GET /api/v1/achievements?userId=  → 成就定义 + 解锁状态
+#   GET /api/v1/courses             → 课程列表（含我的选课）
+app.include_router(achievement_catalog_router)
+app.include_router(course_catalog_router)
 # 【P1 修复 #P1-2】注册测验路由。路由内部已包含完整 prefix /api/v1/exams，
 #   ExamListComponent 调用 /api/v1/exams?status=published&page=1&page_size=20
 #   不需要再传 prefix。

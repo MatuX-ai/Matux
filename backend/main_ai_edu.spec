@@ -96,6 +96,9 @@ hiddenimports = [
     # 首启建库/种子（main_ai_edu 里通过 __import__(字符串) 动态导入，
     # PyInstaller 静态分析看不到，必须显式声明）
     "database.db",
+    "database.legacy_base_compat",
+    "database.package_base_compat",
+    "database.shadow_registry",
     "models.achievement",
     "models.leaderboard",
     "models.content_store",
@@ -109,6 +112,9 @@ hiddenimports = [
     "models.user_organization",
     "scripts.seed_initial_data",
     "scripts.seed_demo_data",
+    # Phase1 新增扁平化查询路由（main_ai_edu 直接 import，显式声明防漏）
+    "routes.achievement_catalog_routes",
+    "routes.course_catalog_routes",
 ]
 
 # --------------------------------------------------------------------- 排除项

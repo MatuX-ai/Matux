@@ -3,9 +3,12 @@
  * 跨来源课程的统一查询接口
  */
 
+import { HttpClient, HttpParams } from '@angular/common/http';
 import { Injectable } from '@angular/core';
 import { Observable, of } from 'rxjs';
+import { catchError, map } from 'rxjs/operators';
 
+import { environment } from '../../../environments/environment';
 import type { UnifiedCourse } from '../../../shared/models/course.models';
 
 /** Mock 课程数据集 */
@@ -140,58 +143,102 @@ const MOCK_COURSES: UnifiedCourse[] = [
   },
 ];
 
+/** 后端课程列表响应 */
+interface CourseListResponse {
+  total: number;
+  page: number;
+  page_size: number;
+  items: UnifiedCourse[];
+}
+
 @Injectable({
   providedIn: 'root',
 })
 export class UnifiedCourseService {
+  /** 【Phase1】课程目录真实 API（/api/v1/courses），失败时回退内置 mock */
+  private readonly apiBase = `${environment.apiUrl}/api/v1/courses`;
+
+  constructor(private http: HttpClient) {}
+
   /**
    * 获取单个课程详情
    */
   getCourse(courseId: number): Observable<UnifiedCourse> {
-    const found = MOCK_COURSES.find((c) => c.id === courseId);
-    return of(
-      found ?? {
-        id: courseId,
-        org_id: 1,
-        title: '未知课程',
-        description: '',
-        cover_image_url: null,
-        category: 'general',
-        difficulty: 'beginner',
-        duration_minutes: 60,
-        status: 'published',
-        source_type: 'school_curriculum',
-        teacher_name: null,
-        tags: [],
-        created_at: new Date().toISOString(),
-        updated_at: new Date().toISOString(),
-      }
-    );
+    return this.http
+      .get<UnifiedCourse>(`${this.apiBase}/${courseId}`)
+      .pipe(catchError(() => of(this.buildFallbackCourse(courseId))));
   }
 
   /**
    * 批量获取课程详情
    */
   getCoursesBatch(courseIds: number[]): Observable<UnifiedCourse[]> {
-    const courses = MOCK_COURSES.filter((c) => courseIds.includes(c.id));
-    return of(courses);
+    if (!courseIds.length) {
+      return of([]);
+    }
+    const params = new HttpParams()
+      .set('ids', courseIds.join(','))
+      .set('page_size', String(Math.min(courseIds.length, 100)));
+    return this.http.get<CourseListResponse>(this.apiBase, { params }).pipe(
+      map((res) => res.items ?? []),
+      catchError(() => of(MOCK_COURSES.filter((c) => courseIds.includes(c.id))))
+    );
   }
 
   /**
    * 获取推荐课程列表
    */
-  getRecommendedCourses(userId: number, limit: number): Observable<UnifiedCourse[]> {
-    const recommended = MOCK_COURSES.filter((c) => c.status === 'published').slice(0, limit);
-    return of(recommended);
+  getRecommendedCourses(_userId: number, limit: number): Observable<UnifiedCourse[]> {
+    const params = new HttpParams()
+      .set('page', '1')
+      .set('page_size', String(Math.min(limit, 100)))
+      .set('status', 'published');
+    return this.http.get<CourseListResponse>(this.apiBase, { params }).pipe(
+      map((res) => res.items ?? []),
+      catchError(() => of(MOCK_COURSES.slice(0, limit)))
+    );
   }
 
   /**
    * 获取最新课程列表
    */
   getNewestCourses(limit: number): Observable<UnifiedCourse[]> {
-    const newest = [...MOCK_COURSES]
-      .sort((a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime())
-      .slice(0, limit);
-    return of(newest);
+    const params = new HttpParams()
+      .set('page', '1')
+      .set('page_size', String(Math.min(limit, 100)))
+      .set('status', 'published');
+    return this.http.get<CourseListResponse>(this.apiBase, { params }).pipe(
+      map((res) => this.sortByNewest(res.items ?? [])),
+      catchError(() => of(this.sortByNewest(MOCK_COURSES).slice(0, limit)))
+    );
+  }
+
+  private sortByNewest(courses: UnifiedCourse[]): UnifiedCourse[] {
+    return [...courses].sort(
+      (a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime()
+    );
+  }
+
+  private buildFallbackCourse(courseId: number): UnifiedCourse {
+    const found = MOCK_COURSES.find((c) => c.id === courseId);
+    if (found) {
+      return found;
+    }
+    return {
+      id: courseId,
+      org_id: 1,
+      title: '未知课程',
+      description: '',
+      cover_image_url: null,
+      category: 'general',
+      difficulty: 'beginner',
+      duration_minutes: 60,
+      status: 'published',
+      source_type: 'school_curriculum',
+      teacher_name: null,
+      tags: [],
+      created_at: new Date().toISOString(),
+      updated_at: new Date().toISOString(),
+    };
   }
 }

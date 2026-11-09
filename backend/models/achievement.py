@@ -5,6 +5,7 @@ AI-Edu 成就系统数据模型
 
 import enum
 
+import database.legacy_base_compat  # noqa: F401  # 副 Base 的 User 影子映射
 from database.db import Base
 from sqlalchemy import (
     JSON,
@@ -86,6 +87,17 @@ class Achievement(Base):
     total_unlocked = Column(Integer, default=0, comment="总解锁人数")
     unlock_rate = Column(Float, default=0.0, comment="解锁率（百分比）")
 
+    # 【P3-A-1】新增：全局统计字段
+    global_unlock_rate = Column(
+        Float, default=0.0, comment="全局解锁率（基于全平台用户，0-1）"
+    )
+    total_holders = Column(
+        Integer, default=0, comment="累计解锁用户数（去重）"
+    )
+    stats_updated_at = Column(
+        DateTime(timezone=True), nullable=True, comment="统计更新时间"
+    )
+
     # 时间戳
     created_at = Column(
         DateTime(timezone=True), server_default=func.now(), comment="创建时间"
@@ -125,6 +137,12 @@ class Achievement(Base):
             "display_order": self.display_order,
             "total_unlocked": self.total_unlocked,
             "unlock_rate": self.unlock_rate,
+            # 【P3-A-1】新增全局统计字段
+            "global_unlock_rate": self.global_unlock_rate,
+            "total_holders": self.total_holders,
+            "stats_updated_at": (
+                self.stats_updated_at.isoformat() if self.stats_updated_at is not None else None
+            ),
             "created_at": self.created_at.isoformat() if self.created_at is not None else None,
             "updated_at": self.updated_at.isoformat() if self.updated_at is not None else None,
         }

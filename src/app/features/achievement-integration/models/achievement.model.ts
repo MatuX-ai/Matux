@@ -15,6 +15,77 @@ export interface AchievementBadge {
   unlockedDate?: string;
   category?: AchievementCategory;
   rarity?: AchievementRarity;
+  /** 积分价值（P2-B） */
+  points?: number;
+}
+
+/**
+ * 扩展成就徽章（P2-B）
+ * 补充：全球解锁率、解锁人数、关联学习节点、套装归属、解锁来源
+ */
+export interface ExtendedAchievementBadge extends AchievementBadge {
+  /** 全球解锁率 0-1（P2-B） */
+  unlockRate?: number;
+  /** 解锁人数（P2-B） */
+  totalHolders?: number;
+  /** 关联学习地图节点 ID 列表（P2-C 联动） */
+  relatedSkillIds?: string[];
+  /** 所属套装 ID（P2-B） */
+  setId?: string;
+  /** 解锁来源描述（如「完成 Python 循环课程」） */
+  obtainedFrom?: string;
+  /** 积分价值（P2-B） */
+  pointsValue?: number;
+  /** 描述上的故事背景（P2-B 叙事化） */
+  storyLine?: string;
+  /** 解锁等级门槛（可选） */
+  requiredLevel?: number;
+}
+
+/**
+ * 成就套装（P2-B）
+ * 一组相关成就的聚合，完成后发放额外奖励
+ */
+export interface AchievementSet {
+  id: string;
+  name: string;
+  description: string;
+  emoji: string;
+  /** 套装主色 */
+  color: string;
+  /** 套装渐变 */
+  gradient: string;
+  /** 套装内的成就 ID 列表 */
+  achievementIds: string[];
+  /** 完成后 bonus 奖励 */
+  bonusReward?: AchievementBonusReward;
+  /** 排序权重 */
+  order?: number;
+}
+
+/**
+ * 套装完成奖励（P2-B）
+ */
+export interface AchievementBonusReward {
+  type: 'exp' | 'badge' | 'title';
+  value: number | string;
+  label: string;
+  emoji?: string;
+}
+
+/**
+ * 套装进度统计（P2-B）
+ */
+export interface AchievementSetProgress {
+  set: AchievementSet;
+  totalCount: number;
+  unlockedCount: number;
+  /** 0-1 */
+  completionPercent: number;
+  /** 是否已完成 */
+  isCompleted: boolean;
+  /** 未解锁的成就（用于提示用户） */
+  remaining: ExtendedAchievementBadge[];
 }
 
 /** 成就分类 */
