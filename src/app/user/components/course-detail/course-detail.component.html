@@ -78,6 +78,17 @@
             <mat-icon>{{ enrolled ? 'play_arrow' : 'how_to_reg' }}</mat-icon>
             {{ enrolled ? '继续学习' : '立即报名' }}
           </button>
+          <!-- 【§8.1-5】课程学习页直达代码编辑器（Monaco），打通“课程 → 编程实验”链路 -->
+          <button
+            mat-stroked-button
+            color="accent"
+            class="code-lab-button"
+            (click)="openCodeLab()"
+            matTooltip="打开 Monaco 代码编辑器做编程实验"
+          >
+            <mat-icon>code</mat-icon>
+            进入代码编辑器
+          </button>
         </div>
       </div>
 

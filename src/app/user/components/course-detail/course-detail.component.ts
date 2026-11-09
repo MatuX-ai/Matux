@@ -233,6 +233,23 @@ export class CourseDetailComponent implements OnInit, OnDestroy {
     ]);
   }
 
+  /**
+   * 【§8.1-5】打开代码编辑器（Monaco）
+   *
+   * 课程学习页此前没有任何编辑器入口，需求“课程列表 → 代码编辑器”断链。
+   * 这里带 courseId / courseTitle 跳转 /ai-edu/coding，编辑器页会读取
+   * query 参数展示关联课程，便于后续接入课程专属练习题。
+   */
+  openCodeLab(): void {
+    void this.router.navigate([ROUTES.AI_EDU.CODING], {
+      queryParams: {
+        courseId: this.courseId,
+        courseTitle: this.course?.title ?? '',
+        from: 'course-learn',
+      },
+    });
+  }
+
   enrollAndLearn(): void {
     const user = this.authService.getCurrentUser();
     if (!user?.id) {

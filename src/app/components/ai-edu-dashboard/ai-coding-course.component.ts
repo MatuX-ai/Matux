@@ -16,6 +16,7 @@ import { MatIconModule } from '@angular/material/icon';
 import { MatTabsModule } from '@angular/material/tabs';
 import { MatToolbarModule } from '@angular/material/toolbar';
 import { MatTooltipModule } from '@angular/material/tooltip';
+import { ActivatedRoute } from '@angular/router';
 import { firstValueFrom } from 'rxjs';
 
 import { PublicCourse } from '../../core/services/opensciedu.service';
@@ -60,6 +61,13 @@ interface CodeExecutionResponse {
           <mat-icon>code</mat-icon>
           AI 编程课
         </span>
+        <!-- 【§8.1-5】从课程学习页跳转时展示关联课程 -->
+        @if (linkedCourseTitle) {
+          <span class="linked-course" [matTooltip]="'从课程页进入：' + linkedCourseTitle">
+            <mat-icon>menu_book</mat-icon>
+            {{ linkedCourseTitle }}
+          </span>
+        }
         <span class="toolbar-spacer"></span>
         <button mat-icon-button (click)="refreshData()" matTooltip="刷新">
           <mat-icon>refresh</mat-icon>
@@ -173,6 +181,29 @@ interface CodeExecutionResponse {
         flex: 1;
       }
 
+      /* 【§8.1-5】关联课程徒标 */
+      .linked-course {
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+        margin-left: 16px;
+        padding: 4px 12px;
+        border-radius: 999px;
+        background: rgba(255, 255, 255, 0.18);
+        font-size: 13px;
+        font-weight: 500;
+        max-width: 420px;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+      }
+
+      .linked-course mat-icon {
+        font-size: 16px;
+        width: 16px;
+        height: 16px;
+      }
+
       .course-content {
         flex: 1;
         overflow: hidden;
@@ -253,10 +284,23 @@ export class AICodingCourseComponent implements OnInit {
   isEditorRunning = false;
   editorRunResult: TabRunResult | null = null;
 
-  constructor(private http: HttpClient) {}
+  /** 【§8.1-5】从课程学习页带入的关联课程 */
+  linkedCourseId: number | null = null;
+  linkedCourseTitle = '';
+
+  constructor(
+    private http: HttpClient,
+    private route: ActivatedRoute
+  ) {}
 
   ngOnInit(): void {
-    console.log('[AICodingCourse] 组件初始化');
+    const params = this.route.snapshot.queryParamMap;
+    const courseId = Number(params.get('courseId'));
+    if (courseId && !Number.isNaN(courseId)) {
+      this.linkedCourseId = courseId;
+      this.linkedCourseTitle = params.get('courseTitle') || `课程 #${courseId}`;
+    }
+    console.log('[AICodingCourse] 组件初始化', { linkedCourseId: this.linkedCourseId });
   }
 
   /** 【P0-C 修复】编辑器内容变更 */

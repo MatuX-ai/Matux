@@ -173,6 +173,17 @@
 
 .hero-actions {
   flex-shrink: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+/* 【§8.1-5】课程 → 代码编辑器入口 */
+.code-lab-button {
+  border-radius: 12px;
+  padding: 8px 24px;
+  font-weight: 600;
+  white-space: nowrap;
 }
 
 .cta-button {
