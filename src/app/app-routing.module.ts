@@ -18,6 +18,12 @@ const routes: Routes = [
     canActivate: [ModuleActiveGuard],
     data: { requiredModule: 'ar_lab' },
   },
+  // 电路虚拟实验：Phase 1 纯前端仿真（CircuitJS 内联），不依赖后端模块开关
+  {
+    path: 'circuit-lab',
+    loadComponent: () =>
+      import('./circuit-lab/circuit-lab.component').then((m) => m.CircuitLabComponent),
+  },
   {
     path: 'offline-mode',
     loadChildren: () =>

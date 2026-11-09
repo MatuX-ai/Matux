@@ -113,6 +113,7 @@ export class UserNavbarComponent implements OnInit, OnDestroy {
   readonly EXTERNAL_ROUTES = {
     AI_CODING: '/ai-edu/coding',
     AR_LAB: '/ar-lab',
+    CIRCUIT_LAB: '/circuit-lab',
     CREATIVITY: '/creativity-engine',
   } as const;
 
@@ -123,6 +124,11 @@ export class UserNavbarComponent implements OnInit, OnDestroy {
     { route: ROUTES.USER.COURSES, label: '课程', icon: 'school' },
     { route: this.EXTERNAL_ROUTES.AI_CODING, label: 'AI 编程', icon: 'code' },
     { route: this.EXTERNAL_ROUTES.AR_LAB, label: 'AR 实验室', icon: 'view_in_ar' },
+    {
+      route: this.EXTERNAL_ROUTES.CIRCUIT_LAB,
+      label: 'userNav.circuitLab',
+      icon: 'electrical_services',
+    },
     { route: this.EXTERNAL_ROUTES.CREATIVITY, label: '创作', icon: 'palette' },
   ];
 

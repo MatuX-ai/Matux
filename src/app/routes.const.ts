@@ -80,6 +80,7 @@ export const ROUTES = {
   // 学习实验室
   LAB: {
     AR_LAB: '/ar-lab',
+    CIRCUIT_LAB: '/circuit-lab',
     ARVR_COURSE: '/arvr-course',
     DIGITAL_TWIN: '/digital-twin-lab',
     CREATIVITY: '/creativity-engine',

@@ -48,6 +48,7 @@
   },
   "userNav": {
     "home": "首页",
+    "circuitLab": "电路实验",
     "search": "搜索",
     "searchPlaceholder": "搜索课程、实验、插件...",
     "notifications": "通知",
@@ -79,6 +80,28 @@
     "help": "帮助中心",
     "about": "关于 MatuX",
     "copyright": "保留所有权利"
+  },
+  "circuitLab": {
+    "title": "电路虚拟实验",
+    "subtitle": "拖拽元件、实时仿真，电压电流随电路变化即时可见",
+    "loading": "正在加载实验环境...",
+    "error": "实验环境加载失败",
+    "errorHint": "未找到 assets/circuitjs 资源，请确认安装包完整或重新安装应用。",
+    "retry": "重试",
+    "reset": "重置电路",
+    "resetHint": "重新加载实验环境，清空当前电路",
+    "fullscreen": "全屏",
+    "exitFullscreen": "退出全屏",
+    "license": "开源许可",
+    "footer": "本实验使用 CircuitJS 内核，支持拖拽元件并实时仿真",
+    "licenseTitle": "开源许可与致谢",
+    "licenseCircuitJs": "电路仿真内核（GPL-2.0）",
+    "licenseSource": "源码地址",
+    "licenseProduct": "产物来源",
+    "licenseText": "许可证全文",
+    "licenseNotice": "第三方说明",
+    "licenseModifications": "本地仅移除了上游产物中的第三方统计与 Dropbox 外链脚本，仿真内核未做修改，全部电压、电流数值均由 CircuitJS 计算得出。",
+    "licenseClose": "我知道了"
   },
   "nav": {
     "home": "首页",
