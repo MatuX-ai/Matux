@@ -7,7 +7,52 @@ AI-Edu-for-Kids 简化版后端服务
 import asyncio
 import logging
 import os
+from pathlib import Path
 import sys
+
+
+def _run_user_code_if_requested() -> None:
+    """隐藏模式：用随包 Python 运行时执行用户代码（本地代码执行降级用）。
+
+    【§8.1-6】桌面端不随包分发 Docker，代码执行降级为本地受限进程：
+    由 services/local_code_runner.py 调起 `main_ai_edu.exe --run-user-code <file>`。
+
+    必须放在导入 FastAPI / 路由之前：子进程只需要解释器本身，
+    否则每次执行用户代码都要多付上千个模块的导入时间（数秒）。
+    """
+    argv = sys.argv[1:]
+    if not argv or argv[0] != "--run-user-code":
+        return
+    if len(argv) < 2:
+        sys.stderr.write("usage: main_ai_edu --run-user-code <script>\n")
+        sys.exit(2)
+
+    for stream in (sys.stdout, sys.stderr):
+        try:
+            stream.reconfigure(encoding="utf-8", errors="replace")
+        except (AttributeError, ValueError):  # pragma: no cover - 非 TextIOWrapper
+            pass
+
+    script_path = argv[1]
+    try:
+        source = Path(script_path).read_text(encoding="utf-8")
+        # 本进程就是「代码执行器」，执行用户的 python 脚本是设计行为；
+        # 隔离由 local_code_runner 的独立子进程 + 超时强杀 + 静态黑名单保证，
+        # 容器级隔离在 Phase 1.5 接 Docker 沙箱。
+        namespace = {"__name__": "__main__", "__file__": script_path}
+        exec(compile(source, script_path, "exec"), namespace)  # noqa: S102
+    except SystemExit:
+        raise
+    except BaseException:
+        import traceback
+
+        traceback.print_exc()
+        sys.exit(1)
+    sys.exit(0)
+
+
+if __name__ == "__main__":
+    _run_user_code_if_requested()
 
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware

@@ -393,6 +393,24 @@ export class TabbedEditorComponent implements AfterViewChecked, OnDestroy {
     return extMap[language] ?? '.txt';
   }
 
+  /**
+   * 【§8.1-6】输出面板文本
+   *
+   * 旧实现只渲染 output：后端返回 error（如沙箱不可用 / 代码报错）时面板空白，
+   * 用户以为“没反应”。这里把 stdout 与 stderr/error 合并展示，并保证非空提示。
+   */
+  outputText(result: TabRunResult): string {
+    const parts: string[] = [];
+    const stdout = (result.output || '').trim();
+    const stderr = (result.error || '').trim();
+    if (stdout) parts.push(stdout);
+    if (stderr) parts.push(`[错误] ${stderr}`);
+    if (parts.length === 0) {
+      parts.push(result.success ? '（程序执行完成，没有输出）' : '（运行失败：未返回任何内容）');
+    }
+    return parts.join('\n');
+  }
+
   /** 获取语言标签映射 */
   getLanguageLabel(lang: string): string {
     const labels: Record<string, string> = {

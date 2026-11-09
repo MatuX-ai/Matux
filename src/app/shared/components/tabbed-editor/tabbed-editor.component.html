@@ -88,27 +88,27 @@
     }
   </div>
 
-  <!-- 运行结果面板 -->
-  @if (showOutput && lastRunResult) {
+  <!-- 运行结果面板：无结果但有错误时也要打开（避免“点了运行没反应”） -->
+  @if (showOutput) {
     <div class="output-panel">
       <div class="output-header">
         <span class="output-title">
           <i
             [class]="
-              lastRunResult.success ? 'ri-check-line success' : 'ri-error-warning-line error'
+              lastRunResult?.success ? 'ri-check-line success' : 'ri-error-warning-line error'
             "
           ></i>
           运行结果
-          @if (lastRunResult.executionTime != null) {
-            <span class="exec-time">({{ lastRunResult.executionTime }}ms)</span>
+          @if (lastRunResult?.executionTime != null) {
+            <span class="exec-time">({{ lastRunResult?.executionTime }}ms)</span>
           }
         </span>
         <button class="output-close-btn" (click)="showOutput = false" aria-label="关闭输出面板">
           <i class="ri-close-line"></i>
         </button>
       </div>
-      <pre class="output-content" [class.error-output]="!lastRunResult.success">{{
-        lastRunResult.output || ''
+      <pre class="output-content" [class.error-output]="!lastRunResult?.success">{{
+        lastRunResult ? outputText(lastRunResult) : '正在运行...'
       }}</pre>
     </div>
   }

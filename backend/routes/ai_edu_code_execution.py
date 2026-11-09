@@ -36,6 +36,8 @@ class CodeExecutionResponse(BaseModel):
     error: Optional[str] = None
     execution_time: float
     memory_usage: Optional[int] = None
+    # 【§8.1-6】执行路径标识：docker-sandbox / local-frozen / local-python / ...
+    execution_mode: Optional[str] = None
 
 
 class TestResult(BaseModel):
@@ -50,40 +52,63 @@ class TestResult(BaseModel):
 @router.post("/execute-code", response_model=CodeExecutionResponse)
 async def execute_code(request: CodeExecutionRequest):
     """
-    执行提交的代码并返回结果（Docker 沙箱隔离）
+    执行提交的代码并返回结果
 
-    Args:
-        request: 代码执行请求
-
-    Returns:
-        代码执行结果
+    【§8.1-6 修复】桌面端不随包分发 Docker，原实现直接 500 → 前端输出面板空白。
+    现在按两级降级执行：
+      1) Docker 沙箱（可用时优先，容器级隔离）
+      2) 本地受限执行（独立子进程 + 超时 + 静态黑名单 + 临时目录）
+    两者都不可用时返回 success=False + 明确 error（前端会在输出面板展示）。
     """
+    from services.local_code_runner import execute_locally, is_code_safe
+
+    # 静态安全检查在两条路径前统一执行，避免本地降级绕过既有黑名单
+    if not is_code_safe(request.code):
+        return CodeExecutionResponse(
+            success=False,
+            output="",
+            error="代码包含不安全的内容",
+            execution_time=0.0,
+            execution_mode="blocked",
+        )
+
+    # ---- 路径 1：Docker 沙箱 ----
     try:
-        # 导入沙箱服务
         from services.code_sandbox_service import get_sandbox_service
 
         sandbox = get_sandbox_service()
-
-        # 在沙箱中执行代码
         result = sandbox.execute_code(
             code=request.code,
             language=request.language,
             timeout_seconds=request.timeout,
         )
-
         return CodeExecutionResponse(
             success=result.success,
             output=result.output,
             error=result.error if result.error else None,
             execution_time=result.execution_time_ms / 1000,
             memory_usage=result.memory_used_kb,
+            execution_mode="docker-sandbox",
         )
-
     except HTTPException:
         raise
     except Exception as e:
-        logger.error(f"代码执行失败：{e}")
-        raise HTTPException(status_code=500, detail=f"代码执行失败：{str(e)}")
+        # 典型情况：未安装 docker SDK / Docker Desktop 未启动 / 沙箱镜像缺失
+        logger.info("Docker 沙箱不可用，降级为本地受限执行：%s", e)
+
+    # ---- 路径 2：本地受限执行 ----
+    local = execute_locally(
+        code=request.code,
+        language=request.language,
+        timeout_seconds=request.timeout,
+    )
+    return CodeExecutionResponse(
+        success=local.success,
+        output=local.output,
+        error=local.error or None,
+        execution_time=local.execution_time_ms / 1000,
+        execution_mode=local.mode,
+    )
 
 
 async def execute_python_code(code: str, timeout: int = 5) -> CodeExecutionResponse:
