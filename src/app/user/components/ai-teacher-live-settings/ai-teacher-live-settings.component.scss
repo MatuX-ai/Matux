@@ -1,0 +1,108 @@
+/* 【P3-B】AI 教师实时推送设置样式 */
+
+.settings-container {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  max-width: 720px;
+  margin: 0 auto;
+  padding: 16px;
+}
+
+.back-link {
+  align-self: flex-start;
+  color: rgb(0 0 0 / 60%);
+}
+
+.settings-title {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin: 0;
+  font-size: 22px;
+
+  mat-icon {
+    color: #1976d2;
+  }
+}
+
+.settings-subtitle {
+  margin: 0 0 8px;
+  color: rgb(0 0 0 / 60%);
+  font-size: 14px;
+}
+
+.section-card {
+  margin-bottom: 0;
+}
+
+.loading-card {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 16px;
+  color: rgb(0 0 0 / 60%);
+}
+
+.row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 16px;
+  padding: 12px 0;
+
+  .row-text {
+    flex: 1;
+    min-width: 0;
+  }
+
+  .hint {
+    margin: 4px 0 0;
+    color: rgb(0 0 0 / 55%);
+    font-size: 12px;
+  }
+}
+
+.time-row {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-top: 8px;
+
+  .time-field {
+    width: 140px;
+  }
+
+  .time-sep {
+    color: rgb(0 0 0 / 40%);
+    font-size: 18px;
+  }
+}
+
+.slider-row {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  padding: 12px 0;
+
+  .slider-label {
+    display: flex;
+    justify-content: space-between;
+    font-size: 14px;
+
+    strong {
+      color: #1976d2;
+    }
+  }
+
+  mat-slider {
+    width: 100%;
+  }
+}
+
+.actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 12px;
+  margin-top: 8px;
+}

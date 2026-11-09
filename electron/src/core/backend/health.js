@@ -16,6 +16,37 @@ const HTTP_REQUEST_TIMEOUT = 5000;  // 通用 HTTP 请求超时 5 秒
 const HEALTH_CHECK_TIMEOUT_MS = 1500;
 
 /**
+ * 归一化后端主机名：localhost → 127.0.0.1
+ *
+ * Node 18（DNS verbatim=true）会优先把 localhost 解析为 ::1，而后端只监听
+ * 0.0.0.0:8000（IPv4），会导致所有 Node 侧请求 ECONNREFUSED。
+ * 所有 Node http 健康检查（启动期 / 周期）必须共用本函数，
+ * 避免出现“启动检查通过、周期检查全失败”的两套行为。
+ * @param {string} hostname 原始主机名
+ * @returns {string} 归一化后的主机名
+ */
+function normalizeBackendHost(hostname) {
+  return hostname === 'localhost' ? '127.0.0.1' : hostname;
+}
+
+/**
+ * 构造 Node http 请求参数（统一做 localhost → 127.0.0.1 归一化）
+ * @param {string} url 请求URL
+ * @param {number} timeout 超时时间（毫秒）
+ * @returns {object} http.request / http.get 可用的 options
+ */
+function buildHttpGetOptions(url, timeout = HTTP_REQUEST_TIMEOUT) {
+  const urlObj = new URL(url);
+  return {
+    hostname: normalizeBackendHost(urlObj.hostname),
+    port: urlObj.port || (urlObj.protocol === 'https:' ? 443 : 80),
+    path: urlObj.pathname + urlObj.search,
+    method: 'GET',
+    timeout: timeout,
+  };
+}
+
+/**
  * 使用 Node.js http 模块进行 HTTP 请求
  * @param {string} url 请求URL
  * @param {number} timeout 超时时间（毫秒）
@@ -24,19 +55,7 @@ const HEALTH_CHECK_TIMEOUT_MS = 1500;
 function httpGet(url, timeout = HTTP_REQUEST_TIMEOUT) {
   return new Promise((resolve) => {
     try {
-      const urlObj = new URL(url);
-      // 强制使用 IPv4 地址，避免 localhost 解析到 IPv6 (::1)
-      let hostname = urlObj.hostname;
-      if (hostname === 'localhost') {
-        hostname = '127.0.0.1';
-      }
-      const options = {
-        hostname: hostname,
-        port: urlObj.port || (urlObj.protocol === 'https:' ? 443 : 80),
-        path: urlObj.pathname + urlObj.search,
-        method: 'GET',
-        timeout: timeout,
-      };
+      const options = buildHttpGetOptions(url, timeout);
 
       const req = http.request(options, (res) => {
         let body = '';
@@ -139,6 +158,8 @@ async function healthCheck(backendHost = 'localhost', backendPort = 8000, checkP
 }
 
 module.exports = {
+  normalizeBackendHost,
+  buildHttpGetOptions,
   httpGet,
   healthCheck,
 };

@@ -7,6 +7,19 @@
   transition-property: background-color, color;
 }
 
+// 【无边框窗口 P3】顶部全局拖拽条：Electron 下唯一「任何页面都能拖动窗口」的兜底
+// 高度只取 12px，避开导航栏里的按钮（y≥16px），同时兼顾可抓取性
+.app-drag-strip {
+  position: fixed;
+  top: 0;
+  right: 0;
+  left: 0;
+  z-index: 2500;
+  height: 12px;
+
+  -webkit-app-region: drag;
+}
+
 // 暗色主题适配
 [data-theme='dark'] .app-container,
 .theme-dark .app-container {

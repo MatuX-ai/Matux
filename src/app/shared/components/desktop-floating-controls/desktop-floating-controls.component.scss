@@ -1,0 +1,25 @@
+:host {
+  // 不参与布局，纯覆盖层
+  display: contents;
+}
+
+.floating-chrome {
+  position: fixed;
+  top: 0;
+  right: 8px;
+  z-index: 3000;
+  display: flex;
+  align-items: center;
+  height: 32px;
+  padding-left: 4px;
+
+  // 深色胶囊：浅色页面（ComingSoon / 登录页切换主题）上仍能看清白色描边图标
+  border-bottom-right-radius: 8px;
+  border-bottom-left-radius: 8px;
+  background: rgb(10 14 26 / 88%);
+  box-shadow: 0 2px 10px rgb(0 0 0 / 28%);
+  color: #fff;
+
+  -webkit-app-region: no-drag;
+  backdrop-filter: blur(8px);
+}

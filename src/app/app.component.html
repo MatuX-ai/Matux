@@ -1,8 +1,16 @@
 <div class="app-container">
+  <!-- 【无边框窗口 P3】顶部全局拖拽条：无导航栏的页面（登录 / ar-lab / 404 等）
+       也能拖动窗口；高 12px 且位于导航栏内容之上，不遮挡任何交互元素 -->
+  <div class="app-drag-strip" *ngIf="isDesktopShell" aria-hidden="true"></div>
+
   <!-- 【启动优化 P3】学习优先模式：后端后台启动中横幅（自动按 fastMode && !backendReady 显示） -->
   <app-backend-loading-banner></app-backend-loading-banner>
   <div [@routeTransition]="(o ? $any(o)?.activatedRouteData?.['key'] : undefined) || ''">
     <router-outlet #o="outlet"></router-outlet>
   </div>
   <app-status-bar></app-status-bar>
+  <!-- 【无边框窗口 P3】无导航栏页面的窗口控制按钮（导航栏页面自动隐藏） -->
+  <app-desktop-floating-controls></app-desktop-floating-controls>
+  <!-- 【P3-B】AI 教师实时推送 toast -->
+  <app-ai-teacher-live-toast position="bottom-right"></app-ai-teacher-live-toast>
 </div>

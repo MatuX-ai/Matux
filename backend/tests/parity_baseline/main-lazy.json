@@ -1,23 +1,27 @@
 {
   "entry": "main_lazy",
-  "generated_from_commit": "248522a8284bdab8d961c0839e88169c98f2aa1a",
-  "source": "git archive fix/4b-tier-dedup-20261107 backend/ (LF, no CRLF)",
+  "generated_from_commit": "0d0b7b1ce39abeb2c1d9588679e39fb9043bf477",
+  "source": "PR #68 merge（main 注册表 + 分支 Phase 1 路由，tmp/_pr68_regen_baseline.py）",
   "stubs_injected": [
     "services.ai_teacher_live_settings",
     "services.ai_teacher_event_bus",
     "cache.ai_teacher_persistence"
   ],
+  "condition_keys_enabled": [],
   "registry_mode": "lazy",
   "registry_exclude": null,
-  "condition_keys_enabled": [],
-  "paths_by_group": null,
-  "total": 170,
-  "real_total": 170,
+  "paths_by_group": {},
+  "total": 208,
+  "real_total": 208,
   "pending_paths": [],
   "paths": [
     [
       "DELETE",
       "/api/v1/admin/arvr/courses/{course_id}"
+    ],
+    [
+      "DELETE",
+      "/api/v1/ai-teacher/memory/{user_id}"
     ],
     [
       "DELETE",
@@ -69,6 +73,22 @@
     ],
     [
       "GET",
+      "/api/v1/achievements"
+    ],
+    [
+      "GET",
+      "/api/v1/achievements/badges"
+    ],
+    [
+      "GET",
+      "/api/v1/achievements/my"
+    ],
+    [
+      "GET",
+      "/api/v1/achievements/stats"
+    ],
+    [
+      "GET",
       "/api/v1/admin/arvr/courses"
     ],
     [
@@ -82,6 +102,46 @@
     [
       "GET",
       "/api/v1/admin/arvr/stats"
+    ],
+    [
+      "GET",
+      "/api/v1/ai-teacher/daily-suggestion/{user_id}"
+    ],
+    [
+      "GET",
+      "/api/v1/ai-teacher/growth/{user_id}"
+    ],
+    [
+      "GET",
+      "/api/v1/ai-teacher/knowledge-state/{user_id}"
+    ],
+    [
+      "GET",
+      "/api/v1/ai-teacher/live-events/history/{user_id}"
+    ],
+    [
+      "GET",
+      "/api/v1/ai-teacher/live-settings/{user_id}"
+    ],
+    [
+      "GET",
+      "/api/v1/ai-teacher/memory/{user_id}/long-term"
+    ],
+    [
+      "GET",
+      "/api/v1/ai-teacher/persona/{user_id}"
+    ],
+    [
+      "GET",
+      "/api/v1/ai-teacher/profile/{user_id}"
+    ],
+    [
+      "GET",
+      "/api/v1/ai-teacher/session/{user_id}"
+    ],
+    [
+      "GET",
+      "/api/v1/ai-teacher/suggestions/{user_id}"
     ],
     [
       "GET",
@@ -117,7 +177,19 @@
     ],
     [
       "GET",
+      "/api/v1/courses"
+    ],
+    [
+      "GET",
+      "/api/v1/courses/enrollments"
+    ],
+    [
+      "GET",
       "/api/v1/courses/students/{student_id}/courses"
+    ],
+    [
+      "GET",
+      "/api/v1/courses/{course_id}"
     ],
     [
       "GET",
@@ -185,6 +257,30 @@
     ],
     [
       "GET",
+      "/api/v1/opensciedu/categories"
+    ],
+    [
+      "GET",
+      "/api/v1/opensciedu/courses"
+    ],
+    [
+      "GET",
+      "/api/v1/opensciedu/courses/{course_id}"
+    ],
+    [
+      "GET",
+      "/api/v1/opensciedu/health"
+    ],
+    [
+      "GET",
+      "/api/v1/opensciedu/knowledge-graph"
+    ],
+    [
+      "GET",
+      "/api/v1/opensciedu/search"
+    ],
+    [
+      "GET",
       "/api/v1/org/{org_id}/achievements/admin/list"
     ],
     [
@@ -198,6 +294,14 @@
     [
       "GET",
       "/api/v1/org/{org_id}/achievements/progress/current"
+    ],
+    [
+      "GET",
+      "/api/v1/org/{org_id}/achievements/stats/batch"
+    ],
+    [
+      "GET",
+      "/api/v1/org/{org_id}/achievements/stats/{achievement_id}"
     ],
     [
       "GET",
@@ -400,8 +504,24 @@
       "/vircadia/avatar/health"
     ],
     [
+      "GET",
+      "/ws/gamification/stats"
+    ],
+    [
       "PATCH",
       "/api/v1/admin/arvr/courses/{course_id}/status"
+    ],
+    [
+      "PATCH",
+      "/api/v1/ai-teacher/persona/{user_id}"
+    ],
+    [
+      "PATCH",
+      "/api/v1/ai-teacher/profile/{user_id}"
+    ],
+    [
+      "PATCH",
+      "/api/v1/ai-teacher/suggestions/{suggestion_id}/read"
     ],
     [
       "POST",
@@ -414,6 +534,14 @@
     [
       "POST",
       "/api/v1/admin/arvr/courses/{course_id}/upload-thumbnail"
+    ],
+    [
+      "POST",
+      "/api/v1/ai-teacher/chat"
+    ],
+    [
+      "POST",
+      "/api/v1/ai-teacher/memory/{user_id}/long-term"
     ],
     [
       "POST",
@@ -446,6 +574,10 @@
     [
       "POST",
       "/api/v1/auth/users/{user_id}/roles/{role_code}"
+    ],
+    [
+      "POST",
+      "/api/v1/courses/enrollments"
     ],
     [
       "POST",
@@ -505,11 +637,19 @@
     ],
     [
       "POST",
+      "/api/v1/opensciedu/cache/clear"
+    ],
+    [
+      "POST",
       "/api/v1/org/{org_id}/achievements/admin/create"
     ],
     [
       "POST",
       "/api/v1/org/{org_id}/achievements/admin/initialize"
+    ],
+    [
+      "POST",
+      "/api/v1/org/{org_id}/achievements/admin/{achievement_id}/recompute-stats"
     ],
     [
       "POST",
@@ -669,6 +809,10 @@
     ],
     [
       "PUT",
+      "/api/v1/ai-teacher/live-settings/{user_id}"
+    ],
+    [
+      "PUT",
       "/api/v1/auth/user/profile"
     ],
     [
@@ -694,6 +838,14 @@
     [
       "PUT",
       "/api/v1/org/{org_id}/recommendations/user-profile/preferences"
+    ],
+    [
+      "WEBSOCKET",
+      "/ws/ai-edu/progress/{user_id}"
+    ],
+    [
+      "WEBSOCKET",
+      "/ws/gamification"
     ]
   ]
 }

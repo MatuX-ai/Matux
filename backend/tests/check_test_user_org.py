@@ -7,11 +7,11 @@ sys.path.insert(0, 'G:\\iMato\\backend')
 from models.user import User  # noqa: E402
 from models.user_organization import UserOrganization  # noqa: E402
 from sqlalchemy import select  # noqa: E402
-from utils.database import get_db_session  # noqa: E402
+from utils.database import get_sync_session  # noqa: E402
 
 
 async def check_user_org():
-    async with get_db_session() as db:
+    async with get_sync_session() as db:
         # 查找 admin@testorg.com 用户
         stmt = select(User).where(User.username == "admin@testorg.com")
         result = await db.execute(stmt)

@@ -1,67 +1,55 @@
 {
   "entry": "pending_integration",
   "source": "core.router_registry.ROUTER_TABLE (pending_integration only)",
-  "total": 15,
+  "total": 12,
   "paths": [
     [
-      "DELETE",
-      "/api/v1/ai-teacher/memory/{user_id}"
+      "GET",
+      "/api/v1/invite/codes/me"
     ],
     [
       "GET",
-      "/api/v1/ai-teacher/daily-suggestion/{user_id}"
+      "/api/v1/invite/codes/{code}"
     ],
     [
       "GET",
-      "/api/v1/ai-teacher/growth/{user_id}"
+      "/api/v1/invite/records/me"
     ],
     [
       "GET",
-      "/api/v1/ai-teacher/knowledge-state/{user_id}"
+      "/api/v1/share/cards/{card_id}/qr"
     ],
     [
       "GET",
-      "/api/v1/ai-teacher/memory/{user_id}/long-term"
+      "/api/v1/share/cards/{short_code}"
     ],
     [
       "GET",
-      "/api/v1/ai-teacher/persona/{user_id}"
+      "/invite/{code}"
     ],
     [
       "GET",
-      "/api/v1/ai-teacher/profile/{user_id}"
-    ],
-    [
-      "GET",
-      "/api/v1/ai-teacher/session/{user_id}"
-    ],
-    [
-      "GET",
-      "/api/v1/ai-teacher/suggestions/{user_id}"
-    ],
-    [
-      "PATCH",
-      "/api/v1/ai-teacher/persona/{user_id}"
-    ],
-    [
-      "PATCH",
-      "/api/v1/ai-teacher/profile/{user_id}"
-    ],
-    [
-      "PATCH",
-      "/api/v1/ai-teacher/suggestions/{suggestion_id}/read"
+      "/share/{short_code}"
     ],
     [
       "POST",
-      "/api/v1/ai-teacher/chat"
+      "/api/v1/invite/codes"
     ],
     [
       "POST",
-      "/api/v1/ai-teacher/memory/{user_id}/long-term"
+      "/api/v1/invite/codes/{code}/use"
     ],
     [
-      "WEBSOCKET",
-      "/ws/ai-edu/progress/{user_id}"
+      "POST",
+      "/api/v1/share/cards"
+    ],
+    [
+      "POST",
+      "/api/v1/share/cards/{short_code}/track-share"
+    ],
+    [
+      "POST",
+      "/api/v1/share/cards/{short_code}/track-view"
     ]
   ]
 }

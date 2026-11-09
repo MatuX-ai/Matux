@@ -5,34 +5,51 @@
     main.py / main_ai_edu.py / legacy_routes.py 均未改动，
     本模块当前不被任何入口调用；后续 commit 3/4 才接入。
 
-ROUTER_TABLE 的 61 条口径（必须写进注释，否则下一个人又会数成 59 项 active
-或 62 次 include_router 调用）::
+ROUTER_TABLE 的 63 条口径（必须写进注释，否则下一个人又会数成 62 项 active
+或 64 次 include_router 调用）::
 
     legacy 侧      : 53 处 include_router 调用 -> 52 个不同模块
                      （share_routes 贡献 2 处：api_router + page_router）
-    main_ai_edu 侧 : 19 处 include_router 调用 -> 19 个不同模块
-    交集           : 10 个模块
-    并集           : 52 + 19 - 10 = 61 个模块   <- issue #21 的「并集 61」口径
+    main_ai_edu 侧 : 24 个模块（lazy + both）
+    交集           : 13 个模块（both）
+    并集           : 52 + 24 - 13 = 63 个模块
 
-    注：61 条按**模块**建表，share_routes 一条携带两个 router 对象，
-        因此展开后的 include_router 调用数为 62
-        （share_routes 当前为 pending_integration，实际注册 58 次）。
+    注：63 条按**模块**建表，share_routes 一条携带两个 router 对象，
+        因此展开后的 include_router 调用数为 64
+        （share_routes 当前为 pending_integration，实际注册 62 次）。
+
+PR #68 增量（合并 origin/main 时确定的 5 个路由归属）::
+
+    + achievement_catalog (lazy)   /api/v1/achievements 扁平化只读目录
+    + course_catalog      (lazy)   /api/v1/courses      扁平化只读目录
+    ~ ai_teacher          legacy -> both, active（分支的 P0 修复 + 依赖已入库）
+    ~ gamification_websocket legacy -> both（桌面端 /ws/gamification 需要）
+    ~ opensciedu          legacy -> both（桌面端 §8.1-12 真实 API 需要）
+    ~ ai_edu_websocket    pending -> active, both（B1：保住桌面端 /ws/ai-edu）
+    = digital_twin       保持 legacy-only + condition_key（Phase 2，决策 2）
+    = share              保持 pending_integration + legacy（Phase 2，决策 3）
 
 生成方式（设计文档 §4.1 方案 C）：一次性脚本 AST 解析 legacy_routes.py +
 main_ai_edu.py 产出候选 -> 人工核对 -> 固化为静态表 -> CI 反向校验。
 本文件中的 module_path / router_attr / prefix / tags 全部来自 AST 实测值，
 不手写。
 
-白名单（issue #26 拍板，PR #27 commit 2 修正为 4 项，PR-E 修正为 3 项）::
+白名单（issue #26 拍板，PR #27 commit 2 修正为 4 项，PR-E 修正为 3 项，
+PR #68 合并后剩 1 项）::
 
-    routes.ai_teacher_routes          依赖 backend/cache/ 未入库
-    routes.ai_edu_websocket_routes    依赖 services/ai_teacher_live_settings.py 未入库
     routes.share_routes               模块在 WIP 树中存在，origin/main 尚未入库
+
+    routes.ai_teacher_routes 已于 feat/desktop-p3-batch1 移出白名单：
+    backend/cache/ 随分支入库，status 改回 active，mode 由 legacy 改 both。
+
+    routes.ai_edu_websocket_routes 已于 PR #68 拍板 B1 移出白名单：
+    services/ai_teacher_live_settings.py 随分支入库，status 改回 active，
+    mode 保持 both（桌面端学生仪表盘 /ws/ai-edu 实时推送需要）。
 
     # pending_integration: 模块在 WIP 树中存在，origin/main 尚未入库
     # 移除条件：WIP 作者提交后，status 改回 active
 
-    三者标记 status="pending_integration"：register_all_routers 遇到时
+    share_routes 标记 status="pending_integration"：register_all_routers 遇到时
     logger.warning + 跳过 + 记录到 logs/router_registration_report.json。
     对应 WIP 提交后把 status 改回 active，白名单即自动清空。
 
@@ -173,16 +190,42 @@ class RouterSpec:
         }
 
 
-# ==================== 路由总表（61 条） ====================
+# ==================== 路由总表（63 条） ====================
 #
-# 顺序 = 设计文档 §4.3 的 A/B/C 分组：
-#   A 组 main_ai_edu 独有 9 条 -> B 组 交集 10 条 -> C 组 legacy 独有 42 条
+# 分组按 mode 统计（A/B/C 的物理顺序沿用 PR-B 的建表结果，新增条目插在表首）：
+#   A 组 main_ai_edu 独有（lazy）   11 条（原 9 + PR #68 新增 2 个 catalog）
+#   B 组 交集（both）              13 条（原 10 + ai_teacher + gamification + opensciedu）
+#   C 组 legacy 独有（legacy）     39 条（原 42 - 上述 3 条）
+#
+# 说明：ai_teacher / gamification_websocket / opensciedu 三条的物理位置仍在表尾，
+# 以 mode 字段为准（不为此重排整表，避免无意义的行级 diff）。
 #
 # 该表由一次性脚本 AST 实测生成并人工核对后固化（设计文档 §4.1）。
 # 禁止手改：任何增删都必须同步更新 tmp/ 下的生成脚本，
 # 否则 test_router_registry.py 的断言会红。
 
 ROUTER_TABLE: Tuple[RouterSpec, ...] = (
+    # 【PR #68 / Phase 1】扁平化只读目录路由。
+    #   桌面端此前只有组织级成就路由，/api/v1/achievements 与 /api/v1/courses
+    #   均 404，前端只能显示示例数据（§8.1-4 / §8.1-5 的依赖）。
+    RouterSpec(
+        name="achievement_catalog",
+        module_path="routes.achievement_catalog_routes",
+        router_attr=("router",),
+        prefix="",
+        tags=("成就系统",),
+        status="active",
+        mode="lazy",
+    ),
+    RouterSpec(
+        name="course_catalog",
+        module_path="routes.course_catalog_routes",
+        router_attr=("router",),
+        prefix="",
+        tags=("课程",),
+        status="active",
+        mode="lazy",
+    ),
     RouterSpec(
         name="ai_edu_code_execution",
         module_path="routes.ai_edu_code_execution",
@@ -279,9 +322,9 @@ ROUTER_TABLE: Tuple[RouterSpec, ...] = (
         router_attr=("router",),
         prefix="",
         tags=("AI 教育 WebSocket",),
-        status="pending_integration",
+        status="active",
         mode="both",
-        note="依赖 services/ai_teacher_live_settings.py 未入库（issue #26）",
+        note="B1：services/ai_teacher_live_settings.py 随分支入库，桌面端 /ws/ai-edu 需要（PR #68）",
     ),
     RouterSpec(
         name="achievement",
@@ -650,7 +693,7 @@ ROUTER_TABLE: Tuple[RouterSpec, ...] = (
         prefix="",
         tags=("P3-A 游戏化 WebSocket",),
         status="active",
-        mode="legacy",
+        mode="both",
     ),
     RouterSpec(
         name="share",
@@ -675,9 +718,8 @@ ROUTER_TABLE: Tuple[RouterSpec, ...] = (
         router_attr=("router",),
         prefix="",
         tags=("AI 个性化教师",),
-        status="pending_integration",
-        mode="legacy",
-        note="依赖 backend/cache/ 未入库（issue #26）",
+        status="active",
+        mode="both",
     ),
     RouterSpec(
         name="vector_knowledge",
@@ -704,7 +746,7 @@ ROUTER_TABLE: Tuple[RouterSpec, ...] = (
         prefix="",
         tags=("OpenSciEDU 公共课程",),
         status="active",
-        mode="legacy",
+        mode="both",
     ),
     RouterSpec(
         name="ar_vr",

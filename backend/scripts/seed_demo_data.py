@@ -918,7 +918,9 @@ async def seed_points(db, student):
         ("earn", "完成测验", 30, 70),
         ("earn", "解锁成就", 50, 200),
         ("earn", "每日打卡", 10, 20),
-        ("spend", "兑换学习资料", -30, -100),
+        # 【Phase1 修复】spend 的金额区间必须从小到大（随机后由下方取负），
+        # 原先写成 (-30, -100) 会抛 empty range in randrange，导致积分流水+排行榜被跳过。
+        ("spend", "兑换学习资料", 30, 100),
     ]
     for day_offset in range(30):
         for _ in range(random.randint(1, 2)):
@@ -1197,6 +1199,7 @@ async def seed_test_student_data():
             logger.info(f"✓ 成就: {ach_count} 个定义 / {ua_count} 个已解锁")
         except Exception as e:
             logger.warning(f"⚠️ 成就跳过：{e}")
+            await db.rollback()
 
         # 8. 积分 + 流水（可选表）
         try:
@@ -1204,6 +1207,7 @@ async def seed_test_student_data():
             logger.info(f"✓ 积分: {up_count} 账户 / {txn_count} 条流水")
         except Exception as e:
             logger.warning(f"⚠️ 积分跳过：{e}")
+            await db.rollback()
 
         # 9. 排行榜（可选表）
         try:
@@ -1211,6 +1215,7 @@ async def seed_test_student_data():
             logger.info(f"✓ 排行榜: {lb_count} 条")
         except Exception as e:
             logger.warning(f"⚠️ 排行榜跳过：{e}")
+            await db.rollback()
 
         # 10. 推荐 + 画像（可选表）
         try:
@@ -1218,6 +1223,7 @@ async def seed_test_student_data():
             logger.info(f"✓ 学习画像: {prof_count} 个 / 推荐: {rec_count} 条")
         except Exception as e:
             logger.warning(f"⚠️ 推荐跳过：{e}")
+            await db.rollback()
 
     logger.info("=" * 60)
     logger.info("✅ test_student 冷启动数据填充完成！")

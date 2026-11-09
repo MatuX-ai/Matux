@@ -18,11 +18,27 @@
  * - 自动更新: src/core/updates
  */
 
-const { app, BrowserWindow, ipcMain, dialog, shell, protocol, net, screen } = require('electron');
+const {
+  app,
+  BrowserWindow,
+  ipcMain,
+  dialog,
+  shell,
+  protocol,
+  net,
+  screen,
+  Menu,
+} = require('electron');
 const path = require('path');
 const fs = require('fs');
 const http = require('http');
 const { pathToFileURL } = require('url');
+
+// 【P0-静默退出】主进程持久化日志：必须尽早安装 console tee。
+// 打包后应用没有可见控制台，若不落盘，uncaughtException / window-all-closed
+// 等退出路径不会留下任何证据，表现为“应用凭空消失”。
+const mainLogger = require('./utils/main-logger');
+mainLogger.installConsoleTee();
 
 // 【重构】配置常量
 const {
@@ -69,6 +85,7 @@ const {
   checkPortOccupation,
   forceKillPortProcess,
   healthCheck,
+  buildHttpGetOptions,
   BackendManager,
 } = backendCore;
 
@@ -112,6 +129,48 @@ let splashWindow = null;
 let appInitializer = null;
 let isStarting = false;
 let isQuitting = false;
+
+// 【P0-静默退出】退出原因：所有 app.quit()/process.exit() 调用点必须先打标，
+// 这样日志里能直接看出“谁让应用退出的”，不再出现无痕消失。
+let quitReason = 'running';
+function markQuit(reason) {
+  quitReason = reason;
+  mainLogger.logEvent('QUIT-REQUEST', {
+    reason,
+    uptimeSec: Math.round(process.uptime()),
+    stack: new Error('quit-trace').stack,
+  });
+}
+
+// 主进程异常只提示一次，避免弹窗轰炸
+let mainProblemDialogShown = false;
+function notifyMainProcessProblem(title, detail) {
+  if (mainProblemDialogShown) return;
+  mainProblemDialogShown = true;
+  try {
+    dialog.showMessageBox({
+      type: 'warning',
+      title: 'MatuX 运行异常',
+      message: title,
+      detail: `${detail || ''}\n\n异常详情已写入日志：\n${mainLogger.getLogFile()}`,
+      buttons: ['继续使用', '退出应用'],
+      defaultId: 0,
+      cancelId: 0,
+      noLink: true,
+    }).then(({ response }) => {
+      mainLogger.logEvent('CRASH-DIALOG-CHOICE', { response });
+      if (response === 1) {
+        markQuit('user-exit-after-exception');
+        app.quit();
+      } else {
+        // 用户选择继续：允许后续异常再次提示
+        mainProblemDialogShown = false;
+      }
+    }).catch(() => { /* 弹窗失败不影响主流程 */ });
+  } catch (_) {
+    // dialog 不可用（极端场景）时仅依赖日志
+  }
+}
 
 // ==================== 自定义协议注册 ====================
 // 【启动优化】必须在 app.whenReady() 之前调用 protocol.registerSchemesAsPrivileged()
@@ -171,14 +230,91 @@ function registerAppProtocol() {
       //   原因：Angular environment.apiUrl = '' 使渲染进程用相对路径发起 fetch，
       //   被 base href './' 解析为 app://./api/...，需要代理到后端。
       if (isApiOrAsset) {
-        const backendUrl = `${process.env.BACKEND_URL || `http://localhost:${process.env.BACKEND_PORT || 8000}`}/${relativePath}`;
-        console.log(`[Protocol] API代理: ${relativePath} -> ${backendUrl}`);
+        // 【Phase1 修复】必须保留 query string：
+        //   此前 backendUrl 只用 pathname 重建，?user_id= / ?ids= / ?userId=
+        //   全部被丢弃，导致 /api/v1/courses/enrollments 等接口 422、
+        //   /api/v1/achievements?userId= 拿到错误的解锁状态。
+        const search = url.search || '';
+        const backendUrl = `${process.env.BACKEND_URL || `http://localhost:${process.env.BACKEND_PORT || 8000}`}/${relativePath}${search}`;
+        // 【加固】完整生命周期：记录 method/URL，响应后记录 status + durationMs，
+        //   在失败/超时/5xx 时主动报 proxy-error 事件给前端，避免前端 fetch 永远 pending。
+        const upperMethod = (request.method || 'GET').toUpperCase();
+        const reqStart = Date.now();
+        console.log(`[Protocol] → ${upperMethod} ${backendUrl}`);
+        const notifyProxyError = (source, errMsg, status) => {
+          const durationMs = Date.now() - reqStart;
+          safeSendAppEvent({
+            type: 'proxy-error',
+            source, // 'proxy' = 代理层同步/异步异常；'backend' = 后端 5xx
+            path: relativePath,
+            method: upperMethod,
+            backendUrl: maskBackendUrl(backendUrl),
+            targetStatus: status || 0,
+            durationMs,
+            errorMessage: errMsg || '',
+            timestamp: new Date().toISOString(),
+          });
+          return durationMs;
+        };
         // 【修复】转发原始请求的 method、headers、body，确保 POST/PUT 等方法正确代理
-        return net.fetch(backendUrl, {
-          method: request.method,
-          headers: request.headers,
-          body: request.body,
-        });
+        // 【P1 修复】补 duplex: 'half'：
+        //   Electron 28 / Node 18 自带的 undici 在 RequestInit 带 body 时强制要求
+        //   duplex: 'half'，否则同步抛 `TypeError: RequestInit: duplex option is required when sending a body.`
+        //   该异常在 protocol.handle 回调中无法变成响应回传给浏览器，导致前端 fetch 永远 pending。
+        //   表现为：桌面端点击登录卡在 "Validating credentials..." 永远不返回。
+        //   修复后 POST/PUT/PATCH 等带 body 的请求可正常代理到后端。
+        try {
+          const init = {
+            method: request.method,
+            headers: request.headers,
+          };
+          // 仅在有 body 时透传 + 声明 duplex（GET/HEAD 等不允许有 body）
+          if (upperMethod !== 'GET' && upperMethod !== 'HEAD') {
+            if (request.body) {
+              init.body = request.body;
+              init.duplex = 'half';
+            }
+          }
+          return net.fetch(backendUrl, init)
+            .then((response) => {
+              const durationMs = Date.now() - reqStart;
+              console.log(`[Protocol] ← ${response.status} ${upperMethod} ${relativePath} (${durationMs}ms)`);
+              // 【加固】后端明确 5xx：记录并报事件，调用方不必额外代码即可拿到信号
+              if (response.status >= 500) {
+                safeSendAppEvent({
+                  type: 'proxy-error',
+                  source: 'backend',
+                  path: relativePath,
+                  method: upperMethod,
+                  backendUrl: maskBackendUrl(backendUrl),
+                  targetStatus: response.status,
+                  durationMs,
+                  timestamp: new Date().toISOString(),
+                });
+              }
+              return response;
+            })
+            .catch((fetchErr) => {
+              const fetchMsg =
+                (fetchErr && fetchErr.message) ||
+                (typeof fetchErr === 'string' ? fetchErr : String(fetchErr));
+              notifyProxyError('proxy', fetchMsg, 0);
+              console.error('[Protocol] API代理 fetch 失败:', fetchMsg);
+              return new Response(`Bad Gateway: ${relativePath}\n${fetchMsg}`, {
+                status: 502,
+                headers: { 'Content-Type': 'text/plain; charset=utf-8' },
+              });
+            });
+        } catch (proxyErr) {
+          const proxyMsg =
+            (proxyErr && proxyErr.message) || (typeof proxyErr === 'string' ? proxyErr : String(proxyErr));
+          console.error('[Protocol] API代理同步异常:', proxyMsg);
+          notifyProxyError('proxy', proxyMsg, 0);
+          return new Response(`Bad Gateway: ${relativePath}\n${proxyMsg}`, {
+            status: 502,
+            headers: { 'Content-Type': 'text/plain; charset=utf-8' },
+          });
+        }
       }
       if (hasExtension) {
         // 有扩展名但不是已知 API 路径（如 .json、.ico、.map 等）→ 404
@@ -380,7 +516,17 @@ function createMainWindow(windowManager) {
       contextIsolation: true,
     },
     icon: APP_PATHS.icon,
-    titleBarStyle: 'default',
+    // 【无边框窗口 P3】桌面端自定义标题栏
+    // - Windows/Linux: frame:false 彻底去掉原生标题栏与边框，拖拽区由渲染进程
+    //   的 -webkit-app-region: drag 提供，窗口控制按钮走 window:* IPC
+    // - macOS: 保留原生 traffic lights（frame:true + hiddenInset），无边框会让
+    //   窗口失去关闭入口；渲染进程会自动隐藏自定义按钮组
+    // - 不设 transparent:true: Windows 下透明窗口会丢失 DWM 阴影，拖动时残影
+    frame: process.platform === 'darwin',
+    titleBarStyle: process.platform === 'darwin' ? 'hiddenInset' : 'hidden',
+    // Windows 11: 圆角 + 阴影由 DWM 处理；thickFrame 保持默认 true，
+    // 无边框下仍可从四边/四角拖拽调整窗口大小
+    ...(process.platform === 'win32' ? { roundedCorners: true, hasShadow: true } : {}),
     title: 'MatuX',
   });
 
@@ -490,6 +636,7 @@ function createMainWindow(windowManager) {
 
   mainWindow.webContents.on('crashed', (event, killed) => {
     console.error('[Main] Renderer process crashed! killed:', killed);
+    mainLogger.logEvent('RENDERER-CRASHED', { killed });
     // 尝试通知用户并提供恢复选项
     if (mainWindow && !mainWindow.isDestroyed()) {
       mainWindow.webContents.send('app-event', {
@@ -519,13 +666,45 @@ function createMainWindow(windowManager) {
     }
   });
 
+  // 【P0-静默退出】渲染进程消失留痕（Chromium 新版事件，含 OOM / 被杀原因）
+  mainWindow.webContents.on('render-process-gone', (event, details) => {
+    mainLogger.logEvent('RENDER-PROCESS-GONE', details);
+    mainLogger.writeCrashReport(
+      'render-process-gone',
+      new Error(`renderer gone: ${details && details.reason}`),
+      details
+    );
+  });
+
   // 窗口事件绑定
-  mainWindow.on('closed', () => { mainWindow = null; });
+  mainWindow.on('closed', () => { mainLogger.logEvent('MAIN-WINDOW-CLOSED', { isQuitting, quitReason }); mainWindow = null; });
 
   mainWindow.on('blur', () => mainWindow.webContents.send('app-event', { type: 'window-blur' }));
   mainWindow.on('focus', () => mainWindow.webContents.send('app-event', { type: 'window-focus' }));
   mainWindow.on('enter-full-screen', () => mainWindow.webContents.send('app-event', { type: 'fullscreen-enter' }));
   mainWindow.on('leave-full-screen', () => mainWindow.webContents.send('app-event', { type: 'fullscreen-leave' }));
+
+  // 【无边框窗口 P3】最大化状态广播：渲染进程据此切换 □ / ❐ 图标
+  const broadcastMaximizeState = () => {
+    if (mainWindow && !mainWindow.isDestroyed()) {
+      mainWindow.webContents.send('window:maximize-change', mainWindow.isMaximized());
+    }
+  };
+  mainWindow.on('maximize', broadcastMaximizeState);
+  mainWindow.on('unmaximize', broadcastMaximizeState);
+
+  // 【无边框窗口 P3】菜单移除后 F11 全屏快捷键兜底（原本由默认菜单 role 提供）
+  mainWindow.webContents.on('before-input-event', (event, input) => {
+    if (input.key !== 'F11') return;
+    mainLogger.logEvent('F11-KEY', { type: input.type, control: input.control, alt: input.alt, shift: input.shift });
+    if (input.type !== 'keyDown') return;
+    event.preventDefault();
+    if (mainWindow && !mainWindow.isDestroyed()) {
+      const nextFullscreen = !mainWindow.isFullScreen();
+      mainWindow.setFullScreen(nextFullscreen);
+      mainLogger.logEvent('F11-TOGGLE', { fullscreen: nextFullscreen });
+    }
+  });
 
   // 窗口大小变化（节流）
   let resizeTimeout = null;
@@ -570,6 +749,36 @@ function createMainWindow(windowManager) {
       if (mainWindow && !mainWindow.isDestroyed()) {
         mainWindow.hide();
       }
+      return;
+    }
+    // 【P0-静默退出】托盘不可用时（创建失败/尚未创建），直接关窗口会走到
+    //   window-all-closed → app.quit()，用户感知为“应用凭空消失”。
+    //   这里改为显式确认：取消 → 最小化，确认 → 标记退出原因后放行。
+    if (!isQuitting) {
+      let choice = null;
+      try {
+        choice = dialog.showMessageBoxSync(mainWindow, {
+          type: 'question',
+          title: 'MatuX',
+          message: '确定要退出 MatuX 吗？',
+          detail: '当前系统托盘不可用，关闭窗口将直接退出应用。',
+          buttons: ['最小化到任务栏', '退出应用'],
+          defaultId: 0,
+          cancelId: 0,
+          noLink: true,
+        });
+      } catch (_) {
+        choice = null;
+      }
+      mainLogger.logEvent('CLOSE-CONFIRM', { choice, tray: false });
+      if (choice !== 1) {
+        event.preventDefault();
+        if (mainWindow && !mainWindow.isDestroyed()) {
+          mainWindow.minimize();
+        }
+      } else {
+        markQuit('user-confirm-quit-no-tray');
+      }
     }
   });
 
@@ -577,6 +786,37 @@ function createMainWindow(windowManager) {
 }
 
 // ==================== 工具函数 ====================
+
+/**
+ * 安全发送 app-event 到主窗口
+ * 【加固】所有主进程 → 渲染进程的发送都过这里，避免主窗口未创建 / isDestroyed / webContents 不可用导致额外异常
+ * @param {object} payload
+ */
+function safeSendAppEvent(payload) {
+  try {
+    if (mainWindow && !mainWindow.isDestroyed()) {
+      const wc = mainWindow.webContents;
+      if (wc && !wc.isCrashed() && !wc.isDestroyed()) {
+        wc.send('app-event', payload);
+      }
+    }
+  } catch (_sendErr) {
+    // 静默忽略：上层不必要知道诊断包发送失败
+  }
+}
+
+/**
+ * 给用户/前端看的“安全” backendUrl，掼除可能的 BasicAuth 凭据
+ * 例如 http://user:pass@host:8000 → http://****@host:8000
+ */
+function maskBackendUrl(url) {
+  if (typeof url !== 'string') return '';
+  try {
+    return url.replace(/(:\/\/)([^:@/]+):([^@]+)@/, '$1$2:****@');
+  } catch {
+    return url;
+  }
+}
 
 /**
  * 向 Splash 窗口发送状态更新
@@ -614,7 +854,10 @@ function sendSplashStatus(phase, text, progress, detail, modules, flags) {
 async function healthCheckWrapper() {
   try {
     return await new Promise((resolve) => {
-      const req = http.get(HEALTH_URL, { timeout: HTTP_REQUEST_TIMEOUT }, (res) => {
+      // 【修复健康检查假阴性】与启动期 health.js 共用 localhost → 127.0.0.1 归一化，
+      //   否则 Node 18 会将 localhost 优先解析为 ::1，而后端只监听 IPv4 → ECONNREFUSED。
+      const options = buildHttpGetOptions(HEALTH_URL, HTTP_REQUEST_TIMEOUT);
+      const req = http.get(options, (res) => {
         let data = '';
         res.on('data', (chunk) => { data += chunk; });
         res.on('end', () => {
@@ -762,7 +1005,12 @@ function registerIpcHandlers() {
   const backendHandlers = createBackendHandlers({ backendManager: appInitializer?.getBackendManager(), appState, appInitializer });
   backendHandlers.register();
 
-  const windowHandlers = createWindowHandlers({ appState });
+  // 【无边框窗口 P3】窗口控制按钮必须能拿到真实主窗口引用：
+  //   appState.setMainWindow() 在 createMainWindow 中并未被调用，仅靠 appState
+  //   会拿到 null，导致 window-minimize/maximize/close 全部静默失效。
+  //   这里注入主进程模块级 mainWindow 的实时读取闭包（注册时窗口尚未创建，
+  //   所以必须是函数而不是值）。
+  const windowHandlers = createWindowHandlers({ appState, getMainWindow: () => mainWindow });
   windowHandlers.register();
 
   const notificationHandlers = createNotificationHandlers({ appState, showNotification: showTrayNotification });
@@ -837,6 +1085,7 @@ function cleanupSingletonLockFiles() {
 cleanupSingletonLockFiles();
 
 let gotTheLock = app.requestSingleInstanceLock();
+mainLogger.logEvent('SINGLE-INSTANCE-LOCK', { gotTheLock, pid: process.pid });
 
 if (!gotTheLock) {
   // 首次获取失败，可能存在残留锁或锁竞争，重试一次
@@ -846,8 +1095,11 @@ if (!gotTheLock) {
   // 顶层代码不能使用 await（CommonJS 不支持顶层 await）
   const retryAcquire = () => {
     gotTheLock = app.requestSingleInstanceLock();
+    mainLogger.logEvent('SINGLE-INSTANCE-LOCK-RETRY', { gotTheLock });
     if (!gotTheLock) {
       console.log('[INFO] 另一个实例已在运行，退出');
+      // 【P0】此路径会让“后启动的实例”静默退出，必须留痕
+      markQuit('single-instance-lock-failed');
       app.quit();
       return;
     }
@@ -859,6 +1111,7 @@ if (!gotTheLock) {
 // 处理第二个实例启动时传递的文件参数
 app.on('second-instance', (event, commandLine) => {
     console.log('[INFO] second-instance 事件:', commandLine);
+    mainLogger.logEvent('SECOND-INSTANCE', { commandLine });
     if (mainWindow) {
       if (mainWindow.isMinimized()) mainWindow.restore();
       mainWindow.focus();
@@ -886,10 +1139,67 @@ app.on('second-instance', (event, commandLine) => {
   });
 
 app.whenReady().then(async () => {
+  // 【P0-静默退出】会话启动信息 + 心跳：
+  //   - SESSION-START 记录版本/参数/日志路径，定位“哪次运行”
+  //   - 每 5 分钟写 HEARTBEAT（uptime + 内存），日志突然中断即为进程被杀的强证据
+  mainLogger.logSessionStart();
+  const heartbeatTimer = setInterval(() => {
+    try {
+      const mem = process.memoryUsage();
+      mainLogger.logEvent('HEARTBEAT', {
+        uptimeSec: Math.round(process.uptime()),
+        rssMB: +(mem.rss / 1048576).toFixed(1),
+        heapUsedMB: +(mem.heapUsed / 1048576).toFixed(1),
+        quitReason,
+        windows: BrowserWindow.getAllWindows().length,
+        tray: !!appInitializer?.tray,
+      });
+    } catch (_) { /* 心跳失败不影响主流程 */ }
+  }, 5 * 60 * 1000);
+  if (typeof heartbeatTimer.unref === 'function') heartbeatTimer.unref();
+
+  // 【无边框窗口 P3】移除 Electron 默认菜单（File/Edit/View/Window/Help）
+  // 自定义标题栏已接管窗口控制；菜单移除后 F11 全屏改由 before-input-event 兜底
+  try {
+    Menu.setApplicationMenu(null);
+    mainLogger.logEvent('MENU-CLEARED', {});
+    console.log('[Main] 已移除应用默认菜单（无边框模式）');
+  } catch (err) {
+    console.warn('[Main] 移除默认菜单失败（非阻塞）:', err && err.message);
+  }
+
+  // 【P2-5】electron-updater 接入骨架：feedURL 未配置时静默跳过，不阻塞启动。
+  // 后续配置好 update.electronjs.org / 自有服务器签名后，把 FEED_URL 填上即可启用自动更新。
+  try {
+    const { autoUpdater } = require('electron-updater');
+    const FEED_URL = process.env.IMATO_UPDATE_FEED_URL || '';
+    autoUpdater.autoDownload = false;
+    autoUpdater.autoInstallOnAppQuit = true;
+    if (FEED_URL) {
+      autoUpdater.setFeedURL({ provider: 'generic', url: FEED_URL });
+      autoUpdater.on('update-available', (info) => {
+        console.log('[Updater] update available:', info && info.version);
+      });
+      autoUpdater.on('update-downloaded', (info) => {
+        console.log('[Updater] update downloaded:', info && info.version);
+      });
+      autoUpdater.on('error', (err) => {
+        console.warn('[Updater] error (non-blocking):', err && err.message);
+      });
+      autoUpdater.checkForUpdatesAndNotify().catch((e) => {
+        console.warn('[Updater] check failed (non-blocking):', e && e.message);
+      });
+    } else {
+      console.log('[Updater] FEED_URL not configured, skipping auto-update check.');
+    }
+  } catch (e) {
+    console.warn('[Updater] electron-updater not available (non-blocking):', e && e.message);
+  }
   // 0. 注册 splash 关键 IPC handler（必须在 createSplashWindow 之前注册,
   //   否则 initialize() 阻塞期间用户点击"跳过"会因无人监听被丢弃）
   ipcMain.on('splash-quit', () => {
     console.log('[Main] User requested quit from splash');
+    markQuit('user-splash-quit');
     if (splashWindow && !splashWindow.isDestroyed()) {
       splashWindow.destroy();
     }
@@ -902,6 +1212,7 @@ app.whenReady().then(async () => {
   ipcMain.on('app-quit', () => {
     console.log('[Main] User requested quit from main window (fast mode recovery)');
     isQuitting = true;
+    markQuit('user-app-quit');
     app.quit();
   });
 
@@ -1130,26 +1441,63 @@ app.whenReady().then(async () => {
 
 // macOS 特殊处理
 app.on('window-all-closed', () => {
+  // 【P0-静默退出】全部窗口关闭是“静默退出”的三大路径之一，必须留痕
+  mainLogger.logEvent('WINDOW-ALL-CLOSED', {
+    platform: process.platform,
+    isQuitting,
+    tray: !!appInitializer?.tray,
+    quitReason,
+  });
   if (process.platform !== 'darwin') {
+    markQuit('window-all-closed');
     appInitializer?.gracefulShutdown();
     app.quit();
   }
 });
 
 app.on('activate', () => {
+  mainLogger.logEvent('APP-ACTIVATE', { windows: BrowserWindow.getAllWindows().length });
   if (BrowserWindow.getAllWindows().length === 0) {
     createMainWindow(windowManager);
   }
 });
 
 app.on('before-quit', () => {
+  mainLogger.logEvent('BEFORE-QUIT', { quitReason, uptimeSec: Math.round(process.uptime()) });
   isQuitting = true;
   appInitializer?.gracefulShutdown();
 });
 
-// 捕获未处理异常 - 先保存状态再尝试恢复
+app.on('will-quit', () => {
+  mainLogger.logEvent('WILL-QUIT', {
+    quitReason,
+    uptimeSec: Math.round(process.uptime()),
+  });
+});
+
+// 【P0-静默退出】子进程（GPU / Utility / Renderer）消失留痕
+app.on('child-process-gone', (event, details) => {
+  mainLogger.logEvent('CHILD-PROCESS-GONE', details);
+});
+
+// 【P0-静默退出】进程级兜底：无论哪条路径退出，同步写入最后一笔，
+// 保证日志末尾总能看到退出码与退出原因。
+process.on('exit', (code) => {
+  mainLogger.logEvent('PROCESS-EXIT', {
+    code,
+    quitReason,
+    uptimeSec: Math.round(process.uptime()),
+  });
+});
+
+// 【P0-静默退出】未捕获异常：记录 + 提示 + 继续运行（不再 process.exit）。
+// 原实现 3 秒后 process.exit(1) 且无任何 UI 反馈，是“静默退出”的头号疑似来源。
 process.on('uncaughtException', (error) => {
   console.error('[FATAL] 未捕获的异常:', error);
+  const reportFile = mainLogger.writeCrashReport('uncaughtException', error, {
+    quitReason,
+    isQuitting,
+  });
 
   // 尝试通知 Splash/UI
   if (typeof sendSplashStatus === 'function' && splashWindow && !splashWindow.isDestroyed()) {
@@ -1166,19 +1514,11 @@ process.on('uncaughtException', (error) => {
     console.error('[Main] 保存状态失败:', saveError);
   }
 
-  // 优雅关闭后端服务
-  try {
-    if (appInitializer?.gracefulShutdown) {
-      appInitializer.gracefulShutdown();
-    }
-  } catch (shutdownError) {
-    console.error('[Main] 关闭后端服务失败:', shutdownError);
-  }
-
-  // 延迟退出以确保日志写入和资源清理
-  setTimeout(() => {
-    process.exit(1);
-  }, 3000);
+  // 告知用户（非阻塞弹窗），避免应用“看着无响应/像消失”
+  notifyMainProcessProblem(
+    '应用捕获到未处理异常（已继续运行）',
+    `${error.message}${reportFile ? `\n崩溃报告: ${reportFile}` : ''}`
+  );
 });
 
 // 捕获未处理的 Promise 拒绝
@@ -1236,8 +1576,9 @@ process.on('unhandledRejection', (reason, promise) => {
     console.error('[Main] 保存状态失败:', saveError);
   }
 
-  // 4. 严重错误检测：仅在严重错误（如进程级错误）时才退出
-  // 判断逻辑：包含未处理文件系统错误、未捕获的 EvalError、进程级严重错误
+  // 4. 严重错误检测：仅用于日志分级；【P0 修复】不再因 rejection 退出进程。
+  //    原实现遇到 EACCES/ENOSPC/FATAL 等字样会 process.exit(1)，且退出前无 UI 提示，
+  //    属于“静默退出”的另一来源。
   const isCritical = reason instanceof Error &&
     (errorMessage.includes('EACCES') ||    // 权限错误
      errorMessage.includes('ENOSPC') ||    // 磁盘空间不足
@@ -1245,10 +1586,9 @@ process.on('unhandledRejection', (reason, promise) => {
      errorMessage.includes('FATAL'));       // 标记为 FATAL
 
   if (isCritical) {
-    console.error('[Main] 检测到严重错误，延迟 3 秒后退出进程');
-    setTimeout(() => {
-      process.exit(1);
-    }, 3000);
+    mainLogger.writeCrashReport('unhandledRejection-critical', reason, { quitReason });
+    console.error('[Main] 检测到严重 rejection，已记录崩溃报告，应用继续运行');
+    notifyMainProcessProblem('检测到严重异步异常（已继续运行）', errorMessage);
   } else {
     console.warn('[Main] 非严重 rejection，应用继续运行');
   }

@@ -47,6 +47,7 @@
   },
   "userNav": {
     "home": "Home",
+    "circuitLab": "Circuit Lab",
     "search": "Search",
     "searchPlaceholder": "Search courses, labs, plugins...",
     "notifications": "Notifications",
@@ -78,6 +79,28 @@
     "help": "Help center",
     "about": "About MatuX",
     "copyright": "All rights reserved"
+  },
+  "circuitLab": {
+    "title": "Virtual Circuit Lab",
+    "subtitle": "Drag components and simulate in real time — voltages and currents update instantly",
+    "loading": "Loading the lab environment...",
+    "error": "Failed to load the lab environment",
+    "errorHint": "assets/circuitjs was not found. Please verify the installation package is complete.",
+    "retry": "Retry",
+    "reset": "Reset circuit",
+    "resetHint": "Reload the lab environment and clear the current circuit",
+    "fullscreen": "Fullscreen",
+    "exitFullscreen": "Exit fullscreen",
+    "license": "Licenses",
+    "footer": "Powered by the CircuitJS engine — drag components and simulate in real time",
+    "licenseTitle": "Open source licenses",
+    "licenseCircuitJs": "Circuit simulation engine (GPL-2.0)",
+    "licenseSource": "Source",
+    "licenseProduct": "Build source",
+    "licenseText": "License text",
+    "licenseNotice": "Third-party notice",
+    "licenseModifications": "Only third-party analytics/Dropbox scripts were removed from the upstream build. The simulation engine is unmodified; all voltages and currents are computed by CircuitJS.",
+    "licenseClose": "Got it"
   },
   "nav": {
     "home": "Home",
@@ -145,5 +168,61 @@
     "reconnected": "You are back online",
     "updateAvailable": "New version available. Click to update.",
     "update": "Update"
+  },
+  "level": {
+    "title": {
+      "1": "Curious Cub",
+      "2": "Coding Rookie",
+      "3": "Code Apprentice",
+      "4": "Loop Knight",
+      "5": "Function Wizard",
+      "6": "Algorithm Artisan",
+      "7": "Data Alchemist",
+      "8": "Architecture Master",
+      "9": "AI Collaborator",
+      "10": "Metaverse Creator"
+    },
+    "tier": {
+      "bronze": "Bronze",
+      "silver": "Silver",
+      "gold": "Gold",
+      "diamond": "Diamond",
+      "star": "Stellar"
+    },
+    "nextUnlock": "{n} EXP to unlock '{title}'",
+    "maxReached": "Max level reached! Creator's Crown unlocked",
+    "upgraded": "You leveled up to",
+    "continueButton": "Keep Learning",
+    "totalExp": "Total EXP"
+  },
+  "checkin": {
+    "button": "Check-in",
+    "tooltip": "Tap to claim today's reward +50 EXP",
+    "ariaLabel": "Daily check-in: tap to claim today's reward",
+    "opening": "Opening...",
+    "success": "Today's +50 EXP credited",
+    "streakDays": "{n}-day streak",
+    "greeting": {
+      "before": "Hi, {name} 👋 Ready to start today?",
+      "after": "Welcome back, {name} ✨ Today's adventure has begun"
+    }
+  },
+  "tasks": {
+    "complete": "Completed",
+    "allDone": "Awesome! All tasks done for today",
+    "reward": "+{n} EXP"
+  },
+  "fab": {
+    "state": {
+      "idle": "AI Teacher online · tap to start chat",
+      "message": "AI Teacher · {n} new messages",
+      "reward": "AI Teacher · new rewards to claim",
+      "stuck": "AI Teacher · need a hand?"
+    },
+    "opening": {
+      "reward": "I noticed you leveled up! Want to chat about your new title?",
+      "stuck": "You've been on this task for {n} minutes. Want a hint?",
+      "message": "I have {n} new messages for you"
+    }
   }
 }

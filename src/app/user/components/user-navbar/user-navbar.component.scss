@@ -15,6 +15,24 @@
   background: linear-gradient(135deg, stem.$stem-primary 0%, stem.$stem-primary-dark 100%);
   box-shadow: 0 4px 12px rgb(5 150 105 / 20%);
   color: white;
+
+  // 【无边框窗口 P3】整个导航栏就是窗口标题栏：按住空白处可拖动窗口
+  // （Electron frame:false 后唯一的拖动入口，双击空白处由系统接管最大化/还原）
+  -webkit-app-region: drag;
+  user-select: none;
+}
+
+// 【无边框窗口 P3】拖拽区内的一切交互元素必须声明 no-drag，否则点击/悬浮会被
+// 系统当成标题栏拖拽而丢失响应
+.navbar-logo,
+.nav-link,
+.action-btn,
+.user-menu-btn,
+.hamburger-menu,
+.search-panel,
+.search-container,
+.search-input {
+  -webkit-app-region: no-drag;
 }
 
 .navbar-container {
@@ -110,6 +128,13 @@
   flex-shrink: 0;
   align-items: center;
   gap: 4px;
+}
+
+/* 窗口控制按钮（无边框 P3）：贴右边缘，与 Win11 标题栏一致，不参与 flex 收缩 */
+.navbar-window-controls {
+  flex-shrink: 0;
+  margin-right: -8px;
+  margin-left: 4px;
 }
 
 .action-btn {

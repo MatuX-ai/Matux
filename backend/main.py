@@ -200,6 +200,15 @@ async def _do_startup(app: FastAPI, start_time: float):
     # 导入所有模型以确保它们被注册到 Base.metadata
     # 按依赖顺序导入：先导入基础模型，再导入依赖模型
     from models.ai_request import AIRequest  # noqa: F401
+    from models.ai_teacher_persistence import (  # noqa: F401
+        AiTeacherEventHistoryRow,
+        AiTeacherLiveSettingRow,
+        AiTeacherMemoryRow,
+        AiTeacherPersonaRow,
+        AiTeacherProfileRow,
+        AiTeacherSessionRow,
+        AiTeacherUserHistoryRow,
+    )
     from models.ar_vr_content import ARVRContent  # noqa: F401
     from models.content_store import ContentItem  # noqa: F401
     from models.course_version import CourseVersion  # noqa: F401
@@ -214,6 +223,11 @@ async def _do_startup(app: FastAPI, start_time: float):
     from models.oauth_account import OAuthAccount  # noqa: F401
     from models.payment import Payment  # noqa: F401
     from models.permission import Permission  # noqa: F401
+    from models.share import (  # noqa: F401 【P3-C】社交化分享
+        InviteCode,
+        InviteRecord,
+        ShareCard,
+    )
     from models.sponsorship import Sponsorship  # noqa: F401
     from models.subscription import SubscriptionPlan  # noqa: F401
     from models.subscription_fsm import SubscriptionFSM  # noqa: F401
@@ -266,6 +280,33 @@ async def _do_startup(app: FastAPI, start_time: float):
 
     # 初始化数据库模块注册表（带幂等性保护）
     await _init_registry_manager()
+
+    # 【P3-B】AI 教师实时推送：注册触发器 + 启动调度器
+    try:
+        from services.ai_teacher_scheduler import ai_teacher_scheduler
+        from services.ai_teacher_triggers import register as register_ai_teacher
+
+        register_ai_teacher()
+        await ai_teacher_scheduler.start()
+        logger.info("✅ AI 教师实时推送系统已启动")
+    except Exception as e:
+        logger.warning(f"⚠️  AI 教师实时推送系统启动失败: {e}")
+
+    # 【P3-D-2】启动 Redis Pub/Sub 订阅桥
+    if (
+        settings.AI_TEACHER_PERSISTENCE_BACKEND == "redis"
+        and settings.AI_TEACHER_PERSISTENCE_USE_PUBSUB
+    ):
+        try:
+            from cache.repository.redis_pubsub import start_pubsub_bridge
+
+            publisher_id = start_pubsub_bridge()
+            if publisher_id:
+                logger.info(f"✅ AI 教师 Redis Pub/Sub 已启动 (publisher={publisher_id})")
+            else:
+                logger.warning("⚠️  AI 教师 Redis Pub/Sub 启动失败，将以无广播模式运行")
+        except Exception as e:
+            logger.warning(f"⚠️  AI 教师 Redis Pub/Sub 启动异常: {e}")
 
 
 async def _init_registry_manager():
@@ -524,6 +565,32 @@ async def _do_shutdown(app: FastAPI):
     global _startup_completed, _registry_initialized
 
     logger.info(f"Shutting down {settings.APP_NAME}")
+
+    # 【P3-B】停止 AI 教师调度器 + 反注册触发器
+    try:
+        from services.ai_teacher_scheduler import ai_teacher_scheduler
+        from services.ai_teacher_triggers import unregister as unregister_ai_teacher
+
+        await ai_teacher_scheduler.stop()
+        unregister_ai_teacher()
+    except Exception as e:
+        logger.warning(f"AI 教师系统关闭异常: {e}")
+
+    # 【P3-B】AI 教师持久化层：关闭前 flush（避免 debounced 未触发的数据丢失）
+    try:
+        from cache.ai_teacher_persistence import flush_all_repos
+
+        flush_all_repos()
+    except Exception as e:
+        logger.warning(f"AI 教师持久化 flush 异常: {e}")
+
+    # 【P3-D-2】停止 Redis Pub/Sub 订阅桥
+    try:
+        from cache.repository.redis_pubsub import stop_pubsub_bridge
+
+        stop_pubsub_bridge()
+    except Exception as e:
+        logger.warning(f"AI 教师 Pub/Sub 停止异常: {e}")
 
     # 取消后台预加载任务（带超时保护）
     preload_task = getattr(app.state, '_preload_task', None)

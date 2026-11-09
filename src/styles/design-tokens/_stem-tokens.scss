@@ -441,5 +441,35 @@ $stem-statusbar-border: 1px solid $stem-divider;
 
 // AI 浮动按钮变量
 $stem-floating-ai-size: 56px;
-$stem-floating-ai-shadow: 0 8px 24px rgba(5, 150, 105, 0.4);
-$stem-floating-ai-shadow-hover: 0 12px 32px rgba(5, 150, 105, 0.5);
+$stem-floating-ai-shadow: 0 8px 24px rgb(5 150 105 / 40%);
+$stem-floating-ai-shadow-hover: 0 12px 32px rgb(5 150 105 / 50%);
+
+// =============================================================================
+// P0 游戏化升级 - 段位色 + 动效曲线 (Plan §3 共享基建)
+// =============================================================================
+
+// 5 段位色（Lv1-3 青铜 / Lv4-5 白银 / Lv6-8 黄金 / Lv9 钻石 / Lv10 星耀）
+$stem-tier-bronze: #b45309; // Amber-700
+$stem-tier-silver: #94a3b8; // Slate-400
+$stem-tier-gold: #f59e0b; // Amber-500
+$stem-tier-diamond: #06b6d4; // Cyan-500
+$stem-tier-star: #ec4899; // Pink-500
+
+// 全局游戏化动效曲线与时长
+$stem-ease-bounce: cubic-bezier(0.34, 1.56, 0.64, 1);
+$stem-ease-smooth: cubic-bezier(0.4, 0, 0.2, 1);
+$stem-dur-quick: 200ms;
+$stem-dur-reward: 600ms;
+$stem-dur-ritual: 2400ms;
+
+// FAB 4 态徽章色
+$stem-fab-idle: #059669; // 绿
+$stem-fab-message: #3b82f6; // 蓝
+$stem-fab-reward: #f59e0b; // 金
+$stem-fab-stuck: #f97316; // 橙
+
+// z-index 层级（LevelUpModal 必须高于一切）
+$stem-z-fab: 100;
+$stem-z-nav: 1000;
+$stem-z-modal: 1500;
+$stem-z-sparkle: 2000;

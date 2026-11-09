@@ -12,7 +12,7 @@
 import { HttpClient } from '@angular/common/http';
 import { Injectable } from '@angular/core';
 import { BehaviorSubject, Observable, of } from 'rxjs';
-import { catchError, tap } from 'rxjs/operators';
+import { catchError, tap, timeout } from 'rxjs/operators';
 
 /** 知识层级 */
 export type KnowledgeLayer = 'global' | 'stage' | 'personal';
@@ -112,6 +112,8 @@ export class VectorKnowledgeService {
         top_k: topK,
       })
       .pipe(
+        // 【P0-B 修复】RAG 检索若挂起会阻塞整个对话链路，必须有超时兑底。
+        timeout(3_000),
         tap((result) => this.lastRagResultSubject.next(result)),
         catchError(() => {
           const mockResult = this.createMockRAGResult(query, stage, topK);

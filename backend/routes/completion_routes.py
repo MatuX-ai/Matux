@@ -14,7 +14,7 @@ from fastapi import (
 )
 
 from ..ai_service.completion_memory import completion_memory
-from ..database.tenant_aware_session import get_db_session
+from ..database.tenant_aware_session import get_sync_session
 from ..middleware.permission_middleware import get_current_user
 from ..models.ai_completion import (
     CompletionConfig,
@@ -336,7 +336,7 @@ async def health_check():
 
         # 检查数据库连接
         try:
-            async with get_db_session() as db:
+            async with get_sync_session() as db:
                 await db.execute("SELECT 1")
                 status["components"]["database"] = "healthy"
         except Exception:

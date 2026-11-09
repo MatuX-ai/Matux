@@ -168,7 +168,7 @@ contextBridge.exposeInMainWorld('electronAPI', {
     const validChannels = ['app-event', 'from-backend', 'window-blur', 'window-focus',
       'fullscreen-enter', 'fullscreen-leave', 'window-resize', 'open-file',
       'update-available', 'auto-updater-status', 'backend-disconnected', 'backend-reconnected',
-      'backend:module-status', 'backend-status-change', 'backend-degraded'];
+      'backend:module-status', 'backend-status-change', 'backend-degraded', 'proxy-error'];
     if (validChannels.includes(channel)) {
       ipcRenderer.on(channel, (_event, ...args) => func(...args));
     }
@@ -214,6 +214,38 @@ contextBridge.exposeInMainWorld('electronAPI', {
   /** 监听快捷键事件 */
   onShortcut: (callback) => {
     ipcRenderer.on('shortcut', (_event, action) => callback(action));
+  },
+
+  // ==================== 无边框自定义标题栏（P3） ====================
+  // frame:false 后窗口的拖动、最小化/最大化/关闭全部由渲染进程的自定义
+  // 标题栏接管。仅指向主窗口（splash 窗口不暴露这套 API）。
+  windowControls: {
+    /** 最小化主窗口 */
+    minimize: () => ipcRenderer.invoke('window:minimize'),
+    /** 最大化 / 还原主窗口 */
+    maximize: () => ipcRenderer.invoke('window:maximize'),
+    /** 关闭主窗口（有托盘时主进程会拦为隐藏到托盘） */
+    close: () => ipcRenderer.invoke('window:close'),
+    /** 查询当前是否最大化 */
+    isMaximized: () => ipcRenderer.invoke('window:is-maximized'),
+    /**
+     * 监听最大化状态变化
+     * @param {(isMaximized: boolean) => void} callback
+     * @returns {() => void} 取消监听函数（组件销毁时必须调用，避免泄漏）
+     */
+    onMaximizeChange: (callback) => {
+      const listener = (_event, isMaximized) => {
+        try {
+          callback(Boolean(isMaximized));
+        } catch (_err) {
+          /* 渲染进程回调异常不能污染主进程事件循环 */
+        }
+      };
+      ipcRenderer.on('window:maximize-change', listener);
+      return () => ipcRenderer.removeListener('window:maximize-change', listener);
+    },
+    /** 当前运行平台（win32 / darwin / linux），用于隐藏 macOS 上的自定义按钮 */
+    platform: process.platform,
   },
 
   // ==================== 自动更新 ====================

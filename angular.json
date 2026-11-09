@@ -47,6 +47,11 @@
                 "input": "src/assets",
                 "output": "/assets",
                 "ignore": ["**/*.ts"]
+              },
+              {
+                "glob": "**/*",
+                "input": "node_modules/monaco-editor/min/vs",
+                "output": "/assets/monaco/min/vs"
               }
             ],
             "styles": [

@@ -2,11 +2,20 @@
 /**
  * AI-Edu 学习进度 WebSocket 同步服务
  * 支持实时学习进度同步、多设备协作
+ *
+ * 【P3-A-2】扩展：检测 gamification_* 事件类型并分发给 GamificationEventBusService
  */
 
-import { Injectable, OnDestroy } from '@angular/core';
+import { Injectable, OnDestroy, inject } from '@angular/core';
 import { BehaviorSubject, Observable, Subject } from 'rxjs';
 import { filter, map, takeUntil } from 'rxjs/operators';
+
+import { isDesktopOrigin, resolveBackendWsBase } from '../utils/backend-url.util';
+import {
+  GamificationEventBusService,
+  GamificationEventType,
+  isAiTeacherEvent,
+} from './gamification-event-bus.service';
 
 export interface WebSocketMessage {
   type: string;
@@ -96,6 +105,9 @@ export class AiEduWebSocketService implements OnDestroy {
 
   private destroy$ = new Subject<void>();
 
+  // 【P3-A-2】游戏化事件总线注入
+  private readonly gamificationBus = inject(GamificationEventBusService);
+
   private messageSubject = new Subject<WebSocketMessage>();
   private connectionStatusSubject = new Subject<
     'connecting' | 'connected' | 'disconnected' | 'error'
@@ -173,16 +185,29 @@ export class AiEduWebSocketService implements OnDestroy {
     this.currentUserId = userId;
     this.currentOrgId = orgId;
 
+    // 【P0-C 修复】调用方传的是 window.location.origin，桌面端为 app://. ；
+    //   先归一化到真实后端，否则 WebSocket 会指向 host=app 而无法解析。
+    const normalizedBase = isDesktopOrigin(baseUrl) ? resolveBackendWsBase(baseUrl) : baseUrl;
+
+    // 【B1 修复】浏览器 WebSocket 无法自定义 Authorization 头，而后端 /ws/ai-edu 已改为
+    //   WS 专用鉴权（从 query 取 JWT）。这里把登录态 token 拼到 query 上：
+    //   缺失时连接会被服务端 1008 拒绝（与旧的 500 相比至少语义明确）。
+    const authToken =
+      (typeof localStorage !== 'undefined' &&
+        (localStorage.getItem('access_token') || sessionStorage.getItem('access_token'))) ||
+      '';
+    const tokenQuery = authToken ? `&token=${encodeURIComponent(authToken)}` : '';
+
     // 构建 WebSocket URL
     let wsUrl: string;
-    if (baseUrl.startsWith('ws://') || baseUrl.startsWith('wss://')) {
+    if (normalizedBase.startsWith('ws://') || normalizedBase.startsWith('wss://')) {
       // baseUrl 已经包含协议前缀，直接使用（避免 ws://ws:// 双前缀问题）
-      wsUrl = `${baseUrl}/ws/ai-edu/progress/${userId}?org_id=${orgId}`;
+      wsUrl = `${normalizedBase}/ws/ai-edu/progress/${userId}?org_id=${orgId}${tokenQuery}`;
     } else {
       // baseUrl 只包含主机部分，需要添加协议前缀
-      const protocol = baseUrl.startsWith('https') ? 'wss' : 'ws';
-      const host = baseUrl.replace(/^https?:\/\//, '');
-      wsUrl = `${protocol}://${host}/ws/ai-edu/progress/${userId}?org_id=${orgId}`;
+      const protocol = normalizedBase.startsWith('https') ? 'wss' : 'ws';
+      const host = normalizedBase.replace(/^https?:\/\//, '');
+      wsUrl = `${protocol}://${host}/ws/ai-edu/progress/${userId}?org_id=${orgId}${tokenQuery}`;
     }
     this.wsUrl = wsUrl;
 
@@ -204,10 +229,19 @@ export class AiEduWebSocketService implements OnDestroy {
         try {
           const message = JSON.parse(event.data as string) as WebSocketMessage;
 
-          // 收到 pong 响应，更新最后 pong 时间
+          // 收到 pong 响应，更新最后 pong 时间 + 同步 live_settings（【P3-B】）
           if (message.type === 'pong') {
             this.lastPongTime = Date.now();
+            const liveSettings = (message as unknown as {
+              live_settings?: Record<string, unknown>;
+            }).live_settings;
+            if (liveSettings) {
+              this.applyLiveSettingsFromServer(liveSettings);
+            }
           }
+
+          // 【P3-A-2 + P3-B】分派游戏化/AI 教师事件到 GamificationEventBusService
+          this.routeGamificationEvent(message);
 
           this.messageSubject.next(message);
         } catch (error) {
@@ -258,6 +292,28 @@ export class AiEduWebSocketService implements OnDestroy {
       nextDelay: 0,
     });
     this.connectionStatusSubject.next('disconnected');
+  }
+
+  /**
+   * 【P3-A-2 + P3-B】分派游戏化事件到 GamificationEventBusService
+   *
+   * 涵盖 P3-A 的 3 类游戏化事件 + P3-B 新增的 3 类 AI 教师实时事件。
+   * 普通学习进度事件仍通过 messageSubject 流转，保持向后兼容。
+   */
+  private routeGamificationEvent(message: WebSocketMessage): void {
+    const t = message.type;
+    if (
+      t === GamificationEventType.ACHIEVEMENT_UNLOCKED ||
+      t === GamificationEventType.NODE_STATUS_UPDATED ||
+      t === GamificationEventType.SET_COMPLETED ||
+      isAiTeacherEvent(t)
+    ) {
+      this.gamificationBus.publish({
+        type: t,
+        data: message.data,
+        timestamp: message.timestamp,
+      });
+    }
   }
 
   /**
@@ -427,6 +483,46 @@ export class AiEduWebSocketService implements OnDestroy {
 
   // ========== 心跳检测 ==========
 
+  // 【P3-B】应用后端推送的 live_settings 快照
+  private applyLiveSettingsFromServer(raw: Record<string, unknown>): void {
+    try {
+      // 通过 window 全局变量桥接，避免循环依赖
+      // live service 启动时把自己的实例挂到 window.__aiTeacherLiveService
+      const live = (
+        window as unknown as {
+          __aiTeacherLiveService?: {
+            applySettings?: (s: unknown) => void;
+          };
+        }
+      ).__aiTeacherLiveService;
+      if (live && typeof live.applySettings === 'function') {
+        live.applySettings(this.normalizeLiveSettings(raw));
+      }
+    } catch {
+      // 静默失败
+    }
+  }
+
+  private normalizeLiveSettings(
+    raw: Record<string, unknown>
+  ): Record<string, unknown> {
+    return {
+      userId: raw['user_id'] ?? raw['userId'] ?? '',
+      enabled: raw['enabled'] ?? true,
+      celebrationEnabled:
+        raw['celebration_enabled'] ?? raw['celebrationEnabled'] ?? true,
+      suggestionEnabled:
+        raw['suggestion_enabled'] ?? raw['suggestionEnabled'] ?? true,
+      nudgeEnabled: raw['nudge_enabled'] ?? raw['nudgeEnabled'] ?? true,
+      dndStartHour: raw['dnd_start_hour'] ?? raw['dndStartHour'] ?? 22,
+      dndEndHour: raw['dnd_end_hour'] ?? raw['dndEndHour'] ?? 8,
+      maxPerHour: raw['max_per_hour'] ?? raw['maxPerHour'] ?? 3,
+      minIntervalSeconds:
+        raw['min_interval_seconds'] ?? raw['minIntervalSeconds'] ?? 300,
+      updatedAt: raw['updated_at'] ?? raw['updatedAt'] ?? new Date().toISOString(),
+    };
+  }
+
   /**
    * 启动心跳定时器
    */
@@ -508,19 +604,10 @@ export class AiEduWebSocketService implements OnDestroy {
    * 【P3修复】使用环境配置的端口而非硬编码
    */
   private getBaseUrl(): string {
-    // 优先使用 environment.wsUrl（Angular 环境变量）
-    // 注意：在开发环境使用代理时，origin 就是正确的
-    const origin = window.location.origin;
-
-    // 开发环境（使用 Angular 代理）
-    if (origin.includes('localhost') || origin.includes('127.0.0.1')) {
-      // 开发环境 Angular 代理会自动转发 /ws 到后端
-      // WebSocket 连接也使用相同的 origin
-      return origin.replace(/^http/, 'ws');
-    }
-
-    // 生产环境：使用当前 origin
-    return origin;
+    // 【P0-C 修复】桌面端 origin 是 app://. / file://，
+    //   直接拼会得到 ws://app://./ws/... → ERR_NAME_NOT_RESOLVED。
+    //   resolveBackendWsBase() 会把桌面端替换成真实后端（默认 ws://localhost:8000）。
+    return resolveBackendWsBase(window.location.origin);
   }
 
   ngOnDestroy(): void {

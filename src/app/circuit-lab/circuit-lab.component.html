@@ -1,0 +1,120 @@
+<div class="circuit-lab" [class.fullscreen]="isFullscreen">
+  <!-- 顶部标题栏 + 工具条 -->
+  <header class="lab-toolbar">
+    <div class="lab-title">
+      <mat-icon class="lab-title__icon" aria-hidden="true">electrical_services</mat-icon>
+      <div class="lab-title__text">
+        <h1>{{ i18n.translate('circuitLab.title') }}</h1>
+        <p>{{ i18n.translate('circuitLab.subtitle') }}</p>
+      </div>
+    </div>
+
+    <div class="lab-actions">
+      <button
+        mat-stroked-button
+        type="button"
+        class="lab-action"
+        [disabled]="loading"
+        (click)="resetCircuit()"
+        [matTooltip]="i18n.translate('circuitLab.resetHint')"
+      >
+        <mat-icon>restart_alt</mat-icon>
+        <span>{{ i18n.translate('circuitLab.reset') }}</span>
+      </button>
+
+      <button
+        mat-stroked-button
+        type="button"
+        class="lab-action"
+        (click)="toggleFullscreen()"
+        [matTooltip]="
+          isFullscreen
+            ? i18n.translate('circuitLab.exitFullscreen')
+            : i18n.translate('circuitLab.fullscreen')
+        "
+      >
+        <mat-icon>{{ isFullscreen ? 'fullscreen_exit' : 'fullscreen' }}</mat-icon>
+        <span>{{
+          isFullscreen
+            ? i18n.translate('circuitLab.exitFullscreen')
+            : i18n.translate('circuitLab.fullscreen')
+        }}</span>
+      </button>
+
+      <button mat-stroked-button type="button" class="lab-action" (click)="openLicense()">
+        <mat-icon>gavel</mat-icon>
+        <span>{{ i18n.translate('circuitLab.license') }}</span>
+      </button>
+    </div>
+  </header>
+
+  <!-- 实验主区域 -->
+  <main class="lab-stage">
+    <iframe
+      #frame
+      class="lab-frame"
+      [src]="src"
+      title="CircuitJS 电路虚拟实验"
+      referrerpolicy="no-referrer"
+      (load)="onFrameLoad()"
+    ></iframe>
+
+    <!-- 加载态 -->
+    <div class="lab-overlay" *ngIf="loading && !failed">
+      <div class="lab-spinner" aria-hidden="true"></div>
+      <p>{{ i18n.translate('circuitLab.loading') }}</p>
+    </div>
+
+    <!-- 错误态 -->
+    <div class="lab-overlay lab-overlay--error" *ngIf="failed">
+      <mat-icon aria-hidden="true">report_problem</mat-icon>
+      <p class="lab-overlay__title">{{ i18n.translate('circuitLab.error') }}</p>
+      <p class="lab-overlay__hint">{{ i18n.translate('circuitLab.errorHint') }}</p>
+      <button mat-flat-button color="primary" type="button" (click)="retry()">
+        <mat-icon>refresh</mat-icon>
+        <span>{{ i18n.translate('circuitLab.retry') }}</span>
+      </button>
+    </div>
+  </main>
+
+  <!-- 底部说明 -->
+  <footer class="lab-footer">
+    <mat-icon aria-hidden="true">info</mat-icon>
+    <span>{{ i18n.translate('circuitLab.footer') }}</span>
+  </footer>
+
+  <!-- 开源许可（GPL-2.0 合规入口） -->
+  <div class="lab-license-mask" *ngIf="showLicense" (click)="closeLicense()">
+    <section
+      class="lab-license"
+      role="dialog"
+      aria-modal="true"
+      [attr.aria-label]="i18n.translate('circuitLab.licenseTitle')"
+      (click)="$event.stopPropagation()"
+    >
+      <header class="lab-license__header">
+        <h2>{{ i18n.translate('circuitLab.licenseTitle') }}</h2>
+        <button mat-icon-button type="button" (click)="closeLicense()" aria-label="关闭">
+          <mat-icon>close</mat-icon>
+        </button>
+      </header>
+
+      <div class="lab-license__body">
+        <p class="lab-license__item"><strong>CircuitJS1</strong> — {{ i18n.translate('circuitLab.licenseCircuitJs') }}</p>
+        <ul>
+          <li>{{ i18n.translate('circuitLab.licenseSource') }}：https://github.com/sharpie7/circuitjs1</li>
+          <li>{{ i18n.translate('circuitLab.licenseProduct') }}：https://www.falstad.com/circuit/</li>
+          <li>{{ i18n.translate('circuitLab.licenseText') }}：assets/circuitjs/LICENSE（GPL-2.0 全文）</li>
+          <li>{{ i18n.translate('circuitLab.licenseNotice') }}：assets/circuitjs/NOTICE.md</li>
+        </ul>
+        <p class="lab-license__note">{{ i18n.translate('circuitLab.licenseModifications') }}</p>
+      </div>
+
+      <footer class="lab-license__footer">
+        <button mat-flat-button color="primary" type="button" (click)="closeLicense()">
+          {{ i18n.translate('circuitLab.licenseClose') }}
+        </button>
+      </footer>
+    </section>
+  </div>
+</div>

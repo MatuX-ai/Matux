@@ -25,11 +25,13 @@ import {
   Component,
   OnDestroy,
   OnInit,
+  inject,
 } from '@angular/core';
 import { MatButtonModule } from '@angular/material/button';
 import { MatCardModule } from '@angular/material/card';
 import { MatIconModule } from '@angular/material/icon';
 import { MatProgressBarModule } from '@angular/material/progress-bar';
+import { MatTabsModule } from '@angular/material/tabs';
 import { MatTooltipModule } from '@angular/material/tooltip';
 import { NgxEchartsModule, NGX_ECHARTS_CONFIG } from 'ngx-echarts';
 import { Subject } from 'rxjs';
@@ -39,6 +41,11 @@ import type { SkillTreeNode, StudentLearningProfile } from '../../../core/models
 import type { User } from '../../../core/models/auth.models';
 import { AITeacherService } from '../../../core/services/ai-teacher.service';
 import { AuthService } from '../../../core/services/auth.service';
+import { ActivatedRoute, Router } from '@angular/router';
+import { LearningMapComponent } from '../learning-map/learning-map.component';
+import {
+  GamificationEventBusService,
+} from '../../../core/services/gamification-event-bus.service';
 
 /**
  * 【P1 修复】画像加载兑底超时。Service 层已有 8s HTTP timeout，但兜底层 catchError
@@ -56,8 +63,10 @@ const LOAD_FALLBACK_TIMEOUT_MS = 12_000;
     MatIconModule,
     MatButtonModule,
     MatProgressBarModule,
+    MatTabsModule,
     MatTooltipModule,
     NgxEchartsModule,
+    LearningMapComponent,
   ],
   // 【P4-B 修复】在 standalone 组件级别提供 NGX_ECHARTS_CONFIG，
   //   避免 NG0201: No provider found for InjectionToken NGX_ECHARTS_CONFIG。
@@ -85,6 +94,9 @@ export class LearningProfileComponent implements OnInit, OnDestroy {
   expandAll = false;
   expandedCategories = new Set<string>();
 
+  // 【P2-A】技能视图模式：'map' = 学习地图（默认），'list' = 技能树列表
+  skillViewMode: 'map' | 'list' = 'map';
+
   // 技能树分类
   skillTreeCategories: Array<{ id: string; name: string; children: SkillTreeNode[] }> = [];
 
@@ -94,17 +106,83 @@ export class LearningProfileComponent implements OnInit, OnDestroy {
 
   currentUser: User | null = null;
 
+  // 【P2-C】从成就详情跳转过来的 highlightSkill 查询参数
+  highlightSkillId: string | null = null;
+
   // 供模板使用的 Math
   readonly Math = Math;
+
+  // 【P3-A-2】游戏化事件总线（用于响应实时节点状态变化）
+  private readonly gamificationBus = inject(GamificationEventBusService);
 
   constructor(
     private aiTeacherService: AITeacherService,
     private authService: AuthService,
-    private cdr: ChangeDetectorRef
-  ) {}
+    private cdr: ChangeDetectorRef,
+    private router: Router,
+    private route: ActivatedRoute
+  ) {
+    // 【P3-A-2】订阅游戏化事件总线 - 节点更新时增量刷新 profile
+    this.gamificationBus
+      .onNodeStatusUpdated()
+      .pipe(takeUntil(this.destroy$))
+      .subscribe(() => {
+        // 节点状态变化 → 异步重新拉取 profile（确保 tracks / radar / skillTree 一致）
+        const userId = this.currentUser?.id ?? 1;
+        this.loadProfile(Number(userId));
+      });
+
+    this.gamificationBus
+      .onAchievementUnlocked()
+      .pipe(takeUntil(this.destroy$))
+      .subscribe(() => {
+        // 成就解锁也可能改变 profile（节点状态关联成就），同步刷新
+        const userId = this.currentUser?.id ?? 1;
+        this.loadProfile(Number(userId));
+      });
+  }
+
+  /**
+   * 【P2-A】学习地图节点点击 → 跳转到课程详情
+   */
+  onNavigateToCourse(course: { courseId: string; courseTitle: string }): void {
+    if (course?.courseId) {
+      void this.router.navigate(['/user/courses', course.courseId, 'learn'], {
+        queryParams: { title: course.courseTitle },
+      });
+    }
+  }
+
+  /**
+   * 【P2-C】学习地图节点关联的成就 → 跳转到成就墙
+   */
+  onNavigateToAchievement(achievementId: string): void {
+    if (achievementId) {
+      void this.router.navigate(['/user/achievements'], {
+        queryParams: { focus: achievementId },
+      });
+    }
+  }
+
+  /**
+   * 【P2-A】切换技能视图模式
+   */
+  setSkillViewMode(mode: 'map' | 'list'): void {
+    this.skillViewMode = mode;
+    this.cdr.markForCheck();
+  }
 
   ngOnInit(): void {
-    // 【P1 修复】兑底 timer：超时后若仍处于 loading，强制切换 error 状态并提供重试入口。
+    // 【P2-C】读取 highlightSkill 查询参数（从成就详情跳转过来时使用）
+    this.route.queryParams.pipe(takeUntil(this.destroy$)).subscribe((params) => {
+      const newSkill = params['highlightSkill'] ?? null;
+      if (newSkill !== this.highlightSkillId) {
+        this.highlightSkillId = newSkill;
+        this.cdr.markForCheck();
+      }
+    });
+  
+    // 【P1 修复】兜底 timer：超时后若仍处于 loading，强制切换 error 状态并提供重试入口。
     //   即使 service / HttpClient 上下游意外 hang，UI 也不会永远显示 spinner。
     const fallbackTimer = setTimeout(() => {
       if (this.isLoading && !this.profile) {

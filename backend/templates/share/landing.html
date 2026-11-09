@@ -1,0 +1,265 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <meta property="og:title" content="{{ og_title }}">
+  <meta property="og:description" content="{{ og_description }}">
+  <meta property="og:image" content="{{ og_image }}">
+  <meta property="og:url" content="{{ og_url }}">
+  <meta property="og:type" content="article">
+  <meta name="twitter:card" content="summary_large_image">
+  <meta name="twitter:title" content="{{ og_title }}">
+  <meta name="twitter:description" content="{{ og_description }}">
+  <meta name="twitter:image" content="{{ og_image }}">
+  <title>{{ og_title }}</title>
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, "PingFang SC", "Microsoft YaHei", sans-serif;
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      min-height: 100vh;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 20px;
+      color: #333;
+    }
+    .container {
+      max-width: 420px;
+      width: 100%;
+      background: #fff;
+      border-radius: 16px;
+      box-shadow: 0 20px 60px rgba(0,0,0,0.2);
+      overflow: hidden;
+    }
+    .cover {
+      width: 100%;
+      aspect-ratio: 16/9;
+      background: #f5f5f5;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      overflow: hidden;
+    }
+    .cover img {
+      max-width: 80%;
+      max-height: 80%;
+      object-fit: contain;
+    }
+    .cover.placeholder {
+      background: linear-gradient(135deg, #FFD700 0%, #FF6B6B 100%);
+      color: #fff;
+      font-size: 48px;
+      font-weight: bold;
+    }
+    .content {
+      padding: 24px;
+    }
+    .title {
+      font-size: 22px;
+      font-weight: 700;
+      color: #1a1a1a;
+      margin-bottom: 8px;
+      line-height: 1.4;
+    }
+    .subtitle {
+      font-size: 14px;
+      color: #666;
+      margin-bottom: 16px;
+      line-height: 1.6;
+    }
+    .description {
+      font-size: 15px;
+      color: #333;
+      line-height: 1.7;
+      padding: 16px;
+      background: #f8f9fa;
+      border-radius: 8px;
+      border-left: 4px solid #667eea;
+      margin-bottom: 20px;
+    }
+    .creator-info {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      padding: 12px;
+      background: #f8f9fa;
+      border-radius: 8px;
+      margin-bottom: 20px;
+    }
+    .creator-info .avatar {
+      width: 40px;
+      height: 40px;
+      border-radius: 50%;
+      background: linear-gradient(135deg, #667eea, #764ba2);
+      color: #fff;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-weight: bold;
+    }
+    .creator-info .name {
+      font-size: 14px;
+      color: #333;
+    }
+    .creator-info .meta {
+      font-size: 12px;
+      color: #999;
+    }
+    .actions {
+      padding: 0 24px 24px;
+    }
+    .actions-title {
+      font-size: 13px;
+      color: #999;
+      margin-bottom: 12px;
+      text-align: center;
+    }
+    .share-buttons {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 8px;
+      margin-bottom: 16px;
+    }
+    .share-btn {
+      padding: 12px 8px;
+      border: none;
+      border-radius: 8px;
+      background: #f8f9fa;
+      color: #333;
+      font-size: 13px;
+      cursor: pointer;
+      transition: all 0.2s;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 4px;
+    }
+    .share-btn:hover {
+      background: #e9ecef;
+      transform: translateY(-2px);
+    }
+    .share-btn .icon {
+      font-size: 24px;
+    }
+    .share-btn.wechat { background: #07C160; color: #fff; }
+    .share-btn.weibo { background: #E6162D; color: #fff; }
+    .share-btn.x { background: #000; color: #fff; }
+    .share-btn.copy { background: #667eea; color: #fff; }
+    .footer {
+      padding: 16px 24px;
+      background: #f8f9fa;
+      text-align: center;
+      font-size: 12px;
+      color: #999;
+    }
+    .footer a {
+      color: #667eea;
+      text-decoration: none;
+    }
+  </style>
+</head>
+<body>
+  <main class="container">
+    {% if card.cover_image %}
+    <div class="cover">
+      <img src="{{ card.cover_image }}" alt="{{ card.title }}">
+    </div>
+    {% else %}
+    <div class="cover placeholder">
+      {{ card.card_type[0]|upper }}
+    </div>
+    {% endif %}
+
+    <div class="content">
+      <h1 class="title">{{ card.title }}</h1>
+      {% if card.subtitle %}
+      <p class="subtitle">{{ card.subtitle }}</p>
+      {% endif %}
+
+      {% if card.description %}
+      <div class="description">{{ card.description }}</div>
+      {% endif %}
+
+      {% if creator %}
+      <div class="creator-info">
+        <div class="avatar">{{ creator.username[0]|upper }}</div>
+        <div>
+          <div class="name">{{ creator.username }}</div>
+          <div class="meta">{{ card.view_count }} 次浏览 · {{ card.share_count }} 次分享</div>
+        </div>
+      </div>
+      {% endif %}
+    </div>
+
+    <div class="actions">
+      <div class="actions-title">分享到</div>
+      <div class="share-buttons">
+        <button class="share-btn wechat" onclick="shareTo('wechat')">
+          <span class="icon">💬</span>
+          <span>微信</span>
+        </button>
+        <button class="share-btn weibo" onclick="shareTo('weibo')">
+          <span class="icon">🌐</span>
+          <span>微博</span>
+        </button>
+        <button class="share-btn x" onclick="shareTo('x')">
+          <span class="icon">𝕏</span>
+          <span>X</span>
+        </button>
+        <button class="share-btn copy" onclick="copyLink()">
+          <span class="icon">📋</span>
+          <span>复制</span>
+        </button>
+      </div>
+    </div>
+
+    <div class="footer">
+      <a href="/">iMato 学习平台</a> ·
+      <a href="{{ card.qr_code_url }}" download>下载二维码</a>
+    </div>
+  </main>
+
+  <script>
+    const SHORT_CODE = "{{ card.short_code }}";
+    const SHARE_URL = "{{ short_url }}";
+
+    function trackShare(channel) {
+      fetch("/api/v1/share/cards/" + SHORT_CODE + "/track-share?channel=" + channel, {
+        method: "POST",
+      }).catch(function(err) { console.log("track failed:", err); });
+    }
+
+    function shareTo(channel) {
+      trackShare(channel);
+      // 实际平台分享需要对应 APP scheme，此处仅跳转示意
+      if (channel === "wechat") {
+        alert("请使用微信扫描页面二维码分享");
+      } else if (channel === "weibo") {
+        window.open("https://service.weibo.com/share/share.php?url=" + encodeURIComponent(SHARE_URL) + "&title=" + encodeURIComponent("{{ og_title }}"), "_blank");
+      } else if (channel === "x") {
+        window.open("https://twitter.com/intent/tweet?url=" + encodeURIComponent(SHARE_URL) + "&text=" + encodeURIComponent("{{ og_title }}"), "_blank");
+      }
+    }
+
+    function copyLink() {
+      if (navigator.clipboard && navigator.clipboard.writeText) {
+        navigator.clipboard.writeText(SHARE_URL).then(function() {
+          alert("链接已复制");
+          trackShare("copy");
+        });
+      } else {
+        var ta = document.createElement("textarea");
+        ta.value = SHARE_URL;
+        document.body.appendChild(ta);
+        ta.select();
+        document.execCommand("copy");
+        document.body.removeChild(ta);
+        alert("链接已复制");
+        trackShare("copy");
+      }
+    }
+  </script>
+</body>
+</html>

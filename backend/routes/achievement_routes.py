@@ -20,6 +20,89 @@ logger = logging.getLogger(__name__)
 router = APIRouter(prefix="/api/v1/org/{org_id}/achievements", tags=["成就系统"])
 
 
+# ==================== 【P3-A-1】全局统计接口（PR #68 取自分支 C08） ====================
+
+
+@router.get("/stats/batch")
+async def get_achievements_stats_batch(
+    achievement_ids: Optional[str] = Query(
+        None,
+        description="逗号分隔的成就 ID 列表；不传返回所有",
+    ),
+    db: Session = Depends(get_sync_session),
+):
+    """批量获取成就的全局统计
+
+    返回字段：
+    - id: 成就 ID
+    - name: 成就名称
+    - rarity: 稀有度
+    - total_unlocked: 总解锁次数
+    - unlock_rate: 按组织的解锁率（百分比）
+    - global_unlock_rate: 全局解锁率（0-1）
+    - total_holders: 累计解锁用户数（去重）
+    - stats_updated_at: 统计更新时间
+    """
+    try:
+        service = get_achievement_service(db)
+        ids_list: Optional[List[int]] = None
+        if achievement_ids:
+            ids_list = [int(s.strip()) for s in achievement_ids.split(",") if s.strip()]
+        stats = service.get_badge_stats(achievement_ids=ids_list)
+        return {
+            "success": True,
+            "count": len(stats),
+            "data": stats,
+        }
+    except Exception as e:
+        logger.error(f"获取批量统计失败：{e}")
+        raise HTTPException(status_code=500, detail=str(e))
+
+
+@router.get("/stats/{achievement_id}")
+async def get_achievement_stats(
+    org_id: int,
+    achievement_id: int,
+    db: Session = Depends(get_sync_session),
+):
+    """获取单个成就的全局统计"""
+    try:
+        service = get_achievement_service(db)
+        stats = service.get_single_badge_stats(achievement_id)
+        if not stats:
+            raise HTTPException(status_code=404, detail="成就不存在")
+        return {"success": True, "data": stats}
+    except HTTPException:
+        raise
+    except Exception as e:
+        logger.error(f"获取成就统计失败：{e}")
+        raise HTTPException(status_code=500, detail=str(e))
+
+
+@router.post("/admin/{achievement_id}/recompute-stats")
+async def recompute_achievement_stats(
+    org_id: int,
+    achievement_id: int,
+    db: Session = Depends(get_sync_session),
+    current_user: User = Depends(get_current_user),
+):
+    """手动触发重算某个成就的全局统计（管理接口）
+
+    通常 unlock_achievement() 会自动调用。
+    """
+    try:
+        service = get_achievement_service(db)
+        result = service.recompute_global_stats(achievement_id)
+        if not result:
+            raise HTTPException(status_code=404, detail="成就不存在")
+        return {"success": True, "data": result}
+    except HTTPException:
+        raise
+    except Exception as e:
+        logger.error(f"重算统计失败：{e}")
+        raise HTTPException(status_code=500, detail=str(e))
+
+
 # ==================== 成就管理（管理员） ====================
 
 

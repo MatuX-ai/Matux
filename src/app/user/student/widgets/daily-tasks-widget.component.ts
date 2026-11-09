@@ -8,25 +8,52 @@
  */
 
 import { CommonModule } from '@angular/common';
-import { ChangeDetectionStrategy, Component, EventEmitter, Input, Output } from '@angular/core';
+import {
+  ChangeDetectionStrategy,
+  ChangeDetectorRef,
+  Component,
+  ElementRef,
+  EventEmitter,
+  Input,
+  OnDestroy,
+  Output,
+  QueryList,
+  ViewChildren,
+  inject,
+} from '@angular/core';
 import { MatCardModule } from '@angular/material/card';
 import { MatIconModule } from '@angular/material/icon';
 import { MatProgressBarModule } from '@angular/material/progress-bar';
 import { MatTooltipModule } from '@angular/material/tooltip';
+import { Subject } from 'rxjs';
+import { takeUntil } from 'rxjs/operators';
 
+import { OfflineBonusService } from '../../../core/services/offline-bonus.service';
+import { FeedbackFlyService } from '../../../core/services/feedback-fly.service';
+import { SparkleBurstComponent } from '../../../shared/components/sparkle-burst/sparkle-burst.component';
 import type { DailyTask } from '../services/student-dashboard-data.service';
 
 @Component({
   selector: 'app-daily-tasks-widget',
   standalone: true,
   changeDetection: ChangeDetectionStrategy.OnPush,
-  imports: [CommonModule, MatCardModule, MatIconModule, MatProgressBarModule, MatTooltipModule],
+  imports: [
+    CommonModule,
+    MatCardModule,
+    MatIconModule,
+    MatProgressBarModule,
+    MatTooltipModule,
+    SparkleBurstComponent,
+  ],
   template: `
     <mat-card class="tasks-widget" aria-label="每日任务">
       <div class="widget-header">
         <div class="title-group">
           <mat-icon class="title-icon">today</mat-icon>
           <h2 class="title">每日任务</h2>
+          <span *ngIf="offlineBonusActive" class="bonus-chip" aria-label="离线 2 倍经验">
+            ⚡ 2x
+          </span>
         </div>
         <div class="progress-info">
           <span class="progress-text">{{ completedCount }} / {{ tasks.length }}</span>
@@ -44,11 +71,13 @@ import type { DailyTask } from '../services/student-dashboard-data.service';
 
       <div class="tasks-list">
         <div
-          *ngFor="let task of tasks; trackBy: trackByTaskId"
+          *ngFor="let task of tasks; trackBy: trackByTaskId; let i = index"
+          #taskItem
           class="task-item"
           [class.completed]="task.completed"
+          [class.bursting]="burstingTaskId === task.id"
           [class]="'rarity-' + task.rarity"
-          (click)="onTaskClick(task)"
+          (click)="onTaskClick(task, taskItem)"
         >
           <!-- 左侧稀有度色条 -->
           <div class="rarity-bar"></div>
@@ -58,7 +87,9 @@ import type { DailyTask } from '../services/student-dashboard-data.service';
             <div class="task-header">
               <mat-icon class="task-icon">{{ task.icon }}</mat-icon>
               <span class="task-title">{{ task.title }}</span>
-              <span class="task-reward" *ngIf="!task.completed"> +{{ task.rewardExp }} EXP </span>
+              <span class="task-reward" *ngIf="!task.completed">
+                +{{ offlineBonusActive ? offlineBonus.applyMultiplier(task.rewardExp) : task.rewardExp }} EXP
+              </span>
             </div>
             <p class="task-desc">{{ task.description }}</p>
             <!-- 进度（针对 streak 类任务） -->
@@ -75,7 +106,7 @@ import type { DailyTask } from '../services/student-dashboard-data.service';
 
           <!-- 完成 checkbox -->
           <div class="task-action">
-            <div class="checkbox" [class.checked]="task.completed">
+            <div #checkboxEl class="checkbox" [class.checked]="task.completed">
               <mat-icon *ngIf="task.completed">check</mat-icon>
             </div>
           </div>
@@ -85,11 +116,21 @@ import type { DailyTask } from '../services/student-dashboard-data.service';
         </div>
       </div>
 
-      <!-- 全部完成提示 -->
+      <!-- 全部完成提示 + 长尾粒子 -->
       <div *ngIf="allCompleted" class="all-done-banner">
         <mat-icon>celebration</mat-icon>
         <span>太棒了！今天的任务全部完成 🎉</span>
       </div>
+
+      <!-- P0-1 共享粒子层 -->
+      <app-sparkle-burst
+        [active]="burstActive"
+        [x]="burstX"
+        [y]="burstY"
+        [count]="12"
+        [color]="'#fbbf24'"
+        [durationMs]="600"
+      ></app-sparkle-burst>
     </mat-card>
   `,
   styles: [
@@ -128,6 +169,25 @@ import type { DailyTask } from '../services/student-dashboard-data.service';
         color: var(--matux-color-text-primary, #1c1917);
         font-size: 18px;
         font-weight: 700;
+      }
+
+      .bonus-chip {
+        display: inline-flex;
+        align-items: center;
+        gap: 2px;
+        padding: 2px 8px;
+        border-radius: 999px;
+        background: linear-gradient(135deg, #f59e0b 0%, #d97706 100%);
+        color: #ffffff;
+        font-size: 10px;
+        font-weight: 800;
+        letter-spacing: 0.5px;
+        animation: bonus-chip-pulse 1.6s ease-in-out infinite;
+      }
+
+      @keyframes bonus-chip-pulse {
+        0%, 100% { transform: scale(1); }
+        50% { transform: scale(1.08); }
       }
 
       .progress-info {
@@ -171,6 +231,34 @@ import type { DailyTask } from '../services/student-dashboard-data.service';
           transform 200ms ease,
           box-shadow 200ms ease,
           background 200ms ease;
+      }
+
+      .task-item.bursting {
+        animation: task-burst 600ms cubic-bezier(0.34, 1.56, 0.64, 1);
+      }
+
+      @keyframes task-burst {
+        0% {
+          transform: scale(1) rotate(0);
+        }
+        30% {
+          transform: scale(1.05) rotate(2deg);
+          background: rgb(251 191 36 / 18%);
+        }
+        60% {
+          transform: scale(0.98) rotate(-1deg);
+        }
+        100% {
+          transform: scale(1) rotate(0);
+        }
+      }
+
+      @media (prefers-reduced-motion: reduce) {
+        .task-item.bursting {
+          animation: none;
+          background: rgb(251 191 36 / 25%);
+          transition: background 200ms ease;
+        }
       }
 
       .task-item:hover:not(.completed) {
@@ -338,9 +426,32 @@ import type { DailyTask } from '../services/student-dashboard-data.service';
     `,
   ],
 })
-export class DailyTasksWidgetComponent {
+export class DailyTasksWidgetComponent implements OnDestroy {
   @Input() tasks: DailyTask[] = [];
   @Output() taskCompleted = new EventEmitter<DailyTask>();
+
+  private readonly flyService = inject(FeedbackFlyService);
+  private readonly cdr = inject(ChangeDetectorRef);
+  private readonly destroy$ = new Subject<void>();
+
+  /** P1-2 离线倍率状态 */
+  offlineBonusActive = false;
+  readonly offlineBonus = inject(OfflineBonusService);
+  private offlineBonusSub = this.offlineBonus.isOffline$.subscribe((off) => {
+    if (this.offlineBonusActive !== off) {
+      this.offlineBonusActive = off;
+      this.cdr.markForCheck();
+    }
+  });
+
+  /** 触发粒子爆裂的位置（页面坐标） */
+  burstActive = false;
+  burstX = 0;
+  burstY = 0;
+  /** 当前正在播放 burst 动效的任务 id */
+  burstingTaskId: string | null = null;
+
+  @ViewChildren('checkboxEl') checkboxRefs!: QueryList<ElementRef<HTMLDivElement>>;
 
   get completedCount(): number {
     return this.tasks.filter((t) => t.completed).length;
@@ -355,13 +466,65 @@ export class DailyTasksWidgetComponent {
     return this.tasks.length > 0 && this.completedCount === this.tasks.length;
   }
 
-  onTaskClick(task: DailyTask): void {
-    if (!task.completed) {
-      this.taskCompleted.emit(task);
+  onTaskClick(task: DailyTask, taskItemEl?: HTMLElement): void {
+    if (task.completed) return;
+
+    // 1) 视觉 burst：粒子 + 卡片缩放回弹
+    const checkboxEl = this.findCheckboxEl(task.id);
+    const target = checkboxEl ?? taskItemEl;
+    if (target) {
+      const rect = target.getBoundingClientRect();
+      this.burstX = rect.left + rect.width / 2;
+      this.burstY = rect.top + rect.height / 2;
+      this.burstActive = false;
+      this.cdr.markForCheck();
+      // 强制下一帧重置 + 激活，确保 sparkle-burst 重播
+      setTimeout(() => {
+        this.burstActive = true;
+        this.burstingTaskId = task.id;
+        this.cdr.markForCheck();
+        setTimeout(() => {
+          this.burstActive = false;
+          this.burstingTaskId = null;
+          this.cdr.markForCheck();
+        }, 700);
+      }, 16);
     }
+
+    // 2) flyNumber：从源元素飞到状态栏 EXP 锚点（P1-2 应用离线倍率）
+    if (target) {
+      const expTarget = document.getElementById('exp-target');
+      const finalExp = this.offlineBonus.applyMultiplier(task.rewardExp);
+      const color = this.offlineBonus.isCurrentlyOffline() ? '#f59e0b' : '#fbbf24';
+      this.flyService
+        .flyNumber(target, expTarget ?? target, `+${finalExp}`, color)
+        .pipe(takeUntil(this.destroy$))
+        .subscribe();
+      // 离线时累积离线 EXP（供 banner 显示「累计 EXP 待同步」）
+      if (this.offlineBonus.isCurrentlyOffline()) {
+        this.offlineBonus.accumulateOfflineExp(finalExp);
+      }
+    }
+
+    // 3) 业务回调
+    this.taskCompleted.emit(task);
+  }
+
+  private findCheckboxEl(taskId: string): HTMLElement | null {
+    // 通过任务列表索引反查；fallback 到 taskItem 引用
+    const idx = this.tasks.findIndex((t) => t.id === taskId);
+    if (idx < 0) return null;
+    const ref = this.checkboxRefs?.toArray()[idx];
+    return ref?.nativeElement ?? null;
   }
 
   trackByTaskId(index: number, task: DailyTask): string {
     return task.id;
+  }
+
+  ngOnDestroy(): void {
+    this.destroy$.next();
+    this.destroy$.complete();
+    this.offlineBonusSub?.unsubscribe();
   }
 }

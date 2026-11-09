@@ -436,3 +436,18 @@ $stem-transition: 250ms cubic-bezier(0.4, 0, 0.2, 1);
 .history-item mat-progress-bar {
   flex: 1;
 }
+
+/* 【P1-4】演示模式 badge：橙色 warning 色，提示用户当前为 mock 数据 */
+.demo-badge {
+  display: inline-block;
+  margin-left: 12px;
+  padding: 2px 10px;
+  border: 1px solid #f59e0b;
+  border-radius: 9999px;
+  background: #fef3c7;
+  color: #b45309;
+  font-size: 12px;
+  font-weight: 500;
+  line-height: 1.6;
+  vertical-align: middle;
+}

@@ -132,6 +132,67 @@ class SearchResult(BaseModel):
     suggestions: List[str] = Field(default_factory=list)
 
 
+# ==================== 内置课程数据（服务端降级） ====================
+# 【P0-B 修复】OpenSciEDU 远端（localhost:3000 / opensciedu.matux.tech）不可用时，
+#   桌面端仍需能浏览课程目录。前端不再拿 mock，改由后端返回真实 API 结构的内置数据。
+
+_BUILTIN_CATEGORIES: List[CourseCategory] = [
+    CourseCategory(id="programming", name="编程入门", icon="code", description="零基础学习编程"),
+    CourseCategory(id="algorithm", name="算法与数据结构", icon="psychology", description="算法思维训练"),
+    CourseCategory(id="web", name="Web 开发", icon="web", description="前端与后端技术"),
+    CourseCategory(id="ai", name="人工智能", icon="smart_toy", description="AI 与机器学习"),
+    CourseCategory(id="science", name="科学实验", icon="science", description="跨学科科学探索"),
+]
+
+_BUILTIN_INSTRUCTORS: Dict[str, CourseInstructor] = {
+    "t1": CourseInstructor(id="t1", name="李老师", title="资深编程讲师"),
+    "t2": CourseInstructor(id="t2", name="王博士", title="AI 算法专家"),
+    "t3": CourseInstructor(id="t3", name="张工程师", title="全栈开发工程师"),
+}
+
+# (id, title, description, category_index, instructor_id, difficulty,
+#  duration_minutes, lesson_count, student_count, rating, tags, created_at, is_free)
+_BUILTIN_COURSE_ROWS = [
+    ("c001", "Python 编程入门", "从零开始学习 Python 编程，掌握基本语法和编程思维。通过趣味实例激发学习兴趣。", 0, "t1", "beginner", 480, 24, 12580, 4.8, ["Python", "编程入门", "青少年"], "2024-01-15T08:00:00Z", True),
+    ("c002", "JavaScript 互动编程", "学习 JavaScript 实现网页互动效果，从按钮点击到动画制作。", 2, "t3", "beginner", 360, 18, 8960, 4.6, ["JavaScript", "Web", "互动"], "2024-02-01T09:00:00Z", True),
+    ("c003", "Scratch 游戏制作", "使用 Scratch 可视化编程工具，制作自己的小游戏，培养逻辑思维。", 0, "t1", "beginner", 240, 12, 15800, 4.9, ["Scratch", "游戏", "可视化编程"], "2023-11-20T08:00:00Z", True),
+    ("c004", "算法入门：排序与搜索", "学习基础算法，理解排序和搜索的原理，培养问题解决能力。", 1, "t2", "intermediate", 420, 21, 5630, 4.7, ["算法", "排序", "搜索"], "2024-03-10T10:00:00Z", True),
+    ("c005", "HTML/CSS 网页设计", "学习网页结构与样式设计，从零开始构建精美网页。", 2, "t3", "beginner", 300, 15, 11200, 4.5, ["HTML", "CSS", "网页设计"], "2024-01-25T08:30:00Z", True),
+    ("c006", "AI 探索：机器学习基础", "了解人工智能和机器学习的基本概念，体验 AI 的魅力。", 3, "t2", "intermediate", 540, 27, 4280, 4.8, ["AI", "机器学习", "Python"], "2024-04-05T11:00:00Z", False),
+    ("c007", "Arduino 电子制作", "通过 Arduino 开发板学习电子电路和编程控制。", 4, "t3", "intermediate", 480, 24, 3450, 4.6, ["Arduino", "电子", "物联网"], "2024-02-15T09:30:00Z", True),
+    ("c008", "数据结构：树与图", "深入学习树和图结构，掌握高级数据结构。", 1, "t2", "advanced", 600, 30, 2890, 4.7, ["数据结构", "树", "图"], "2024-05-01T10:00:00Z", False),
+]
+
+
+def _builtin_courses() -> List[PublicCourse]:
+    """构造内置课程列表（与前端历史 mock 数据保持一致）"""
+    courses: List[PublicCourse] = []
+    for (
+        cid, title, desc, cat_idx, tid, difficulty, minutes,
+        lessons, students, rating, tags, created, is_free,
+    ) in _BUILTIN_COURSE_ROWS:
+        courses.append(
+            PublicCourse(
+                id=cid,
+                title=title,
+                description=desc,
+                category=_BUILTIN_CATEGORIES[cat_idx],
+                instructor=_BUILTIN_INSTRUCTORS[tid],
+                difficulty=difficulty,
+                duration_minutes=minutes,
+                lesson_count=lessons,
+                student_count=students,
+                rating=rating,
+                tags=list(tags),
+                created_at=created,
+                updated_at="2024-06-01T10:30:00Z",
+                is_free=is_free,
+                certificate_available=is_free,
+            )
+        )
+    return courses
+
+
 # ==================== 服务实现 ====================
 
 class OpenSciEDUService:
@@ -282,7 +343,7 @@ class OpenSciEDUService:
 
         except httpx.HTTPError as e:
             logger.error(f"[OpenSciEDU] 获取课程列表失败: {e}")
-            return self._get_fallback_course_list(page, page_size)
+            return self._get_fallback_course_list(page, page_size, category, difficulty)
 
     def _convert_course_list_response(self, data: Any) -> CourseListResponse:
         """转换 API 响应格式"""
@@ -332,14 +393,31 @@ class OpenSciEDUService:
             has_next=total > page * page_size
         )
 
-    def _get_fallback_course_list(self, page: int, page_size: int) -> CourseListResponse:
-        """返回空结果作为降级方案"""
+    def _get_fallback_course_list(
+        self,
+        page: int,
+        page_size: int,
+        category: Optional[str] = None,
+        difficulty: Optional[str] = None,
+    ) -> CourseListResponse:
+        """服务端降级：返回内置课程（支持筛选 + 分页），避免桌面端空白目录"""
+        courses = _builtin_courses()
+        if category:
+            courses = [c for c in courses if c.category and c.category.id == category]
+        if difficulty:
+            courses = [c for c in courses if c.difficulty == difficulty]
+
+        total = len(courses)
+        start = max(page - 1, 0) * page_size
+        end = start + page_size
+        page_courses = courses[start:end]
+
         return CourseListResponse(
-            courses=[],
-            total=0,
+            courses=page_courses,
+            total=total,
             page=page,
             page_size=page_size,
-            has_next=False
+            has_next=end < total,
         )
 
     async def get_course_detail(self, course_id: str) -> Optional[CourseDetail]:
@@ -503,11 +581,16 @@ class OpenSciEDUService:
 
         except httpx.HTTPError as e:
             logger.error(f"[OpenSciEDU] 搜索课程失败 ({keyword}): {e}")
+            kw = keyword.lower()
+            fallback_courses = [
+                c for c in _builtin_courses()
+                if kw in c.title.lower() or kw in c.description.lower()
+            ]
             return SearchResult(
-                courses=[],
-                total=0,
+                courses=fallback_courses,
+                total=len(fallback_courses),
                 query=keyword,
-                suggestions=[]
+                suggestions=[],
             )
 
     async def get_categories(self) -> List[CourseCategory]:
@@ -542,7 +625,7 @@ class OpenSciEDUService:
 
         except httpx.HTTPError as e:
             logger.error(f"[OpenSciEDU] 获取分类列表失败: {e}")
-            return []
+            return list(_BUILTIN_CATEGORIES)
 
     async def health_check(self) -> bool:
         """健康检查"""

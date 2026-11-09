@@ -40,20 +40,19 @@ backend/legacy_routes.py 与 backend/main_ai_edu.py 两个入口源码中的接�
 - test_router_parity.py（T1 / T2 / T3，本文件）：**源码层**一致性检查 ——
   入口有没有绕过 ROUTER_TABLE 手工接线
 
-口径（对齐 issue #21「并集 61」）::
+口径（PR #68 合并后）::
 
     legacy 侧       : 52 个模块（mode ∈ {legacy, both}）
-    main_ai_edu 侧 : 19 个模块（mode ∈ {lazy, both}）
-    交集            : 10 个模块
-    并集            : 52 + 19 - 10 = 61 个模块  == len(ROUTER_TABLE)
+    main_ai_edu 侧 : 24 个模块（mode ∈ {lazy, both}）
+    交集            : 13 个模块（both）
+    并集            : 52 + 24 - 13 = 63 个模块  == len(ROUTER_TABLE)
 
 白名单（issue #26）分两类，本文件分别校验其「缺失形态」：
 
     模块未入库 PENDING_MODULE_MISSING（入口源码里本就找不到，属预期）:
         routes.share_routes
     依赖未入库 PENDING_DEPENDENCY（入口源码里有 include_router，注册期跳过）:
-        routes.ai_edu_websocket_routes
-        routes.ai_teacher_routes
+        （空）—— ai_edu_websocket 已在 PR #68 B1 改回 active 并移出白名单
 
 用法::
 
@@ -133,13 +132,10 @@ PENDING_MODULE_MISSING = frozenset(
     }
 )
 #: 白名单（二）：模块已入库，但依赖尚未入库 -> 入口源码里有，注册期跳过
-PENDING_DEPENDENCY = frozenset(
-    {
-        "routes.ai_edu_websocket_routes",
-        "routes.ai_teacher_routes",
-    }
-)
-#: 白名单全集（issue #26 拍板 + PR #27 commit 2 修正为 4 项 + PR-E 修正为 3 项）
+#: PR #68 B1：ai_edu_websocket 依赖 services/ai_teacher_live_settings.py 随分支入库，
+#: status 改回 active，本集合变空（保留结构，供后续再出现依赖白名单时直接使用）。
+PENDING_DEPENDENCY = frozenset()
+#: 白名单全集（PR #68 合并后 1 项：ai_teacher / ai_edu_websocket 均已改 active 移出）
 EXPECTED_PENDING = PENDING_MODULE_MISSING | PENDING_DEPENDENCY
 
 #: legacy 侧「表里有、入口源码里找不到」的固定基线（全部属于模块未入库白名单）
@@ -565,7 +561,7 @@ def isolated_logs(monkeypatch, tmp_path) -> Path:
 
 @pytest.fixture
 def stub_import(monkeypatch):
-    """把真实 import 替换为返回可辨识字符串的假实现（避免导入 57 个重依赖模块）。"""
+    """把真实 import 替换为返回可辨识字符串的假实现（避免导入 58 个重依赖模块）。"""
 
     def _fake(spec: RouterSpec, attr: str) -> str:
         return f"{spec.module_path}.{attr}"
@@ -616,18 +612,19 @@ class TestEntrySourceParity:
         assert_entry_has_no_extra(AI_EDU_MAIN_FILE, SIDE_AI_EDU)
 
     def test_legacy_side_covers_52_modules(self, legacy_pairs):
-        """legacy 侧口径：52 个模块（52 + 19 - 10 = 61）。"""
+        """legacy 侧口径：52 个模块（52 + 24 - 13 = 63）。"""
         table_modules = {
             spec.module_path for spec in ROUTER_TABLE if spec.mode in LEGACY_SIDE_MODES
         }
         assert len(table_modules) == 52
 
-    def test_aiedu_side_covers_19_modules(self, aiedu_pairs):
-        """main_ai_edu 侧口径：19 个模块。"""
+    def test_aiedu_side_covers_24_modules(self, aiedu_pairs):
+        """main_ai_edu 侧口径：24 个模块（原 19 + ai_teacher + gamification
+        + opensciedu + achievement_catalog + course_catalog）。"""
         table_modules = {
             spec.module_path for spec in ROUTER_TABLE if spec.mode in AI_EDU_SIDE_MODES
         }
-        assert len(table_modules) == 19
+        assert len(table_modules) == 24
 
 
 # ==================== T3：parity 三方一致 ====================
@@ -645,12 +642,12 @@ class TestParitySets:
         assert_active_set_consistent(AI_EDU_MAIN_FILE, SIDE_AI_EDU)
 
     def test_t3_union_of_sources_covers_table(self):
-        """T3 全局：两侧入口覆盖的模块并集 + 模块未入库白名单 == ROUTER_TABLE 的 61 个模块。"""
+        """T3 全局：两侧入口覆盖的模块并集 + 模块未入库白名单 == ROUTER_TABLE 的 63 个模块。"""
         table_modules = {spec.module_path for spec in ROUTER_TABLE}
         source_modules = effective_source_modules(
             LEGACY_ROUTES_FILE, SIDE_LEGACY
         ) | effective_source_modules(AI_EDU_MAIN_FILE, SIDE_AI_EDU)
-        assert len(table_modules) == 61
+        assert len(table_modules) == 63
         assert (
             source_modules | set(PENDING_MODULE_MISSING) == table_modules
         ), "两侧入口覆盖的模块并集与 ROUTER_TABLE 漂移：\n" + _format_diff(
@@ -704,19 +701,19 @@ class TestConditionalRoutes:
             spec.module_path for spec in ROUTER_TABLE if spec.status == STATUS_ACTIVE
         }
         assert conditional_modules <= active_modules
-        assert len(active_modules) == 58
+        assert len(active_modules) == 62
 
 
 # ==================== T5：白名单 ====================
 
 
 class TestPendingIntegration:
-    """T5：pending_integration_modules() 返回 3 项，且与源码缺失形态一致。"""
+    """T5：pending_integration_modules() 返回 1 项，且与源码缺失形态一致。"""
 
-    def test_t5_returns_three_modules(self):
-        """白名单恰好 3 项。"""
+    def test_t5_returns_one_module(self):
+        """白名单恰好 1 项。"""
         pending = pending_integration_modules()
-        assert len(pending) == 3
+        assert len(pending) == 1
         assert set(pending) == set(EXPECTED_PENDING)
 
     def test_t5_matches_table_status(self):
@@ -754,21 +751,21 @@ class TestPendingIntegration:
 
 
 class TestRegisterAllRoutersParity:
-    """T6：register_all_routers 在 mock app 上注册 58 个 active 模块。"""
+    """T6：register_all_routers 在 mock app 上注册 62 个 active 模块。"""
 
-    def test_t6_registers_58_active_modules(
+    def test_t6_registers_62_active_modules(
         self, mock_app, stub_import, isolated_logs, conditions_on
     ):
-        """条件开启时：58 项 active 全部注册，3 项 pending 被跳过。"""
+        """条件开启时：62 项 active 全部注册，1 项 pending 被跳过。"""
         report = register_all_routers(mock_app)
 
-        assert report.total == 61
-        assert len(report.succeeded) == 58
+        assert report.total == 63
+        assert len(report.succeeded) == 62
         assert not report.failed
         assert not report.disabled
-        assert len(report.skipped) == 3
+        assert len(report.skipped) == 1
         assert {item["module"] for item in report.skipped} == set(EXPECTED_PENDING)
-        assert len(mock_app.calls) == 58
+        assert len(mock_app.calls) == 62
 
     def test_t6_registered_modules_equal_active_set(
         self, mock_app, stub_import, isolated_logs, conditions_on
@@ -789,9 +786,9 @@ class TestRegisterAllRoutersParity:
 
         report = register_all_routers(mock_app)
 
-        # 3 项 pending + 4 项条件未启用
-        assert len(report.skipped) == 7
-        assert len(report.succeeded) == 54
+        # 1 项 pending + 4 项条件未启用
+        assert len(report.skipped) == 5
+        assert len(report.succeeded) == 58
         conditional_modules = {
             spec.module_path for spec in ROUTER_TABLE if spec.condition_key
         }

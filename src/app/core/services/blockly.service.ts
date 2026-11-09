@@ -53,6 +53,22 @@ export class BlocklyService {
   constructor(private ngZone: NgZone) {
     console.log('[BlocklyService] 服务初始化');
     this.registerCustomBlocks();
+    this.redirectPrintToConsole();
+  }
+
+  /**
+   * 【P0-D 修复】将 text_print 的 JS 生成从 window.alert 改为 console.log，
+   * 让前端“运行”面板能捕获输出（桌面端不依赖后端 Docker 沙箱）。
+   */
+  private redirectPrintToConsole(): void {
+    try {
+      javascriptGenerator.forBlock['text_print'] = (block, generator) => {
+        const msg = generator.valueToCode(block, 'TEXT', 0) || "''";
+        return `console.log(${msg});\n`;
+      };
+    } catch (err) {
+      console.warn('[BlocklyService] 覆盖 text_print 生成器失败:', err);
+    }
   }
 
   /**
@@ -109,7 +125,7 @@ export class BlocklyService {
       for (const blockType of category.blocks) {
         // 跳过 AI 自定义块（已在上面过滤）
         if (blockType.startsWith('ai_')) continue;
-        categoryContents.push({ kind: 'block', type: blockType });
+        categoryContents.push(this.buildBlockEntry(blockType));
       }
 
       contents.push({
@@ -135,6 +151,29 @@ export class BlocklyService {
     });
 
     return { kind: 'categoryToolbox', contents };
+  }
+
+  /**
+   * 【P0-D 增强】构建工具箱中的单个积木条目。
+   * 为 text_print 预置 shadow 文本（Blockly 官方推荐写法）：
+   * 拖入即可运行并看到输出，无需用户先手动填值。
+   */
+  private buildBlockEntry(blockType: string): any {
+    if (blockType === 'text_print') {
+      return {
+        kind: 'block',
+        type: blockType,
+        inputs: {
+          TEXT: {
+            shadow: {
+              type: 'text',
+              fields: { TEXT: 'Hello MatuX' },
+            },
+          },
+        },
+      };
+    }
+    return { kind: 'block', type: blockType };
   }
 
   /**

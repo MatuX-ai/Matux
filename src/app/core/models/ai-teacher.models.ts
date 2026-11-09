@@ -344,3 +344,97 @@ export interface LearningProfileUpdateRequest {
   abilityDimensions?: Partial<AbilityDimensions>;
   knowledgeMastery?: Record<string, number>;
 }
+
+// ==================== 【P3-B】AI 教师实时推送设置与事件 ====================
+
+/** AI 教师实时推送类型 */
+export type AiTeacherLiveEventType =
+  | 'ai_teacher_celebration'
+  | 'ai_teacher_suggestion'
+  | 'ai_teacher_nudge';
+
+/** celebration 事件载荷 */
+export interface AiTeacherCelebrationPayload {
+  title: string;
+  message: string;
+  emoji: string;
+  relatedId?: string | null;
+  relatedKind?: 'node' | 'achievement' | 'set' | null;
+  ctaLabel?: string | null;
+  ctaRoute?: string | null;
+}
+
+/** suggestion 事件载荷 */
+export interface AiTeacherSuggestionPayload {
+  diagnosisType: DiagnosisType | string;
+  severity: 'info' | 'warning' | 'critical';
+  title: string;
+  message: string;
+  relatedSkillId?: string | null;
+  recommendedCourses?: string[];
+  ctaLabel?: string | null;
+  ctaRoute?: string | null;
+}
+
+/** nudge 事件载荷 */
+export interface AiTeacherNudgePayload {
+  nudgeType: 'comeback' | 'miss_you' | 'take_break' | 'try_new';
+  title: string;
+  message: string;
+  suggestedSkillId?: string | null;
+  ctaLabel?: string | null;
+  ctaRoute?: string | null;
+}
+
+/** AI 教师实时事件 */
+export interface AiTeacherLiveEvent<
+  TPayload =
+    | AiTeacherCelebrationPayload
+    | AiTeacherSuggestionPayload
+    | AiTeacherNudgePayload
+> {
+  id: string;
+  type: AiTeacherLiveEventType;
+  userId: string;
+  payload: TPayload;
+  ttlMs: number;
+  cooldownKey: string;
+  createdAt: string;
+}
+
+/** 用户级 AI 教师实时推送设置 */
+export interface AiTeacherLiveSettings {
+  userId: string;
+  enabled: boolean;
+  celebrationEnabled: boolean;
+  suggestionEnabled: boolean;
+  nudgeEnabled: boolean;
+  /** 勿扰时段（24h 制） */
+  dndStartHour: number;
+  dndEndHour: number;
+  /** 频控 */
+  maxPerHour: number;
+  minIntervalSeconds: number;
+  updatedAt: string;
+}
+
+/** 默认 live settings */
+export const DEFAULT_LIVE_SETTINGS: Omit<AiTeacherLiveSettings, 'userId' | 'updatedAt'> = {
+  enabled: true,
+  celebrationEnabled: true,
+  suggestionEnabled: true,
+  nudgeEnabled: true,
+  dndStartHour: 22,
+  dndEndHour: 8,
+  maxPerHour: 3,
+  minIntervalSeconds: 300,
+};
+
+/** 点击事件埋点参数 */
+export interface AiTeacherRecommendationClickEvent {
+  eventId: string;
+  type: AiTeacherLiveEventType;
+  action: 'cta' | 'dismiss' | 'auto_expire';
+  ctaRoute?: string;
+  ctaLabel?: string;
+}

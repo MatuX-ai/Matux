@@ -252,10 +252,83 @@ class AchievementService:
         self.db.commit()
         self.db.refresh(user_achievement)
 
+        # 【P3-A-1】异步重算全局统计（同步内联，但失败不影响主流程）
+        try:
+            self.recompute_global_stats(achievement_id)
+            # 失效缓存
+            from cache.achievement_stats_cache import invalidate_achievement_stats
+            invalidate_achievement_stats(achievement_id)
+        except Exception as e:
+            logger.warning(f"⚠️  重算全局统计失败（不影响主流程）: {e}")
+
+        # 【P3-A-2】发送解锁事件
+        try:
+            from services.gamification_event_bus import (
+                gamification_event_bus,
+                make_achievement_unlocked_payload,
+            )
+
+            gamification_event_bus.emit(
+                user_id,
+                "achievement_unlocked",
+                make_achievement_unlocked_payload(
+                    user_id=user_id,
+                    achievement_id=achievement_id,
+                    name=achievement.name if achievement else f"Achievement-{achievement_id}",
+                    rarity=achievement.badge_rarity if achievement else "common",
+                    points=achievement.points_reward if achievement else 0,
+                    icon=achievement.badge_icon if achievement else None,
+                    description=achievement.description if achievement else None,
+                ),
+            )
+        except Exception as e:
+            logger.warning(f"⚠️  发送解锁事件失败（不影响主流程）: {e}")
+
+        # 【P3-C】自动生成分享卡（仅首次解锁时）
+        try:
+            self._auto_create_share_card(user_id, achievement_id)
+        except Exception as e:
+            logger.warning(f"⚠️  自动生成分享卡失败（不影响主流程）: {e}")
+
         logger.info(
             f"🎉 用户 {user_id} 解锁了成就：{achievement.name if achievement else achievement_id}"
         )
         return user_achievement
+
+    def _auto_create_share_card(self, user_id: int, achievement_id: int) -> None:
+        """
+        【P3-C】解锁成就后自动创建分享卡片
+
+        策略：
+        - 仅首次解锁时创建分享卡（去重）
+        - 异常不影响主流程
+        """
+        from models.share import ShareCard, ShareCardType
+        from services.share_service import ShareService
+
+        # 检查是否已存在分享卡（同一用户同一成就只创建一次）
+        existing = (
+            self.db.query(ShareCard)
+            .filter(
+                ShareCard.card_type == ShareCardType.ACHIEVEMENT,
+                ShareCard.target_id == achievement_id,
+                ShareCard.creator_id == user_id,
+            )
+            .first()
+        )
+        if existing:
+            logger.debug(f"用户 {user_id} 成就 {achievement_id} 已有分享卡 {existing.short_code}")
+            return
+
+        share_service = ShareService(self.db)
+        card = share_service.create_card(
+            card_type=ShareCardType.ACHIEVEMENT,
+            target_id=achievement_id,
+            creator_id=user_id,
+        )
+        logger.info(
+            f"✅ 自动生成分享卡：用户 {user_id} 成就 {achievement_id} → {card.short_code}"
+        )
 
     def claim_achievement_reward(
         self, user_id: int, achievement_id: int
@@ -450,6 +523,162 @@ class AchievementService:
             ),
             "category_breakdown": category_stats,
         }
+
+    # ==================== 【P3-A-1】全局统计 ====================
+
+    def recompute_global_stats(self, achievement_id: int) -> Dict[str, Any]:
+        """
+        异步重算单个成就的全局解锁率
+
+        逻辑：
+        - holders = 状态为 is_unlocked 的 UserAchievement 去重用户数
+        - total_users = 平台中 is_active 用户总数
+        - global_unlock_rate = holders / total_users
+        """
+        achievement = self.get_achievement(achievement_id)
+        if not achievement:
+            return {}
+
+        try:
+            total_users = (
+                self.db.query(User)
+                .filter(User.is_active.is_(True))  # noqa: E712
+                .count()
+            )
+            holders = (
+                self.db.query(UserAchievement.user_id)
+                .filter(
+                    and_(
+                        UserAchievement.achievement_id == achievement_id,
+                        UserAchievement.is_unlocked.is_(True),  # noqa: E712
+                    )
+                )
+                .distinct()
+                .count()
+            )
+
+            achievement.total_holders = holders
+            achievement.global_unlock_rate = (
+                (holders / total_users) if total_users > 0 else 0.0
+            )
+            achievement.stats_updated_at = datetime.utcnow()
+            self.db.commit()
+            self.db.refresh(achievement)
+
+            logger.info(
+                f"📊 成就 {achievement_id} 全局统计: holders={holders}/{total_users}, "
+                f"rate={achievement.global_unlock_rate:.4f}"
+            )
+            return {
+                "achievement_id": achievement_id,
+                "global_unlock_rate": achievement.global_unlock_rate,
+                "total_holders": holders,
+                "total_users": total_users,
+                "stats_updated_at": (
+                    achievement.stats_updated_at.isoformat()
+                    if achievement.stats_updated_at
+                    else None
+                ),
+            }
+        except Exception as e:
+            logger.error(f"❌ recompute_global_stats 失败: {e}")
+            self.db.rollback()
+            return {}
+
+    def get_badge_stats(
+        self, achievement_ids: Optional[List[int]] = None
+    ) -> List[Dict[str, Any]]:
+        """
+        批量获取成就的全局统计（带缓存）
+
+        Args:
+            achievement_ids: 可选，限定返回的成就 ID 列表
+
+        Returns:
+            包含 global_unlock_rate / total_holders / total_unlocked 的字典列表
+        """
+        from cache.achievement_stats_cache import (
+            get_cached_batch_stats,
+            set_cached_batch_stats,
+        )
+
+        # 尝试缓存
+        cached = get_cached_batch_stats()
+        if cached is not None:
+            if achievement_ids is None:
+                return cached
+            id_set = set(achievement_ids)
+            return [s for s in cached if s.get("id") in id_set]
+
+        # 查询所有激活的成就
+        query = self.db.query(Achievement).filter(Achievement.is_active.is_(True))  # noqa: E712
+        if achievement_ids is not None:
+            query = query.filter(Achievement.id.in_(achievement_ids))
+        achievements = query.all()
+
+        result: List[Dict[str, Any]] = []
+        for ach in achievements:
+            result.append(
+                {
+                    "id": ach.id,
+                    "name": ach.name,
+                    "rarity": ach.badge_rarity,
+                    "total_unlocked": ach.total_unlocked or 0,
+                    "unlock_rate": ach.unlock_rate or 0.0,
+                    "global_unlock_rate": ach.global_unlock_rate or 0.0,
+                    "total_holders": ach.total_holders or 0,
+                    "stats_updated_at": (
+                        ach.stats_updated_at.isoformat()
+                        if ach.stats_updated_at
+                        else None
+                    ),
+                }
+            )
+
+        # 缓存（仅完整结果）
+        if achievement_ids is None:
+            try:
+                set_cached_batch_stats(result, ttl=60)
+            except Exception as e:
+                logger.warning(f"⚠️  缓存 batch stats 失败: {e}")
+
+        return result
+
+    def get_single_badge_stats(self, achievement_id: int) -> Optional[Dict[str, Any]]:
+        """获取单个成就的统计（带缓存）"""
+        from cache.achievement_stats_cache import (
+            get_single_stats_cache_key,
+            achievement_stats_cache,
+        )
+
+        cache_key = get_single_stats_cache_key(achievement_id)
+        cached = achievement_stats_cache.get(cache_key)
+        if cached is not None:
+            return cached
+
+        achievement = self.get_achievement(achievement_id)
+        if not achievement:
+            return None
+
+        result = {
+            "id": achievement.id,
+            "name": achievement.name,
+            "rarity": achievement.badge_rarity,
+            "total_unlocked": achievement.total_unlocked or 0,
+            "unlock_rate": achievement.unlock_rate or 0.0,
+            "global_unlock_rate": achievement.global_unlock_rate or 0.0,
+            "total_holders": achievement.total_holders or 0,
+            "stats_updated_at": (
+                achievement.stats_updated_at.isoformat()
+                if achievement.stats_updated_at
+                else None
+            ),
+        }
+        try:
+            achievement_stats_cache.set(cache_key, result, ttl=60)
+        except Exception as e:
+            logger.warning(f"⚠️  缓存 single stats 失败: {e}")
+        return result
 
 
 def get_achievement_service(db: Session) -> AchievementService:

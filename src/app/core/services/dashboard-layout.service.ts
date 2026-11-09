@@ -29,6 +29,8 @@ const DEFAULT_WIDGETS: DashboardWidget[] = [
   { id: 'enrolled_courses', label: '正在学习', icon: 'menu_book', visible: true, order: 5 },
   { id: 'recommended_courses', label: '推荐课程', icon: 'explore', visible: true, order: 6 },
   { id: 'materials', label: '课件库', icon: 'folder', visible: true, order: 7 },
+  // P1-1: 排行榜（含赛季与终奖预览）
+  { id: 'daily_tasks', label: '每日任务 + 排行榜', icon: 'leaderboard', visible: true, order: 8 },
 ];
 
 const STORAGE_KEY = 'imato_dashboard_layout';
@@ -77,12 +79,21 @@ export class DashboardLayoutService {
       const saved = localStorage.getItem(STORAGE_KEY);
       if (saved) {
         const parsed = JSON.parse(saved) as DashboardWidget[];
-        // 补全新增的 widget（当默认列表中有新条目时）
-        const merged = DEFAULT_WIDGETS.map((def) => {
-          const existing = parsed.find((p) => p.id === def.id);
-          return existing ?? def;
+        // 合并策略：localStorage 优先 + 补全 DEFAULT_WIDGETS 中的新条目
+        // - DEFAULT_WIDGETS 中存在但 localStorage 中缺失的 widget 自动补全（按 DEFAULT_WIDGETS 顺序）
+        // - localStorage 中存在但 DEFAULT_WIDGETS 中没有的 widget 保留（旧用户自定义的不会丢）
+        const defIds = new Set(DEFAULT_WIDGETS.map((w) => w.id));
+        const missingDefaults = DEFAULT_WIDGETS.filter((d) => !parsed.some((p) => p.id === d.id));
+        const customOnly = parsed.filter((p) => !defIds.has(p.id));
+        const mergedFromSaved = parsed.map((p) => {
+          const def = DEFAULT_WIDGETS.find((d) => d.id === p.id);
+          // 旧 localStorage 缺字段时用 default 补全
+          return def ? { ...def, ...p } : p;
         });
-        return merged;
+        return [...mergedFromSaved, ...customOnly, ...missingDefaults].map((w, idx) => ({
+          ...w,
+          order: w.order ?? idx,
+        }));
       }
     } catch {
       /* ignore */

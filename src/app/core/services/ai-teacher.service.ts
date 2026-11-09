@@ -18,7 +18,7 @@
 import { HttpClient } from '@angular/common/http';
 import { Injectable } from '@angular/core';
 import { BehaviorSubject, Observable, of, throwError } from 'rxjs';
-import { catchError, switchMap, tap, timeout } from 'rxjs/operators';
+import { catchError, map, switchMap, tap, timeout } from 'rxjs/operators';
 
 /**
  * 【P1 修复】统一业务 HTTP 超时兑底。避免后端代理 hang / CORS 预检超时 / 服务不可用
@@ -27,13 +27,20 @@ import { catchError, switchMap, tap, timeout } from 'rxjs/operators';
 const AI_TEACHER_HTTP_TIMEOUT_MS = 8_000;
 
 import {
+  AbilityDimensions,
   AbilityTrendPoint,
   AITeacherChatRequest,
   AITeacherChatResponse,
+  AiTeacherLiveEvent,
+  AiTeacherLiveSettings,
+  AttentionProfile,
   ChatMessage,
   DailyLearningSuggestion,
+  DEFAULT_LIVE_SETTINGS,
+  EmotionLog,
   GrowthTrajectory,
   KnowledgeStateItem,
+  LearningMilestone,
   LearningProfileUpdateRequest,
   LearningStyle,
   LongTermMemory,
@@ -42,9 +49,11 @@ import {
   StudentLearningProfile,
   TeacherPersona,
   TeachingSuggestion,
+  WeakPoint,
 } from '../models/ai-teacher.models';
 
 import { EmotionalCompanionService } from './emotional-companion.service';
+import { AiTeacherLiveService } from './ai-teacher-live.service';
 import { RAGResult, VectorKnowledgeService } from './vector-knowledge.service';
 
 @Injectable({
@@ -90,7 +99,9 @@ export class AITeacherService {
   constructor(
     private http: HttpClient,
     private vectorKnowledge: VectorKnowledgeService,
-    private emotionCompanion: EmotionalCompanionService
+    private emotionCompanion: EmotionalCompanionService,
+    // 【P3-B】可选注入：在某些调用上下文（如 main.ts 启动时）可能未提供
+    private liveService?: AiTeacherLiveService
   ) {}
 
   // ==================== 【NaN 防御】工具方法 ====================
@@ -113,12 +124,229 @@ export class AITeacherService {
   }
 
   /**
-   * 非法 userId 的统一错误流：保持 Observable 契约，调用方的 catchError 仍可正常兜底。
+   * 非法 userId 的统一错误流：保持 Observable 契约，调用方的 catchError 仍可正常兑底。
    */
   private invalidUserId<T>(userId: string): Observable<T> {
     return throwError(() => new Error(`非法 userId: ${userId}`));
   }
-
+  
+  // ==================== 【P0-A 修复】后端字段归一化 ====================
+  
+  /** 把 unknown 安全窄化为可索引对象 */
+  private static asRecord(value: unknown): Record<string, unknown> {
+    return value !== null && typeof value === 'object' ? (value as Record<string, unknown>) : {};
+  }
+  
+  /** 读取字段：优先 camelCase，其次 snake_case，最后默认值 */
+  private static pick<T>(src: Record<string, unknown>, camel: string, snake: string, def: T): T {
+    const value = src[camel] !== undefined && src[camel] !== null ? src[camel] : src[snake];
+    return (value === undefined || value === null ? def : value) as T;
+  }
+  
+  private static toNumber(value: unknown, def = 0): number {
+    const n = Number(value);
+    return Number.isFinite(n) ? n : def;
+  }
+  
+  private static toText(value: unknown, def = ''): string {
+    if (typeof value === 'string') return value;
+    if (value === undefined || value === null) return def;
+    return String(value);
+  }
+  
+  private static toArray(value: unknown): unknown[] {
+    return Array.isArray(value) ? value : [];
+  }
+  
+  /** 递归归一化技能树节点 */
+  private normalizeSkillNode(raw: unknown): SkillTreeNode {
+    const n = AITeacherService.asRecord(raw);
+    const children = AITeacherService.toArray(n['children']);
+    const parent = AITeacherService.toText(n['parent']);
+    const unlock = AITeacherService.toText(n['unlockRequirement'] ?? n['unlock_requirement']);
+    return {
+      id: AITeacherService.toText(n['id']),
+      name: AITeacherService.toText(n['name']),
+      category: AITeacherService.toText(n['category'], 'python') as SkillTreeNode['category'],
+      progress: AITeacherService.toNumber(n['progress']),
+      status: AITeacherService.toText(n['status'], 'not_started') as SkillTreeNode['status'],
+      ...(children.length > 0 ? { children: children.map((c) => this.normalizeSkillNode(c)) } : {}),
+      ...(parent ? { parent } : {}),
+      ...(unlock ? { unlockRequirement: unlock } : {}),
+    };
+  }
+  
+  /**
+   * 【P0-A 修复】把后端 snake_case 画像归一化为前端 camelCase 契约。
+   *
+   * 后端 GET /api/v1/ai-teacher/profile/{user_id} 返回 pydantic snake_case
+   * （weak_points / display_name / ability_dimensions ...），而
+   * StudentLearningProfile 是 camelCase。此前没有归一化层，
+   * generatePersonaSeed 里的 `profile.weakPoints.slice(...)` 直接抛
+   * TypeError: Cannot read properties of undefined (reading 'slice')，
+   * 画像页与学习地图同时卡在「正在生成」。
+   *
+   * 注意：knowledgeMastery / errorPatterns 的 key 是业务实体 id
+   * （如 python_basics / indentation_error），必须原样保留，不能转成 camelCase。
+   */
+  private normalizeProfile(raw: unknown, fallbackUserId: string): StudentLearningProfile {
+    const src = AITeacherService.asRecord(raw);
+    const dims = AITeacherService.asRecord(
+      src['abilityDimensions'] ?? src['ability_dimensions']
+    );
+    const abilityDimensions: AbilityDimensions = {
+      programmingThinking: AITeacherService.toNumber(
+        dims['programmingThinking'] ?? dims['programming_thinking']
+      ),
+      algorithmAbility: AITeacherService.toNumber(
+        dims['algorithmAbility'] ?? dims['algorithm_ability']
+      ),
+      debuggingSkill: AITeacherService.toNumber(
+        dims['debuggingSkill'] ?? dims['debugging_skill']
+      ),
+      projectPractice: AITeacherService.toNumber(
+        dims['projectPractice'] ?? dims['project_practice']
+      ),
+      stemExperiment: AITeacherService.toNumber(
+        dims['stemExperiment'] ?? dims['stem_experiment']
+      ),
+      codeQuality: AITeacherService.toNumber(dims['codeQuality'] ?? dims['code_quality']),
+      independentCompletion: AITeacherService.toNumber(
+        dims['independentCompletion'] ?? dims['independent_completion']
+      ),
+      questionQuality: AITeacherService.toNumber(
+        dims['questionQuality'] ?? dims['question_quality']
+      ),
+    };
+  
+    const weakPoints: WeakPoint[] = AITeacherService.toArray(
+      AITeacherService.pick<unknown[]>(src, 'weakPoints', 'weak_points', [])
+    ).map((item) => {
+      const w = AITeacherService.asRecord(item);
+      return {
+        knowledgePoint: AITeacherService.toText(w['knowledgePoint'] ?? w['knowledge_point']),
+        mastery: AITeacherService.toNumber(w['mastery']),
+        errorRate: AITeacherService.toNumber(w['errorRate'] ?? w['error_rate']),
+        suggestion: AITeacherService.toText(w['suggestion']),
+        lastDetected: AITeacherService.toText(w['lastDetected'] ?? w['last_detected']),
+      };
+    });
+  
+    const att = AITeacherService.asRecord(
+      src['attentionProfile'] ?? src['attention_profile']
+    );
+    const attentionProfile: AttentionProfile = {
+      averageFocusDurationMinutes: AITeacherService.toNumber(
+        att['averageFocusDurationMinutes'] ?? att['average_focus_duration_minutes']
+      ),
+      tabSwitchFrequency: AITeacherService.toNumber(
+        att['tabSwitchFrequency'] ?? att['tab_switch_frequency']
+      ),
+      hesitationTimeMs: AITeacherService.toNumber(
+        att['hesitationTimeMs'] ?? att['hesitation_time_ms']
+      ),
+      trend: AITeacherService.toText(att['trend'], 'stable') as AttentionProfile['trend'],
+    };
+  
+    const emotionalStates: EmotionLog[] = AITeacherService.toArray(
+      AITeacherService.pick<unknown[]>(src, 'emotionalStates', 'emotional_states', [])
+    ).map((item) => {
+      const e = AITeacherService.asRecord(item);
+      return {
+        timestamp: AITeacherService.toText(e['timestamp']),
+        emotion: AITeacherService.toText(e['emotion'], 'neutral') as EmotionLog['emotion'],
+        source: AITeacherService.toText(e['source'], 'dialogue') as EmotionLog['source'],
+        confidence: AITeacherService.toNumber(e['confidence']),
+      };
+    });
+  
+    const learningMilestones: LearningMilestone[] = AITeacherService.toArray(
+      AITeacherService.pick<unknown[]>(src, 'learningMilestones', 'learning_milestones', [])
+    ).map((item) => {
+      const m = AITeacherService.asRecord(item);
+      return {
+        id: AITeacherService.toText(m['id']),
+        type: AITeacherService.toText(m['type'], 'custom') as LearningMilestone['type'],
+        title: AITeacherService.toText(m['title']),
+        description: AITeacherService.toText(m['description']),
+        achievedAt: AITeacherService.toText(m['achievedAt'] ?? m['achieved_at']),
+      };
+    });
+  
+    const skillTree: SkillTreeNode[] = AITeacherService.toArray(
+      AITeacherService.pick<unknown[]>(src, 'skillTree', 'skill_tree', [])
+    ).map((item) => this.normalizeSkillNode(item));
+  
+    return {
+      userId: AITeacherService.toText(
+        AITeacherService.pick<unknown>(src, 'userId', 'user_id', fallbackUserId),
+        fallbackUserId
+      ),
+      displayName: AITeacherService.toText(
+        AITeacherService.pick<unknown>(src, 'displayName', 'display_name', '同学')
+      ),
+      gradeLevel: AITeacherService.toText(
+        AITeacherService.pick<unknown>(src, 'gradeLevel', 'grade_level', '')
+      ),
+      ageGroup: AITeacherService.toText(
+        AITeacherService.pick<unknown>(src, 'ageGroup', 'age_group', '')
+      ),
+      learningStyle: AITeacherService.toText(
+        AITeacherService.pick<unknown>(src, 'learningStyle', 'learning_style', 'visual')
+      ) as LearningStyle,
+      preferredContentType: AITeacherService.toText(
+        AITeacherService.pick<unknown>(
+          src,
+          'preferredContentType',
+          'preferred_content_type',
+          'interactive'
+        )
+      ) as StudentLearningProfile['preferredContentType'],
+      abilityDimensions,
+      interestPreferences: AITeacherService.toArray(
+        AITeacherService.pick<unknown[]>(src, 'interestPreferences', 'interest_preferences', [])
+      ).map((i) => AITeacherService.toText(i)),
+      knowledgeMastery: AITeacherService.asRecord(
+        AITeacherService.pick<unknown>(src, 'knowledgeMastery', 'knowledge_mastery', {})
+      ) as Record<string, number>,
+      totalStudyTimeMinutes: AITeacherService.toNumber(
+        AITeacherService.pick<unknown>(src, 'totalStudyTimeMinutes', 'total_study_time_minutes', 0)
+      ),
+      completedCoursesCount: AITeacherService.toNumber(
+        AITeacherService.pick<unknown>(src, 'completedCoursesCount', 'completed_courses_count', 0)
+      ),
+      averageQuizScore: AITeacherService.toNumber(
+        AITeacherService.pick<unknown>(src, 'averageQuizScore', 'average_quiz_score', 0)
+      ),
+      currentStreakDays: AITeacherService.toNumber(
+        AITeacherService.pick<unknown>(src, 'currentStreakDays', 'current_streak_days', 0)
+      ),
+      longestStreakDays: AITeacherService.toNumber(
+        AITeacherService.pick<unknown>(src, 'longestStreakDays', 'longest_streak_days', 0)
+      ),
+      weakPoints,
+      errorPatterns: AITeacherService.asRecord(
+        AITeacherService.pick<unknown>(src, 'errorPatterns', 'error_patterns', {})
+      ) as Record<string, number>,
+      attentionProfile,
+      emotionalStates,
+      learningMilestones,
+      skillTree,
+      personaSeed: AITeacherService.toText(
+        AITeacherService.pick<unknown>(src, 'personaSeed', 'persona_seed', '')
+      ),
+      learningGoals: AITeacherService.toArray(
+        AITeacherService.pick<unknown[]>(src, 'learningGoals', 'learning_goals', [])
+      ).map((i) => AITeacherService.toText(i)),
+      createdAt: AITeacherService.toText(
+        AITeacherService.pick<unknown>(src, 'createdAt', 'created_at', '')
+      ),
+      updatedAt: AITeacherService.toText(
+        AITeacherService.pick<unknown>(src, 'updatedAt', 'updated_at', '')
+      ),
+    };
+  }
+  
   // ==================== 学习画像 ====================
 
   /** 获取学生学习画像 */
@@ -127,9 +355,11 @@ export class AITeacherService {
     if (this.isInvalidUserId(userId)) {
       return this.invalidUserId(userId);
     }
-    return this.http.get<StudentLearningProfile>(`${this.API_BASE}/profile/${userId}`).pipe(
+    return this.http.get<unknown>(`${this.API_BASE}/profile/${userId}`).pipe(
       // 【P1 修复】统一 8s 超时兑底，跳进 catchError → mock。
       timeout(AI_TEACHER_HTTP_TIMEOUT_MS),
+      // 【P0-A 修复】后端返回 snake_case，先归一化为前端 camelCase 契约
+      map((raw) => this.normalizeProfile(raw, userId)),
       tap((profile) => this.profileSubject.next(profile)),
       catchError(() => {
         // 降级为Mock数据
@@ -150,8 +380,10 @@ export class AITeacherService {
       return this.invalidUserId(userId);
     }
     return this.http
-      .patch<StudentLearningProfile>(`${this.API_BASE}/profile/${userId}`, update)
+      .patch<unknown>(`${this.API_BASE}/profile/${userId}`, update)
       .pipe(
+        // 【P0-A 修复】PATCH 同样返回 snake_case，需归一化
+        map((raw) => this.normalizeProfile(raw, userId)),
         tap((profile) => this.profileSubject.next(profile)),
         catchError(() => {
           // 本地更新
@@ -167,25 +399,57 @@ export class AITeacherService {
       );
   }
 
-  /** 生成画像摘要（供AI教师prompt使用） */
-  generatePersonaSeed(profile: StudentLearningProfile): string {
+  /**
+   * 生成画像摘要（供AI教师prompt使用）
+   *
+   * 【P0-A 修复】旧实现无条件访问 profile.weakPoints.slice / abilityDimensions，
+   * 一旦后端返回 snake_case（weak_points）或字段缺失，就会抛
+   * "Cannot read properties of undefined (reading 'slice')"：
+   * 异常在 subscribe 的 next 回调里抛出，会越过 catchError，
+   * 直接导致画像页与学习地图永久卡在「正在生成」。
+   * 现在：空画像返回默认 seed 并告警；数组/数值都做类型防御。
+   */
+  generatePersonaSeed(profile: StudentLearningProfile | null | undefined): string {
+    if (!profile) {
+      console.warn('[AITeacher] generatePersonaSeed: 画像为空，返回默认人格种子');
+      return '暂无学习画像数据，请以通用方式引导学生';
+    }
+
     const styleMap: Record<LearningStyle, string> = {
       visual: '视觉型',
       auditory: '听觉型',
       reading: '读写型',
       kinesthetic: '动觉型',
     };
-    const weakPointsStr = profile.weakPoints
+
+    const safeNum = (value: unknown): number => {
+      const n = Number(value);
+      return Number.isFinite(n) ? n : 0;
+    };
+
+    // 防御：weakPoints 缺失/非数组时按空数组处理，不抛异常
+    if (!Array.isArray(profile.weakPoints)) {
+      console.warn('[AITeacher] generatePersonaSeed: weakPoints 缺失，已按空数组处理');
+    }
+    const weakPoints = Array.isArray(profile.weakPoints) ? profile.weakPoints : [];
+    const weakPointsStr = weakPoints
+      .filter((w) => !!w && !!w.knowledgePoint)
       .slice(0, 3)
-      .map((w) => `${w.knowledgePoint}(${Math.round(w.mastery * 100)}%)`)
+      .map((w) => `${w.knowledgePoint}(${Math.round(safeNum(w.mastery) * 100)}%)`)
       .join('、');
 
+    if (!profile.abilityDimensions) {
+      console.warn('[AITeacher] generatePersonaSeed: abilityDimensions 缺失，已按 0 处理');
+    }
+    const dims = profile.abilityDimensions;
+    const styleLabel = styleMap[profile.learningStyle] ?? '综合型';
+
     return [
-      `${profile.displayName}，${profile.gradeLevel}，${styleMap[profile.learningStyle]}学习者`,
-      `编程思维${profile.abilityDimensions.programmingThinking}/100，`,
-      `独立完成率${profile.abilityDimensions.independentCompletion}%`,
+      `${profile.displayName || '同学'}，${profile.gradeLevel || '未知年级'}，${styleLabel}学习者`,
+      `编程思维${safeNum(dims?.programmingThinking)}/100`,
+      `独立完成率${safeNum(dims?.independentCompletion)}%`,
       weakPointsStr ? `薄弱环节：${weakPointsStr}` : '',
-      `连续学习${profile.currentStreakDays}天`,
+      `连续学习${safeNum(profile.currentStreakDays)}天`,
     ]
       .filter(Boolean)
       .join('。');
@@ -277,17 +541,6 @@ export class AITeacherService {
 
     // 注入画像和人格到请求
     const profileSeed = this.injectEmotionContext(profile ? this.generatePersonaSeed(profile) : '');
-    const enhancedRequest = {
-      ...request,
-      profileSeed,
-      persona: {
-        addressMode: persona.addressMode,
-        languageStyle: persona.languageStyle,
-        hintLevel: persona.hintLevel,
-        encouragementFrequency: persona.encouragementFrequency,
-        emojiUsage: persona.emojiUsage,
-      },
-    };
 
     // RAG 检索：先获取相关知识上下文，再发送对话请求
     const ragObservable: Observable<RAGResult | null> = request.userId
@@ -302,16 +555,34 @@ export class AITeacherService {
     return ragObservable.pipe(
       // eslint-disable-next-line max-lines-per-function
       switchMap((ragResult: RAGResult | null) => {
-        // 将 RAG 上下文注入请求
+        // 【P0-B 修复】后端 ChatRequest 是 pydantic snake_case 契约。
+        //   之前直接发 camelCase（userId/sessionId），user_id/session_id 缺失，
+        //   FastAPI 直接 422，所有对话都静默落进下面的 catchError → mock 分支，
+        //   因此看起来「能用」但从未真实对接。
         const requestWithContext = {
-          ...enhancedRequest,
-          knowledgeContext: ragResult?.context ?? '',
-          knowledgeSources: ragResult?.sources ?? [],
+          user_id: request.userId,
+          message: request.message,
+          session_id: request.sessionId,
+          profile_seed: profileSeed,
+          persona: {
+            address_mode: persona.addressMode,
+            language_style: persona.languageStyle,
+            hint_level: persona.hintLevel,
+            encouragement_frequency: persona.encouragementFrequency,
+            emoji_usage: persona.emojiUsage,
+          },
+          knowledge_context: ragResult?.context ?? '',
+          knowledge_sources: ragResult?.sources ?? [],
         };
 
         return this.http
-          .post<AITeacherChatResponse>(`${this.API_BASE}/chat`, requestWithContext)
+          .post<unknown>(`${this.API_BASE}/chat`, requestWithContext)
           .pipe(
+            // 【P0-B 修复】后端 RAG 懒加载模型时会长时间挂起，必须设超时，
+            //   否则界面 spinner 永不结束（catchError 也进不去）。
+            timeout(AI_TEACHER_HTTP_TIMEOUT_MS),
+            // 【P0-B 修复】响应也是 snake_case，归一化后再交给 UI
+            map((raw) => this.normalizeChatResponse(raw, request.sessionId)),
             tap((response) => {
               // 自动记录AI检测到的情绪到情感陪伴日志（跳过 neutral 避免淹没日志）
               if (response.emotionDetected && response.emotionDetected !== 'neutral') {
@@ -358,8 +629,9 @@ export class AITeacherService {
                 });
               }
             }),
-            catchError(() => {
-              // Mock响应降级
+            catchError((error) => {
+              // 降级兜底：后端不可用时仍能让对话继续，但要区分标记 model='mock'
+              console.warn('[AITeacher] /chat 请求失败，已降级为本地 mock 回复:', error?.status ?? error);
               const mockResponse: AITeacherChatResponse = {
                 reply: this.generateMockReply(request.message, persona),
                 sessionId: request.sessionId,
@@ -376,6 +648,40 @@ export class AITeacherService {
           );
       })
     );
+  }
+
+  /**
+   * 【P0-B 修复】把后端 ChatResponse 的 snake_case 归一化为前端 camelCase 契约。
+   * 后端只用到 reply / session_id / emotion_detected / memories_referenced /
+   * knowledge_used / inference_time_ms，其余字段缺失时给安全默认值。
+   */
+  private normalizeChatResponse(raw: unknown, fallbackSessionId: string): AITeacherChatResponse {
+    const r = AITeacherService.asRecord(raw);
+    return {
+      reply: AITeacherService.toText(r['reply'] ?? r['message']),
+      sessionId: AITeacherService.toText(
+        AITeacherService.pick<unknown>(r, 'sessionId', 'session_id', fallbackSessionId),
+        fallbackSessionId
+      ),
+      emotionDetected: AITeacherService.toText(
+        AITeacherService.pick<unknown>(r, 'emotionDetected', 'emotion_detected', 'neutral'),
+        'neutral'
+      ) as AITeacherChatResponse['emotionDetected'],
+      memoriesReferenced: AITeacherService.toArray(
+        AITeacherService.pick<unknown[]>(r, 'memoriesReferenced', 'memories_referenced', [])
+      ).map((item) => AITeacherService.toText(item)),
+      knowledgeUsed: Boolean(
+        AITeacherService.pick<unknown>(r, 'knowledgeUsed', 'knowledge_used', false)
+      ),
+      suggestions: AITeacherService.toArray(
+        AITeacherService.pick<unknown[]>(r, 'suggestions', 'suggestions', [])
+      ) as TeachingSuggestion[],
+      model: AITeacherService.toText(r['model'], 'unknown'),
+      confidence: AITeacherService.toNumber(r['confidence']),
+      inferenceTimeMs: AITeacherService.toNumber(
+        AITeacherService.pick<unknown>(r, 'inferenceTimeMs', 'inference_time_ms', 0)
+      ),
+    };
   }
 
   /** 根据年级推断学习阶段 */
@@ -780,6 +1086,97 @@ export class AITeacherService {
     return this.http
       .delete<{ success: boolean }>(`${this.API_BASE}/memory/${userId}`)
       .pipe(catchError(() => of({ success: true })));
+  }
+
+  // ==================== 【P3-B】实时推送设置 + 事件历史 ====================
+
+  /** 获取 AI 教师实时推送设置 */
+  getLiveSettings(userId: string): Observable<AiTeacherLiveSettings> {
+    // 【NaN 防御】userId 非法时禁止拼接，避免请求打到 /live-settings/NaN 路径。
+    if (this.isInvalidUserId(userId)) {
+      return this.invalidUserId(userId);
+    }
+    return this.http.get<AiTeacherLiveSettings>(
+      `${this.API_BASE}/live-settings/${userId}`
+    ).pipe(
+      // 【P1 修复】统一超时兑底 → 本地默认设置
+      timeout(AI_TEACHER_HTTP_TIMEOUT_MS),
+      tap((s) => {
+        if (s) {
+          this.liveService?.applySettings(s);
+        }
+      }),
+      catchError(() => {
+        const defaults: AiTeacherLiveSettings = {
+          userId,
+          updatedAt: new Date().toISOString(),
+          ...DEFAULT_LIVE_SETTINGS,
+        };
+        this.liveService?.applySettings(defaults);
+        return of(defaults);
+      })
+    );
+  }
+
+  /** 更新 AI 教师实时推送设置 */
+  updateLiveSettings(
+    userId: string,
+    partial: Partial<AiTeacherLiveSettings>
+  ): Observable<AiTeacherLiveSettings> {
+    // 【NaN 防御】userId 非法时禁止拼接，避免请求打到 /live-settings/NaN 路径。
+    if (this.isInvalidUserId(userId)) {
+      return this.invalidUserId(userId);
+    }
+    // 后端使用 snake_case 字段名
+    const payload = {
+      enabled: partial.enabled,
+      celebration_enabled: partial.celebrationEnabled,
+      suggestion_enabled: partial.suggestionEnabled,
+      nudge_enabled: partial.nudgeEnabled,
+      dnd_start_hour: partial.dndStartHour,
+      dnd_end_hour: partial.dndEndHour,
+      max_per_hour: partial.maxPerHour,
+      min_interval_seconds: partial.minIntervalSeconds,
+    };
+    return this.http.put<AiTeacherLiveSettings>(
+      `${this.API_BASE}/live-settings/${userId}`,
+      payload
+    ).pipe(
+      tap((s) => {
+        if (s) {
+          this.liveService?.applySettings(s);
+        }
+      }),
+      catchError(() => {
+        // 降级：本地保存
+        const merged: AiTeacherLiveSettings = {
+          userId,
+          updatedAt: new Date().toISOString(),
+          ...this.liveService?.getSettingsSnapshot(),
+          ...partial,
+        } as AiTeacherLiveSettings;
+        this.liveService?.applySettings(merged);
+        return of(merged);
+      })
+    );
+  }
+
+  /** 获取最近 AI 教师实时事件历史（断线后回放） */
+  getLiveHistory(
+    userId: string,
+    limit: number = 20
+  ): Observable<AiTeacherLiveEvent[]> {
+    return this.http.get<{
+      success: boolean;
+      data: AiTeacherLiveEvent[];
+      count: number;
+    }>(`${this.API_BASE}/live-events/history/${userId}`, {
+      params: { limit: String(limit) },
+    }).pipe(
+      timeout(AI_TEACHER_HTTP_TIMEOUT_MS),
+      map((res) => res?.data || []),
+      catchError(() => of([] as AiTeacherLiveEvent[]))
+    );
   }
 
   // ==================== 私有辅助方法 ====================

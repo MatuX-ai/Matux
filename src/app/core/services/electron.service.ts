@@ -26,6 +26,28 @@ import type {
   SelectDirectoryResult,
 } from '../models/electron-api.model';
 
+/**
+ * 【加固】协议代理异常事件
+ * 主进程 protocol.handle 在代理失败或后端 5xx 时，会通过 app-event 通道发送 type='proxy-error'
+ * 详见 electron/main.js isApiOrAsset 分支
+ */
+export interface ProxyErrorEvent {
+  type: 'proxy-error';
+  source: 'proxy' | 'backend';
+  path?: string;
+  method?: string;
+  backendUrl?: string;
+  targetStatus?: number;
+  durationMs?: number;
+  errorMessage?: string;
+  timestamp?: string;
+}
+
+/**
+ * 任意应用事件（AppEvent 或 ProxyErrorEvent）
+ */
+export type AppEventLike = AppEvent | ProxyErrorEvent;
+
 @Injectable({
   providedIn: 'root',
 })
@@ -45,6 +67,15 @@ export class ElectronService {
   /** 应用事件 Subject */
   private appEventSubject = new BehaviorSubject<AppEvent | null>(null);
   readonly appEvent$ = this.appEventSubject.asObservable();
+
+  /**
+   * 【加固】协议代理异常事件 Subject
+   * 主进程 protocol.handle 在转发 app://./api/... 失败或后端 5xx 时发出
+   * 订阅示例（仅桌面环境有意义）：
+   *   electronService.proxyError$.pipe(filter(e => e.path?.startsWith('api/v1/auth'))).subscribe(...)
+   */
+  private proxyErrorSubject = new BehaviorSubject<ProxyErrorEvent | null>(null);
+  readonly proxyError$ = this.proxyErrorSubject.asObservable();
 
   /** 降级模式 Subject（无 Python 后端时为 true） */
   private degradedModeSubject = new BehaviorSubject<boolean>(false);
@@ -117,8 +148,8 @@ export class ElectronService {
     // 监听应用事件
     api.receive('app-event', (data: unknown) => {
       this.ngZone.run(() => {
-        const event = data as AppEvent;
-        this.appEventSubject.next(event);
+        const event = data as AppEventLike;
+        this.appEventSubject.next(event as AppEvent);
 
         // 后端断连时弹出系统通知
         if (event.type === 'backend-disconnected') {
@@ -137,6 +168,11 @@ export class ElectronService {
         // 后端就绪时清除降级状态
         if (event.type === 'backend-ready') {
           this.degradedModeSubject.next(false);
+        }
+
+        // 【加固】协议代理异常/后端 5xx：推送给 proxyError$ 订阅者（登录组件等会用到）
+        if (event.type === 'proxy-error') {
+          this.proxyErrorSubject.next(event as ProxyErrorEvent);
         }
       });
     });

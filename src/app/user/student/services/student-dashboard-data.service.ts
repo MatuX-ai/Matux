@@ -21,6 +21,7 @@ import { AchievementService } from '../../../core/services/achievement.service';
 import { AiEduWebSocketService } from '../../../core/services/ai-edu-websocket.service';
 import { AuthService } from '../../../core/services/auth.service';
 import { CourseEnrollmentService } from '../../../core/services/course-enrollment.service';
+import { GamificationEventBusService } from '../../../core/services/gamification-event-bus.service';
 import { MultiSourceLearningService } from '../../../core/services/multi-source-learning.service';
 import { UnifiedCourseService } from '../../../core/services/unified-course.service';
 import type {
@@ -237,7 +238,9 @@ export class StudentDashboardDataService implements OnDestroy {
     private unifiedCourseService: UnifiedCourseService,
     private courseEnrollmentService: CourseEnrollmentService,
     private achievementService: AchievementService,
-    private wsService: AiEduWebSocketService
+    private wsService: AiEduWebSocketService,
+    // 【P0-C 修复】游戏化事件总线：用于建立 /ws/gamification 直连
+    private gamificationBus: GamificationEventBusService
   ) {}
 
   /**
@@ -546,6 +549,9 @@ export class StudentDashboardDataService implements OnDestroy {
     // 通过 AiEduWebSocketService.connect 进行连接
     try {
       this.wsService.connect(userIdNum, 1, window.location.origin);
+      // 【P0-C 修复】同时建立 /ws/gamification 直连（成就解锁 / 节点状态实时推送）。
+      //   签到页、学习面板均复用本服务，因此在这里连一次即可全局生效。
+      this.gamificationBus.connect(userIdNum);
     } catch (error) {
       console.warn('[DashboardDataService] WebSocket 连接失败:', error);
       return;

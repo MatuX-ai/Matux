@@ -63,16 +63,41 @@
     </mat-card>
   </div>
 
-  <!-- 技能树 -->
+  <!-- 【P2-A】技能视图：地图 / 列表切换 -->
   <mat-card class="skill-tree-card">
     <mat-card-header>
-      <mat-card-title>技能树</mat-card-title>
-      <button mat-button color="primary" (click)="expandAll = !expandAll">
-        {{ expandAll ? '收起全部' : '展开全部' }}
-      </button>
+      <mat-card-title>{{ skillViewMode === 'map' ? '学习地图' : '技能树' }}</mat-card-title>
+      <div class="view-toggle">
+        <button
+          mat-stroked-button
+          [class.active]="skillViewMode === 'map'"
+          (click)="setSkillViewMode('map')"
+        >
+          <mat-icon>map</mat-icon>
+          地图
+        </button>
+        <button
+          mat-stroked-button
+          [class.active]="skillViewMode === 'list'"
+          (click)="setSkillViewMode('list')"
+        >
+          <mat-icon>view_list</mat-icon>
+          列表
+        </button>
+      </div>
     </mat-card-header>
     <mat-card-content>
-      <div class="skill-tree">
+      <!-- 地图视图（P2-A 学习地图） -->
+      <app-learning-map
+        *ngIf="skillViewMode === 'map' && profile && !isLoading && !loadErrorMsg"
+        [profile]="profile"
+        [highlightSkillId]="highlightSkillId"
+        (navigateToCourse)="onNavigateToCourse($event)"
+        (navigateToAchievement)="onNavigateToAchievement($event)"
+      ></app-learning-map>
+
+      <!-- 列表视图（兼容旧版技能树） -->
+      <div *ngIf="skillViewMode === 'list'" class="skill-tree">
         <div *ngFor="let category of skillTreeCategories" class="skill-category">
           <div class="category-header" (click)="toggleCategory(category.id)">
             <mat-icon>{{ expandAll ? 'expand_more' : 'chevron_right' }}</mat-icon>

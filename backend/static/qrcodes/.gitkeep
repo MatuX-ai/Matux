@@ -1,0 +1,7 @@
+# QR 二维码静态资源目录
+#
+# 此目录存储动态生成的分享二维码 PNG 文件。
+# 文件命名：{short_code}.png（如 "abc12345.png"）
+#
+# 由 backend/services/share_service.py 在创建分享卡片时自动写入。
+# 二维码内容：完整短链 URL（如 https://imato.app/share/abc12345）

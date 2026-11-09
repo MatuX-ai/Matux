@@ -48,6 +48,7 @@
   },
   "userNav": {
     "home": "首页",
+    "circuitLab": "电路实验",
     "search": "搜索",
     "searchPlaceholder": "搜索课程、实验、插件...",
     "notifications": "通知",
@@ -79,6 +80,28 @@
     "help": "帮助中心",
     "about": "关于 MatuX",
     "copyright": "保留所有权利"
+  },
+  "circuitLab": {
+    "title": "电路虚拟实验",
+    "subtitle": "拖拽元件、实时仿真，电压电流随电路变化即时可见",
+    "loading": "正在加载实验环境...",
+    "error": "实验环境加载失败",
+    "errorHint": "未找到 assets/circuitjs 资源，请确认安装包完整或重新安装应用。",
+    "retry": "重试",
+    "reset": "重置电路",
+    "resetHint": "重新加载实验环境，清空当前电路",
+    "fullscreen": "全屏",
+    "exitFullscreen": "退出全屏",
+    "license": "开源许可",
+    "footer": "本实验使用 CircuitJS 内核，支持拖拽元件并实时仿真",
+    "licenseTitle": "开源许可与致谢",
+    "licenseCircuitJs": "电路仿真内核（GPL-2.0）",
+    "licenseSource": "源码地址",
+    "licenseProduct": "产物来源",
+    "licenseText": "许可证全文",
+    "licenseNotice": "第三方说明",
+    "licenseModifications": "本地仅移除了上游产物中的第三方统计与 Dropbox 外链脚本，仿真内核未做修改，全部电压、电流数值均由 CircuitJS 计算得出。",
+    "licenseClose": "我知道了"
   },
   "nav": {
     "home": "首页",
@@ -141,5 +164,61 @@
     "reconnected": "网络已重新连接",
     "updateAvailable": "发现新版本,点击立即更新",
     "update": "更新"
+  },
+  "level": {
+    "title": {
+      "1": "好奇宝宝",
+      "2": "编程新手",
+      "3": "代码学徒",
+      "4": "循环骑士",
+      "5": "函数巫师",
+      "6": "算法工匠",
+      "7": "数据炼金师",
+      "8": "架构大师",
+      "9": "AI 协作者",
+      "10": "元宇宙创世者"
+    },
+    "tier": {
+      "bronze": "青铜",
+      "silver": "白银",
+      "gold": "黄金",
+      "diamond": "钻石",
+      "star": "星耀"
+    },
+    "nextUnlock": "再 {n} EXP 解锁「{title}」",
+    "maxReached": "已达巅峰，解锁创世者之冠",
+    "upgraded": "你已升级到",
+    "continueButton": "继续学习",
+    "totalExp": "累计 EXP"
+  },
+  "checkin": {
+    "button": "签到",
+    "tooltip": "点击领取今日奖励 +50 EXP",
+    "ariaLabel": "每日签到：点击领取今日奖励",
+    "opening": "开启中...",
+    "success": "今日 +50 EXP 已入账",
+    "streakDays": "连续 {n} 天",
+    "greeting": {
+      "before": "你好，{name} 👋 准备好开启今天了吗？",
+      "after": "欢迎回来，{name} ✨ 今天的冒险已启程"
+    }
+  },
+  "tasks": {
+    "complete": "已完成",
+    "allDone": "太棒了！今天的任务全部完成",
+    "reward": "+{n} EXP"
+  },
+  "fab": {
+    "state": {
+      "idle": "AI 老师在线 · 点击开始对话",
+      "message": "AI 老师 · 收到 {n} 条新消息",
+      "reward": "AI 老师 · 有新奖励待领取",
+      "stuck": "AI 老师 · 需要帮助吗？"
+    },
+    "opening": {
+      "reward": "刚看到你又升级了！要来聊聊新称号的故事吗？",
+      "stuck": "注意到你在这道题停留 {n} 分钟了，需要我提示一下思路吗？",
+      "message": "我有 {n} 条新消息要告诉你"
+    }
   }
 }

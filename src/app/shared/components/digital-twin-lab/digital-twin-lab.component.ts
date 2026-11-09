@@ -18,8 +18,9 @@ import { MatSlideToggleModule } from '@angular/material/slide-toggle';
 import { MatSnackBar } from '@angular/material/snack-bar';
 import { MatTooltipModule } from '@angular/material/tooltip';
 import { ActivatedRoute, Router } from '@angular/router';
-import { Subject } from 'rxjs';
+import { Subject, timeout } from 'rxjs';
 
+import { environment } from '../../../../environments/environment';
 import { CircuitShortcutRegistrar } from '../../../core/services/circuit-shortcut-registrar.service';
 import { ElectronService } from '../../../core/services/electron.service';
 import { ROUTES } from '../../../routes.const';
@@ -116,6 +117,13 @@ export class DigitalTwinLabComponent implements OnInit, OnDestroy {
   sessionInfo!: SessionInfo;
   isLoading = true;
   errorMessage = '';
+  /**
+   * 【P0-A 修复】离线模式：会话服务不可用（后端未启动 / 鉴权失败 / 未部署 Redis）时
+   * 用本地伪会话渲染 UI 骨架，不再全屏红色报错。
+   */
+  isOfflineMode = false;
+  /** Unity 构建缺失时展示占位提示，而不是无限 spinner + 错误弹窗 */
+  unityUnavailable = false;
 
   // Unity WebGL 相关
   unityInstance: UnityInstanceType | null = null;
@@ -169,8 +177,9 @@ export class DigitalTwinLabComponent implements OnInit, OnDestroy {
 
   ngOnInit(): void {
     this.sessionId = this.route.snapshot.paramMap.get('id') ?? '';
-    this.loadSession();
-    this.initializeWebSocket();
+    // 【P0-A 修复】路由无 :id（桌面端默认入口 /digital-twin-lab）时自动创建会话，
+    //   创建失败则进入离线模式，UI 骨架照常渲染。
+    this.bootstrapSession();
     this.setupKeyboardShortcuts();
 
     // 跟踪浏览器在线/离线状态
@@ -217,14 +226,71 @@ export class DigitalTwinLabComponent implements OnInit, OnDestroy {
     this.loadSession();
   }
 
+  /**
+   * 【P0-A 修复】会话引导：
+   * 1. 路由带 id → 按 id 加载会话
+   * 2. 无 id → POST /digital-twin/sessions 自动建会话
+   * 3. 建会话失败 → 本地伪会话 + 离线模式（页面可用）
+   */
+  private bootstrapSession(): void {
+    if (this.sessionId) {
+      this.loadSession();
+      return;
+    }
+
+    this.isLoading = true;
+    this.http
+      .post<SessionInfo>(`${this.baseUrl}/digital-twin/sessions`, {})
+      // 【P0-A 修复】建会话单独放宽到 15s：无 Redis 的桌面端首次连接 SQLite/探测缓存
+      //   可能超过全局 5s 超时，之前会被误判失败而进入离线模式。
+      .pipe(timeout(15000))
+      .subscribe({
+      next: (session) => {
+        this.sessionId = session.session_id;
+        this.sessionInfo = session;
+        this.isOfflineMode = false;
+        this.isLoading = false;
+        this.loadUnityContent();
+        this.initializeWebSocket();
+        this.snackBar.open('数字孪生实验室已加载', '关闭', { duration: 2000 });
+        this.cdr.markForCheck();
+      },
+      error: () => {
+        // 后端未注册路由 / 未登录 / 网络不可用：降级为离线模式
+        // 【P0-A 修复】离线模式下不再建立 WS：避免伪会话连上后
+        //   “已连接”与“离线模式”两个状态自相矛盾。
+        this.enterOfflineMode('会话服务暂不可用，已进入离线模式（本地实验可用）');
+      },
+    });
+  }
+
+  /** 进入离线模式：生成本地伪会话，保证 UI 骨架可用 */
+  private enterOfflineMode(reason: string): void {
+    this.isOfflineMode = true;
+    if (!this.sessionId) {
+      this.sessionId = `local-${Date.now()}`;
+    }
+    this.sessionInfo = {
+      session_id: this.sessionId,
+      host_user_id: 0,
+      participant_count: 1,
+      created_at: new Date().toISOString(),
+      is_active: false,
+    };
+    // 离线模式不是致命错误，不能占满全屏
+    this.errorMessage = '';
+    this.isLoading = false;
+    this.loadUnityContent();
+    this.cdr.markForCheck();
+    this.snackBar.open(reason, '关闭', { duration: 4000 });
+  }
+
   private loadSession(): void {
     // 【防御】sessionId 缺失时禁止拼接，避免请求打到 /digital-twin/sessions//participants
     // 这类非法路径（后端返回 404，错误信息也无法定位真正原因）。
     if (!this.sessionId) {
-      console.warn('[DigitalTwinLab] sessionId 缺失，跳过会话加载');
-      this.errorMessage = '会话 ID 缺失';
-      this.isLoading = false;
-      this.cdr.markForCheck();
+      console.warn('[DigitalTwinLab] sessionId 缺失，转入离线模式');
+      this.enterOfflineMode('会话 ID 缺失，已进入离线模式（本地实验可用）');
       return;
     }
     this.http
@@ -238,25 +304,44 @@ export class DigitalTwinLabComponent implements OnInit, OnDestroy {
           this.cdr.markForCheck();
         },
         error: (_error) => {
-          this.errorMessage = '加载会话失败';
-          this.isLoading = false;
-          this.snackBar.open('会话加载失败', '关闭', { duration: 3000 });
-          this.cdr.markForCheck();
+          // 【P0-A 修复】会话读取失败不再全屏报错，降级为离线模式
+          this.enterOfflineMode('会话加载失败，已进入离线模式（本地实验可用）');
         },
       });
   }
 
   private loadUnityContent(): void {
-    // 动态加载Unity WebGL构建
-    const script = document.createElement('script');
-    script.src = `/digital-twin/builds/lab/index.html`;
-    script.onload = () => {
-      this.initializeUnityPlayer();
-    };
-    script.onerror = () => {
-      this.snackBar.open('Unity内容加载失败', '关闭', { duration: 3000 });
-    };
-    document.head.appendChild(script);
+    // 【P0-A 修复】Unity WebGL 构建当前不随桌面端分发（/digital-twin/builds/lab/** 不存在），
+    //   而 SPA/Electron 的 index.html fallback 会对该路径返回 200 + text/html。
+    //   此前直接把 index.html 注入成 <script> 会静默失败，页面永远停在“正在加载”。
+    //   现在先探测标准 Unity loader：不存在/返回 HTML → 直接展示“3D 资源未安装”占位。
+    const loaderUrl = '/digital-twin/builds/lab/Build/lab.loader.js';
+    fetch(loaderUrl, { method: 'HEAD', cache: 'no-store' })
+      .then((res) => {
+        const contentType = res.headers.get('content-type') ?? '';
+        if (!res.ok || contentType.includes('text/html')) {
+          this.markUnityUnavailable();
+          return;
+        }
+        const script = document.createElement('script');
+        script.src = loaderUrl;
+        script.onload = () => {
+          this.initializeUnityPlayer();
+        };
+        script.onerror = () => {
+          // Unity 构建缺失属于可降级情形：显示占位提示，不弹错、不白屏
+          this.markUnityUnavailable();
+        };
+        document.head.appendChild(script);
+      })
+      .catch(() => this.markUnityUnavailable());
+  }
+
+  /** Unity 资源不可用：展示占位，保持控制面板可用 */
+  private markUnityUnavailable(): void {
+    this.unityUnavailable = true;
+    this.isUnityLoaded = false;
+    this.cdr.markForCheck();
   }
 
   private initializeUnityPlayer(): void {
@@ -362,6 +447,15 @@ export class DigitalTwinLabComponent implements OnInit, OnDestroy {
   }
 
   private initializeWebSocket(): void {
+    // 【P0-A 修复】离线模式不建立 WS：保持“离线”状态一致，避免伪会话连上后
+    //   出现“已连接 + 离线模式”自相矛盾的 UI。
+    if (this.isOfflineMode) {
+      this.websocketState = 'failed';
+      this.isConnected = false;
+      this.cdr.markForCheck();
+      return;
+    }
+
     // 【P4-E】仅在 Demo 环境下启用 WebSocket / 后端不存在时使用 mock/脱机模式。
     if (typeof WebSocket === 'undefined') {
       this.websocketState = 'unsupported';
@@ -391,7 +485,7 @@ export class DigitalTwinLabComponent implements OnInit, OnDestroy {
       return;
     }
 
-    const wsUrl = `ws://${window.location.host}/api/v1/digital-twin/ws/session/${this.sessionId}?user_id=user_${Math.random()}`;
+    const wsUrl = this.resolveWebSocketUrl(this.sessionId);
 
     try {
       this.webSocket = new WebSocket(wsUrl);
@@ -449,9 +543,42 @@ export class DigitalTwinLabComponent implements OnInit, OnDestroy {
     }
   }
 
+  /**
+   * 【P0-A 修复】解析 WebSocket 基地址：
+   * - Electron desktop（app:// / file://）：后端固定本机 8000（无 WS 代理）
+   * - 本地 SPA server（:8080，http.server 不支持 WS upgrade）：直连后端 8000
+   * - 其它 Web 部署：优先 environment.wsUrl，否则同源
+   * 此前统一用 ws://${window.location.host}，在 app:// 协议下 host 无效 → 必然 1006。
+   */
+  private resolveWebSocketUrl(sessionId: string): string {
+    const { protocol, hostname, port } = window.location;
+    let base: string;
+
+    if (protocol === 'app:' || protocol === 'file:') {
+      base = 'ws://localhost:8000';
+    } else if (port === '8080') {
+      base = `ws://${hostname || 'localhost'}:8000`;
+    } else if (environment.wsUrl) {
+      base = environment.wsUrl;
+    } else {
+      base = `${protocol === 'https:' ? 'wss:' : 'ws:'}//${window.location.host}`;
+    }
+
+    const userId = `user_${Math.random().toString(36).slice(2, 10)}`;
+    return `${base}/api/v1/digital-twin/ws/session/${sessionId}?user_id=${userId}`;
+  }
+
   /** 【P4-E】统一的连接失败处理（重连 / 放弃） */
   private handleWebSocketFailure(reason: string): void {
     this.isConnected = false;
+
+    // 【P0-A 修复】离线模式不自动重试，避免 5 次指数退避弹窗刷屏
+    if (this.isOfflineMode) {
+      this.websocketState = 'failed';
+      this.cdr.markForCheck();
+      return;
+    }
+
     this.wsReconnectAttempts += 1;
 
     if (this.wsReconnectAttempts > this.WS_MAX_RECONNECT_ATTEMPTS) {
@@ -475,6 +602,18 @@ export class DigitalTwinLabComponent implements OnInit, OnDestroy {
 
   /** 【P2-4 修复】手动重连入口（用户在 UI 上点击） */
   retryWebSocket(): void {
+    // 【P0-A 修复】离线模式下重试 = 重新引导会话（建会话 → 连 WS）
+    if (this.isOfflineMode) {
+      this.isOfflineMode = false;
+      this.sessionId = '';
+      this.sessionInfo = undefined as unknown as SessionInfo;
+      this.isLoading = true;
+      this.websocketState = 'connecting';
+      this.cdr.markForCheck();
+      this.bootstrapSession();
+      return;
+    }
+
     if (this.websocketState === 'connected' || this.websocketState === 'connecting') {
       return;
     }
@@ -867,6 +1006,7 @@ export class DigitalTwinLabComponent implements OnInit, OnDestroy {
   /** 状态文本（状态条右侧文字） */
   get wsStatusText(): string {
     if (this.isConnected) return '已连接';
+    if (this.isOfflineMode) return '离线模式';
     switch (this.websocketState) {
       case 'connecting':
         return '连接中...';
@@ -885,6 +1025,9 @@ export class DigitalTwinLabComponent implements OnInit, OnDestroy {
 
   /** 离线提示条文案 */
   get wsBannerText(): string {
+    if (this.isOfflineMode) {
+      return '会话服务暂不可用，当前以离线模式运行：实验操作仅在本地生效，不影响页面使用。';
+    }
     switch (this.websocketState) {
       case 'unsupported':
         return '当前环境不支持 WebSocket。所有功能仍可使用，仅不会同步到云端。';

@@ -1,6 +1,10 @@
 <div class="suggestions-container">
   <div class="page-header">
-    <h1 class="page-title">智能教学建议</h1>
+    <h1 class="page-title">
+      智能教学建议
+      <!-- 【P1-4】AI Teacher 后端 4 个端点当前未就绪，前端降级为 mock；此 badge 诚实标注演示模式，待后端实现后删除 -->
+      <span class="demo-badge" title="AI Teacher 后端端点未就绪，当前展示为演示数据">演示模式</span>
+    </h1>
     <button mat-raised-button color="primary" (click)="runDiagnosis()" [disabled]="isDiagnosing">
       <mat-icon>refresh</mat-icon>
       {{ isDiagnosing ? '诊断中...' : '重新诊断' }}

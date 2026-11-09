@@ -14,7 +14,7 @@ const { BackendManager, HealthCheckService, preloadTier1Modules } = require('../
 const { registerGlobalShortcuts, unregisterGlobalShortcuts } = require('../shortcuts');
 const { checkForUpdates } = require('../updates');
 const { loadWindowState, saveWindowState } = require('../utils/window-state');
-const { checkPythonDeps } = require('../backend');
+const { checkPythonDeps, httpGet } = require('../backend');
 
 const {
   SPLASH_RENDER_DELAY,
@@ -165,27 +165,20 @@ class AppInitializer {
   _createHealthCheck() {
     // 直接使用模块级别导入的常量，避免内部 require
     const { HEALTH_URL, HTTP_REQUEST_TIMEOUT } = require('../../../config/constants');
-    const http = require('http');
+    // 【修复健康检查假阴性】复用 backend/health.js 的 httpGet：
+    //   它内部统一做 localhost → 127.0.0.1 归一化（Node 18 会把 localhost 优先解析为 ::1，
+    //   而后端只监听 0.0.0.0:8000，导致周期检查全部 ECONNREFUSED）。
+    //   启动期的 waitForReady 走的是同一套 health.js，两端行为必须一致。
     return async () => {
+      const result = await httpGet(HEALTH_URL, HTTP_REQUEST_TIMEOUT);
+      if (!result.success) {
+        return { success: false, error: result.error };
+      }
       try {
-        return await new Promise((resolve) => {
-          const req = http.get(HEALTH_URL, { timeout: HTTP_REQUEST_TIMEOUT }, (res) => {
-            let data = '';
-            res.on('data', (chunk) => { data += chunk; });
-            res.on('end', () => {
-              try {
-                const json = JSON.parse(data);
-                resolve({ success: true, data: json });
-              } catch {
-                resolve({ success: true });
-              }
-            });
-          });
-          req.on('error', (err) => resolve({ success: false, error: err.message }));
-          req.on('timeout', () => { req.destroy(); resolve({ success: false, error: '请求超时' }); });
-        });
-      } catch (err) {
-        return { success: false, error: err.message };
+        return { success: true, data: JSON.parse(result.body) };
+      } catch {
+        // 能拿到响应但不是 JSON：保持与旧实现一致，视为存活
+        return { success: true };
       }
     };
   }

@@ -29,8 +29,10 @@ import { takeUntil } from 'rxjs/operators';
 
 import { User } from '../../../core/models/auth.models';
 import { AuthService } from '../../../core/services/auth.service';
+import { DesktopChromeService } from '../../../core/services/desktop-chrome.service';
 import { I18nService } from '../../../core/services/i18n.service';
 import { ROUTES } from '../../../routes.const';
+import { DesktopWindowControlsComponent } from '../../../shared/components/desktop-window-controls/desktop-window-controls.component';
 import { UserCenterService } from '../../services/user-center.service';
 
 // 确认对话框配置接口（用于后续集成 ConfirmDialogComponent）
@@ -92,6 +94,8 @@ function sanitizeText(text: string | null | undefined): string {
     MatMenuModule,
     MatDividerModule,
     MatTooltipModule,
+    // 【无边框窗口 P3】导航栏右侧的窗口控制按钮
+    DesktopWindowControlsComponent,
   ],
   templateUrl: './user-navbar.component.html',
   styleUrls: ['./user-navbar.component.scss'],
@@ -109,6 +113,7 @@ export class UserNavbarComponent implements OnInit, OnDestroy {
   readonly EXTERNAL_ROUTES = {
     AI_CODING: '/ai-edu/coding',
     AR_LAB: '/ar-lab',
+    CIRCUIT_LAB: '/circuit-lab',
     CREATIVITY: '/creativity-engine',
   } as const;
 
@@ -119,6 +124,11 @@ export class UserNavbarComponent implements OnInit, OnDestroy {
     { route: ROUTES.USER.COURSES, label: '课程', icon: 'school' },
     { route: this.EXTERNAL_ROUTES.AI_CODING, label: 'AI 编程', icon: 'code' },
     { route: this.EXTERNAL_ROUTES.AR_LAB, label: 'AR 实验室', icon: 'view_in_ar' },
+    {
+      route: this.EXTERNAL_ROUTES.CIRCUIT_LAB,
+      label: 'userNav.circuitLab',
+      icon: 'electrical_services',
+    },
     { route: this.EXTERNAL_ROUTES.CREATIVITY, label: '创作', icon: 'palette' },
   ];
 
@@ -134,6 +144,8 @@ export class UserNavbarComponent implements OnInit, OnDestroy {
 
   private destroy$ = new Subject<void>();
   private resizeSubject$ = new Subject<void>();
+  /** 是否已向 DesktopChromeService 登记内联窗口控制（避免浮动条重复渲染） */
+  private inlineControlsRegistered = false;
   // 保存 resize handler 引用，用于正确移除监听器
   private boundCheckScreenWidth = () => {
     this.resizeSubject$.next();
@@ -145,6 +157,7 @@ export class UserNavbarComponent implements OnInit, OnDestroy {
     private router: Router,
     public i18n: I18nService,
     private cdr: ChangeDetectorRef,
+    private desktopChrome: DesktopChromeService,
     @Inject(PLATFORM_ID) private platformId: object
   ) {}
 
@@ -153,6 +166,23 @@ export class UserNavbarComponent implements OnInit, OnDestroy {
     this.setupSubscriptions();
     this.loadUserData();
     this.initResizeListener();
+    this.registerDesktopChrome();
+  }
+
+  /**
+   * 【无边框窗口 P3】导航栏已内联窗口控制按钮，通知浮动条隐藏自己
+   * 仅在 Electron 非 macOS（真正渲染按钮）时登记
+   */
+  private registerDesktopChrome(): void {
+    if (!isPlatformBrowser(this.platformId)) {
+      return;
+    }
+    const api = window.electronAPI?.windowControls;
+    if (!api || api.platform === 'darwin') {
+      return;
+    }
+    this.desktopChrome.registerInlineControls();
+    this.inlineControlsRegistered = true;
   }
 
   private setupSubscriptions(): void {
@@ -184,6 +214,11 @@ export class UserNavbarComponent implements OnInit, OnDestroy {
   ngOnDestroy(): void {
     this.destroy$.next();
     this.destroy$.complete();
+    // 【无边框窗口 P3】离开导航栏页面时释放登记，让浮动窗口控制条接管
+    if (this.inlineControlsRegistered) {
+      this.desktopChrome.unregisterInlineControls();
+      this.inlineControlsRegistered = false;
+    }
     // SSR 兼容：仅在浏览器环境移除监听器
     if (isPlatformBrowser(this.platformId)) {
       window.removeEventListener('resize', this.boundCheckScreenWidth);

@@ -15,11 +15,204 @@ from pydantic_settings import BaseSettings, SettingsConfigDict
 
 logger = logging.getLogger(__name__)
 
-# 应用环境变量文件（backend/.env）的绝对路径
+# ============================================================================
+# 运行时目录解析（开发模式 / 桌面端冻结模式）
+# ----------------------------------------------------------------------------
+# 两种模式的「可写目录」语义不同：
+#   - 开发模式：以 backend/.env、backend/ai_service.db（相对 CWD）为准，行为不变
+#   - 桌面端（PyInstaller 冻结）：安装目录可能只读，且升级会整体覆盖，因此配置与
+#     数据库必须落在用户数据目录（%APPDATA%\\matux-desktop，与 Electron
+#     app.getPath('userData') 同名）。否则会出现两个上线级缺陷：
+#       1. 没有 .env → SECRET_KEY 每次启动随机 → 重启后 JWT 全部失效（强制重登）
+#       2. DATABASE_URL 相对 CWD → 数据库写进安装目录（随包分发的开发库）
+# ============================================================================
+IS_FROZEN = bool(getattr(sys, "frozen", False))
+
+
+def _resolve_user_data_dir() -> Path:
+    """桌面端用户数据目录（可写，跨版本升级保留）。"""
+    override = os.getenv("IMATO_USER_DATA_DIR", "").strip()
+    if override:
+        return Path(override)
+    if os.name == "nt":
+        base = os.getenv("APPDATA") or str(Path.home() / "AppData" / "Roaming")
+        return Path(base) / "matux-desktop"
+    return Path.home() / ".matux-desktop"
+
+
+def _bundle_dir() -> Path:
+    """只读资源目录：冻结态为 _internal/，开发态为 backend/。"""
+    if IS_FROZEN:
+        return Path(getattr(sys, "_MEIPASS", Path(sys.executable).resolve().parent))
+    return Path(__file__).resolve().parent.parent
+
+
+# 只读资源根目录（打包内置只读文件）
+BUNDLE_DIR = _bundle_dir()
+# 用户数据目录（仅冻结态启用；开发模式为 None，完全沿用旧行为）
+USER_DATA_DIR: Optional[Path] = _resolve_user_data_dir() if IS_FROZEN else None
+# 打包内置 .env（只读，随包携带非敏感默认配置）
+BUNDLE_ENV_FILE = BUNDLE_DIR / ".env"
+# 用户数据目录下的 .env（可写，持久化 SECRET_KEY / DATABASE_URL）
+USER_ENV_FILE: Optional[Path] = (
+    (USER_DATA_DIR / ".env") if USER_DATA_DIR is not None else None
+)
+
+
+def _upsert_env_key(text: str, key: str, value: str) -> str:
+    """在 dotenv 文本中设置 key：存在则整行替换，不存在则追加。"""
+    lines = text.splitlines()
+    replaced = False
+    for idx, line in enumerate(lines):
+        stripped = line.strip()
+        if not stripped or stripped.startswith("#") or "=" not in stripped:
+            continue
+        if stripped.split("=", 1)[0].strip() == key:
+            lines[idx] = f"{key}={value}"
+            replaced = True
+    if not replaced:
+        lines.append(f"{key}={value}")
+    return "\n".join(lines) + "\n"
+
+
+def _read_env_value(text: str, key: str) -> str:
+    """从 dotenv 文本读取单个键的值（忽略注释与空行）。"""
+    for line in text.splitlines():
+        stripped = line.strip()
+        if not stripped or stripped.startswith("#") or "=" not in stripped:
+            continue
+        k, _, v = stripped.partition("=")
+        if k.strip() == key:
+            return v.strip().strip('"').strip("'")
+    return ""
+
+
+def _migrate_legacy_database(target_db: Path) -> None:
+    """把旧版本落在安装目录的数据库迁移到用户数据目录（只做一次）。
+
+    1.0.x 的 cwd=resources/backend，数据库路径为相对 CWD 的 ./ai_service.db。
+    升级到用户数据目录后必须把老库搬过去，否则用户已有的账号与学习记录会「消失」。
+    """
+    if target_db.exists():
+        return
+    candidates = [
+        # exe 布局：resources/backend/dist/main_ai_edu/main_ai_edu.exe → resources/backend
+        Path(sys.executable).resolve().parent.parent.parent / "ai_service.db",
+        # 兼容直接从 backend/ 启动的旧部署（cwd=resources/backend）
+        Path.cwd() / "ai_service.db",
+        # 1.0.4 安装器的兜底暂存：per-machine 安装时 SetShellVarContext all 会把
+        # "$APPDATA" 解析成 C:\ProgramData，旧库被复制到公共 AppData 而应用读不到。
+        # 安装器已在用户 Roaming 写主副本；这里再兜底读一次公共暂存。
+        Path(os.getenv("ProgramData", "C:\\ProgramData")) / "matux-desktop" / "ai_service.db",
+    ]
+    for legacy in candidates:
+        try:
+            if legacy.is_file() and legacy.stat().st_size > 0:
+                target_db.parent.mkdir(parents=True, exist_ok=True)
+                import shutil
+
+                shutil.copy2(legacy, target_db)
+                logger.warning("已把旧版本数据库迁移到用户数据目录：%s -> %s", legacy, target_db)
+                return
+        except OSError:  # pragma: no cover - 迁移失败不应阻断启动
+            continue
+
+
+def _read_user_env_text() -> str:
+    """读取已有用户级 .env；不存在时返回空文本。
+
+    注意：不把打包内的 .env.example 当模板 —— 它含占位符
+    （SECRET_KEY=your-secret-key-here...），一旦“继承”会让所有安装包共用同一个
+    已知密钥，比随机密钥更危险。
+    """
+    if USER_ENV_FILE is None or not USER_ENV_FILE.exists():
+        return ""
+    try:
+        return USER_ENV_FILE.read_text(encoding="utf-8")
+    except OSError:
+        return ""
+
+
+# 已知占位符标记：出现任一项则视为无效密钥，必须重新生成
+_PLACEHOLDER_SECRET_MARKERS = (
+    "your-secret-key",
+    "change-in-production",
+    "changeme",
+    "placeholder",
+    "dev-secret",
+    "test-secret",
+)
+
+
+def _is_valid_secret(value: str) -> bool:
+    """SECRET_KEY 有效性：足够长且不是已知占位符。"""
+    if len(value) < 32:
+        return False
+    lowered = value.lower()
+    return not any(marker in lowered for marker in _PLACEHOLDER_SECRET_MARKERS)
+
+
+def _write_user_env(text: str) -> bool:
+    """把配置写入用户数据目录（失败仅告警，不阻断启动）。"""
+    if USER_ENV_FILE is None or USER_DATA_DIR is None:
+        return False
+    try:
+        USER_DATA_DIR.mkdir(parents=True, exist_ok=True)
+        USER_ENV_FILE.write_text(text, encoding="utf-8")
+        return True
+    except OSError as exc:  # pragma: no cover - 只读用户目录时降级为进程内密钥
+        logger.warning("无法写入用户级 .env（%s）：%s", USER_ENV_FILE, exc)
+        return False
+
+
+def _bootstrap_user_env() -> None:
+    """冻结态首次启动生成用户级 .env（固定 SECRET_KEY、绝对 DATABASE_URL）。
+
+    幂等：已存在且有效时只做键值纠偏，不会重新生成密钥。
+    开发模式（非冻结）直接返回，不产生任何副作用。
+    """
+    if USER_ENV_FILE is None or USER_DATA_DIR is None:
+        return
+
+    text = _read_user_env_text()
+
+    # 1) SECRET_KEY：缺失/过短/占位符时生成一次并持久化
+    if not _is_valid_secret(_read_env_value(text, "SECRET_KEY")):
+        text = _upsert_env_key(text, "SECRET_KEY", secrets.token_urlsafe(48))
+
+    # 2) DATABASE_URL：固定为绝对路径，避免写进安装目录
+    db_path = USER_DATA_DIR / "ai_service.db"
+    text = _upsert_env_key(
+        text, "DATABASE_URL", f"sqlite+aiosqlite:///{db_path.as_posix()}"
+    )
+
+    if not _write_user_env(text):
+        return
+
+    _migrate_legacy_database(db_path)
+
+
+_bootstrap_user_env()
+
+# 应用环境变量文件路径（供日志/诊断使用）
 # 说明：pydantic-settings 的 env_file 若使用相对路径，是相对于「当前工作目录」
 # 解析的 —— 从仓库根目录启动后端时 .env 会静默失效（配置全部退回默认值）。
-# 这里固定为基于 __file__ 的绝对路径，保证任意 CWD 下配置加载行为一致。
-ENV_FILE_PATH = str(Path(__file__).resolve().parent.parent / ".env")
+# 这里固定为绝对路径，保证任意 CWD 下配置加载行为一致。
+ENV_FILE_PATH = str(USER_ENV_FILE if USER_ENV_FILE is not None else BUNDLE_ENV_FILE)
+
+# 多个 env_file 按顺序加载，后者覆盖前者：打包内置默认值 < 用户数据目录持久化值
+ENV_FILES: tuple = (
+    (str(BUNDLE_ENV_FILE), str(USER_ENV_FILE))
+    if USER_ENV_FILE is not None
+    else (str(BUNDLE_ENV_FILE),)
+)
+
+# 数据库默认地址：冻结态绝对路径（用户数据目录），开发态保持相对 CWD
+_DEFAULT_DATABASE_URL = (
+    f"sqlite+aiosqlite:///{(USER_DATA_DIR / 'ai_service.db').as_posix()}"
+    if USER_DATA_DIR is not None
+    else "sqlite+aiosqlite:///./ai_service.db"
+)
 
 
 class Settings(BaseSettings):
@@ -45,8 +238,8 @@ class Settings(BaseSettings):
     HOST: str = "0.0.0.0"
     PORT: int = 8000
 
-    # 数据库配置
-    DATABASE_URL: str = "sqlite+aiosqlite:///./ai_service.db"
+    # 数据库配置（冻结态默认落用户数据目录，开发态保持相对 CWD）
+    DATABASE_URL: str = _DEFAULT_DATABASE_URL
 
     # Supabase 配置（可选）
     SUPABASE_URL: Optional[str] = None
@@ -114,6 +307,17 @@ class Settings(BaseSettings):
     # 速率限制配置
     RATE_LIMIT_REQUESTS: int = 100
     RATE_LIMIT_WINDOW: int = 3600  # 1小时
+
+    # 【P3-E】风控系统配置
+    RISK_CONTROL_ENABLED: bool = True
+    RISK_CONTROL_AUTO_BLOCK_HOURS: int = 1
+    CAPTCHA_PROVIDER: str = "noop"  # noop / hcaptcha / recaptcha / tencent
+    CAPTCHA_HCAPTCHA_SECRET: str = ""
+    CAPTCHA_HCAPTCHA_SITE_KEY: str = ""
+    CAPTCHA_TENCENT_SECRET_ID: str = ""
+    CAPTCHA_TENCENT_SECRET_KEY: str = ""
+    CAPTCHA_TENCENT_CAPTCHA_APP_ID: str = ""
+    CAPTCHA_TOKEN_TTL_SECONDS: int = 300  # 一次性 token 默认 5 分钟
 
     # 熔断器配置
     CIRCUIT_BREAKER_ENABLED: bool = True
@@ -233,6 +437,26 @@ class Settings(BaseSettings):
     # 后台预加载延迟（秒），避免与启动竞争资源
     PRELOAD_DELAY_SECONDS: float = 2.0
 
+    # === AI 教师持久化配置 ===
+    # 【P3-D-1】持久化后端选择
+    # - file: 默认，JSON 文件持久化（P3-B 引入）
+    # - sql:  SQLAlchemy ORM + SQLite 持久化（P3-D 新增）
+    # - redis: Redis Hash + Pub/Sub 跨进程持久化（P3-D-2 新增）
+    # 运行时也可通过环境变量 AI_TEACHER_PERSISTENCE_BACKEND 覆盖
+    AI_TEACHER_PERSISTENCE_BACKEND: str = "file"
+    AI_TEACHER_REDIS_URL: str = "redis://localhost:6379/0"  # Redis 连接 URL
+    AI_TEACHER_PERSISTENCE_USE_PUBSUB: bool = True  # 是否启用跨进程通知
+
+    # === 社交化分享配置 ===
+    # 【P3-C】分享平台基础 URL（用于生成短链 + 二维码）
+    SHARE_BASE_URL: str = "http://localhost:8000"
+    # 二维码存储目录（相对于项目根目录）
+    QR_CODE_STORAGE_DIR: str = "backend/static/qrcodes"
+    # 默认邀请奖励积分
+    DEFAULT_INVITE_REWARD_POINTS: int = 100
+    # 邀请码默认有效期（天，None=永不过期）
+    DEFAULT_INVITE_EXPIRY_DAYS: Optional[int] = 30
+
     # === 服务器配置 ===
     # 最大 worker 进程数（生产环境），避免高配机器上资源耗尽
     MAX_WORKERS: int = Field(default=8, ge=1, le=32)
@@ -243,7 +467,7 @@ class Settings(BaseSettings):
     # Pydantic v2 配置
     # ========================================================================
     model_config = SettingsConfigDict(
-        env_file=ENV_FILE_PATH,
+        env_file=ENV_FILES,
         env_file_encoding="utf-8",
         case_sensitive=True,
         extra="ignore",  # 忽略额外的环境变量
@@ -432,8 +656,9 @@ def get_settings() -> Settings:
 # 为向后兼容，提供全局 settings 实例
 # 注意：在模块首次导入时会触发 Settings() 实例化
 # 如果需要延迟初始化，使用 get_settings() 函数
+# 【P3-D-1 修复】移除 pytest 分支——pytest 也需要 settings 完整加载
+# （utils/database.py 在导入时就引用 settings.DATABASE_URL）
 try:
-    # 仅在非测试环境中立即初始化
     settings = Settings()
 except Exception:
     # 【P1修复】配置加载失败必须显式暴露：静默降级为 settings=None 会让下游

@@ -1,0 +1,171 @@
+<div class="settings-container">
+  <!-- 【P3-B】返回 AI 教师人格设置 -->
+  <a routerLink="/user/ai-teacher-settings" class="back-link" mat-button>
+    <mat-icon>arrow_back</mat-icon>
+    返回 AI 教师设置
+  </a>
+
+  <h2 class="settings-title">
+    <mat-icon>settings_input_component</mat-icon>
+    AI 教师实时推送设置
+  </h2>
+  <p class="settings-subtitle">
+    控制 AI 教师何时通过站内 toast 推送学习提醒。设置会同步到后端，跨设备生效。
+  </p>
+
+  <mat-card *ngIf="loading" class="loading-card">
+    <mat-icon>hourglass_empty</mat-icon>
+    <span>正在加载设置...</span>
+  </mat-card>
+
+  <ng-container *ngIf="!loading">
+    <!-- 总开关 -->
+    <mat-card class="section-card">
+      <mat-card-content>
+        <div class="row">
+          <div class="row-text">
+            <strong>启用 AI 教师实时推送</strong>
+            <p class="hint">关闭后将不再接收任何 toast，但建议仍可在学习报告中查看。</p>
+          </div>
+          <mat-slide-toggle [(ngModel)]="settings.enabled" name="enabled">
+          </mat-slide-toggle>
+        </div>
+      </mat-card-content>
+    </mat-card>
+
+    <!-- 类型开关 -->
+    <mat-card class="section-card">
+      <mat-card-header>
+        <mat-icon mat-card-avatar>category</mat-icon>
+        <mat-card-title>事件类型</mat-card-title>
+        <mat-card-subtitle>分别控制 3 类推送</mat-card-subtitle>
+      </mat-card-header>
+      <mat-card-content>
+        <div class="row">
+          <div class="row-text">
+            <strong>🎉 庆祝消息</strong>
+            <p class="hint">节点掌握、成就解锁、套装完成</p>
+          </div>
+          <mat-slide-toggle
+            [(ngModel)]="settings.celebrationEnabled"
+            name="celebrationEnabled"
+          >
+          </mat-slide-toggle>
+        </div>
+        <mat-divider></mat-divider>
+        <div class="row">
+          <div class="row-text">
+            <strong>💡 学习建议</strong>
+            <p class="hint">前置缺失、能力失衡、概念混淆等主动建议</p>
+          </div>
+          <mat-slide-toggle
+            [(ngModel)]="settings.suggestionEnabled"
+            name="suggestionEnabled"
+          >
+          </mat-slide-toggle>
+        </div>
+        <mat-divider></mat-divider>
+        <div class="row">
+          <div class="row-text">
+            <strong>👋 关怀提醒</strong>
+            <p class="hint">空闲超时、专注下降时提醒你回来</p>
+          </div>
+          <mat-slide-toggle
+            [(ngModel)]="settings.nudgeEnabled"
+            name="nudgeEnabled"
+          >
+          </mat-slide-toggle>
+        </div>
+      </mat-card-content>
+    </mat-card>
+
+    <!-- 勿扰时段 -->
+    <mat-card class="section-card">
+      <mat-card-header>
+        <mat-icon mat-card-avatar>do_not_disturb_on</mat-icon>
+        <mat-card-title>勿扰时段</mat-card-title>
+        <mat-card-subtitle>该时段内不发送任何推送</mat-card-subtitle>
+      </mat-card-header>
+      <mat-card-content>
+        <div class="time-row">
+          <mat-form-field appearance="outline" class="time-field">
+            <mat-label>开始（小时）</mat-label>
+            <input
+              matInput
+              type="number"
+              min="0"
+              max="23"
+              [(ngModel)]="settings.dndStartHour"
+              name="dndStartHour"
+            />
+          </mat-form-field>
+          <span class="time-sep">—</span>
+          <mat-form-field appearance="outline" class="time-field">
+            <mat-label>结束（小时）</mat-label>
+            <input
+              matInput
+              type="number"
+              min="0"
+              max="23"
+              [(ngModel)]="settings.dndEndHour"
+              name="dndEndHour"
+            />
+          </mat-form-field>
+        </div>
+        <p class="hint">
+          跨夜设置示例：开始 22 / 结束 8。相同=不启用勿扰。
+        </p>
+      </mat-card-content>
+    </mat-card>
+
+    <!-- 频控 -->
+    <mat-card class="section-card">
+      <mat-card-header>
+        <mat-icon mat-card-avatar>tune</mat-icon>
+        <mat-card-title>推送频率</mat-card-title>
+        <mat-card-subtitle>避免过度打扰</mat-card-subtitle>
+      </mat-card-header>
+      <mat-card-content>
+        <div class="slider-row">
+          <div class="slider-label">
+            <span>每小时最多推送</span>
+            <strong>{{ settings.maxPerHour }} 条</strong>
+          </div>
+          <mat-slider min="1" max="10" step="1" discrete>
+            <input
+              matSliderThumb
+              [(ngModel)]="settings.maxPerHour"
+              name="maxPerHour"
+            />
+          </mat-slider>
+        </div>
+        <mat-divider></mat-divider>
+        <div class="slider-row">
+          <div class="slider-label">
+            <span>同一类型冷却</span>
+            <strong>{{ settings.minIntervalSeconds }}s</strong>
+          </div>
+          <mat-slider min="60" max="1800" step="60" discrete>
+            <input
+              matSliderThumb
+              [(ngModel)]="settings.minIntervalSeconds"
+              name="minIntervalSeconds"
+            />
+          </mat-slider>
+        </div>
+      </mat-card-content>
+    </mat-card>
+
+    <div class="actions">
+      <button mat-stroked-button (click)="reset()">恢复默认</button>
+      <button
+        mat-flat-button
+        color="primary"
+        [disabled]="saving"
+        (click)="save()"
+      >
+        {{ saving ? '保存中...' : '保存设置' }}
+      </button>
+    </div>
+  </ng-container>
+</div>

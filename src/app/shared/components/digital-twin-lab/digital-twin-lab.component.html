@@ -44,7 +44,9 @@
     >
       <mat-icon>cloud_off</mat-icon>
       <span>{{ wsBannerText }}</span>
-      <button mat-button color="primary" (click)="retryWebSocket()">重新连接</button>
+      <button mat-button color="primary" (click)="retryWebSocket()">
+        {{ isOfflineMode ? '重试连接服务' : '重新连接' }}
+      </button>
     </div>
   </div>
 
@@ -68,6 +70,10 @@
         <h1>数字孪生实验室</h1>
         <p>会话ID: {{ sessionId }}</p>
         <p>参与者: {{ participantCount }} 人</p>
+        <p *ngIf="isOfflineMode" class="offline-hint">
+          <mat-icon inline>info</mat-icon>
+          离线模式：未连接会话服务，实验数据仅保存在本地
+        </p>
       </div>
 
       <div class="toolbar-controls">
@@ -85,9 +91,15 @@
       <!-- Unity WebGL容器 -->
       <div class="unity-section">
         <div #unityContainer class="unity-container" [class.fullscreen]="isFullscreen">
-          <div *ngIf="!isUnityLoaded" class="unity-loading">
+          <div *ngIf="!isUnityLoaded && !unityUnavailable" class="unity-loading">
             <mat-spinner></mat-spinner>
             <p>正在加载Unity实验室...</p>
+          </div>
+          <!-- 【P0-A 修复】Unity 构建缺失：展示占位，不阻断控制面板 -->
+          <div *ngIf="unityUnavailable" class="unity-placeholder">
+            <mat-icon>view_in_ar</mat-icon>
+            <p>3D 实验室资源未安装</p>
+            <p class="sub">控制面板、元件库与实时监控仍可正常使用</p>
           </div>
         </div>
       </div>

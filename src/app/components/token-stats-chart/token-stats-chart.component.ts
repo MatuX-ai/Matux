@@ -3,8 +3,12 @@
  *
  * 使用 ECharts 展示 Token 消费趋势
  *
+ * 【P3-B bundle 优化】echarts 通过动态 import 按需加载，
+ *   避免 ~1.1 MB 的 echarts 进入 initial chunk
+ *   （components 使用 token-stats-chart 时才触发 import）
+ *
  * @author MatuX Lab
- * @version 1.0.0
+ * @version 1.1.0
  */
 
 import { CommonModule } from '@angular/common';
@@ -13,16 +17,20 @@ import {
   ElementRef,
   Input,
   OnChanges,
+  OnDestroy,
   OnInit,
   SimpleChanges,
   ViewChild,
 } from '@angular/core';
 import { MatIconModule } from '@angular/material/icon';
 import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
-import * as echarts from 'echarts';
 
 import { TokenService } from '../../core/services/token.service';
 import { TokenTimeStats } from '../../models/token.models';
+
+// ECharts 类型（仅类型导入 - 类型擦除，不参与运行时打包）
+// 运行时模块通过动态 import('echarts') 按需加载
+type EChartsModule = typeof import('echarts');
 
 // ECharts 颜色令牌: 与设计系统主色保持一致
 // 与 _stem-tokens.scss / _css-variables.scss 中令牌值同步
@@ -51,21 +59,6 @@ type LinearGradientConstructor = new (
   colorStops: GradientStop[]
 ) => unknown;
 
-function createGradient(startColor: string, endColor: string): unknown {
-  const graphic = echarts as { graphic?: Record<string, unknown> }['graphic'];
-  const GradientCtor = (graphic as Record<string, unknown>)[
-    'LinearGradient'
-  ] as LinearGradientConstructor;
-  return new GradientCtor(0, 0, 0, 1, [
-    { offset: 0, color: startColor },
-    { offset: 1, color: endColor },
-  ]);
-}
-
-function initChartInstance(element: HTMLElement): ChartInstance {
-  return (echarts as { init: (el: HTMLElement) => ChartInstance }).init(element);
-}
-
 @Component({
   selector: 'app-token-stats-chart',
   standalone: true,
@@ -73,7 +66,7 @@ function initChartInstance(element: HTMLElement): ChartInstance {
   templateUrl: './token-stats-chart.component.html',
   styleUrls: ['./token-stats-chart.component.scss'],
 })
-export class TokenStatsChartComponent implements OnInit, OnChanges {
+export class TokenStatsChartComponent implements OnInit, OnChanges, OnDestroy {
   @ViewChild('chart', { static: true }) chartElement!: ElementRef;
 
   /**
@@ -96,11 +89,40 @@ export class TokenStatsChartComponent implements OnInit, OnChanges {
   error: string | null = null;
   statsData: TokenTimeStats[] = [];
 
+  /**
+   * 【P3-B bundle 优化】echarts 模块加载 Promise 缓存。
+   * 首次调用触发动态 import('echarts')，后续调用复用同一个 Promise，
+   * 既保证按需懒加载，又避免重复触发 import。
+   */
+  private echartsPromise: Promise<EChartsModule> | null = null;
+
+  /**
+   * echarts 是否已经成功初始化（用于 updateChart 防 guard）
+   */
+  private chartReady = false;
+
   constructor(private tokenService: TokenService) {}
 
+  /**
+   * 异步加载 echarts 模块（按需懒加载）
+   */
+  private async getECharts(): Promise<EChartsModule> {
+    if (!this.echartsPromise) {
+      this.echartsPromise = import('echarts');
+    }
+    return this.echartsPromise;
+  }
+
   ngOnInit(): void {
-    this.initChart();
-    this.loadStats();
+    // 异步初始化图表，初始化完成后才加载数据（避免 updateChart 时 chartInstance 还未创建）
+    this.initChart()
+      .then(() => this.loadStats())
+      .catch((err: unknown) => {
+        const msg = err instanceof Error ? err.message : String(err);
+        console.error('初始化图表失败:', err);
+        this.error = `图表初始化失败: ${msg}`;
+        this.loading = false;
+      });
   }
 
   ngOnChanges(changes: SimpleChanges): void {
@@ -113,17 +135,18 @@ export class TokenStatsChartComponent implements OnInit, OnChanges {
   }
 
   /**
-   * 初始化图表
+   * 初始化图表（异步 - 等待 echarts 模块加载完成）
    */
-  initChart(): void {
-    this.chartInstance = initChartInstance(this.chartElement.nativeElement as HTMLElement);
+  async initChart(): Promise<void> {
+    const echarts = await this.getECharts();
+    const nativeElement = this.chartElement.nativeElement as HTMLElement;
+    this.chartInstance = (
+      echarts as unknown as { init: (el: HTMLElement) => ChartInstance }
+    ).init(nativeElement);
+    this.chartReady = true;
 
     // 响应窗口大小变化
-    window.addEventListener('resize', () => {
-      if (this.chartInstance) {
-        this.chartInstance.resize();
-      }
-    });
+    window.addEventListener('resize', this.handleResize);
   }
 
   /**
@@ -151,11 +174,16 @@ export class TokenStatsChartComponent implements OnInit, OnChanges {
   }
 
   /**
-   * 更新图表
+   * 更新图表（异步 - 等待 echarts 模块加载完成）
    */
   // eslint-disable-next-line max-lines-per-function
-  updateChart(): void {
-    if (!this.chartInstance) return;
+  async updateChart(): Promise<void> {
+    if (!this.chartInstance || !this.chartReady) {
+      // 图表尚未初始化完成，跳过本次更新（通常发生在 initChart 完成前收到 loadStats 数据）
+      return;
+    }
+
+    const echarts = await this.getECharts();
 
     const dates = this.statsData.map((item) => item.date);
     const consumedTokens = this.statsData.map((item) => item.consumed);
@@ -203,7 +231,11 @@ export class TokenStatsChartComponent implements OnInit, OnChanges {
             color: ECHARTS_PALETTE.consumed,
           },
           areaStyle: {
-            color: createGradient('rgba(239, 68, 68, 0.3)', 'rgba(239, 68, 68, 0.1)'),
+            color: this.createGradient(
+              echarts,
+              'rgba(239, 68, 68, 0.3)',
+              'rgba(239, 68, 68, 0.1)'
+            ),
           },
         },
         {
@@ -215,7 +247,11 @@ export class TokenStatsChartComponent implements OnInit, OnChanges {
             color: ECHARTS_PALETTE.purchased,
           },
           areaStyle: {
-            color: createGradient('rgba(16, 185, 129, 0.3)', 'rgba(16, 185, 129, 0.1)'),
+            color: this.createGradient(
+              echarts,
+              'rgba(16, 185, 129, 0.3)',
+              'rgba(16, 185, 129, 0.1)'
+            ),
           },
         },
       ],
@@ -223,6 +259,35 @@ export class TokenStatsChartComponent implements OnInit, OnChanges {
 
     this.chartInstance.setOption(option);
   }
+
+  /**
+   * 创建 echarts 线性渐变对象（通过传入的 echarts 模块，避免模块级静态依赖）
+   */
+  private createGradient(
+    echarts: EChartsModule,
+    startColor: string,
+    endColor: string
+  ): unknown {
+    const graphic = (
+      echarts as unknown as {
+        graphic: Record<string, LinearGradientConstructor>;
+      }
+    ).graphic;
+    const GradientCtor = graphic['LinearGradient'];
+    return new GradientCtor(0, 0, 0, 1, [
+      { offset: 0, color: startColor },
+      { offset: 1, color: endColor },
+    ]);
+  }
+
+  /**
+   * 窗口缩放处理（箭头函数绑定 this，方便 add/removeEventListener）
+   */
+  private readonly handleResize = (): void => {
+    if (this.chartInstance) {
+      this.chartInstance.resize();
+    }
+  };
 
   /**
    * 获取 N 天前的日期
@@ -252,6 +317,6 @@ export class TokenStatsChartComponent implements OnInit, OnChanges {
     if (this.chartInstance) {
       this.chartInstance.dispose();
     }
-    window.removeEventListener('resize', () => {});
+    window.removeEventListener('resize', this.handleResize);
   }
 }

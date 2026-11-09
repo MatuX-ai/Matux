@@ -13,9 +13,11 @@ import urllib.parse
 import sys
 from pathlib import Path
 
-PORT = 8080
+# 【P0-A 验证】支持环境变量覆盖，便于用源码后端（如 8151）做浏览器级验证；
+#   不设置时保持原有 8080 / localhost:8000 行为。
+PORT = int(os.environ.get("SPA_PORT", "8080"))
 FRONTEND_DIR = Path(__file__).parent.parent / "dist" / "imatuproject"
-BACKEND_URL = "http://localhost:8000"
+BACKEND_URL = os.environ.get("SPA_BACKEND_URL", "http://localhost:8000")
 
 
 class SPAHandler(http.server.SimpleHTTPRequestHandler):
@@ -35,6 +37,17 @@ class SPAHandler(http.server.SimpleHTTPRequestHandler):
         file_path = FRONTEND_DIR / path_no_query.lstrip("/")
         if file_path.is_file():
             return super().do_GET()
+
+        # 【P0-C 修复】带静态资源扩展名的请求缺失时必须 404，不能 fallback 成
+        #   index.html（200 text/html）——否则浏览器会把 HTML 当 JS/CSS 解析，
+        #   报 "Uncaught SyntaxError: Unexpected token '<'"，掩盖真实缺失。
+        static_exts = (
+            ".js", ".mjs", ".css", ".map", ".json", ".wasm", ".data",
+            ".png", ".jpg", ".jpeg", ".webp", ".gif", ".svg", ".ico",
+            ".woff", ".woff2", ".ttf", ".eot", ".html", ".txt", ".xml",
+        )
+        if path_no_query.lower().endswith(static_exts):
+            return self.send_error(404, "File not found")
 
         # SPA fallback - 返回 index.html
         self.path = "/index.html"

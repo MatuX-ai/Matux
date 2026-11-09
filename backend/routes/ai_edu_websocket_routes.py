@@ -8,18 +8,64 @@ import json
 import logging
 from typing import Dict, List, Optional
 
-from fastapi import APIRouter, Depends, Query, WebSocket, WebSocketDisconnect
+from fastapi import (
+    APIRouter,
+    Depends,
+    Query,
+    WebSocket,
+    WebSocketDisconnect,
+    WebSocketException,
+)
+from jose import JWTError, jwt
+from config.settings import settings
 from models.user import User
 from services.ai_edu_progress_service import AIEduProgressService
 from services.ai_teacher_live_settings import ai_teacher_live_settings  # 【P3-B】
+from sqlalchemy import select
 from sqlalchemy.orm import Session
-from utils.auth_utils import get_current_user_sync  # 使用已实现的版本
-from utils.database import get_sync_db
+from utils.database import get_sync_db, get_sync_session
 
 logger = logging.getLogger(__name__)
 
 # 创建路由器
 router = APIRouter(prefix="/ws/ai-edu", tags=["AI 教育 WebSocket"])
+
+
+def get_current_user_ws(
+    websocket: WebSocket,
+    token: Optional[str] = Query(
+        None, description="JWT；WebSocket 无法自定义 Authorization 头，前端通过 query 传入"
+    ),
+) -> User:
+    """WebSocket 握手鉴权（替代 HTTP 专用的 OAuth2PasswordBearer）。
+
+    【修复】原实现 ``Depends(get_current_user_sync)`` 底层是 OAuth2PasswordBearer，
+    它要求注入 ``Request``；WebSocket 作用域下 FastAPI 无法注入，握手直接
+    ``TypeError: OAuth2PasswordBearer.__call__() missing 1 required positional
+    argument: 'request'`` → 500。这里显式从 query ``token`` 或握手头
+    ``Authorization: Bearer`` 取 JWT。
+    """
+    raw = token
+    if not raw:
+        auth = websocket.headers.get("authorization") or ""
+        if auth.lower().startswith("bearer "):
+            raw = auth[7:].strip()
+    if not raw:
+        raise WebSocketException(code=1008, reason="missing token")
+    try:
+        payload = jwt.decode(raw, settings.SECRET_KEY, algorithms=[settings.ALGORITHM])
+        username = payload.get("sub")
+    except JWTError:
+        raise WebSocketException(code=1008, reason="invalid token")
+    if not username:
+        raise WebSocketException(code=1008, reason="invalid token payload")
+    with get_sync_db() as db:
+        user = db.execute(
+            select(User).where(User.username == username)
+        ).scalar_one_or_none()
+    if user is None:
+        raise WebSocketException(code=1008, reason="user not found")
+    return user
 
 
 class LearningProgressConnectionManager:
@@ -89,6 +135,16 @@ class LearningProgressConnectionManager:
         for ws in disconnected:
             self.disconnect(ws, user_id)
 
+    # 【P3-B】AI 教师实时事件专用广播方法
+    async def broadcast_ai_teacher(self, user_id: int, event: dict):
+        """广播 AI 教师实时事件给指定用户的所有连接"""
+        message = {
+            "type": event.get("type", "ai_teacher_unknown"),
+            "data": event,
+            "timestamp": datetime.utcnow().isoformat(),
+        }
+        await self.broadcast_to_user(user_id, message)
+
     async def update_learning_state(
         self, user_id: int, lesson_id: int, progress_data: dict
     ):
@@ -138,8 +194,8 @@ async def learning_progress_websocket(
     websocket: WebSocket,
     user_id: int,
     org_id: int = Query(..., description="组织 ID"),
-    db: Session = Depends(get_sync_db),
-    current_user: User = Depends(get_current_user_sync),
+    db: Session = Depends(get_sync_session),
+    current_user: User = Depends(get_current_user_ws),
 ):
     """
     学习进度实时同步 WebSocket 端点
@@ -215,9 +271,14 @@ async def handle_client_message(
     data = message.get("data", {})
 
     if msg_type == "ping":
-        # 心跳检测
+        # 心跳检测（【P3-B】同时推送 AI 教师 live_settings 快照，前端可同步）
+        settings = ai_teacher_live_settings.get_settings(user_id)
         await websocket.send_json(
-            {"type": "pong", "timestamp": datetime.utcnow().isoformat()}
+            {
+                "type": "pong",
+                "timestamp": datetime.utcnow().isoformat(),
+                "live_settings": settings.to_dict(),
+            }
         )
 
     elif msg_type == "update_progress":

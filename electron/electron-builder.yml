@@ -1,9 +1,20 @@
 appId: com.imato.desktop
 productName: iMato
+# 【体积门禁】PR #68 后 main_ai_edu 改由 router_registry 驱动，冻结包需包含全部路由
+# 及其传递依赖（scipy/sklearn/pandas/PyMuPDF 等），未压缩载荷 ~296MiB。
+# 用最大压缩把安装包拉回 <200MiB 门槛（仅影响压缩率，不改变包内内容）。
+compression: maximum
 directories:
   # 【需求】安装包输出到项目根的 release/ 目录，便于统一分发
   output: ../release
   buildResources: build
+# 【发布产物命名统一】NSIS 输出的安装包是 "iMato Setup <ver>.exe"（含空格），
+# 而 latest.yml / electron-updater 使用 "iMato-Setup-<ver>.exe"（连字符，safeArtifactName），
+# 且增量更新按 "<url>.blockmap" 查找。每次重建都会重新生成空格名，
+# 故用 afterAllArtifactBuild 钩子统一改名并校验 sha512（脚本幂等，可重复执行）。
+# 注意：electron-builder 按工作目录解析该路径，必须在 electron/ 目录执行打包。
+# 打包结束后建议再跑 `npm run release:rename` 做权威校验（钩子早于 latest.yml 落盘）。
+afterAllArtifactBuild: scripts/rename-artifacts.js
 files:
   - package.json
   - "*.js"
@@ -23,15 +34,37 @@ files:
   # 前端 dist 必须通过 extraResources 单独打包（见下方）
 asar: true
 extraResources:
-  - from: "../backend"
-    to: "backend"
+  # 【PyInstaller 集成】后端改为自带冻结运行时，干净机器无需安装 Python 3.9+
+  #   产物由 backend/main_ai_edu.spec 生成：
+  #     cd backend && python -m PyInstaller main_ai_edu.spec --distpath dist --workpath build
+  #   安装后的布局：resources/backend/dist/main_ai_edu/main_ai_edu.exe
+  #                 resources/backend/dist/main_ai_edu/_internal/**（Python 运行时 + 依赖）
+  #   注意：build 前必须先执行上面的打包命令，否则本目录不存在会导致 electron-builder 报错。
+  - from: "../backend/dist/main_ai_edu"
+    to: "backend/dist/main_ai_edu"
     filter:
       - "**/*"
-      - "!**/__pycache__/**"
-      - "!**/*.pyc"
-      - "!**/venv/**"
-      - "!**/.env"
-      - "!**/tests/**"
+  # 运行时可写目录：首次启动种子数据（ai_teacher_*.json）、分享页模板、二维码静态目录
+  # 保留在源码目录结构下，cwd=resources/backend 时与开发环境行为一致（含 ai_service.db 落盘位置）
+  - from: "../backend/data"
+    to: "backend/data"
+    filter:
+      - "**/*"
+      - "!**/backup_to_redis_*/**"
+  - from: "../backend/templates"
+    to: "backend/templates"
+    filter:
+      - "**/*"
+  # 运行时数据库不再随包分发（上线硬伤修复）：
+  #   - backend/ai_service.db 是开发库，含开发期个人学习记录，不得随安装包分发
+  #   - 桌面端数据库固定在用户数据目录：%APPDATA%\matux-desktop\ai_service.db
+  #     （由 backend/config/settings.py 冻结态 bootstrap 生成并持久化）
+  #   - 首次启动由 create_all 建库 + scripts/seed_initial_data.py 补齐演示账号与课程
+  #   - 旧版本升级：settings.py 会把安装目录下的旧库迁移到用户数据目录，不丢数据
+  - from: "../backend/configs"
+    to: "backend/configs"
+    filter:
+      - "**/*"
   # 【修复 1.0.2 蓝屏】前端 dist 作为外部资源打包，避免 ../dist/**/* 被忽略导致
   # 安装包内没有 index.html，主窗口 ready-to-show 永远不触发 → 用户看到"蓝屏"
   - from: "../dist/imatuproject"
@@ -40,10 +73,11 @@ extraResources:
       - "**/*"
 win:
   target:
+    # 【P0 体积修复】只发 x64：双架构（x64+ia32）会把安装包从 ~198MiB 撑到 ~386MiB，
+    # 超出入安装包 <200MiB 的门槛；ia32 已无用户（Win10+ 均为 x64）。
     - target: nsis
       arch:
         - x64
-        - ia32
   icon: build/icon.ico
   requestedExecutionLevel: asInvoker
 nsis:

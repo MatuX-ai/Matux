@@ -7,6 +7,7 @@ and aggregated user statistics for the iMato learning platform.
 
 import enum
 
+import database.legacy_base_compat  # noqa: F401  # 副 Base 的 User 影子映射
 from database.db import Base
 from sqlalchemy import (
     JSON,

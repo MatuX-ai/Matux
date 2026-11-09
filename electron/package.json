@@ -1,12 +1,14 @@
 {
   "name": "matux-desktop",
-  "version": "1.0.4",
+  "version": "1.0.5",
   "description": "MatuX STEM Learning Tool - Windows Desktop Application",
   "main": "main.js",
   "scripts": {
     "start": "electron .",
+    "build:backend": "cd ../backend && python -m PyInstaller main_ai_edu.spec --distpath dist --workpath build --noconfirm",
     "build": "electron-builder --win",
     "build:portable": "electron-builder --win portable --config electron-builder.yml",
+    "release:rename": "node scripts/rename-artifacts.js",
     "build:all": "npm run build && npm run build:portable",
     "clean": "rimraf dist"
   },
@@ -30,7 +32,8 @@
     "rimraf": "^5.0.5"
   },
   "dependencies": {
-    "wait-port": "^1.1.0",
-    "electron-updater": "^6.1.0"
+    "adm-zip": "^0.6.1",
+    "electron-updater": "^6.1.0",
+    "wait-port": "^1.1.0"
   }
 }
