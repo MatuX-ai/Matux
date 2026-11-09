@@ -8,18 +8,64 @@ import json
 import logging
 from typing import Dict, List, Optional
 
-from fastapi import APIRouter, Depends, Query, WebSocket, WebSocketDisconnect
+from fastapi import (
+    APIRouter,
+    Depends,
+    Query,
+    WebSocket,
+    WebSocketDisconnect,
+    WebSocketException,
+)
+from jose import JWTError, jwt
+from config.settings import settings
 from models.user import User
 from services.ai_edu_progress_service import AIEduProgressService
 from services.ai_teacher_live_settings import ai_teacher_live_settings  # 【P3-B】
+from sqlalchemy import select
 from sqlalchemy.orm import Session
-from utils.auth_utils import get_current_user_sync  # 使用已实现的版本
-from utils.database import get_sync_db
+from utils.database import get_sync_db, get_sync_session
 
 logger = logging.getLogger(__name__)
 
 # 创建路由器
 router = APIRouter(prefix="/ws/ai-edu", tags=["AI 教育 WebSocket"])
+
+
+def get_current_user_ws(
+    websocket: WebSocket,
+    token: Optional[str] = Query(
+        None, description="JWT；WebSocket 无法自定义 Authorization 头，前端通过 query 传入"
+    ),
+) -> User:
+    """WebSocket 握手鉴权（替代 HTTP 专用的 OAuth2PasswordBearer）。
+
+    【修复】原实现 ``Depends(get_current_user_sync)`` 底层是 OAuth2PasswordBearer，
+    它要求注入 ``Request``；WebSocket 作用域下 FastAPI 无法注入，握手直接
+    ``TypeError: OAuth2PasswordBearer.__call__() missing 1 required positional
+    argument: 'request'`` → 500。这里显式从 query ``token`` 或握手头
+    ``Authorization: Bearer`` 取 JWT。
+    """
+    raw = token
+    if not raw:
+        auth = websocket.headers.get("authorization") or ""
+        if auth.lower().startswith("bearer "):
+            raw = auth[7:].strip()
+    if not raw:
+        raise WebSocketException(code=1008, reason="missing token")
+    try:
+        payload = jwt.decode(raw, settings.SECRET_KEY, algorithms=[settings.ALGORITHM])
+        username = payload.get("sub")
+    except JWTError:
+        raise WebSocketException(code=1008, reason="invalid token")
+    if not username:
+        raise WebSocketException(code=1008, reason="invalid token payload")
+    with get_sync_db() as db:
+        user = db.execute(
+            select(User).where(User.username == username)
+        ).scalar_one_or_none()
+    if user is None:
+        raise WebSocketException(code=1008, reason="user not found")
+    return user
 
 
 class LearningProgressConnectionManager:
@@ -148,8 +194,8 @@ async def learning_progress_websocket(
     websocket: WebSocket,
     user_id: int,
     org_id: int = Query(..., description="组织 ID"),
-    db: Session = Depends(get_sync_db),
-    current_user: User = Depends(get_current_user_sync),
+    db: Session = Depends(get_sync_session),
+    current_user: User = Depends(get_current_user_ws),
 ):
     """
     学习进度实时同步 WebSocket 端点

@@ -189,16 +189,25 @@ export class AiEduWebSocketService implements OnDestroy {
     //   先归一化到真实后端，否则 WebSocket 会指向 host=app 而无法解析。
     const normalizedBase = isDesktopOrigin(baseUrl) ? resolveBackendWsBase(baseUrl) : baseUrl;
 
+    // 【B1 修复】浏览器 WebSocket 无法自定义 Authorization 头，而后端 /ws/ai-edu 已改为
+    //   WS 专用鉴权（从 query 取 JWT）。这里把登录态 token 拼到 query 上：
+    //   缺失时连接会被服务端 1008 拒绝（与旧的 500 相比至少语义明确）。
+    const authToken =
+      (typeof localStorage !== 'undefined' &&
+        (localStorage.getItem('access_token') || sessionStorage.getItem('access_token'))) ||
+      '';
+    const tokenQuery = authToken ? `&token=${encodeURIComponent(authToken)}` : '';
+
     // 构建 WebSocket URL
     let wsUrl: string;
     if (normalizedBase.startsWith('ws://') || normalizedBase.startsWith('wss://')) {
       // baseUrl 已经包含协议前缀，直接使用（避免 ws://ws:// 双前缀问题）
-      wsUrl = `${normalizedBase}/ws/ai-edu/progress/${userId}?org_id=${orgId}`;
+      wsUrl = `${normalizedBase}/ws/ai-edu/progress/${userId}?org_id=${orgId}${tokenQuery}`;
     } else {
       // baseUrl 只包含主机部分，需要添加协议前缀
       const protocol = normalizedBase.startsWith('https') ? 'wss' : 'ws';
       const host = normalizedBase.replace(/^https?:\/\//, '');
-      wsUrl = `${protocol}://${host}/ws/ai-edu/progress/${userId}?org_id=${orgId}`;
+      wsUrl = `${protocol}://${host}/ws/ai-edu/progress/${userId}?org_id=${orgId}${tokenQuery}`;
     }
     this.wsUrl = wsUrl;
 

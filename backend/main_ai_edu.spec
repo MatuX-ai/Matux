@@ -26,6 +26,8 @@
 import os
 from pathlib import Path
 
+from PyInstaller.utils.hooks import collect_submodules
+
 BACKEND_DIR = Path(SPECPATH).resolve()  # noqa: F821 - SPECPATH 由 PyInstaller 注入
 
 # ---------------------------------------------------------------- 数据文件
@@ -117,6 +119,12 @@ hiddenimports = [
     "routes.course_catalog_routes",
 ]
 
+# 【PR #68 回归修复】main_ai_edu 改为 core.router_registry 单一事实源后，路由模块只以
+# 字符串 module_path 形式出现（importlib.import_module），PyInstaller 静态分析不可见，
+# 导致冻结态 22+ 路由注册失败（No module named 'routes.xxx'，含 /ws/ai-edu）。
+# 这里整包收集 routes 子模块，避免以后新增路由再次漏打包。
+hiddenimports += collect_submodules("routes")
+
 # --------------------------------------------------------------------- 排除项
 excludes = [
     # 机器学习栈（不在启动路径）
@@ -142,6 +150,18 @@ excludes = [
     "llvmlite",
     "matplotlib",
     "mpl_toolkits",
+    # 【体积门禁】下列重依赖不在 63 个 router_registry 模块的模块级 import 链上
+    # （tmp/_dep_probe.py 静态验证：190 个可达模块，均不命中），仅被函数内懒加载使用。
+    # 不排除则安装包 219MiB > 200MiB 门槛；相关功能在桌面端降级为不可用（Phase 2 再说）。
+    "fitz",
+    "pymupdf",
+    "skimage",
+    "grpc",
+    "grpc_tools",
+    "pyphen",
+    "lxml",
+    "reportlab",
+    "weasyprint",
     # 开发/测试/文档工具链
     "pytest",
     "_pytest",

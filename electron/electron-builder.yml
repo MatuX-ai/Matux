@@ -1,5 +1,9 @@
 appId: com.imato.desktop
 productName: iMato
+# 【体积门禁】PR #68 后 main_ai_edu 改由 router_registry 驱动，冻结包需包含全部路由
+# 及其传递依赖（scipy/sklearn/pandas/PyMuPDF 等），未压缩载荷 ~296MiB。
+# 用最大压缩把安装包拉回 <200MiB 门槛（仅影响压缩率，不改变包内内容）。
+compression: maximum
 directories:
   # 【需求】安装包输出到项目根的 release/ 目录，便于统一分发
   output: ../release
