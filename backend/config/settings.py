@@ -100,6 +100,10 @@ def _migrate_legacy_database(target_db: Path) -> None:
         Path(sys.executable).resolve().parent.parent.parent / "ai_service.db",
         # 兼容直接从 backend/ 启动的旧部署（cwd=resources/backend）
         Path.cwd() / "ai_service.db",
+        # 1.0.4 安装器的兜底暂存：per-machine 安装时 SetShellVarContext all 会把
+        # "$APPDATA" 解析成 C:\ProgramData，旧库被复制到公共 AppData 而应用读不到。
+        # 安装器已在用户 Roaming 写主副本；这里再兜底读一次公共暂存。
+        Path(os.getenv("ProgramData", "C:\\ProgramData")) / "matux-desktop" / "ai_service.db",
     ]
     for legacy in candidates:
         try:
