@@ -31,7 +31,7 @@ const {
   probeBackendHealth,
 } = require('./port-manager');
 
-const { healthCheck, httpGet } = require('./health');
+const { normalizeBackendHost, buildHttpGetOptions, healthCheck, httpGet } = require('./health');
 
 const { BackendManager, HealthChecker } = require('../../../services/backend-manager');
 
@@ -55,6 +55,8 @@ module.exports = {
   probeBackendHealth,
 
   // 健康检查
+  normalizeBackendHost,
+  buildHttpGetOptions,
   healthCheck,
   httpGet,
 

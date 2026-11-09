@@ -85,6 +85,7 @@ const {
   checkPortOccupation,
   forceKillPortProcess,
   healthCheck,
+  buildHttpGetOptions,
   BackendManager,
 } = backendCore;
 
@@ -853,7 +854,10 @@ function sendSplashStatus(phase, text, progress, detail, modules, flags) {
 async function healthCheckWrapper() {
   try {
     return await new Promise((resolve) => {
-      const req = http.get(HEALTH_URL, { timeout: HTTP_REQUEST_TIMEOUT }, (res) => {
+      // 【修复健康检查假阴性】与启动期 health.js 共用 localhost → 127.0.0.1 归一化，
+      //   否则 Node 18 会将 localhost 优先解析为 ::1，而后端只监听 IPv4 → ECONNREFUSED。
+      const options = buildHttpGetOptions(HEALTH_URL, HTTP_REQUEST_TIMEOUT);
+      const req = http.get(options, (res) => {
         let data = '';
         res.on('data', (chunk) => { data += chunk; });
         res.on('end', () => {
