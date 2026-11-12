@@ -201,12 +201,25 @@ class UnifiedAuthService:
     async def _generate_token_pair(
         self, db: AsyncSession, user: User
     ) -> dict:
-        """生成令牌对"""
+        """生成令牌对
+
+        【P0-5】``sub`` 统一为 **username** 口径。
+
+        改动前这里是 ``str(user.id)``，而全仓鉴权依赖
+        （``routes/auth_routes.py`` / ``middleware/auth.py`` /
+        ``utils/auth_utils.py`` / ``routes/ai_edu_websocket_routes.py``）
+        都按 ``User.username == sub`` 查库 → 手机号登录的用户持 token
+        访问任何受保护端点恒 401。
+
+        ``uid`` 是用户数值 id：``gamification_websocket_routes`` 优先读
+        ``uid`` 取用户 id（``sub`` 现在是 username，不能直接 ``int()``）。
+        """
         # 获取用户组织关联
         org_ids = await self._get_user_org_ids(db, user.id)
 
         payload = {
-            "sub": str(user.id),
+            "sub": user.username,
+            "uid": user.id,
             "username": user.username,
             "phone": user.phone,
             "role": user.role.value if user.role else "user",
@@ -244,18 +257,35 @@ class UnifiedAuthService:
     async def refresh_access_token(
         self, db: AsyncSession, refresh_token: str
     ) -> Optional[dict]:
-        """刷新访问令牌"""
+        """刷新访问令牌
+
+        【P0-5】``sub`` 已是 username 口径，不能再对它 ``int()`` 当 id 用。
+        优先按 ``uid``（用户数值 id）查库；没有 ``uid`` 的旧令牌回退按
+        ``sub``（username）查。
+        """
         payload = decode_token(refresh_token)
         if not payload or payload.get("type") != "refresh":
             return None
 
-        user_id = payload.get("sub")
-        if not user_id:
-            return None
+        user = None
+        raw_uid = payload.get("uid")
+        if raw_uid is not None:
+            try:
+                uid = int(raw_uid)
+            except (TypeError, ValueError):
+                uid = None
+            if uid is not None:
+                stmt = select(User).filter(User.id == uid)
+                result = await db.execute(stmt)
+                user = result.scalar_one_or_none()
 
-        stmt = select(User).filter(User.id == int(user_id))
-        result = await db.execute(stmt)
-        user = result.scalar_one_or_none()
+        if user is None:
+            subject = payload.get("sub")
+            if not subject:
+                return None
+            stmt = select(User).filter(User.username == subject)
+            result = await db.execute(stmt)
+            user = result.scalar_one_or_none()
 
         if not user or not user.is_active:
             return None

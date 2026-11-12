@@ -483,7 +483,6 @@ async def refresh_access_token(
                 status_code=status.HTTP_401_UNAUTHORIZED, detail="无效的刷新令牌")
 
         username = payload.get("sub")
-        user_id = payload.get("uid")
         if not username:
             raise HTTPException(
                 status_code=status.HTTP_401_UNAUTHORIZED, detail="令牌数据无效")
@@ -497,11 +496,13 @@ async def refresh_access_token(
                 status_code=status.HTTP_401_UNAUTHORIZED, detail="用户无效")
 
         # 生成新令牌
+        # 【P0-5】uid 一律取查库得到的 user.id —— 直接透传旧 payload 的 uid
+        # 可能产出 uid=None 的新令牌（gamification WebSocket 取不到用户 id）
         new_access_token = create_access_token(
-            data={"sub": username, "uid": user_id}
+            data={"sub": username, "uid": user.id}
         )
         new_refresh_token = create_refresh_token(
-            data={"sub": username, "uid": user_id}
+            data={"sub": username, "uid": user.id}
         )
 
         return {

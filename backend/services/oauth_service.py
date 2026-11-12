@@ -336,8 +336,11 @@ class OAuthService:
         await db.refresh(oauth_account)
 
         # 生成 JWT 令牌
+        # 【P0-5】sub 统一为 username 口径（与 routes/auth_routes.py 一致），
+        # 否则 OAuth 登录的用户持 token 访问受保护端点同样恒 401
         payload = {
-            "sub": str(user.id),
+            "sub": user.username,
+            "uid": user.id,
             "username": user.username,
             "provider": provider,
             "role": user.role.value if user.role else "user",
