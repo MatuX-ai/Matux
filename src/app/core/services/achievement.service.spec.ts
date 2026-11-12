@@ -19,7 +19,8 @@ import {
 describe('AchievementService', () => {
   let service: AchievementService;
   let httpMock: HttpTestingController;
-  const API_BASE = environment.apiUrl;
+  // 与 AchievementService.API_BASE 保持一致（阶段 1 路由修复：补 /api/v1 前缀）
+  const API_BASE = `${environment.apiUrl}/api/v1`;
 
   beforeEach(() => {
     TestBed.configureTestingModule({
@@ -76,7 +77,7 @@ describe('AchievementService', () => {
         done();
       });
 
-      const req = httpMock.expectOne(`${API_BASE}/ar-rewards/achievements/unlocked`);
+      const req = httpMock.expectOne(`${API_BASE}/ar/achievements/unlocked`);
       expect(req.request.method).toBe('GET');
       req.flush(mockResponse);
     });
@@ -87,7 +88,7 @@ describe('AchievementService', () => {
         done();
       });
 
-      const req = httpMock.expectOne(`${API_BASE}/ar-rewards/achievements/unlocked`);
+      const req = httpMock.expectOne(`${API_BASE}/ar/achievements/unlocked`);
       req.error(new ProgressEvent('Network error'));
     });
   });

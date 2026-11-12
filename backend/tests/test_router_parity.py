@@ -43,9 +43,13 @@ backend/legacy_routes.py 与 backend/main_ai_edu.py 两个入口源码中的接�
 口径（PR #68 合并后）::
 
     legacy 侧       : 52 个模块（mode ∈ {legacy, both}）
-    main_ai_edu 侧 : 24 个模块（mode ∈ {lazy, both}）
-    交集            : 13 个模块（both）
-    并集            : 52 + 24 - 13 = 63 个模块  == len(ROUTER_TABLE)
+    main_ai_edu 侧 : 27 个模块（mode ∈ {lazy, both}）
+    交集            : 16 个模块（both）
+    并集            : 52 + 27 - 16 = 63 个模块  == len(ROUTER_TABLE)
+
+    1.0.2 阶段 1 增量（issue #71/#72/#73）：unified_learning_record /
+    ar_rewards / vector_knowledge 三个模块由 legacy 改 both，
+    故 main_ai_edu 侧 24 -> 27、both 交集 13 -> 16（legacy 侧 52 不变）。
 
 白名单（issue #26）分两类，本文件分别校验其「缺失形态」：
 
@@ -612,19 +616,19 @@ class TestEntrySourceParity:
         assert_entry_has_no_extra(AI_EDU_MAIN_FILE, SIDE_AI_EDU)
 
     def test_legacy_side_covers_52_modules(self, legacy_pairs):
-        """legacy 侧口径：52 个模块（52 + 24 - 13 = 63）。"""
+        """legacy 侧口径：52 个模块（52 + 27 - 16 = 63）。"""
         table_modules = {
             spec.module_path for spec in ROUTER_TABLE if spec.mode in LEGACY_SIDE_MODES
         }
         assert len(table_modules) == 52
 
-    def test_aiedu_side_covers_24_modules(self, aiedu_pairs):
-        """main_ai_edu 侧口径：24 个模块（原 19 + ai_teacher + gamification
-        + opensciedu + achievement_catalog + course_catalog）。"""
+    def test_aiedu_side_covers_27_modules(self, aiedu_pairs):
+        """main_ai_edu 侧口径：27 个模块（原 24 + unified_learning_record
+        + ar_rewards + vector_knowledge，1.0.2 阶段 1 增量）。"""
         table_modules = {
             spec.module_path for spec in ROUTER_TABLE if spec.mode in AI_EDU_SIDE_MODES
         }
-        assert len(table_modules) == 24
+        assert len(table_modules) == 27
 
 
 # ==================== T3：parity 三方一致 ====================
