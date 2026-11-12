@@ -331,6 +331,11 @@ export interface AITeacherChatResponse {
   model: string;
   confidence: number;
   inferenceTimeMs: number;
+  /**
+   * 【P0-4 合规】是否为离线模式回复（本地规则模板 / 请求失败后的本地降级）。
+   * 前端据此显示「离线模式」角标；真实 LLM 回复时为 false，角标不显示。
+   */
+  isMock: boolean;
 }
 
 /** 学习画像更新请求 */

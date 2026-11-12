@@ -179,6 +179,25 @@ async def test_empty_user_id_falls_back_to_token_subject(
 
 
 # ---------------------------------------------------------------------------
+# P0-4：响应必须携带离线模式标记
+# ---------------------------------------------------------------------------
+@pytest.mark.asyncio
+async def test_chat_response_marks_offline_mode(client, auth_headers, token_user_id):
+    """【P0-4】200 响应必须带 ``is_mock`` 标记。
+
+    当前 ``/chat`` 仍是本地规则模板回复（尚未接入 LLM），
+    必须显式告诉前端「这是离线模式」，否则前端角标无从判定。
+    """
+    resp = await client.post(
+        CHAT_PATH, json=_body(user_id=str(token_user_id)), headers=auth_headers
+    )
+    assert resp.status_code == 200, resp.text
+    payload = resp.json()
+    assert payload.get("is_mock") is True, payload
+    assert payload.get("model") == "mock-ai-teacher", payload
+
+
+# ---------------------------------------------------------------------------
 # 回归护栏
 # ---------------------------------------------------------------------------
 def test_route_module_declares_auth_dependency():

@@ -238,6 +238,9 @@ class ChatResponse(BaseModel):
     model: str
     confidence: float
     inference_time_ms: int
+    # 【P0-4 合规】本次回复是否来自本地规则模板（离线模式）。
+    # 前端按此字段显示「离线模式」角标，不再用 model 字符串做脆弱比较。
+    is_mock: bool = False
 
 
 class LongTermMemoryModel(BaseModel):
@@ -547,6 +550,8 @@ async def chat_with_teacher(
         model=CHAT_MODEL_NAME,
         confidence=0.85,
         inference_time_ms=int(elapsed),
+        # 【P0-4 合规】当前回复来自本地规则模板 → 明确标记为离线模式
+        is_mock=True,
     )
 
 

@@ -34,7 +34,7 @@ import { UserNavbarComponent } from '../user-navbar/user-navbar.component';
 interface AiPanelMessage {
   role: 'user' | 'ai';
   content: string;
-  /** 后端不可用时的本地 mock 降级回复 */
+  /** 离线模式（本地模板 / 降级）回复 —— 由后端 isMock 字段判定 */
   fallback?: boolean;
 }
 
@@ -172,7 +172,10 @@ export class UserPageLayoutComponent implements OnInit, OnDestroy {
           this.aiMessages.push({
             role: 'ai',
             content: res?.reply || '（AI 老师没有返回内容）',
-            fallback: res?.model === 'mock',
+            // 【P0-4 合规】角标口径统一走 isMock：
+            // 后端显式标记优先，缺失时由 service 内部的 model 集合判定回退。
+            // 原来的 `res?.model === 'mock'` 漏判 mock-ai-teacher 等实际返回值。
+            fallback: res?.isMock === true,
           });
           this.aiSending = false;
           this.cdr.markForCheck();
