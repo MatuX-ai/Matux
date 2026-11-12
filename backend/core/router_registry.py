@@ -10,9 +10,9 @@ ROUTER_TABLE 的 63 条口径（必须写进注释，否则下一个人又会数
 
     legacy 侧      : 53 处 include_router 调用 -> 52 个不同模块
                      （share_routes 贡献 2 处：api_router + page_router）
-    main_ai_edu 侧 : 24 个模块（lazy + both）
-    交集           : 13 个模块（both）
-    并集           : 52 + 24 - 13 = 63 个模块
+    main_ai_edu 侧 : 27 个模块（lazy + both）
+    交集           : 16 个模块（both）
+    并集           : 52 + 27 - 16 = 63 个模块
 
     注：63 条按**模块**建表，share_routes 一条携带两个 router 对象，
         因此展开后的 include_router 调用数为 64
@@ -28,6 +28,23 @@ PR #68 增量（合并 origin/main 时确定的 5 个路由归属）::
     ~ ai_edu_websocket    pending -> active, both（B1：保住桌面端 /ws/ai-edu）
     = digital_twin       保持 legacy-only + condition_key（Phase 2，决策 2）
     = share              保持 pending_integration + legacy（Phase 2，决策 3）
+
+1.0.2 阶段 1 增量（issue #71/#72/#73，同根因同一 PR）::
+
+    ~ unified_learning_record legacy -> both（学生 Dashboard 学习进度需要）
+    ~ ar_rewards                legacy -> both（成就中心需要）
+    ~ vector_knowledge          legacy -> both（知识库 RAG 需要）
+
+    三个模块在 legacy_routes.py 侧的 include_router **不动**（legacy 入口保持原样），
+    本次只把 ROUTER_TABLE 里的 mode 改为 both，使 main_ai_edu 入口（mode="lazy"）
+    也能注册它们。两入口各自 include 同一个 router 对象不会重复注册，
+    因为 main_ai_edu.py 不导入 legacy_routes。
+
+    实测（main_ai_edu 入口，uvicorn :8001）：
+        openapi paths 147 -> 162（+15 路径键），operations 170 -> 187（+17 操作）
+        router_registration_report.json: succeeded 24 -> 27，failed 0
+        注：三模块共 17 个端点，但 /api/v1/unified-learning-records/{record_id}
+            的 GET/PUT/DELETE 共享 1 个路径键，故路径键净增 15、operation 净增 17。
 
 生成方式（设计文档 §4.1 方案 C）：一次性脚本 AST 解析 legacy_routes.py +
 main_ai_edu.py 产出候选 -> 人工核对 -> 固化为静态表 -> CI 反向校验。
@@ -576,7 +593,7 @@ ROUTER_TABLE: Tuple[RouterSpec, ...] = (
         prefix="",
         tags=("统一学习记录",),
         status="active",
-        mode="legacy",
+        mode="both",
     ),
     RouterSpec(
         name="ar_rewards",
@@ -585,7 +602,7 @@ ROUTER_TABLE: Tuple[RouterSpec, ...] = (
         prefix="/api/v1",
         tags=("AR 奖励系统",),
         status="active",
-        mode="legacy",
+        mode="both",
     ),
     RouterSpec(
         name="openhydra",
@@ -728,7 +745,7 @@ ROUTER_TABLE: Tuple[RouterSpec, ...] = (
         prefix="",
         tags=("向量知识库",),
         status="active",
-        mode="legacy",
+        mode="both",
     ),
     RouterSpec(
         name="local_knowledge_graph",
