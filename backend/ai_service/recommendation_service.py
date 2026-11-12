@@ -20,9 +20,6 @@ from models.recommendation import (
 )
 from models.subscription import SubscriptionStatus, UserSubscription
 import numpy as np
-from sklearn.feature_extraction.text import TfidfVectorizer
-from sklearn.metrics.pairwise import cosine_similarity
-from sklearn.neighbors import NearestNeighbors
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 
@@ -58,6 +55,11 @@ class RecommendationEngine:
     """推荐引擎核心类"""
 
     def __init__(self, model_path: str = "./models/recommendation_model.pkl"):
+        # sklearn 只在真正构造推荐模型时才需要（桌面端安装包已排除该依赖），
+        # 改为函数级 import：缺依赖时本模块仍可正常导入，只是无法实例化模型。
+        from sklearn.feature_extraction.text import TfidfVectorizer
+        from sklearn.neighbors import NearestNeighbors
+
         self.model = NearestNeighbors(n_neighbors=10, metric="cosine")
         self.tfidf_vectorizer = TfidfVectorizer(max_features=1000, stop_words="english")
         self.model_path = model_path
@@ -767,6 +769,8 @@ class RecommendationEngine:
         self, user_id: str, num_candidates: int
     ) -> List[Dict[str, Any]]:
         """基于内容的推荐"""
+        from sklearn.metrics.pairwise import cosine_similarity
+
         if user_id not in self.user_profiles:
             return []
 

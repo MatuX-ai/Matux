@@ -19,6 +19,11 @@
    - faiss/chromadb/sentence_transformers：仅 services/*.py 内部按需使用，不在启动路径
      注意：这些是「可选能力降级」，若后续要在桌面端启用本地向量检索，
      需移除对应 excludes 并重新打包（体积 +~150MB）。
+   - scipy/scipy.libs/sklearn/pandas：仅「AI 训练链路」按需使用（ai_service/*.py、
+     services/dataset_processor.py），已改为函数级 import；桌面端 27 个路由的
+     依赖闭包完全不触及它们（tmp/_route27_probe.py 实证），
+     冻结态缺失时相关能力降级为「依赖不可用」的明确提示（体积 -~100MB）。
+     注意：numpy 必须保留（推荐特征矩阵、统计运算仍需要）。
 4. SQLAlchemy 的 sqlite+aiosqlite 方言必须显式声明，否则运行时报
    `ModuleNotFoundError: sqlalchemy.dialects.sqlite.aiosqlite`。
 5. A1-A6 依赖治理后，部分重依赖改为运行时动态解析（importlib.import_module），
@@ -131,9 +136,10 @@ hiddenimports = [
     #   改后：这些 import 已不在模块级，改为运行时动态解析 → 必须显式声明
     # 校验：tmp/_a4_hiddenimport_check.py（静态可达性差分）
     #       tmp/_a4_exclude_sim.py（torch/transformers 缺失时仍可导入）
-    # 注：pandas/numpy/scipy 由 PyInstaller 内置 hook 收集子模块；
+    # 注：numpy 由 PyInstaller 内置 hook 收集子模块；
     #     openai/langchain_*/trimesh/boto3 无内置 hook，其子模块由各自
     #     __init__ 的静态 import 决定 —— 与改前等价，无需 collect_submodules。
+    #     pandas 已在下方 excludes 中排除（A6 改造后 pandas 降级为可选依赖）。
     # A1：ai_service 的 7 个子模块
     "ai_service.ai_manager",
     "ai_service.difficulty_calculator",
@@ -150,8 +156,6 @@ hiddenimports = [
     # A5：vircadia_avatar_sync_impl 的可选重依赖
     "trimesh",
     "boto3",
-    # A6：user_bulk_import_service 的 pandas
-    "pandas",
 ]
 
 # 【PR #68 回归修复】main_ai_edu 改为 core.router_registry 单一事实源后，路由模块只以
@@ -179,7 +183,7 @@ excludes = [
     "chromadb",
     "cv2",
     "mediapipe",
-    # 科学计算中未被启动路径使用的（scipy/sklearn/numpy/pandas 必须保留）
+    # 科学计算中未被启动路径使用的（numpy 必须保留）
     "sympy",
     "numba",
     "llvmlite",
@@ -227,6 +231,27 @@ excludes = [
     #       except ImportError: _HAS_NLTK = False`，排除后自动降级，
     #       仅在显式使用 NLTKTextSplitter / HTMLSplitter(stopword_removal=True) 时才报错。
     "nltk",
+    # ---- 科学计算栈瘦身（2026-11-12，体积门禁）----
+    # 目标：桌面端安装包 189MiB -> ~101MiB。
+    # 依据：
+    #   1. tmp/_route27_probe.py：桌面端 27 个路由（mode=lazy|both）的依赖闭包
+    #      共 109 个模块，全程不触及 scipy/scipy.libs/pandas/sklearn。
+    #   2. tmp/_pyi_collect_probe.py：按 PyInstaller 口径收集到的 280 个模块中，
+    #      仅 5 个文件静态引用这 4 个包，且这 5 个都不在上述闭包内
+    #      （ai_service/{recommendation_service,model_compressor,
+    #        transfer_learning_engine,traditional_ml_transfer}、
+    #      services/dataset_processor）。
+    #   3. tmp/_excludes_probe.py：excludes 对静态分析与 hiddenimports 均具权威性，
+    #      排除后产物零痕迹。
+    # 配套改造：这 5 个文件的模块级 import 已改为「函数级 import + 注解用
+    # TYPE_CHECKING 块」，因此在缺依赖的冻结态下模块仍可正常 import，
+    # 只有真正调用该训练能力时才抛 ModuleNotFoundError（降级路径明确）。
+    # 受影响的唯一桌面端能力：services/user_bulk_import_service 的 CSV/XLSX
+    # 批量导入（管理员功能），已加降级提示，见该文件 _require_pandas()。
+    "scipy",
+    "scipy.libs",
+    "pandas",
+    "sklearn",
 ]
 
 block_cipher = None

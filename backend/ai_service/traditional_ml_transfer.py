@@ -4,21 +4,19 @@
 适用于Python 3.14环境下的冷启动数据增强
 """
 
+from __future__ import annotations
+
 from datetime import datetime
 import logging
 import os
-from typing import Any, Dict, List
+from typing import TYPE_CHECKING, Any, Dict, List
 
 from config.transfer_learning_config import settings
 import joblib
 import numpy as np
-import pandas as pd
-from sklearn.ensemble import RandomForestClassifier
-from sklearn.feature_extraction.text import TfidfVectorizer
-from sklearn.linear_model import LogisticRegression
-from sklearn.metrics import accuracy_score, precision_recall_fscore_support
-from sklearn.model_selection import train_test_split
-from sklearn.preprocessing import StandardScaler
+
+if TYPE_CHECKING:  # pragma: no cover - 仅供类型检查；运行时不 import pandas
+    import pandas as pd
 
 logger = logging.getLogger(__name__)
 
@@ -37,6 +35,8 @@ class TraditionalTransferLearning:
         加载ASSISTments数据集
         由于HF datasets可能存在兼容性问题，优先使用本地CSV文件
         """
+        import pandas as pd
+
         if data_path is None:
             data_path = self.config.dataset.processed_data_path
 
@@ -59,6 +59,8 @@ class TraditionalTransferLearning:
 
     def _generate_mock_assistments_data(self) -> pd.DataFrame:
         """生成模拟的ASSISTments数据用于演示"""
+        import pandas as pd
+
         np.random.seed(self.config.dataset.random_seed)
 
         n_samples = 10000
@@ -110,6 +112,10 @@ class TraditionalTransferLearning:
         数据预处理和特征工程
         """
         logger.info("开始数据预处理...")
+
+        # sklearn 仅在真正做特征工程时才需要（桌面端安装包已排除该依赖）
+        from sklearn.feature_extraction.text import TfidfVectorizer
+        from sklearn.preprocessing import StandardScaler
 
         # 特征提取
         features = {}
@@ -176,6 +182,12 @@ class TraditionalTransferLearning:
         训练教师模型（传统ML模型）
         """
         logger.info("训练教师模型...")
+
+        # sklearn 仅在真正训练时才需要（桌面端安装包已排除该依赖）
+        from sklearn.ensemble import RandomForestClassifier
+        from sklearn.linear_model import LogisticRegression
+        from sklearn.metrics import accuracy_score, precision_recall_fscore_support
+        from sklearn.model_selection import train_test_split
 
         features = processed_data["features"]
         y = processed_data["target"]

@@ -1,8 +1,18 @@
 appId: com.imato.desktop
 productName: iMato
 # 【体积门禁】PR #68 后 main_ai_edu 改由 router_registry 驱动，冻结包需包含全部路由
-# 及其传递依赖（scipy/sklearn/pandas/PyMuPDF 等），未压缩载荷 ~296MiB。
+# 及其传递依赖，未压缩载荷 ~296MiB。
 # 用最大压缩把安装包拉回 <200MiB 门槛（仅影响压缩率，不改变包内内容）。
+#
+# 【2026-11-12 体积优化（方向 0）】排除 scipy / scipy.libs / pandas / sklearn
+# 后实测（x64 / NSIS / compression: maximum）：
+#   后端未压缩载荷  266.6 MB -> 153.6 MB（-113 MB）
+#   安装包体积      188.89 MiB -> 150.15 MiB（-38.74 MiB）
+# 说明：科学计算栈多为已压缩的 .pyd/二进制，未压缩省得多、压缩后省得少；
+# 安装包仍未降到 110MiB 以下，后续需另找方向（如前端 dist / Electron runtime）。
+# 受影响的唯一桌面端能力：CSV/XLSX 用户批量导入（管理员功能）——
+# 已加明确降级提示（services/user_bulk_import_service._require_pandas），
+# 冻结态返回「当前安装包未包含 pandas 运行时」而非 5xx。
 compression: maximum
 directories:
   # 【需求】安装包输出到项目根的 release/ 目录，便于统一分发

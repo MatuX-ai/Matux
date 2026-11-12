@@ -4,19 +4,21 @@
 支持教师-学生模型范式和渐进式学习
 """
 
+from __future__ import annotations
+
 from datetime import datetime
 import logging
 import os
-from typing import Any, Callable, Dict, List, Tuple
+from typing import TYPE_CHECKING, Any, Callable, Dict, List, Tuple
 
 from ai_service.traditional_ml_transfer import TraditionalTransferLearning
 from config.transfer_learning_config import settings
 import joblib
 import numpy as np
-import pandas as pd
 from services.dataset_processor import AssistmentsDatasetProcessor
-from sklearn.metrics import mean_absolute_error, mean_squared_error
-from sklearn.model_selection import cross_val_score, train_test_split
+
+if TYPE_CHECKING:  # pragma: no cover - 仅供类型检查；运行时不 import pandas
+    import pandas as pd
 
 logger = logging.getLogger(__name__)
 
@@ -234,6 +236,7 @@ class TransferLearningEngine:
         """执行模型微调"""
         # 简化实现：重新训练相似架构的模型
         from sklearn.ensemble import RandomForestClassifier
+        from sklearn.model_selection import train_test_split
 
         # 划分训练验证集
         X_train, X_val, y_train, y_val = train_test_split(
@@ -257,6 +260,10 @@ class TransferLearningEngine:
         self, model, features: np.ndarray, targets: np.ndarray
     ) -> Dict[str, float]:
         """评估模型性能"""
+        # sklearn 仅在真正评估时才需要（桌面端安装包已排除该依赖）
+        from sklearn.metrics import mean_absolute_error, mean_squared_error
+        from sklearn.model_selection import cross_val_score
+
         predictions = model.predict(features)
 
         metrics = {

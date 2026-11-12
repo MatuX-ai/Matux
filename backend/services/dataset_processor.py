@@ -3,15 +3,17 @@ ASSISTments数据集处理器
 专门处理教育领域的行为数据，用于冷启动推荐系统
 """
 
+from __future__ import annotations
+
 import logging
 import os
-from typing import Any, Dict
+from typing import TYPE_CHECKING, Any, Dict
 
 from config.transfer_learning_config import settings
 import numpy as np
-import pandas as pd
-from sklearn.feature_extraction.text import TfidfVectorizer
-from sklearn.preprocessing import LabelEncoder
+
+if TYPE_CHECKING:  # pragma: no cover - 仅供类型检查；运行时不 import pandas
+    import pandas as pd
 
 logger = logging.getLogger(__name__)
 
@@ -29,6 +31,8 @@ class AssistmentsDatasetProcessor:
         加载原始ASSISTments数据
         支持多种数据源格式
         """
+        import pandas as pd
+
         if source_path is None:
             # 尝试多种可能的数据源路径
             possible_paths = [
@@ -72,6 +76,8 @@ class AssistmentsDatasetProcessor:
     def _validate_and_clean_raw_data(self, df: pd.DataFrame) -> pd.DataFrame:
         """验证和清理原始数据"""
         logger.info("开始数据验证和清理...")
+
+        import pandas as pd
 
         original_rows = len(df)
 
@@ -154,6 +160,8 @@ class AssistmentsDatasetProcessor:
     def _generate_high_quality_mock_data(self) -> pd.DataFrame:
         """生成高质量的模拟ASSISTments数据"""
         logger.info("生成高质量模拟数据...")
+
+        import pandas as pd
 
         np.random.seed(42)  # 确保可重现性
 
@@ -431,6 +439,9 @@ class AssistmentsDatasetProcessor:
 
     def _extract_text_features(self, df: pd.DataFrame) -> np.ndarray:
         """提取文本特征"""
+        # sklearn 仅在真正提取特征时才需要（桌面端安装包已排除该依赖）
+        from sklearn.feature_extraction.text import TfidfVectorizer
+
         if "skill_text" not in df.columns:
             return np.random.rand(len(df), 100)  # 返回默认特征
 
@@ -446,6 +457,8 @@ class AssistmentsDatasetProcessor:
 
     def _extract_temporal_features(self, df: pd.DataFrame) -> pd.DataFrame:
         """提取时间特征"""
+        import pandas as pd
+
         if "timestamp" not in df.columns:
             return pd.DataFrame({"hour": np.random.randint(0, 24, len(df))})
 
@@ -489,6 +502,9 @@ class AssistmentsDatasetProcessor:
         准备建模所需的数据格式
         """
         logger.info("准备建模数据...")
+
+        # sklearn 仅在真正编码分类变量时才需要（桌面端安装包已排除该依赖）
+        from sklearn.preprocessing import LabelEncoder
 
         # 合并所有特征
         modeling_data = df.copy()
@@ -544,6 +560,8 @@ class AssistmentsDatasetProcessor:
 
     def load_processed_data(self, filepath: str = None) -> pd.DataFrame:
         """加载已处理的数据"""
+        import pandas as pd
+
         if filepath is None:
             filepath = self.config.processed_data_path
 
