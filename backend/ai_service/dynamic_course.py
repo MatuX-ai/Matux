@@ -4,16 +4,54 @@
 """
 
 from datetime import datetime
+from importlib import import_module
 import logging
-from typing import Any, Dict, List, Optional
+from typing import Any, Dict, List, Optional, Tuple
 
 from config.settings import settings
 from fastapi import HTTPException
-from openai import AsyncOpenAI
 from pydantic import BaseModel, Field
 from sqlalchemy.orm import Session
 
 logger = logging.getLogger(__name__)
+
+#: 懒加载的重依赖导出（PEP 562）：导出名 -> (模块路径, 模块内属性名)
+#:
+#: ``openai`` SDK 冷启动代价约 2.7s，改为按需解析；
+#: 解析结果写入模块 globals 缓存，后续访问不再进入 __getattr__。
+_LAZY_EXPORTS: Dict[str, Tuple[str, str]] = {
+    "AsyncOpenAI": ("openai", "AsyncOpenAI"),
+}
+
+
+def __getattr__(name: str):
+    """按需解析重依赖导出（PEP 562）。"""
+    try:
+        module_path, attr = _LAZY_EXPORTS[name]
+    except KeyError:
+        raise AttributeError(
+            f"module {__name__!r} has no attribute {name!r}"
+        ) from None
+
+    value = getattr(import_module(module_path), attr)
+    globals()[name] = value
+    return value
+
+
+def __dir__():
+    return sorted(set(globals()) | set(_LAZY_EXPORTS))
+
+
+def _resolve(name: str) -> Any:
+    """解析懒加载导出。
+
+    优先取模块全局（兼容 ``mock.patch("ai_service.dynamic_course.AsyncOpenAI")``
+    这类模块属性覆盖），未命中时再走 ``__getattr__`` 触发真实导入。
+    """
+    value = globals().get(name)
+    if value is None:
+        value = __getattr__(name)
+    return value
 
 
 class StudentProfile(BaseModel):
@@ -81,7 +119,7 @@ class DynamicCourseGenerator:
 
     def __init__(self, db_session: Session = None):
         """初始化课程生成器"""
-        self.client = AsyncOpenAI(api_key=settings.OPENAI_API_KEY)
+        self._client = None
         self.model = "gpt-3.5-turbo"
         self.temperature = 0.7
         self.max_tokens = 1500
@@ -100,6 +138,22 @@ class DynamicCourseGenerator:
         self.course_templates = self._load_course_templates()
 
         logger.info("动态课程生成器初始化完成")
+
+    @property
+    def client(self):
+        """懒加载 OpenAI 客户端。
+
+        首次访问时才真正构造，避免模块导入期拉入 openai SDK；
+        保留 setter 以兼容 ``generator.client = mock`` 的外部赋值方式。
+        """
+        if self._client is None:
+            async_openai = _resolve("AsyncOpenAI")
+            self._client = async_openai(api_key=settings.OPENAI_API_KEY)
+        return self._client
+
+    @client.setter
+    def client(self, value):
+        self._client = value
 
     def _load_course_templates(self) -> List[CourseTemplate]:
         """加载预定义课程模板"""
