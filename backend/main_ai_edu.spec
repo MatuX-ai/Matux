@@ -214,6 +214,19 @@ excludes = [
     "tkinter",
     "PyQt5",
     "PySide6",
+    # ---- nltk 启动钩子剥离（2026-11-12）----
+    # 根因：_pyinstaller_hooks_contrib 的运行时钩子 pyi_rth_nltk 在引导期无条件
+    #       `import nltk`，把 nltk 及其 import 链（scipy / sklearn / pandas / numpy）
+    #       全部在启动期执行一遍 —— 实测 `import nltk` 单独耗时 5.12 s / 1874 模块。
+    #       后端源码与 backend/requirements.txt 对 nltk 均零引用（纯构建期传递依赖，
+    #       唯一外部引入者是 langchain_text_splitters.html / .nltk 的 try/except 探测）。
+    # 机制：PyInstaller 的 analyze_runtime_hooks 只对「已存在于 TOC 的模块」应用 rthook
+    #       （PyInstaller/depend/analysis.py:744-751），nltk 被 excludes 后不进 TOC
+    #       → pyi_rth_nltk 不会被加入 → 引导期不再 import nltk。
+    # 安全性：langchain_text_splitters 的两处 nltk 引用均为 `try: import nltk
+    #       except ImportError: _HAS_NLTK = False`，排除后自动降级，
+    #       仅在显式使用 NLTKTextSplitter / HTMLSplitter(stopword_removal=True) 时才报错。
+    "nltk",
 ]
 
 block_cipher = None
