@@ -148,3 +148,20 @@ stylelint_result.json
 tsc-out.txt
 tsc-risk3.txt
 01-dashboard-baseline.png
+
+# === 阶段 1 工作区归因（2026-11-12）===
+# 依据：tmp/52-uncommitted-attribution.md —— 52 项未跟踪/已修改项逐条归因结论
+
+# electron-builder 每次打包都会重写的构建配置副产物（含机器相关的临时目录路径）
+release/builder-effective-config.yaml
+
+# UX 巡检会话历史产物（截图 / 诊断 JSON / 巡检报告），非源码
+reports/ux-session-*/
+reports/ui-check-*.png
+reports/vircadia_route_test.png
+
+# 历史验收 / 审计报告（一次性产出，非源码）
+# 注：reports/UX完整度修复复验_2026-10-08.md 等已跟踪文件同样匹配此规则，
+#     但 gitignore 只对未跟踪文件生效，已跟踪文件不受影响。
+reports/*_2026-10-0*.md
+reports/*-2026*.md
