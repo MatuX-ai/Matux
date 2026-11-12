@@ -24,7 +24,9 @@ from cache.ai_teacher_persistence import (
     get_profiles_repo,
     get_sessions_repo,
 )
-from fastapi import APIRouter, HTTPException, Query
+from fastapi import APIRouter, Depends, HTTPException, Query
+from middleware.auth import get_current_user
+from models.user import User
 from pydantic import BaseModel, Field
 from services.ai_teacher_event_bus import ai_teacher_live_bus  # 【P3-B】
 from services.ai_teacher_live_settings import ai_teacher_live_settings  # 【P3-B】
@@ -438,8 +440,15 @@ async def get_session(user_id: str):
 
 
 @router.post("/chat", response_model=ChatResponse)
-async def chat_with_teacher(request: ChatRequest):
-    """AI 教师对话（集成 RAG 知识检索）"""
+async def chat_with_teacher(
+    request: ChatRequest,
+    current_user: User = Depends(get_current_user),
+):
+    """AI 教师对话（集成 RAG 知识检索）
+
+    【P0-1 合规】端点强制 JWT 鉴权：未携带 / 携带无效 token 一律 401，
+    不再允许本机任意进程匿名调用（1.0.2-release-criteria G1-b）。
+    """
     start_time = datetime.now()
 
     # 构建个性化回复
