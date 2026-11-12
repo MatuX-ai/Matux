@@ -18,6 +18,8 @@ logger = get_logger(__name__)
 #: 懒加载的重依赖导出（PEP 562）：导出名 -> 模块路径
 #:
 #: pandas 冷启动代价约 1.2s（并带入 numpy），只有真正解析 CSV/XLSX 时才需要。
+#: 注：桌面端冻结态安装包已排除 pandas（见 backend/main_ai_edu.spec 的 excludes），
+#: 此时该能力按「依赖不可用」降级，提示文案见 _require_pandas()。
 _LAZY_EXPORTS: Dict[str, str] = {
     "pd": "pandas",
 }
@@ -50,6 +52,22 @@ def _resolve(name: str) -> Any:
     if value is None:
         value = __getattr__(name)
     return value
+
+
+def _require_pandas() -> Any:
+    """解析 pandas，缺失时给出明确的降级提示。
+
+    桌面端冻结态安装包已排除 pandas（体积优化，见 backend/main_ai_edu.spec 的
+    excludes 段），此时批量导入能力不可用。这里抛 ValueError，由路由层转成
+    HTTP 400 + 可读提示，而不是把 ModuleNotFoundError 直接抛给调用方。
+    """
+    try:
+        return _resolve("pd")
+    except ImportError as exc:
+        raise ValueError(
+            "批量导入功能不可用：当前安装包未包含 pandas 运行时，"
+            "请改用在线版管理后台，或逐个创建用户。"
+        ) from exc
 
 
 class ImportResult:
@@ -129,7 +147,7 @@ class UserBulkImportService:
 
     async def parse_csv_file(self, file_content: bytes) -> List[Dict]:
         """解析CSV文件"""
-        pd = _resolve("pd")
+        pd = _require_pandas()
         try:
             # 使用pandas读取CSV，自动处理编码问题
             df = pd.read_csv(io.BytesIO(file_content))
@@ -140,7 +158,7 @@ class UserBulkImportService:
 
     async def parse_xlsx_file(self, file_content: bytes) -> List[Dict]:
         """解析XLSX文件"""
-        pd = _resolve("pd")
+        pd = _require_pandas()
         try:
             # 使用pandas读取Excel文件
             df = pd.read_excel(io.BytesIO(file_content))
