@@ -7,30 +7,79 @@ Vircadia Avatar 同步服务 - TODO 实现补充
 import asyncio
 from datetime import datetime
 import hashlib
+from importlib import import_module
 import logging
 from pathlib import Path
 from typing import Any, Dict, Optional, Tuple
 
 import aiohttp
 
-# 尝试导入 3D 模型处理库
-try:
-    import trimesh
-
-    TRIMESH_AVAILABLE = True
-except ImportError:
-    TRIMESH_AVAILABLE = False
-    logging.warning("trimesh 未安装，元数据提取功能将使用简化模式")
-
-try:
-    import boto3
-
-    BOTO3_AVAILABLE = True
-except ImportError:
-    BOTO3_AVAILABLE = False
-    logging.warning("boto3 未安装，文件上传将使用本地存储模式")
-
 logger = logging.getLogger(__name__)
+
+#: 按需加载的可选重依赖（PEP 562）：导出名 -> 模块路径
+#:
+#: trimesh（冷启动约 3.3s，带入 scipy/PIL/networkx）与 boto3（约 0.7s）
+#: 都不是启动必需项，改为首次真正使用时才导入。
+_OPTIONAL_MODULES: Dict[str, str] = {
+    "trimesh": "trimesh",
+    "boto3": "boto3",
+}
+
+#: 可选依赖缺失时的降级提示
+_OPTIONAL_FALLBACK_HINTS: Dict[str, str] = {
+    "trimesh": "元数据提取功能将使用简化模式",
+    "boto3": "文件上传将使用本地存储模式",
+}
+
+#: 可选依赖加载缓存（None 表示依赖缺失）
+_OPTIONAL_CACHE: Dict[str, Any] = {}
+
+
+def _load_optional(name: str):
+    """按需加载可选重依赖，不可用时返回 None。"""
+    if name in _OPTIONAL_CACHE:
+        return _OPTIONAL_CACHE[name]
+
+    try:
+        module = import_module(_OPTIONAL_MODULES[name])
+    except ImportError:
+        logging.warning(
+            "%s 未安装，%s",
+            name,
+            _OPTIONAL_FALLBACK_HINTS.get(name, "相关功能将降级运行"),
+        )
+        module = None
+
+    _OPTIONAL_CACHE[name] = module
+    return module
+
+
+def __getattr__(name: str):
+    """按需解析可选重依赖及其可用性标志（PEP 562）。"""
+    if name in ("TRIMESH_AVAILABLE", "BOTO3_AVAILABLE"):
+        key = "trimesh" if name == "TRIMESH_AVAILABLE" else "boto3"
+        available = _load_optional(key) is not None
+        globals()[name] = available
+        return available
+
+    if name in _OPTIONAL_MODULES:
+        module = _load_optional(name)
+        if module is None:
+            raise AttributeError(
+                f"module {__name__!r} has no attribute {name!r}"
+                f"（可选依赖 {name} 未安装）"
+            )
+        return module
+
+    raise AttributeError(f"module {__name__!r} has no attribute {name!r}")
+
+
+def __dir__():
+    return sorted(
+        set(globals())
+        | set(_OPTIONAL_MODULES)
+        | {"TRIMESH_AVAILABLE", "BOTO3_AVAILABLE"}
+    )
 
 
 class VircadiaAPIClient:
@@ -176,7 +225,8 @@ class AvatarMetadataExtractor:
         Returns:
             元数据字典
         """
-        if not TRIMESH_AVAILABLE:
+        trimesh = _load_optional("trimesh")
+        if trimesh is None:
             logger.warning("trimesh 不可用，使用简化元数据提取")
             return await AvatarMetadataExtractor._extract_simple(avatar_url)
 
@@ -256,7 +306,9 @@ class ModelStorageUploader:
         self.storage_type = storage_type
         self.config = kwargs
 
-        if storage_type == "s3" and BOTO3_AVAILABLE:
+        boto3 = _load_optional("boto3") if storage_type == "s3" else None
+
+        if storage_type == "s3" and boto3 is not None:
             self.s3_client = boto3.client(
                 "s3",
                 aws_access_key_id=kwargs.get("aws_access_key"),
