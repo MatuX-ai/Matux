@@ -69,7 +69,15 @@ export interface LeaderboardEntry {
   providedIn: 'root',
 })
 export class AchievementService {
-  private readonly API_BASE = environment.apiUrl;
+  // 【阶段 1 路由修复】补 /api/v1 前缀。
+  //   桌面端 environment.apiUrl = ''（environment.prod.ts 未被任何配置引用），
+  //   相对路径会被 base href './' 解析为 app://./xxx；而 Electron 协议层只代理
+  //   api/ 前缀（electron/main.js:226 isApiOrAsset），其余路径走 SPA fallback
+  //   返回 index.html —— HttpClient 会因 JSON 解析失败报 console error，
+  //   表现为“成就列表为空”而非明确的 404。
+  //   其余服务（unified-course / module-status / openhydra / code-completion 等）
+  //   均遵循 `${environment.apiUrl}/api/v1` 口径，本服务是唯一例外。
+  private readonly API_BASE = `${environment.apiUrl}/api/v1`;
 
   constructor(private http: HttpClient) {}
 
@@ -79,7 +87,10 @@ export class AchievementService {
    * @returns Observable<AchievementBadge[]>
    */
   getUserAchievements(_userId: number): Observable<AchievementBadge[]> {
-    const url = `${this.API_BASE}/ar-rewards/achievements/unlocked`;
+    // 后端真实路由是 /api/v1/ar/achievements/unlocked
+    // （routes/ar_rewards.py 的 router prefix = "/ar"，registry 再加 /api/v1），
+    // 响应结构 { success, data: { achievements[], statistics } } 与本接口定义一致。
+    const url = `${this.API_BASE}/ar/achievements/unlocked`;
     return this.http.get<UserAchievementsResponse>(url).pipe(
       map((response) => {
         if (response.success && response.data) {
