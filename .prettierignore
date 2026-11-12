@@ -8,3 +8,7 @@
 package-lock.json
 yarn.lock
 pnpm-lock.yaml
+# GitHub Actions workflow 不参与 prettier 格式化：仓库内 9 个 workflow 文件均不符合
+# prettier 风格（docker-build.yml 还有 prettier 无法解析的 YAML 语法），强制格式化会
+# 产生大量与逻辑无关的噪音 diff；且 npm run format:check 只覆盖 src/**，本就不涉及 workflow。
+/.github/workflows

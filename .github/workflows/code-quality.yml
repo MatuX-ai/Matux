@@ -61,6 +61,12 @@ jobs:
       run: black --check backend/ || true
       
     - name: isort import check
+      # isort 债务是既有欠账，但它位于 flake8 baseline 闸门之前：
+      # 一旦 isort 失败退出非 0，GitHub Actions 会跳过后续步骤，
+      # 导致 Flake8 linting (baseline gate) 永远不被执行（闸门形同虚设）。
+      # continue-on-error 让本步骤失败时后续步骤继续执行，
+      # 本步骤自身在 UI 上仍标红，债务不会被掩盖。
+      continue-on-error: true
       run: isort --check-only backend/
       
     # 既有 lint 债务冻结在 config/lint-baseline.txt，只对新增错误失败。
