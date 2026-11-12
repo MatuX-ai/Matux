@@ -21,6 +21,9 @@
      需移除对应 excludes 并重新打包（体积 +~150MB）。
 4. SQLAlchemy 的 sqlite+aiosqlite 方言必须显式声明，否则运行时报
    `ModuleNotFoundError: sqlalchemy.dialects.sqlite.aiosqlite`。
+5. A1-A6 依赖治理后，部分重依赖改为运行时动态解析（importlib.import_module），
+   PyInstaller 静态分析不可见 —— hiddenimports 里已显式声明对应模块，
+   保证冻结态收集集合与改造前完全等价（详见 hiddenimports 处的注释）。
 """
 
 import os
@@ -117,6 +120,38 @@ hiddenimports = [
     # Phase1 新增扁平化查询路由（main_ai_edu 直接 import，显式声明防漏）
     "routes.achievement_catalog_routes",
     "routes.course_catalog_routes",
+    # ---- A1-A6 依赖治理（2026-11）----
+    # A1-A6 把「模块级静态 import」改成了 importlib.import_module 动态解析
+    # （PEP 562 懒加载），PyInstaller 的静态分析看不到这些依赖，
+    # 冻结态首次调用该能力时会 ModuleNotFoundError。
+    # 这里显式声明，使冻结态的收集集合与懒化改造前（HEAD）完全等价：
+    #   改前：ai_service/__init__.py 的 7 个子模块 + ai_manager 的 langchain_* +
+    #         dynamic_course 的 openai + vircadia_avatar_sync_impl 的 trimesh/boto3 +
+    #         user_bulk_import_service 的 pandas，均由模块级 import 静态引入
+    #   改后：这些 import 已不在模块级，改为运行时动态解析 → 必须显式声明
+    # 校验：tmp/_a4_hiddenimport_check.py（静态可达性差分）
+    #       tmp/_a4_exclude_sim.py（torch/transformers 缺失时仍可导入）
+    # 注：pandas/numpy/scipy 由 PyInstaller 内置 hook 收集子模块；
+    #     openai/langchain_*/trimesh/boto3 无内置 hook，其子模块由各自
+    #     __init__ 的静态 import 决定 —— 与改前等价，无需 collect_submodules。
+    # A1：ai_service 的 7 个子模块
+    "ai_service.ai_manager",
+    "ai_service.difficulty_calculator",
+    "ai_service.dynamic_course",
+    "ai_service.knowledge_graph_manager",
+    "ai_service.markov_analyzer",
+    "ai_service.models",
+    "ai_service.recommendation_service",
+    # A2：ai_manager 的 langchain / langchain_core
+    "langchain_openai",
+    "langchain_core.messages",
+    # A3：dynamic_course 的 openai
+    "openai",
+    # A5：vircadia_avatar_sync_impl 的可选重依赖
+    "trimesh",
+    "boto3",
+    # A6：user_bulk_import_service 的 pandas
+    "pandas",
 ]
 
 # 【PR #68 回归修复】main_ai_edu 改为 core.router_registry 单一事实源后，路由模块只以
