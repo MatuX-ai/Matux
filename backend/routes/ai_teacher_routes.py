@@ -448,8 +448,21 @@ async def chat_with_teacher(
 
     【P0-1 合规】端点强制 JWT 鉴权：未携带 / 携带无效 token 一律 401，
     不再允许本机任意进程匿名调用（1.0.2-release-criteria G1-b）。
+
+    【P0-2 合规】``user_id`` 一律以 token 主体为准：客户端传入的 ``user_id``
+    不参与任何授权判断，只用于归属校验（不一致 → 403），
+    避免任何人冒用他人身份读写会话（1.0.2-release-criteria G1-c）。
     """
     start_time = datetime.now()
+
+    # 【P0-2】user_id 从 token 主体取；客户端声明的 user_id 只做归属校验
+    effective_user_id = str(current_user.id)
+    claimed_user_id = (request.user_id or "").strip()
+    if claimed_user_id and claimed_user_id != effective_user_id:
+        raise HTTPException(
+            status_code=403,
+            detail="user_id 与当前登录用户不一致",
+        )
 
     # 构建个性化回复
     persona = request.persona or {}
@@ -463,7 +476,7 @@ async def chat_with_teacher(
     # 如果没有前端传入的 RAG 上下文，后端自行检索
     if not knowledge_context:
         knowledge_context, knowledge_used = _try_rag_context(
-            request.message, request.user_id, profile_seed
+            request.message, effective_user_id, profile_seed
         )
 
     # 基于学生画像 + RAG 上下文生成个性化回复
@@ -473,7 +486,7 @@ async def chat_with_teacher(
     )
 
     # 更新会话（【P3-B 修复】持久化）
-    session = _sessions_repo.get(request.user_id)
+    session = _sessions_repo.get(effective_user_id)
     if session is not None:
         session["recentMessages"].extend([
             {"role": "user", "content": request.message, "timestamp": datetime.now().isoformat()},
@@ -481,7 +494,7 @@ async def chat_with_teacher(
         ])
         session["recentMessages"] = session["recentMessages"][-20:]
         session["lastActivityAt"] = datetime.now().isoformat()
-        _sessions_repo.set(request.user_id, session)
+        _sessions_repo.set(effective_user_id, session)
 
     elapsed = (datetime.now() - start_time).total_seconds() * 1000
 

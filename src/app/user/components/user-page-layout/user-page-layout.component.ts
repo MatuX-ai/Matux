@@ -158,9 +158,11 @@ export class UserPageLayoutComponent implements OnInit, OnDestroy {
     this.aiSending = true;
     this.scrollAiPanelToBottom();
 
-    const userId = this.currentUser?.id ? String(this.currentUser.id) : '1';
+    // 【P0-2 合规】user_id 必须与 token 主体一致（后端做归属校验，不一致 → 403）。
+    // 取不到当前用户时留空，由后端以 token 主体为准（空值不做校验）。
+    const userId = this.currentUser?.id ? String(this.currentUser.id) : '';
     if (!this.aiSessionId) {
-      this.aiSessionId = `session_desktop_${userId}_${Date.now()}`;
+      this.aiSessionId = `session_desktop_${userId || 'guest'}_${Date.now()}`;
     }
 
     const pending = this.aiTeacher
