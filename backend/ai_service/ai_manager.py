@@ -2,13 +2,12 @@
 AI管理器 - 统一管理各种AI模型的调用
 """
 
+from importlib import import_module
 import time
-from typing import Any, Dict, Optional
+from typing import Any, Dict, Optional, Tuple
 
 from config.settings import settings
 import httpx
-from langchain_core.messages import HumanMessage, SystemMessage
-from langchain_openai import ChatOpenAI
 from utils.logger import get_logger
 
 from .models import (
@@ -19,6 +18,46 @@ from .models import (
 )
 
 logger = get_logger("ai_manager")
+
+#: 懒加载的重依赖导出（PEP 562）：导出名 -> (模块路径, 模块内属性名)
+#:
+#: ``langchain_openai`` 会连带拉入 transformers/torch，冷启动代价约 17s，
+#: 因此改为按需解析；解析结果写入模块 globals 缓存，后续访问不再进入 __getattr__。
+_LAZY_EXPORTS: Dict[str, Tuple[str, str]] = {
+    "ChatOpenAI": ("langchain_openai", "ChatOpenAI"),
+    "HumanMessage": ("langchain_core.messages", "HumanMessage"),
+    "SystemMessage": ("langchain_core.messages", "SystemMessage"),
+}
+
+
+def __getattr__(name: str):
+    """按需解析重依赖导出（PEP 562）。"""
+    try:
+        module_path, attr = _LAZY_EXPORTS[name]
+    except KeyError:
+        raise AttributeError(
+            f"module {__name__!r} has no attribute {name!r}"
+        ) from None
+
+    value = getattr(import_module(module_path), attr)
+    globals()[name] = value
+    return value
+
+
+def __dir__():
+    return sorted(set(globals()) | set(_LAZY_EXPORTS))
+
+
+def _resolve(name: str) -> Any:
+    """解析懒加载导出。
+
+    优先取模块全局（兼容 ``mock.patch("ai_service.ai_manager.ChatOpenAI")``
+    这类模块属性覆盖），未命中时再走 ``__getattr__`` 触发真实导入。
+    """
+    value = globals().get(name)
+    if value is None:
+        value = __getattr__(name)
+    return value
 
 
 class AIManager:
@@ -48,7 +87,8 @@ class AIManager:
             logger.warning("OpenAI API key not configured")
             return None
 
-        return ChatOpenAI(
+        chat_openai = _resolve("ChatOpenAI")
+        return chat_openai(
             model=settings.OPENAI_MODEL,
             openai_api_key=settings.OPENAI_API_KEY,
             temperature=settings.OPENAI_TEMPERATURE,
@@ -191,16 +231,19 @@ class AIManager:
         client = self.providers[ModelProvider.OPENAI]
 
         # 构建消息
+        system_message_cls = _resolve("SystemMessage")
+        human_message_cls = _resolve("HumanMessage")
+
         messages = []
         if request.system_prompt:
-            messages.append(SystemMessage(content=request.system_prompt))
+            messages.append(system_message_cls(content=request.system_prompt))
 
         # 添加代码生成专用提示
         code_prompt = f"请根据以下需求生成代码：\n\n{request.prompt}"
         if request.language:
             code_prompt += f"\n\n请使用 {request.language.value} 编程语言。"
 
-        messages.append(HumanMessage(content=code_prompt))
+        messages.append(human_message_cls(content=code_prompt))
 
         # 调用模型
         response = await client.agenerate([messages])
