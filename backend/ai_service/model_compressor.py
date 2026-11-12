@@ -4,17 +4,21 @@
 专为推荐系统场景优化
 """
 
+from __future__ import annotations
+
 from datetime import datetime
 import hashlib
 import logging
 import os
-from typing import Any, Dict, List, Union
+from typing import TYPE_CHECKING, Any, Dict, List, Union
 
 from config.transfer_learning_config import settings
 import joblib
 import numpy as np
-from sklearn.ensemble import RandomForestClassifier, RandomForestRegressor
-from sklearn.tree import DecisionTreeClassifier
+
+if TYPE_CHECKING:  # pragma: no cover - 仅供类型检查；运行时不 import sklearn
+    from sklearn.ensemble import RandomForestClassifier, RandomForestRegressor
+    from sklearn.tree import DecisionTreeClassifier
 
 logger = logging.getLogger(__name__)
 
@@ -125,6 +129,10 @@ class ModelCompressor:
     def _prune_model(self, model: Any) -> Dict[str, Any]:
         """模型剪枝压缩"""
         logger.info("执行模型剪枝...")
+
+        # sklearn 仅在真正执行剪枝时需要（桌面端安装包已排除该依赖）
+        from sklearn.ensemble import RandomForestClassifier, RandomForestRegressor
+        from sklearn.tree import DecisionTreeClassifier
 
         if isinstance(model, (RandomForestClassifier, RandomForestRegressor)):
             # 随机森林剪枝
