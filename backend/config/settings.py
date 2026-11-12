@@ -447,6 +447,13 @@ class Settings(BaseSettings):
     AI_TEACHER_REDIS_URL: str = "redis://localhost:6379/0"  # Redis 连接 URL
     AI_TEACHER_PERSISTENCE_USE_PUBSUB: bool = True  # 是否启用跨进程通知
 
+    # === 合规配置（1.0.2 P0-3）===
+    # 是否把 AI 对话**原文**落盘（会话文件 / 审计日志）。
+    # 默认 False —— 只保留元数据（角色 / 长度 / 耗时 / 模型名），
+    # 见 tmp/1.0.2-release-criteria.md 的 G1-d / G1-e。
+    # 仅本地调试可临时置 True，正式环境必须保持 False。
+    AI_LLM_STORE_CONVERSATION: bool = False
+
     # === 社交化分享配置 ===
     # 【P3-C】分享平台基础 URL（用于生成短链 + 二维码）
     SHARE_BASE_URL: str = "http://localhost:8000"

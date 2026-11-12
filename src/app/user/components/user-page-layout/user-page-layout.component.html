@@ -52,7 +52,7 @@
         <div class="ai-avatar">{{ msg.role === 'user' ? '🧑' : '🤖' }}</div>
         <div class="ai-bubble">
           {{ msg.content }}
-          <div *ngIf="msg.fallback" class="ai-bubble-note">本地回复（后端暂不可用）</div>
+          <div *ngIf="msg.fallback" class="ai-bubble-note">离线模式</div>
         </div>
       </div>
 

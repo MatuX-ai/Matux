@@ -51,7 +51,10 @@ async def chat_with_assistant(
         }
     """
     try:
-        logger.info(f"收到用户{current_user.id}的提问：{message[:50]}...")
+        # 【P0-3 合规】审计日志只记元数据（用户 / 长度），不记对话原文
+        logger.info(
+            "收到用户%s的提问（长度 %d 字符）", current_user.id, len(message)
+        )
 
         # 1. 获取课程上下文（如果提供）
         lesson_context = None

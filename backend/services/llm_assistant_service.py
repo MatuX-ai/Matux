@@ -226,7 +226,8 @@ class LLMAssistantService:
         Returns:
             AI 助手的回答
         """
-        logger.info(f"收到用户{user_id}的问题：{message[:50]}...")
+        # 【P0-3 合规】审计日志只记元数据（用户 / 长度），不记对话原文
+        logger.info("收到用户%s的提问（长度 %d 字符）", user_id, len(message))
 
         # Token 计费检查（如果启用）
         if self.billing and self.billing.billing_enabled:
@@ -274,7 +275,8 @@ class LLMAssistantService:
                 user_id=user_id,
                 token_amount=estimated_tokens,
                 usage_type="ai_teacher",
-                usage_description=f"AI 对话：{message[:50]}...",
+                # 【P0-3 合规】计费描述不得包含对话原文，只记长度
+                usage_description=f"AI 对话（{len(message)} 字符）",
                 resource_type="conversation"
             )
 
@@ -345,22 +347,26 @@ class LLMAssistantService:
     async def _log_conversation(
         self, user_id: int, message: str, response: Dict, context: Optional[Dict]
     ):
-        """记录对话日志（用于后续分析和优化）"""
+        """记录对话**元数据**（用于后续分析和优化）
+
+        【P0-3 合规】只记 user_id / 消息长度 / 模型 / 置信度 / 耗时，
+        **不记对话原文**（1.0.2-release-criteria G1-e）。
+        """
 
         log_entry = {
             "user_id": user_id,
-            "message": message,
-            "response": response["reply"],
-            "model": response["model"],
-            "confidence": response["confidence"],
-            "inference_time_ms": response["inference_time_ms"],
-            "knowledge_used": response["knowledge_used"],
+            "message_length": len(message),
+            "response_length": len(response.get("reply", "") or ""),
+            "model": response.get("model"),
+            "confidence": response.get("confidence"),
+            "inference_time_ms": response.get("inference_time_ms"),
+            "knowledge_used": response.get("knowledge_used"),
             "context_lesson": context.get("title") if context else None,
             "timestamp": datetime.utcnow().isoformat(),
         }
 
         # 这里应该写入数据库或日志系统
-        logger.debug(f"对话日志：{log_entry}")
+        logger.debug("对话元数据：%s", log_entry)
 
     def clear_history(self, user_id: int):
         """清除用户对话历史"""

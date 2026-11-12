@@ -15,7 +15,7 @@
  * - 当前使用Mock数据，后续替换为真实API
  */
 
-import { HttpClient } from '@angular/common/http';
+import { HttpClient, HttpErrorResponse } from '@angular/common/http';
 import { Injectable } from '@angular/core';
 import { BehaviorSubject, Observable, of, throwError } from 'rxjs';
 import { catchError, map, switchMap, tap, timeout } from 'rxjs/operators';
@@ -158,6 +158,41 @@ export class AITeacherService {
     return Array.isArray(value) ? value : [];
   }
   
+  /**
+   * 【P0-4 合规】离线（mock）模型名集合。
+   *
+   * 后端尚未接入真实 LLM 时，/chat 返回的 model 落在这一集合；
+   * 未来接入真实 LLM 后模型名不会命中本集合，角标自动消失。
+   * 口径与 tmp/1.0.2-roadmap.md 的 P0-4 判据保持一致。
+   */
+  private static readonly MOCK_MODEL_NAMES: ReadonlySet<string> = new Set([
+    'mock',
+    'mock-ai-teacher',
+    'rule-based-fallback',
+  ]);
+
+  /**
+   * 【P0-4 合规】判定一次回复是否为离线模式。
+   *
+   * 判定口径：
+   * 1) 精确命中 MOCK_MODEL_NAMES 集合；
+   * 2) 兼容前缀写法（mock-xxx / mock_xxx / rule-based-xxx），
+   *    避免后端新增 mock 变体时前端漏判。
+   *
+   * 相比原先的 `model === 'mock'` 单值比较，本方法覆盖
+   * mock-ai-teacher / rule-based-fallback 等实际返回的模型名。
+   */
+  static isMockModel(model: string | null | undefined): boolean {
+    const normalized = (model ?? '').trim().toLowerCase();
+    if (!normalized) {
+      return false;
+    }
+    if (AITeacherService.MOCK_MODEL_NAMES.has(normalized)) {
+      return true;
+    }
+    return normalized.startsWith('mock') || normalized.startsWith('rule-based');
+  }
+
   /** 递归归一化技能树节点 */
   private normalizeSkillNode(raw: unknown): SkillTreeNode {
     const n = AITeacherService.asRecord(raw);
@@ -629,8 +664,15 @@ export class AITeacherService {
                 });
               }
             }),
-            catchError((error) => {
-              // 降级兜底：后端不可用时仍能让对话继续，但要区分标记 model='mock'
+            catchError((error: HttpErrorResponse) => {
+              // 【P0-4 合规】鉴权失败（401/403）不是「离线模式」：
+              // 降级成 mock 回复会把合规故障伪装成正常体验，必须原样抛给调用方。
+              const errorStatus = Number(error?.status ?? 0);
+              if (errorStatus === 401 || errorStatus === 403) {
+                console.warn('[AITeacher] /chat 鉴权失败（%s），不做离线降级', errorStatus);
+                return throwError(() => error);
+              }
+              // 降级兜底：后端不可用时仍能让对话继续，但要明确标记 isMock=true
               console.warn('[AITeacher] /chat 请求失败，已降级为本地 mock 回复:', error?.status ?? error);
               const mockResponse: AITeacherChatResponse = {
                 reply: this.generateMockReply(request.message, persona),
@@ -642,6 +684,7 @@ export class AITeacherService {
                 model: 'mock',
                 confidence: 0.7,
                 inferenceTimeMs: 200,
+                isMock: true,
               };
               return of(mockResponse);
             })
@@ -657,6 +700,16 @@ export class AITeacherService {
    */
   private normalizeChatResponse(raw: unknown, fallbackSessionId: string): AITeacherChatResponse {
     const r = AITeacherService.asRecord(raw);
+    const model = AITeacherService.toText(r['model'], 'unknown');
+    // 【P0-4 合规】isMock 判定：后端显式标记优先，缺失时回退 model 集合判定。
+    const rawIsMock = AITeacherService.pick<unknown>(r, 'isMock', 'is_mock', undefined);
+    const degraded = Boolean(
+      AITeacherService.pick<unknown>(r, 'isDegraded', 'is_degraded', false) ||
+        AITeacherService.pick<unknown>(r, 'degraded', 'degraded_flag', false)
+    );
+    const isMock =
+      degraded ||
+      (typeof rawIsMock === 'boolean' ? rawIsMock : AITeacherService.isMockModel(model));
     return {
       reply: AITeacherService.toText(r['reply'] ?? r['message']),
       sessionId: AITeacherService.toText(
@@ -676,11 +729,12 @@ export class AITeacherService {
       suggestions: AITeacherService.toArray(
         AITeacherService.pick<unknown[]>(r, 'suggestions', 'suggestions', [])
       ) as TeachingSuggestion[],
-      model: AITeacherService.toText(r['model'], 'unknown'),
+      model,
       confidence: AITeacherService.toNumber(r['confidence']),
       inferenceTimeMs: AITeacherService.toNumber(
         AITeacherService.pick<unknown>(r, 'inferenceTimeMs', 'inference_time_ms', 0)
       ),
+      isMock,
     };
   }
 

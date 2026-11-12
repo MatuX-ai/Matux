@@ -24,7 +24,10 @@ from cache.ai_teacher_persistence import (
     get_profiles_repo,
     get_sessions_repo,
 )
-from fastapi import APIRouter, HTTPException, Query
+from config.settings import settings
+from fastapi import APIRouter, Depends, HTTPException, Query
+from middleware.auth import get_current_user
+from models.user import User
 from pydantic import BaseModel, Field
 from services.ai_teacher_event_bus import ai_teacher_live_bus  # 【P3-B】
 from services.ai_teacher_live_settings import ai_teacher_live_settings  # 【P3-B】
@@ -32,6 +35,33 @@ from services.ai_teacher_live_settings import ai_teacher_live_settings  # 【P3-
 logger = logging.getLogger(__name__)
 
 router = APIRouter(prefix="/api/v1/ai-teacher", tags=["AI 个性化教师"])
+
+# 【P0-3 合规】当前 /chat 仍是规则模板回复（尚未接入 LLM），
+# 因此回复来源标记为 mock —— 前端据此显示「离线模式」角标。
+CHAT_MODEL_NAME = "mock-ai-teacher"
+
+
+def _build_session_entries(user_message: str, assistant_reply: str) -> List[Dict[str, Any]]:
+    """构造会话条目（【P0-3 合规】默认不落盘对话原文）。
+
+    ``AI_LLM_STORE_CONVERSATION`` 默认 False —— 会话文件只保留
+    角色 / 长度 / 时间戳等元数据，不写学生提问与 AI 回复原文
+    （1.0.2-release-criteria G1-d / G1-e）。
+    """
+    now = datetime.now().isoformat()
+    if settings.AI_LLM_STORE_CONVERSATION:
+        return [
+            {"role": "user", "content": user_message, "timestamp": now},
+            {"role": "assistant", "content": assistant_reply, "timestamp": now},
+        ]
+    return [
+        {"role": "user", "content_length": len(user_message), "timestamp": now},
+        {
+            "role": "assistant",
+            "content_length": len(assistant_reply),
+            "timestamp": now,
+        },
+    ]
 
 
 # ==================== 【P0-B 修复】RAG 检索超时保护 ====================
@@ -208,6 +238,9 @@ class ChatResponse(BaseModel):
     model: str
     confidence: float
     inference_time_ms: int
+    # 【P0-4 合规】本次回复是否来自本地规则模板（离线模式）。
+    # 前端按此字段显示「离线模式」角标，不再用 model 字符串做脆弱比较。
+    is_mock: bool = False
 
 
 class LongTermMemoryModel(BaseModel):
@@ -438,9 +471,29 @@ async def get_session(user_id: str):
 
 
 @router.post("/chat", response_model=ChatResponse)
-async def chat_with_teacher(request: ChatRequest):
-    """AI 教师对话（集成 RAG 知识检索）"""
+async def chat_with_teacher(
+    request: ChatRequest,
+    current_user: User = Depends(get_current_user),
+):
+    """AI 教师对话（集成 RAG 知识检索）
+
+    【P0-1 合规】端点强制 JWT 鉴权：未携带 / 携带无效 token 一律 401，
+    不再允许本机任意进程匿名调用（1.0.2-release-criteria G1-b）。
+
+    【P0-2 合规】``user_id`` 一律以 token 主体为准：客户端传入的 ``user_id``
+    不参与任何授权判断，只用于归属校验（不一致 → 403），
+    避免任何人冒用他人身份读写会话（1.0.2-release-criteria G1-c）。
+    """
     start_time = datetime.now()
+
+    # 【P0-2】user_id 从 token 主体取；客户端声明的 user_id 只做归属校验
+    effective_user_id = str(current_user.id)
+    claimed_user_id = (request.user_id or "").strip()
+    if claimed_user_id and claimed_user_id != effective_user_id:
+        raise HTTPException(
+            status_code=403,
+            detail="user_id 与当前登录用户不一致",
+        )
 
     # 构建个性化回复
     persona = request.persona or {}
@@ -454,7 +507,7 @@ async def chat_with_teacher(request: ChatRequest):
     # 如果没有前端传入的 RAG 上下文，后端自行检索
     if not knowledge_context:
         knowledge_context, knowledge_used = _try_rag_context(
-            request.message, request.user_id, profile_seed
+            request.message, effective_user_id, profile_seed
         )
 
     # 基于学生画像 + RAG 上下文生成个性化回复
@@ -463,18 +516,29 @@ async def chat_with_teacher(request: ChatRequest):
         knowledge_context=knowledge_context,
     )
 
-    # 更新会话（【P3-B 修复】持久化）
-    session = _sessions_repo.get(request.user_id)
+    # 更新会话（【P3-B 修复】持久化；【P0-3 合规】默认只落元数据）
+    session = _sessions_repo.get(effective_user_id)
     if session is not None:
-        session["recentMessages"].extend([
-            {"role": "user", "content": request.message, "timestamp": datetime.now().isoformat()},
-            {"role": "assistant", "content": reply, "timestamp": datetime.now().isoformat()},
-        ])
+        session["recentMessages"].extend(
+            _build_session_entries(request.message, reply)
+        )
         session["recentMessages"] = session["recentMessages"][-20:]
         session["lastActivityAt"] = datetime.now().isoformat()
-        _sessions_repo.set(request.user_id, session)
+        _sessions_repo.set(effective_user_id, session)
 
     elapsed = (datetime.now() - start_time).total_seconds() * 1000
+
+    # 【P0-3 合规】审计日志只记元数据，不记对话原文
+    logger.info(
+        "AI 教师对话完成：user_id=%s model=%s message_len=%d reply_len=%d "
+        "elapsed_ms=%d knowledge_used=%s",
+        effective_user_id,
+        CHAT_MODEL_NAME,
+        len(request.message),
+        len(reply),
+        int(elapsed),
+        knowledge_used,
+    )
 
     return ChatResponse(
         reply=reply,
@@ -483,9 +547,11 @@ async def chat_with_teacher(request: ChatRequest):
         memories_referenced=request.knowledge_sources or [],
         knowledge_used=knowledge_used,
         suggestions=[],
-        model="mock-ai-teacher",
+        model=CHAT_MODEL_NAME,
         confidence=0.85,
         inference_time_ms=int(elapsed),
+        # 【P0-4 合规】当前回复来自本地规则模板 → 明确标记为离线模式
+        is_mock=True,
     )
 
 

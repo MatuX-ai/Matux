@@ -34,7 +34,7 @@ import { UserNavbarComponent } from '../user-navbar/user-navbar.component';
 interface AiPanelMessage {
   role: 'user' | 'ai';
   content: string;
-  /** 后端不可用时的本地 mock 降级回复 */
+  /** 离线模式（本地模板 / 降级）回复 —— 由后端 isMock 字段判定 */
   fallback?: boolean;
 }
 
@@ -158,9 +158,11 @@ export class UserPageLayoutComponent implements OnInit, OnDestroy {
     this.aiSending = true;
     this.scrollAiPanelToBottom();
 
-    const userId = this.currentUser?.id ? String(this.currentUser.id) : '1';
+    // 【P0-2 合规】user_id 必须与 token 主体一致（后端做归属校验，不一致 → 403）。
+    // 取不到当前用户时留空，由后端以 token 主体为准（空值不做校验）。
+    const userId = this.currentUser?.id ? String(this.currentUser.id) : '';
     if (!this.aiSessionId) {
-      this.aiSessionId = `session_desktop_${userId}_${Date.now()}`;
+      this.aiSessionId = `session_desktop_${userId || 'guest'}_${Date.now()}`;
     }
 
     const pending = this.aiTeacher
@@ -170,7 +172,10 @@ export class UserPageLayoutComponent implements OnInit, OnDestroy {
           this.aiMessages.push({
             role: 'ai',
             content: res?.reply || '（AI 老师没有返回内容）',
-            fallback: res?.model === 'mock',
+            // 【P0-4 合规】角标口径统一走 isMock：
+            // 后端显式标记优先，缺失时由 service 内部的 model 集合判定回退。
+            // 原来的 `res?.model === 'mock'` 漏判 mock-ai-teacher 等实际返回值。
+            fallback: res?.isMock === true,
           });
           this.aiSending = false;
           this.cdr.markForCheck();
