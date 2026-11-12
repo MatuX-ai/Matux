@@ -59,9 +59,22 @@ class PersonalKnowledgeAddRequest(BaseModel):
 
 
 # ==================== 路由端点 ====================
+#
+# 【阶段 1 路由修复 · 阻塞修复】
+#   本模块的端点调用的是**同步**的 vector_knowledge_service（含 FAISS 检索与
+#   sentence-transformers 嵌入模型懒加载）。若写成 `async def`，FastAPI 会在
+#   事件循环里直接执行这些同步调用 —— 嵌入模型首次加载（离线环境会重试下载
+#   数分钟）期间**整个后端无响应**，桌面端表现为“AI 教师发消息后所有接口都挂”。
+#
+#   改为同步 `def` 后，FastAPI 会把端点放进线程池执行：慢的 RAG 请求只占用一个
+#   工作线程，不再阻塞事件循环，其余接口照常响应。
+#   （前端 vector-knowledge.service.ts 本身已有 timeout(3000) 兜底，
+#     超时后走 mock RAG 降级，对话链路不中断。）
+#
+
 
 @router.post("/search")
-async def search_knowledge(request: SearchRequest):
+def search_knowledge(request: SearchRequest):
     """检索知识库"""
     service = get_vector_knowledge_service()
     results = service.search(
@@ -75,7 +88,7 @@ async def search_knowledge(request: SearchRequest):
 
 
 @router.post("/rag")
-async def rag_retrieve(request: RAGRequest):
+def rag_retrieve(request: RAGRequest):
     """
     RAG 检索增强生成（PRD F-08-AI.3）
 
@@ -93,7 +106,7 @@ async def rag_retrieve(request: RAGRequest):
 
 
 @router.post("/knowledge")
-async def add_knowledge(request: KnowledgeAddRequest):
+def add_knowledge(request: KnowledgeAddRequest):
     """添加知识到知识库"""
     from services.vector_knowledge_service import KnowledgeItem
 
@@ -112,7 +125,7 @@ async def add_knowledge(request: KnowledgeAddRequest):
 
 
 @router.post("/knowledge/personal")
-async def add_personal_knowledge(request: PersonalKnowledgeAddRequest):
+def add_personal_knowledge(request: PersonalKnowledgeAddRequest):
     """添加个人知识（Layer 3）"""
     service = get_vector_knowledge_service()
     item_id = service.add_personal_knowledge(
@@ -125,7 +138,7 @@ async def add_personal_knowledge(request: PersonalKnowledgeAddRequest):
 
 
 @router.get("/stats")
-async def get_knowledge_base_stats():
+def get_knowledge_base_stats():
     """获取知识库统计信息"""
     service = get_vector_knowledge_service()
     return service.get_stats()
