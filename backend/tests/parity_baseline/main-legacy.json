@@ -1,7 +1,7 @@
 {
   "entry": "main_legacy",
-  "generated_from_commit": "0d0b7b1ce39abeb2c1d9588679e39fb9043bf477",
-  "source": "PR #68 merge（main 注册表 + 分支 Phase 1 路由，tmp/_pr68_regen_baseline.py）",
+  "generated_from_commit": "22bd7e11ff68c7cae012efe37f607d82bd6fa2b3",
+  "source": "1.0.2 阶段 1 路由修复（unified_learning_record / ar_rewards / vector_knowledge 由 legacy 改 both），tmp/_p2_regen_baseline.py",
   "stubs_injected": [
     "services.ai_teacher_live_settings",
     "services.ai_teacher_event_bus",
@@ -55,6 +55,10 @@
       [
         "DELETE",
         "/api/v1/org/{org_id}/ai-edu/progress/{lesson_id}"
+      ],
+      [
+        "DELETE",
+        "/api/v1/unified-learning-records/{record_id}"
       ],
       [
         "DELETE",
@@ -115,6 +119,14 @@
       [
         "GET",
         "/api/v1/ai-teacher/suggestions/{user_id}"
+      ],
+      [
+        "GET",
+        "/api/v1/ar/achievements/unlocked"
+      ],
+      [
+        "GET",
+        "/api/v1/ar/rewards/summary"
       ],
       [
         "GET",
@@ -191,6 +203,10 @@
       [
         "GET",
         "/api/v1/exams/{exam_id}/statistics"
+      ],
+      [
+        "GET",
+        "/api/v1/knowledge-base/stats"
       ],
       [
         "GET",
@@ -286,6 +302,18 @@
       ],
       [
         "GET",
+        "/api/v1/unified-learning-records/user/{user_id}"
+      ],
+      [
+        "GET",
+        "/api/v1/unified-learning-records/{record_id}"
+      ],
+      [
+        "GET",
+        "/api/v1/unified-learning/progress/{user_id}"
+      ],
+      [
+        "GET",
         "/logs/error"
       ],
       [
@@ -331,6 +359,18 @@
       [
         "POST",
         "/api/v1/ai-teacher/memory/{user_id}/long-term"
+      ],
+      [
+        "POST",
+        "/api/v1/ar/events/test-scene-completion"
+      ],
+      [
+        "POST",
+        "/api/v1/ar/rewards/component-validated"
+      ],
+      [
+        "POST",
+        "/api/v1/ar/rewards/scene-completed"
       ],
       [
         "POST",
@@ -414,6 +454,22 @@
       ],
       [
         "POST",
+        "/api/v1/knowledge-base/knowledge"
+      ],
+      [
+        "POST",
+        "/api/v1/knowledge-base/knowledge/personal"
+      ],
+      [
+        "POST",
+        "/api/v1/knowledge-base/rag"
+      ],
+      [
+        "POST",
+        "/api/v1/knowledge-base/search"
+      ],
+      [
+        "POST",
         "/api/v1/opensciedu/cache/clear"
       ],
       [
@@ -466,6 +522,14 @@
       ],
       [
         "POST",
+        "/api/v1/unified-learning-records"
+      ],
+      [
+        "POST",
+        "/api/v1/unified-learning-records/sync-from-enrollment"
+      ],
+      [
+        "POST",
         "/logs/error"
       ],
       [
@@ -495,6 +559,10 @@
       [
         "PUT",
         "/api/v1/org/{org_id}/achievements/admin/{achievement_id}"
+      ],
+      [
+        "PUT",
+        "/api/v1/unified-learning-records/{record_id}"
       ],
       [
         "WEBSOCKET",
@@ -529,10 +597,6 @@
       [
         "DELETE",
         "/api/v1/unified-auth/unbind-child/{student_id}"
-      ],
-      [
-        "DELETE",
-        "/api/v1/unified-learning-records/{record_id}"
       ],
       [
         "GET",
@@ -616,14 +680,6 @@
       ],
       [
         "GET",
-        "/api/v1/ar/achievements/unlocked"
-      ],
-      [
-        "GET",
-        "/api/v1/ar/rewards/summary"
-      ],
-      [
-        "GET",
         "/api/v1/blockchain/health"
       ],
       [
@@ -677,10 +733,6 @@
       [
         "GET",
         "/api/v1/hardware/stats"
-      ],
-      [
-        "GET",
-        "/api/v1/knowledge-base/stats"
       ],
       [
         "GET",
@@ -920,18 +972,6 @@
       ],
       [
         "GET",
-        "/api/v1/unified-learning-records/user/{user_id}"
-      ],
-      [
-        "GET",
-        "/api/v1/unified-learning-records/{record_id}"
-      ],
-      [
-        "GET",
-        "/api/v1/unified-learning/progress/{user_id}"
-      ],
-      [
-        "GET",
         "/api/v1/usage-stats"
       ],
       [
@@ -1028,18 +1068,6 @@
       ],
       [
         "POST",
-        "/api/v1/ar/events/test-scene-completion"
-      ],
-      [
-        "POST",
-        "/api/v1/ar/rewards/component-validated"
-      ],
-      [
-        "POST",
-        "/api/v1/ar/rewards/scene-completed"
-      ],
-      [
-        "POST",
         "/api/v1/blockchain/issue-integral"
       ],
       [
@@ -1077,22 +1105,6 @@
       [
         "POST",
         "/api/v1/hardware/certify"
-      ],
-      [
-        "POST",
-        "/api/v1/knowledge-base/knowledge"
-      ],
-      [
-        "POST",
-        "/api/v1/knowledge-base/knowledge/personal"
-      ],
-      [
-        "POST",
-        "/api/v1/knowledge-base/rag"
-      ],
-      [
-        "POST",
-        "/api/v1/knowledge-base/search"
       ],
       [
         "POST",
@@ -1315,14 +1327,6 @@
         "/api/v1/unified-auth/register/phone"
       ],
       [
-        "POST",
-        "/api/v1/unified-learning-records"
-      ],
-      [
-        "POST",
-        "/api/v1/unified-learning-records/sync-from-enrollment"
-      ],
-      [
         "PUT",
         "/api/v1/api/v1/learning-behavior/{record_id}"
       ],
@@ -1361,10 +1365,6 @@
       [
         "PUT",
         "/api/v1/sponsorship/sponsorships/{sponsorship_id}"
-      ],
-      [
-        "PUT",
-        "/api/v1/unified-learning-records/{record_id}"
       ],
       [
         "WEBSOCKET",
