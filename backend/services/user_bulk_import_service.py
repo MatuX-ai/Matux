@@ -3,17 +3,53 @@
 支持CSV/XLSX格式导入，提供字段映射、冲突检测与处理功能
 """
 
+from importlib import import_module
 import io
-from typing import Dict, List, Tuple
+from typing import Any, Dict, List, Tuple
 
 from fastapi import UploadFile
 from models.user import User, UserRole
-import pandas as pd
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 from utils.logger import get_logger
 
 logger = get_logger(__name__)
+
+#: 懒加载的重依赖导出（PEP 562）：导出名 -> 模块路径
+#:
+#: pandas 冷启动代价约 1.2s（并带入 numpy），只有真正解析 CSV/XLSX 时才需要。
+_LAZY_EXPORTS: Dict[str, str] = {
+    "pd": "pandas",
+}
+
+
+def __getattr__(name: str):
+    """按需解析重依赖导出（PEP 562）。"""
+    module_path = _LAZY_EXPORTS.get(name)
+    if module_path is None:
+        raise AttributeError(
+            f"module {__name__!r} has no attribute {name!r}"
+        ) from None
+
+    value = import_module(module_path)
+    globals()[name] = value
+    return value
+
+
+def __dir__():
+    return sorted(set(globals()) | set(_LAZY_EXPORTS))
+
+
+def _resolve(name: str) -> Any:
+    """解析懒加载导出。
+
+    优先取模块全局（兼容 ``mock.patch("services.user_bulk_import_service.pd")``
+    这类模块属性覆盖），未命中时再走 ``__getattr__`` 触发真实导入。
+    """
+    value = globals().get(name)
+    if value is None:
+        value = __getattr__(name)
+    return value
 
 
 class ImportResult:
@@ -93,6 +129,7 @@ class UserBulkImportService:
 
     async def parse_csv_file(self, file_content: bytes) -> List[Dict]:
         """解析CSV文件"""
+        pd = _resolve("pd")
         try:
             # 使用pandas读取CSV，自动处理编码问题
             df = pd.read_csv(io.BytesIO(file_content))
@@ -103,6 +140,7 @@ class UserBulkImportService:
 
     async def parse_xlsx_file(self, file_content: bytes) -> List[Dict]:
         """解析XLSX文件"""
+        pd = _resolve("pd")
         try:
             # 使用pandas读取Excel文件
             df = pd.read_excel(io.BytesIO(file_content))
