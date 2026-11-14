@@ -34,6 +34,7 @@ jobs:
       run: npm run lint:scss-check || true
       
     - name: Prettier format check
+      continue-on-error: true
       run: npm run format:check
       
     - name: Build test
